@@ -171,9 +171,13 @@ async function begin() {
     ac = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 44100, latencyHint: "playback" });
     await ac.audioWorklet.addModule("worklet.js");
     node = new AudioWorkletNode(ac, "amb-app", { numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [2] });
-    // iPhone: through a media element, which may keep playing with the screen locked; elsewhere, directly
+    // iPhone: straight to the speakers, with the audio session set to "playback" and a silent media element
+    // looping beside it, so the page keeps playing with the screen locked. Through a MediaStream into a media
+    // element (as before) it crackled once locked, when iOS hands audio over in larger blocks than that
+    // path's buffer holds. ?stream goes the old way, ?direct leaves out the silent element (to compare).
+    const opt = (k) => new RegExp("[?&]" + k + "\\b").test(location.search);
     let routed = false;
-    if (isIOS && ac.createMediaStreamDestination && !/[?&]direct\b/.test(location.search)) {   // ?direct skips the media element (to compare)
+    if (isIOS && opt("stream") && ac.createMediaStreamDestination) {
       try {
         const dest = ac.createMediaStreamDestination(), el = new Audio();
         node.connect(dest);
@@ -184,6 +188,10 @@ async function begin() {
       } catch { routed = false; }
     }
     if (!routed) node.connect(ac.destination);
+    if (isIOS && !routed) {
+      try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch { /* older iOS */ }
+      if (!opt("direct")) keepAlive();
+    }
     const readyP = new Promise((res) => {
       node.port.onmessage = (e) => {
         const m = e.data;
@@ -211,6 +219,20 @@ async function begin() {
     msg("No sound: " + (err && err.message || err));
   }
 }
+// A second of silence, looping: a media element playing keeps the page's audio going with the screen locked
+// and puts AMB-1 on the lock screen (Play / Rest through the media session).
+let silent = null;
+function keepAlive() {
+  const n = 8000, b = new ArrayBuffer(44 + 2 * n), v = new DataView(b);
+  const w = (o, t) => { for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
+  w(0, "RIFF"); v.setUint32(4, 36 + 2 * n, true); w(8, "WAVEfmt "); v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, 8000, true); v.setUint32(28, 16000, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, "data"); v.setUint32(40, 2 * n, true);
+  silent = new Audio(URL.createObjectURL(new Blob([b], { type: "audio/wav" })));
+  silent.loop = true;
+  silent.setAttribute("playsinline", "");
+  silent.play().catch(() => { /* refused: plays only while the page is on screen */ });
+}
 function setPlaying(on) {
   playing = on;
   send({ t: "play", v: on ? 1 : 0 });
@@ -237,6 +259,7 @@ document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") {
     if (S && S.awake && !lock) wake(true);
     if (ac && ac.state !== "running" && playing) ac.resume();
+    if (silent && silent.paused) silent.play().catch(() => {});   // after a call or another app's audio
   }
 });
 
