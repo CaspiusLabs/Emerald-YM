@@ -6,7 +6,7 @@ bells on tape loops of unequal length, a gliding bass and quiet Euclidean percus
 a short echo, a long tape loop and a plate reverb. You don't perform it, you tend it: pick a piece
 and a scale, take notes out, put them back, and let it grow.
 
-![The FM-1 (a drawing), running AMB-1, each control labelled](img/fm1-panel.svg)
+![A drawing of the FM-1 running AMB-1, each control labelled with what it does: the Controls section below says the same in words](img/fm1-panel.svg "The FM-1 (a drawing), running AMB-1, each control labelled")
 
 ---
 
@@ -106,14 +106,14 @@ The drawing at the top shows them all; here they are in more detail.
 **Help:** hold any button but PLAY for a second and a card says what it does. A key, a knob or
 another button puts the card away; letting go after it does nothing else.
 
-![SAVE's card](img/screen-help.png)
+![SAVE's card over the Pad page: SAVES ALL EIGHT PIECES. KEEP HOLDING: THE PIECE BACK TO ITS RECIPE](img/screen-help.png "SAVE's card")
 
 ---
 
 ## 4. The screen
 
-![The Garden page (HOME)](img/screen-garden.png)
-![Voices, a piece with only the sung pad and a bass](img/screen-voices.png)
+![The screen on the Garden page: Garden, D Dorian, tempo 72; the ring with the chord Dm7 in the middle, the four level bars on the left, the pulse rings on the right; TEMPO 72, EVOLVE 35, MOTION 50, DRIFT 39s](img/screen-garden.png "The Garden page (HOME)")
+![The screen on the Pad page of the piece Voices: F Aeolian, tempo 56, the chord Fm7; LEVEL 85, SWELL 70, BRIGHT 67, COLOUR Voices](img/screen-voices.png "Voices, a piece with only the sung pad and a bass")
 
 - **Top line:** the piece, its root and mode. On the right, a slow beat light (a play triangle while
   resting), the tempo (EXT when it follows MIDI clock) and a dot when there are unsaved changes.
@@ -131,7 +131,7 @@ another button puts the card away; letting go after it does nothing else.
 - **Bottom:** the page's name and seven dots, one a page, then its four values, one for each knob:
   a dial (or, for a switch, its positions) and the value. The one you're turning lights up.
 
-![Turning Echo time on the Space page](img/screen-turning.png)
+![The Space page with ECHO TIME lit as it turns, set to 2 bars; ECHO 45, REVERB 65, SIZE 80](img/screen-turning.png "Turning Echo time on the Space page")
 
 ---
 
@@ -177,7 +177,7 @@ sounds, tempo, key and mode, how busy it is and how far it moves. Each remembers
 Hold SAVE for 1.5 s to put the piece you're on back to its recipe. Tune, MIDI out and Lights are
 the same for all.
 
-| Piece | |
+| Piece | What it is |
 |---|---|
 | **Garden** | D Dorian, 72: everything, gently. Rhodes. |
 | **Departures** | C# Ionian, 60: soft, slowed-piano bells an octave down over a quiet Rhodes, as "1/1". |
@@ -197,7 +197,7 @@ always KNOB 1. SELECT steps through them in this order.
 
 ### HOME: Garden
 
-![The Garden page](img/screen-garden.png)
+![The Garden page: TEMPO 72, EVOLVE 35, MOTION 50, DRIFT 39s](img/screen-garden.png "The Garden page")
 
 - **Tempo:** 30 to 120 (also HOME + SELECT, from any page).
 - **Evolve:** how restless the garden is. At 0 the loops repeat exactly. Turned up, a bell note
@@ -210,7 +210,7 @@ always KNOB 1. SELECT steps through them in this order.
 
 ### ENV: Pad
 
-![The Pad page](img/screen-pad.png)
+![The Pad page: LEVEL 60, SWELL 60, BRIGHT 40, COLOUR Rhodes](img/screen-pad.png "The Pad page")
 
 - **Level.**
 - **Swell:** how long the voices breathe, from a few seconds to about half a minute.
@@ -220,7 +220,7 @@ always KNOB 1. SELECT steps through them in this order.
 
 ### ARP: Bells
 
-![The Bells page](img/screen-bells.png)
+![The Bells page: LEVEL 65, DENSITY 40, TONE 50, OCTAVE 0](img/screen-bells.png "The Bells page")
 
 - **Level.**
 - **Density:** how many notes each loop holds, none at 0 to five at the top. A change shows up as
@@ -230,7 +230,7 @@ always KNOB 1. SELECT steps through them in this order.
 
 ### LFO: Bass
 
-![The Bass page](img/screen-bass.png)
+![The Bass page: LEVEL 45, OCTAVE 0, GLIDE 20, FIFTH 35](img/screen-bass.png "The Bass page")
 
 - **Level.**
 - **Octave:** one down, home, or one up.
@@ -239,7 +239,7 @@ always KNOB 1. SELECT steps through them in this order.
 
 ### SEQ: Pulse
 
-![The Pulse page](img/screen-pulse.png)
+![The Pulse page: LEVEL 40, HITS 35, SWING 50%, HATS 50](img/screen-pulse.png "The Pulse page")
 
 - **Level.**
 - **Hits:** how many beats the three rings play. 0: no pulse.
@@ -248,7 +248,7 @@ always KNOB 1. SELECT steps through them in this order.
 
 ### FX: Space
 
-![The Space page](img/screen-space.png)
+![The Space page: ECHO 45, ECHO TIME 1 bar, REVERB 65, SIZE 80](img/screen-space.png "The Space page")
 
 - **Echo:** how much goes to the echoes.
 - **Echo time:** the tape loop's length: a dotted quarter, a half, a dotted half, 1, 2 or 4 bars,
@@ -260,7 +260,7 @@ always KNOB 1. SELECT steps through them in this order.
 
 ### GLO: Setup
 
-![The Setup page](img/screen-setup.png)
+![The Setup page: ROOT D, TUNE 0, MIDI OUT On, LIGHTS On](img/screen-setup.png "The Setup page")
 
 - **Root:** the key's root note. The scale moves with it.
 - **Tune:** fine tuning, ±50 cents.

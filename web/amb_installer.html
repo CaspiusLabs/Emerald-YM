@@ -7,10 +7,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AMB-1 installer</title>
+<title>Install · AMB-1</title>
 <style>
   /* the colours of Ambient 1: Music for Airports (1978), as the site */
-  :root { --bg: #fdf9e4; --fg: #1d1b02; --dim: #4f4b25; --accent: #85c3c1; --sheet: #f6eeb5; color-scheme: light; }
+  /* --river-2 a shade darker than the cover's, so text in it reads (4.5:1 on the paper) */
+  :root { --bg: #fdf9e4; --fg: #1d1b02; --dim: #49451f; --accent: #85c3c1; --sheet: #f6eeb5; --river-2: #3b7470; color-scheme: light; }
   body { margin: 0; background: var(--bg); color: var(--fg);
          font: 16px/1.6 "Helvetica Neue", Helvetica, Arial, sans-serif; }
   main { max-width: 520px; margin: 0 auto; padding: 48px 16px; }
@@ -19,51 +20,62 @@
   p { margin: 0 0 16px; }
   button { font: inherit; background: var(--accent); color: var(--fg); border: 1px solid var(--fg); padding: 6px 22px; cursor: pointer; }
   button:disabled { opacity: .3; cursor: default; }
-  #status { margin-top: 16px; min-height: 1.6em; }
+  #status, #alert { margin-top: 16px; min-height: 1.6em; }
+  #alert:empty { display: none; }
+  #alert { font-weight: 600; }
+  #alert::before { content: "⚠ "; }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  label.bar { display: block; font-size: 13px; color: var(--dim); margin-top: 16px; }
+  label.bar progress { margin-top: 4px; }
   .small { color: var(--dim); font-size: 13px; }
-  progress { width: 100%; height: 4px; margin-top: 16px; accent-color: #549995; }
-  pre { color: var(--dim); font-size: 12px; white-space: pre-wrap; margin-top: 16px; }
+  progress { width: 100%; height: 6px; margin-top: 16px; accent-color: var(--river-2); }
+  pre { color: var(--dim); font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 16px; }
+  pre:empty { display: none; }
   h2 { font-size: 16px; font-weight: 400; text-transform: uppercase; letter-spacing: .06em; margin: 40px 0 12px; padding-top: 8px; border-top: 1px solid var(--fg); }
   ol { margin: 0 0 16px; padding-left: 20px; }
   input[type=file] { font: inherit; font-size: 13px; color: var(--dim); max-width: 100%; }
   .site { display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem 1.2rem; margin: 0 0 1.6rem; padding-bottom: .5rem; border-bottom: 1px solid var(--fg); }
   .site .home { font-size: 1.05rem; font-weight: 400; letter-spacing: .08em; color: var(--fg); text-decoration: none; }
-  .site .home:hover { color: #549995; background: none; }
+  .site .home:hover { color: var(--river-2); background: none; }
   .site nav { margin-left: auto; display: flex; flex-wrap: wrap; gap: .2rem 1rem; font-size: .92rem; }
-  .site nav a { color: var(--fg); text-decoration-color: #549995; text-underline-offset: 3px; }
-  .site nav a[aria-current] { text-decoration: none; color: #549995; }
+  .site nav a { color: var(--fg); text-decoration-color: var(--river-2); text-underline-offset: 3px; }
+  .site nav a[aria-current] { text-decoration: none; color: var(--river-2); }
 </style>
 </head>
 <body>
 <main>
-  <header class="site"><a class="home" href="../">AMB-1</a><nav><a href="../emu/">Emulator</a><a href="../install/" aria-current="page">Install</a><a href="../manual/">Manual</a><a href="https://github.com/charlesvestal/fm1-amb">Source</a></nav></header>
-  <button class="lang" id="lang"></button>
+  <header class="site"><a class="home" href="../">AMB-1</a><nav aria-label="AMB-1"><a href="../emu/">Emulator</a><a href="../install/" aria-current="page">Install</a><a href="../manual/">Manual</a><a href="https://github.com/charlesvestal/fm1-amb">Source</a></nav></header>
+  <button class="lang" id="lang" type="button"></button>
   <h1>Install AMB-1</h1>
   <p data-t="intro"></p>
+  <p class="small" data-t="perm"></p>
   <p data-t="warn"></p>
   <p class="small" data-t="direct"></p>
   <p class="small" data-t="beta"></p>
   <p class="small"><span data-t="brick"></span>
     <a href="../manual/#recovering-an-fm-1-that-won-t-start" style="color:inherit" data-t="bricklink"></a></p>
   <p class="small" data-t="back"></p>
-  <p class="small"><a href="https://www.m-vave.com/download" target="_blank" rel="noopener" style="color:inherit">www.m-vave.com/download</a></p>
+  <p class="small"><a href="https://www.m-vave.com/download" target="_blank" rel="noopener" style="color:inherit">www.m-vave.com/download<span class="sr" data-t="newtab"></span></a></p>
   <p><button id="go" disabled data-t="install"></button></p>
-  <progress id="bar" max="100" value="0"></progress>
-  <p id="status"></p>
+  <label class="bar" for="bar"><span data-t="progress"></span>
+    <progress id="bar" max="100" value="0"></progress></label>
+  <p id="status" role="status"></p>
+  <p id="alert" role="alert"></p>
   <pre id="log"></pre>
   <h2 data-t="stockh"></h2>
   <p class="small" data-t="stockwhy"></p>
   <ol class="small">
     <li><span data-t="stock1"></span> <a id="stocklink" href="https://yms-file-store.oss-cn-hongkong.aliyuncs.com/software/firmware/FM-1.fwsc" style="color:inherit">FM-1.fwsc</a></li>
-    <li><span data-t="stock2"></span><br><input type="file" id="stockfile" accept=".fwsc"></li>
+    <li><label for="stockfile" data-t="stock2"></label><br><input type="file" id="stockfile" accept=".fwsc"></li>
     <li data-t="stock3"></li>
   </ol>
   <p><button id="stockgo" disabled data-t="stockinstall"></button></p>
   <p><a href="../" style="color:inherit" data-t="manual"></a></p>
-  <p class="small">AMB-1 is built on Felucca by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener" style="color:inherit">Hügelton Instruments</a>,
+  <p class="small">AMB-1 is built on Felucca by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener" style="color:inherit">Hügelton Instruments<span class="sr" data-t="newtab"></span></a>,
     by way of X0X and FoMni.<br>
     Fonts: Barlow Semi Condensed (SIL OFL 1.1). M-VAVE and FM-1 are trademarks of their respective owners.<br>
-    <span data-t="license"></span> <a href="https://github.com/charlesvestal/fm1-amb" target="_blank" rel="noopener" style="color:inherit">github.com/charlesvestal/fm1-amb</a></p>
+    <span data-t="license"></span> <a href="https://github.com/charlesvestal/fm1-amb" target="_blank" rel="noopener" style="color:inherit">github.com/charlesvestal/fm1-amb<span class="sr" data-t="newtab"></span></a></p>
 </main>
 <script type="module">
 /*LIB*/
@@ -71,6 +83,9 @@ const $ = (id) => document.getElementById(id);
 const TEXT = {
   ja: {
     intro: "FM-1 を USB で接続してください。（Chrome か Edge で使えます）",
+    perm: "インストールを押すと、ブラウザが MIDI の使用許可を求めます。許可してください。",
+    newtab: "（新しいタブで開きます）", progress: "進み具合", ready: "インストールできます: AMB-1 ",
+    percent: "%",
     warn: "書き込み中は USB を抜かないでください。",
     install: "インストール", other: "English",
     manual: "AMB-1 のページへ",
@@ -105,6 +120,9 @@ const TEXT = {
   },
   en: {
     intro: "Connect the FM-1 by USB. (Works in Chrome or Edge.)",
+    perm: "When you press Install, the browser asks to let this page use MIDI devices: allow it.",
+    newtab: " (opens in a new tab)", progress: "Progress", ready: "Ready to install AMB-1 ",
+    percent: " percent",
     warn: "Do not unplug the USB cable while writing.",
     install: "Install", other: "日本語",
     manual: "Back to AMB-1",
@@ -141,16 +159,33 @@ const TEXT = {
 let lang = "en";                                 /* English first; 日本語 is a click away */
 const t = (k) => TEXT[lang][k];
 let lastKey = null, lastArg = "";
+/* what went wrong goes to the alert (read at once), the rest to the status (read when the reader is free) */
+const FAIL = new Set(["nomidi", "loadfail", "stopped", "error", "denied", "notfound", "model", "lost", "noloader", "noreturn",
+                      "mismatch", "badpkg", "stockbad"]);
+function show(k, txt) {
+  $(FAIL.has(k) ? "alert" : "status").textContent = txt;
+  $(FAIL.has(k) ? "status" : "alert").textContent = "";
+}
 function applyLang() {
   document.documentElement.lang = lang;
   document.querySelectorAll("[data-t]").forEach((e) => { e.textContent = t(e.dataset.t); });
   $("lang").textContent = t("other");
-  if (lastKey) $("status").textContent = t(lastKey) + lastArg;
+  $("lang").lang = lang === "ja" ? "en" : "ja";
+  if (lastKey) show(lastKey, t(lastKey) + lastArg);
 }
 $("lang").addEventListener("click", () => { lang = lang === "ja" ? "en" : "ja"; applyLang(); });
 applyLang();
-const sayK = (k, arg = "") => { lastKey = k; lastArg = arg; $("status").textContent = t(k) + arg; };
-const say = (txt) => { lastKey = null; $("status").textContent = txt; };
+const sayK = (k, arg = "") => { lastKey = k; lastArg = arg; show(k, t(k) + arg); };
+/* progress in words: "Writing, 40 percent", at most every 2 s or every 10 percent (the bar moves smoothly) */
+let lastPct = -100, lastAt = 0;
+function progress(k, pct) {
+  pct = Math.round(pct);
+  $("bar").value = pct;
+  const now = performance.now();
+  if (k === lastKey && pct < 100 && pct - lastPct < 10 && now - lastAt < 2000) return;
+  lastPct = pct; lastAt = now;
+  sayK(k, (lang === "ja" ? " " : ", ") + pct + t("percent"));
+}
 const log = (t) => { $("log").textContent += t + "\n"; };
 let image = null;
 const meta = /*META*/;
@@ -166,7 +201,7 @@ window.addEventListener("beforeunload", (e) => { if (writing) { e.preventDefault
     const pkg = new Uint8Array(await r.arrayBuffer());
     if (productOf(pkg) !== meta.product) { sayK("badpkg"); return; }
     image = logicalImage(pkg);
-    say(`AMB-1 ${meta.version}`);
+    sayK("ready", meta.version);
     $("go").disabled = false;
   } catch (e) { sayK("loadfail", e.message); }
 })();
@@ -202,9 +237,9 @@ async function run(img, product, isStock) {
     const step = (k, a) => {
       log(`${k} ${a ?? ""}`);
       if (k === "start") sayK("start");
-      if (k === "verify") { sayK("verify"); $("bar").value = (a / total) * 100; }
+      if (k === "verify") progress("verify", (a / total) * 100);
       if (k === "loader") sayK("loader");
-      if (k === "write") { sayK("write"); $("bar").value = ((74 + a) / total) * 100; }
+      if (k === "write") progress("write", ((74 + a) / total) * 100);
       if (k === "reboot") sayK("reboot");
       if (k === "done") { $("bar").value = 100; sayK(isStock ? "stockdone" : "done"); }
     };

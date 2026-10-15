@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // AMB-1 in an AudioWorklet: amb.wasm is the whole FM-1 app (web/emu/amb_web.c). Each render
 // quantum asks it for 128 frames, which runs the device's clock forward; between quanta the page's
-// input goes in and, about 30 times a second, the screen, the lights and any saved objects go out.
+// input goes in and, about 30 times a second, the screen, the lights, any saved objects and what the
+// screen reader was told (fm1-reader's SysEx frames, from announce.c) go out. While the page's reader is
+// on, the HELLO that keeps the firmware talking is sent from here, every 2 s of audio time, so a page in
+// a background tab (its timers slowed) does not lose it.
+const RD_HELLO = [0x7d, 0x53, 0x52, 1, 1], RD_BYE = [0x7d, 0x53, 0x52, 2], RD_WHERE = [0x7d, 0x53, 0x52, 3];
 
 const clock = globalThis.performance ? () => globalThis.performance.now() : () => Date.now();
 
@@ -15,6 +19,8 @@ class Amb extends AudioWorkletProcessor {
     this.lastFrame = 0;
     this.busy = 0;
     this.frames = 0;
+    this.reader = false;
+    this.lastHello = 0;
     this.port.onmessage = (e) => this.onMessage(e.data);
   }
 
@@ -55,7 +61,19 @@ class Amb extends AudioWorkletProcessor {
       this.ex.web_enc(m.role, m.n | 0);
     } else if (m.type === "master") {
       this.ex.web_master(m.value | 0);
+    } else if (m.type === "reader") {               // the screen reader on (HELLO now, then every 2 s) or off (BYE)
+      this.reader = !!m.on;
+      this.sysex(this.reader ? RD_HELLO : RD_BYE);
+      this.lastHello = currentTime;
+    } else if (m.type === "where") {                // say the whole screen
+      if (this.reader) this.sysex(RD_WHERE);
     }
+  }
+
+  sysex(bytes) {                                    // a frame to the firmware: the bytes between F0 and F7
+    const ex = this.ex;
+    new Uint8Array(this.mem.buffer, ex.web_sysex_buf(), bytes.length).set(bytes);
+    ex.web_sysex(bytes.length);
   }
 
   publish() {
@@ -71,6 +89,11 @@ class Amb extends AudioWorkletProcessor {
       this.sentBlits = blits;
       msg.fb = new Uint16Array(this.mem.buffer, ex.web_fb(), 240 * 240).slice();
       transfer.push(msg.fb.buffer);
+    }
+    const said = ex.web_said_len();
+    if (said) {
+      msg.said = new Uint8Array(this.mem.buffer, ex.web_said_buf(), said).slice();
+      ex.web_said_clear();
     }
     const writes = ex.web_store_writes();
     if (writes !== this.sentWrites) {
@@ -94,6 +117,10 @@ class Amb extends AudioWorkletProcessor {
     this.frames += n;
     out[0].set(new Float32Array(this.mem.buffer, this.ex.web_out_l(), n));
     if (out[1]) out[1].set(new Float32Array(this.mem.buffer, this.ex.web_out_r(), n));
+    if (this.reader && currentTime - this.lastHello >= 2) {
+      this.lastHello = currentTime;
+      this.sysex(RD_HELLO);
+    }
     if (currentTime - this.lastFrame >= 1 / 30) {
       this.lastFrame = currentTime;
       this.publish();

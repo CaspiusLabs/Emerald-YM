@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#f6eeb5">
-<title>AMB-1</title>
+<title>AMB-1 · A generative ambient garden</title>
 <meta name="description" content="AMB-1: a generative ambient garden.">
 <style>
 /* the colours of Ambient 1: Music for Airports (1978): the map's paper, its greens, its rivers, the ink */
@@ -46,10 +46,14 @@ td.v { width: 4.5em; text-align: right; font-variant-numeric: tabular-nums; }
 #scale button.root { outline: 2px solid var(--river-2); outline-offset: -3px; }
 #go { font-size: 17px; padding: 4px 18px; background: var(--river); }
 #foot { margin-top: 16px; font-size: 13px; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+#scale button.root:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 </style>
 </head>
 <body>
 <div id="page">
+<main>
 <h1>AMB-1</h1>
 <p id="sub">A generative ambient garden</p>
 <hr>
@@ -64,21 +68,26 @@ td.v { width: 4.5em; text-align: right; font-variant-numeric: tabular-nums; }
   <button id="freeze" aria-pressed="false">Freeze</button>
   <button id="next">Next chord</button>
   <label for="colour">Pad</label> <select id="colour"><option value="0">Rhodes</option><option value="1">Voices</option></select>
-  <span>Bells <button id="octDn" aria-label="Bells down">&minus;</button> <span id="octVal">0</span> <button id="octUp" aria-label="Bells up">+</button></span>
+  <span role="group" aria-labelledby="octName">
+    <span id="octName">Bells octave</span> <button id="octDn" aria-label="Bells an octave down">&minus;</button>
+    <span id="octVal">0</span> <button id="octUp" aria-label="Bells an octave up">+</button></span>
 </div>
 
 <div id="wrap">
   <div id="left">
-    <canvas id="ring" aria-label="The scale as a ring of twelve notes, the bell loops around it, the pulse below. Click a note to add it to the scale or take it out."></canvas>
-    <p id="msg"></p>
+    <canvas id="ring" role="img" aria-label="The garden: the scale as a ring of twelve notes, the bell loops around it, the pulse below."></canvas>
+    <p id="msg" role="status"></p>
   </div>
   <div id="right"></div>
 </div>
 
+<!-- what changes by itself (the chord, the piece, growing or resting), for a screen reader: polite, a few words -->
+<div id="announce" class="sr" aria-live="polite" aria-atomic="true"></div>
+</main>
 <hr>
-<p id="foot">Click a note on the ring to add it to the scale or take it out. Each piece keeps its settings in this browser.
+<footer id="foot">Click a note on the ring, or its button under Key, to add it to the scale or take it out. Each piece keeps its settings in this browser.
   <button id="reset">Reset this piece</button> <label><input type="checkbox" id="awake"> Keep screen on</label><br>
-  After Brian Eno, <i>Ambient 1: Music for Airports</i> (1978). The same engine runs on the M-VAVE FM-1.</p>
+  After Brian Eno, <i>Ambient 1: Music for Airports</i> (1978). The same engine runs on the M-VAVE FM-1.</footer>
 </div>
 
 <script>
@@ -105,6 +114,24 @@ const TIP = { [P.DENSITY]: "notes per bell loop", [P.EVOLVE]: "how often things 
               [P.GLIDE]: "how slowly the bass slides to its note", [P.FIFTH]: "how often the bass leans on the fifth",
               [P.SWING]: "the off sixteenths late", [P.HATS]: "dark and long to bright and crisp" };
 const $ = (id) => document.getElementById(id);
+// names in words, as the FM-1's screen reader says them (ui.c CHORD_Q, firmware/words.tsv)
+const SPOKEN_NOTE = { "C#": "C sharp", "Eb": "E flat", "F#": "F sharp", "Ab": "A flat", "Bb": "B flat" };
+const CHORD_Q = { "": "major", m: "minor", 7: "7", M7: "major 7", m7: "minor 7", 6: "6", m6: "minor 6", add9: "add 9",
+                  madd9: "minor add 9", aug: "augmented", dim: "diminished", dim7: "diminished 7", m7b5: "half diminished",
+                  mM7: "minor major 7", sus2: "suspended 2", sus4: "suspended 4", "7sus4": "7 suspended 4", 5: "5" };
+const MODE_WORDS = { "Mixolyd.": "Mixolydian", "Pent maj": "pentatonic major", "Pent min": "pentatonic minor" };
+const sayNote = (n) => SPOKEN_NOTE[n] || n;
+function sayChord(name) {
+  const m = /^([A-G][#b]?)(.*)$/.exec(name);
+  return m ? `${sayNote(m[1])} ${CHORD_Q[m[2]] ?? m[2]}` : name;
+}
+// the polite live region: the newest news replaces what has not been read yet; the same words twice in a row
+// are not read again by some screen readers, so the text alternates with a trailing space
+let flip = false;
+function announce(text) {
+  flip = !flip;
+  $("announce").textContent = text + (flip ? "" : " ");
+}
 
 // ------------------------------------------------------------------ the page's engine (pure questions)
 let W = null, wasmBytes = null;
@@ -196,7 +223,7 @@ async function begin() {
       node.port.onmessage = (e) => {
         const m = e.data;
         if (m.t === "ready") res();
-        else if (m.t === "state") { state = m.st; drumPat = m.pat; dirty = true; }
+        else if (m.t === "state") { state = m.st; drumPat = m.pat; moving = true; watch(); }
       };
     });
     queue = [{ t: "seed", v: (Date.now() & 0xffff) }];
@@ -210,6 +237,9 @@ async function begin() {
     go.hidden = true;
     $("play").hidden = false;
     setPlaying(true);
+    if (document.activeElement === document.body || document.activeElement === go) $("play").focus();   // Begin is gone: its place
+    heard.piece = `${pieceName(S.piece)}, ${spokenKey()}. Growing`;
+    hear();
     mediaSession();
     if (S.awake) wake(true);
     if (Math.abs(ac.sampleRate - 44100) > 1) msg(`Audio at ${ac.sampleRate} Hz: the pitch will be off.`);
@@ -233,7 +263,38 @@ function keepAlive() {
   silent.setAttribute("playsinline", "");
   silent.play().catch(() => { /* refused: plays only while the page is on screen */ });
 }
+// what is announced: the piece (on a change), growing or resting, frozen or not, and the chord each time the garden
+// moves on. Gathered for a moment and said together, so a new piece (and the chord it grows) is one message;
+// a chord is said at most every 4 s, and only once the garden has begun.
+const heard = { piece: "", news: [], chord: "", saidChord: "" };
+let hearT = 0, chordT = 0, chordAt = 0;
+function hear() {
+  clearTimeout(hearT);
+  hearT = setTimeout(() => {
+    const parts = [heard.piece, ...heard.news.slice(-3)];
+    if (heard.chord && heard.chord !== heard.saidChord) { parts.push(heard.chord); heard.saidChord = heard.chord; chordAt = performance.now(); }
+    const text = parts.filter(Boolean).join(". ");
+    heard.piece = "";
+    heard.news = [];
+    if (text) announce(text);
+  }, 900);
+}
+function tell(news) {                                       // what a button did, said with whatever else is new
+  heard.news = heard.news.filter((n) => n !== news).concat(news);
+  hear();
+}
+function watch() {
+  if (!state || !ready) return;
+  const name = cstr(W.app_chord_name(state[2], state[4], state[5], state[6], state[7]));
+  const words = sayChord(name);
+  if (words === heard.chord) return;
+  heard.chord = words;
+  $("ring").setAttribute("aria-label", `The garden: the chord ${words}, in ${spokenKey()}. The scale as a ring of twelve notes, the bell loops around it, the pulse below.`);
+  clearTimeout(chordT);                                     // at most a chord every 4 s
+  chordT = setTimeout(hear, Math.max(0, 4000 - (performance.now() - chordAt)));
+}
 function setPlaying(on) {
+  if (ready && on !== playing) { tell(on ? "Growing" : "Resting"); }
   playing = on;
   send({ t: "play", v: on ? 1 : 0 });
   $("play").textContent = on ? "Rest" : "Play";
@@ -288,8 +349,10 @@ function toggleNote(pc) {
   let n = 0;
   for (let i = 0; i < 12; i++) n += (p >> i) & 1;
   if (n < 3) return msg("Three notes at least.");
+  const focused = document.activeElement && document.activeElement.closest && document.activeElement.closest("#scale") ? pc : -1;
   setPool(p);
   refresh();
+  if (focused >= 0) $("scale").children[focused].focus();   // the table is rebuilt: the focus stays on the note
 }
 function choosePiece(i) {
   if (i !== S.piece) {
@@ -301,6 +364,8 @@ function choosePiece(i) {
   }
   mediaSession();
   refresh();
+  heard.piece = `${pieceName(S.piece)}, ${spokenKey()}`;   // said with the chord it grows, once it has settled
+  hear();
 }
 function resetPiece() {
   const r = recipe(S.piece);
@@ -315,13 +380,16 @@ function resetPiece() {
 function rangeRow(p, label) {
   const tr = document.createElement("tr");
   tr.innerHTML = `<td class="n"><label for="p${p}">${label || pname(p)}</label></td><td><input type="range" id="p${p}" min="${plo(p)}" max="${phi(p)}" step="1"></td><td class="v" id="p${p}-v"></td>`;
-  if (TIP[p]) tr.title = TIP[p];
   const input = tr.querySelector("input"), out = tr.querySelector(".v");
+  if (TIP[p]) { tr.title = TIP[p]; input.setAttribute("aria-description", TIP[p]); }
+  out.setAttribute("aria-hidden", "true");                  // the slider says its own value
   input.value = par(p);
   out.textContent = ptext(p, par(p));
+  input.setAttribute("aria-valuetext", ptext(p, par(p)));
   input.oninput = () => {
     setPar(p, +input.value);
     out.textContent = ptext(p, par(p));
+    input.setAttribute("aria-valuetext", ptext(p, par(p)));
     if (p === P.TEMPO) $("keyLine").textContent = keyLine();
   };
   return tr;
@@ -353,13 +421,15 @@ function build() {
   sel("Mode", "mode", modeName() === "Custom" ? modes.map((m, i) => (i === par(P.MODE) ? m + " (changed)" : m)) : modes, par(P.MODE),
       (m) => { setPar(P.MODE, m); setPool(W.app_mode_pool(m)); refresh(); });
   const tr = document.createElement("tr");
-  tr.innerHTML = `<td class="n">Scale</td><td colspan="2" id="scale"></td>`;
+  tr.innerHTML = `<td class="n" id="scaleName">Scale</td><td colspan="2" id="scale" role="group" aria-labelledby="scaleName"></td>`;
   const ap = poolAbs();
   for (let i = 0; i < 12; i++) {
     const b = document.createElement("button");
     b.textContent = note(i);
     b.setAttribute("aria-pressed", (ap >> i) & 1 ? "true" : "false");
-    if (i === par(P.ROOT)) b.className = "root";
+    // the name keeps the text shown (for voice control), and says a flat as a flat
+    if (sayNote(note(i)) !== note(i)) b.setAttribute("aria-label", `${note(i)} (${sayNote(note(i))})`);
+    if (i === par(P.ROOT)) { b.className = "root"; b.title = "The root"; b.setAttribute("aria-description", "The root: it stays in the scale."); }
     b.onclick = () => toggleNote(i);
     tr.lastChild.appendChild(b);
   }
@@ -369,14 +439,17 @@ function build() {
   const vr = document.createElement("tr");
   vr.innerHTML = `<td class="n"><label for="vol">Volume</label></td><td><input type="range" id="vol" min="0" max="4096" step="16"></td><td class="v"></td>`;
   const vol = vr.querySelector("input"), vout = vr.querySelector(".v");
+  const volText = () => { const t = Math.round(100 * S.gain / 4096) + "%"; vout.textContent = t; vol.setAttribute("aria-valuetext", t); };
+  vout.setAttribute("aria-hidden", "true");
   vol.value = S.gain;
-  vout.textContent = Math.round(100 * S.gain / 4096) + "%";
-  vol.oninput = () => { S.gain = +vol.value; send({ t: "gain", v: S.gain }); vout.textContent = Math.round(100 * S.gain / 4096) + "%"; save(); };
+  volText();
+  vol.oninput = () => { S.gain = +vol.value; send({ t: "gain", v: S.gain }); volText(); save(); };
   t.appendChild(vr);
   fs.appendChild(t);
   right.appendChild(fs);
 }
 const keyLine = () => `${note(par(P.ROOT))} ${modeName()}, ${par(P.TEMPO)} bpm`;
+const spokenKey = () => `${sayNote(note(par(P.ROOT)))} ${MODE_WORDS[modeName()] || modeName()}, ${par(P.TEMPO)} beats a minute`;
 function refresh() {
   const ps = $("piece");
   if (!ps.options.length)
@@ -461,8 +534,11 @@ function draw() {
     }
   }
 }
-function tick() {
-  if (dirty) { dirty = false; draw(); }
+// the playheads move with the music; with reduced motion asked for, the ring is redrawn every 2 s instead
+const calm = window.matchMedia ? matchMedia("(prefers-reduced-motion: reduce)") : { matches: false };
+let moving = false, drawnAt = 0;
+function tick(t) {
+  if (dirty || (moving && (!calm.matches || t - drawnAt >= 2000))) { dirty = moving = false; drawnAt = t; draw(); }
   requestAnimationFrame(tick);
 }
 cv.addEventListener("click", (e) => {
@@ -492,12 +568,17 @@ cv.addEventListener("click", (e) => {
     frozen = !frozen;
     send({ t: "freeze", v: frozen ? 1 : 0 });
     e.currentTarget.setAttribute("aria-pressed", frozen ? "true" : "false");
+    tell(frozen ? "Frozen: the chord holds, the reverb rings on" : "Thawed");
   };
-  $("next").onclick = () => send({ t: "next" });
+  $("next").onclick = () => {
+    send({ t: "next" });
+    if (ready) tell(playing ? "Next chord, on the bar" : "Next chord");
+  };
   $("piece").onchange = (e) => choosePiece(+e.target.value);
   $("colour").onchange = (e) => { setPar(P.PADTONE, +e.target.value); refresh(); };
-  $("octDn").onclick = () => { setPar(P.BOCT, par(P.BOCT) - 1); refresh(); };
-  $("octUp").onclick = () => { setPar(P.BOCT, par(P.BOCT) + 1); refresh(); };
+  const oct = (d) => { setPar(P.BOCT, par(P.BOCT) + d); refresh(); msg(`Bells octave ${ptext(P.BOCT, par(P.BOCT))}`); };
+  $("octDn").onclick = () => oct(-1);
+  $("octUp").onclick = () => oct(1);
   $("awake").checked = !!S.awake;
   $("awake").onchange = (e) => { S.awake = e.target.checked; wake(S.awake); save(); };
   $("reset").onclick = (e) => {
@@ -505,6 +586,7 @@ cv.addEventListener("click", (e) => {
     if (b.dataset.armed) { resetPiece(); return; }
     b.dataset.armed = "1";
     b.textContent = "Click again to reset";
+    msg(`Press again to put ${pieceName(S.piece)} back to its recipe.`);
   };
 })();
 </script>

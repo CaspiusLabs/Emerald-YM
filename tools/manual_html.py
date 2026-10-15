@@ -8,7 +8,9 @@
 add their own); the default is a complete document that opens in any browser.
 
 Handles what the manual uses: headings, paragraphs, **bold**, `code`, lists, tables, fenced
-code, rules, and the contents list (linked to the sections by number)."""
+code, rules, and the contents list (linked to the sections by number). An image is
+![what it shows](img/x.png "its caption"): the alt text says what the screen shows (for a screen
+reader), the caption what it is (for everyone); without a caption, the alt text is both."""
 import base64
 import html
 import re
@@ -24,8 +26,10 @@ CSS = """
    the screenshots (on that paper) stand out from it; the cover's paper for code and callouts. */
 :root {
   --paper: #fdf9e4; --sheet: #f6eeb5; --green-1: #d0dc92; --green-3: #9cb16f;
-  --river: #85c3c1; --river-2: #549995; --ink: #1d1b02; --muted: #4f4b25; --rule: #c2ce7f;
+  --river: #85c3c1; --river-2: #3b7470; --ink: #1d1b02; --muted: #49451f; --rule: #c2ce7f;
   color-scheme: light;
+  /* --river-2 and --muted a shade darker than the cover's, so text in them reads (4.5:1 on the paper and
+     the cards) */
 }
 body {
   background: var(--paper); color: var(--ink); margin: 0;
@@ -37,7 +41,7 @@ h1, h2, h3 { font-family: inherit; text-wrap: balance; line-height: 1.2; }
 h1 { font-size: 2.2rem; font-weight: 300; margin: 0 0 .4rem; letter-spacing: .04em; text-transform: uppercase; }
 h2 { font-size: 1.3rem; font-weight: 400; margin: 3rem 0 .8rem; padding-top: .8rem; border-top: 1px solid var(--ink);
      text-transform: uppercase; letter-spacing: .04em; }
-h2 .num { color: var(--river-2); margin-right: .5em; font-variant-numeric: tabular-nums; }
+h2 .num { color: var(--river-2); margin-right: .25em; font-variant-numeric: tabular-nums; }
 h3 { font-size: 1.1rem; font-weight: 600; margin: 2rem 0 .5rem; }
 p, li { max-width: 65ch; }
 p { margin: 0 0 1rem; }
@@ -47,7 +51,10 @@ li::marker { color: var(--river-2); }
 strong { font-weight: 600; }
 a { color: var(--ink); text-decoration-color: var(--river-2); text-decoration-thickness: 2px; text-underline-offset: 3px; }
 a:hover { background: var(--green-1); }
-a:focus-visible { outline: 2px solid var(--river-2); outline-offset: 2px; }
+a:focus-visible, summary:focus-visible, pre:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.skip { position: absolute; left: 16px; top: -100px; background: var(--sheet); border: 1px solid var(--ink); padding: 6px 12px; z-index: 1; }
+.skip:focus { top: 8px; }
+header.site { max-width: 46rem; margin-inline: auto; }
 code, pre { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .86em; }
 code { background: var(--sheet); padding: .08em .35em; border: 1px solid var(--rule); }
 pre { background: var(--sheet); border: 1px solid var(--ink); padding: 14px 16px; overflow-x: auto; line-height: 1.45; margin: 0 0 1.2rem; }
@@ -112,7 +119,8 @@ IMG_BASE = SRC / "docs"
 EMBED = False                                         # --fragment: images as data URIs
 
 
-def figure(caption, src):
+def figure(alt, src, caption=None):
+    caption = caption or alt
     path = IMG_BASE / src
     if EMBED:
         mime = "image/svg+xml" if src.endswith(".svg") else "image/png"
@@ -120,7 +128,7 @@ def figure(caption, src):
     else:
         url = src
     cls = "wide" if src.endswith(".svg") else "shot"
-    return (f'<figure class="{cls}"><img src="{url}" alt="{html.escape(caption)}" loading="lazy">'
+    return (f'<figure class="{cls}"><img src="{url}" alt="{html.escape(alt)}" loading="lazy">'
             f"<figcaption>{inline(caption)}</figcaption></figure>")
 
 
@@ -137,16 +145,18 @@ def convert(md):
             j = i + 1
             while j < len(lines) and not lines[j].startswith("```"):
                 j += 1
-            out.append("<pre><code>" + html.escape("\n".join(lines[i + 1:j]), quote=False) + "</code></pre>")
+            # it may scroll sideways on a phone: the keyboard can reach it (tabindex), and it says what it is
+            out.append('<pre tabindex="0" aria-label="Command"><code>' + html.escape("\n".join(lines[i + 1:j]), quote=False) +
+                       "</code></pre>")
             i = j + 1
             continue
         if ln.startswith("!["):                      # consecutive image lines: one row of figures
             figs = []
             while i < len(lines) and (lines[i].startswith("![") or (not lines[i].strip() and i + 1 < len(lines)
                                                                     and lines[i + 1].startswith("!["))):
-                m = re.match(r"!\[(.*)\]\((.*)\)", lines[i])
+                m = re.match(r'!\[(.*)\]\((\S+)(?:\s+"(.*)")?\)', lines[i])
                 if m:
-                    figs.append(figure(m.group(1), m.group(2)))
+                    figs.append(figure(m.group(1), m.group(2), m.group(3)))
                 i += 1
             out.append('<div class="figs">' + "".join(figs) + "</div>")
             continue
@@ -169,7 +179,7 @@ def convert(md):
         if ln.startswith("# "):                         # the title; AMB-1's own a way home (the site's root)
             t = ln[2:].strip()
             if t == NAME:                               # the site's header (home, the other pages), then the title
-                out.append('<header class="site"><a class="home" href="../">AMB-1</a><nav><a href="../emu/">Emulator</a><a href="../install/">Install</a><a href="../manual/" aria-current="page">Manual</a><a href="https://github.com/charlesvestal/fm1-amb">Source</a></nav></header>')
+                out.append('<header class="site"><a class="home" href="../">AMB-1</a><nav aria-label="AMB-1"><a href="../emu/">Emulator</a><a href="../install/">Install</a><a href="../manual/" aria-current="page">Manual</a><a href="https://github.com/charlesvestal/fm1-amb">Source</a></nav></header>')
                 out.append('<h1>Manual</h1>')
             else:
                 out.append(f'<a class="home" href="../">{NAME}</a>\n<h1>{inline(t)}</h1>')
@@ -180,7 +190,7 @@ def convert(md):
                 contents = True
                 out.append('<nav class="contents" aria-label="Contents"><h2 id="contents">Contents</h2>')
             elif m:
-                out.append(f'<h2 id="s{m.group(1)}"><span class="num">{m.group(1)}</span>{inline(m.group(2))}</h2>')
+                out.append(f'<h2 id="s{m.group(1)}"><span class="num">{m.group(1)}</span> {inline(m.group(2))}</h2>')
             else:
                 out.append(f'<h2 id="{slug(t)}">{inline(t)}</h2>')
         elif ln.startswith("### "):
@@ -241,16 +251,23 @@ def main():
     dst = Path(args[1]) if len(args) > 1 else SRC / "docs" / "manual.html"
     md = src.read_text()
     h1 = re.search(r"^# (.+)$", md, re.M)
-    title, what = (f"{NAME} Manual", "The manual") if not h1 or h1.group(1) == NAME else (f"{NAME}: {h1.group(1)}", h1.group(1))
+    title, what = (f"Manual · {NAME}", "The manual") if not h1 or h1.group(1) == NAME else (f"{NAME}: {h1.group(1)}", h1.group(1))
     body = convert(md)
+    # the site's header (if any) before <main>, and a way past it
+    header, sep, rest = body.partition("</header>\n")
+    if not sep:
+        header, rest = "", body
+    else:
+        header += sep
+    skip = '<a class="skip" href="#content">Skip to content</a>\n'
     page = (f"<title>{html.escape(title)}</title>\n"
             f'<meta name="description" content="{html.escape(what)} for {NAME}, a generative ambient firmware for the M-VAVE FM-1.">\n'
-            f"<style>{CSS}</style>\n<main>\n{body}\n</main>\n")
+            f'<style>{CSS}</style>\n{skip}{header}<main id="content">\n{rest}\n</main>\n')
     if not fragment:
-        head, _, rest = page.partition("<main>")
+        head, _, rest = page.partition("</style>\n")
         page = ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
-                '<meta name="viewport" content="width=device-width, initial-scale=1">\n' + head +
-                "</head>\n<body>\n<main>" + rest + "</body>\n</html>\n")
+                '<meta name="viewport" content="width=device-width, initial-scale=1">\n' + head + "</style>\n" +
+                "</head>\n<body>\n" + rest + "</body>\n</html>\n")
     dst.write_text(page)
     print(f"{dst}: {len(page)} bytes")
 

@@ -34,14 +34,15 @@ LANDING = """<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AMB-1</title>
+<title>AMB-1 · An ambient garden for the FM-1</title>
 <meta name="description" content="A generative ambient machine for the M-VAVE FM-1, inspired by Brian Eno's Music for Airports: breathing voices, bells on tape loops of unequal length, a slow tide.">
 <meta name="theme-color" content="#fdf9e4">
 <style>
 /* the colours of Ambient 1: Music for Airports (1978), as the manual: the page a shade lighter than the
    cover's paper, so the screenshots (on that paper) stand out; the cover's paper for the cards */
-:root { --paper: #fdf9e4; --sheet: #f6eeb5; --green-1: #d0dc92; --green-3: #9cb16f; --river: #85c3c1; --river-2: #549995;
-        --ink: #1d1b02; --muted: #4f4b25; --rule: #c2ce7f; color-scheme: light; }
+:root { --paper: #fdf9e4; --sheet: #f6eeb5; --green-1: #d0dc92; --green-3: #9cb16f; --river: #85c3c1; --river-2: #3b7470;
+        --ink: #1d1b02; --muted: #49451f; --rule: #c2ce7f; color-scheme: light; }
+/* --river-2 and --muted a shade darker than the cover's, so text in them reads (4.5:1 on the paper and the cards) */
 body { background: var(--paper); color: var(--ink); margin: 0; padding-inline: 16px; padding-block: 48px 64px;
        font: 400 17px/1.6 "Helvetica Neue", Helvetica, Arial, sans-serif; }
 main { max-width: 42rem; margin: 0 auto; }
@@ -55,7 +56,9 @@ h2 { font-size: 1.1rem; font-weight: 400; text-transform: uppercase; letter-spac
 .ways { display: grid; gap: 10px; margin: 0 0 1rem; }
 .ways a { display: block; text-decoration: none; color: var(--ink); background: var(--sheet); border: 1px solid var(--ink); padding: 12px 16px; }
 .ways a:first-child { background: var(--river); }
-.ways a:hover, .ways a:focus-visible { background: var(--green-1); outline: none; }
+.ways a:hover, .ways a:focus-visible { background: var(--green-1); }
+.ways a:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .ways strong { font-weight: 400; font-size: 1.15rem; text-transform: uppercase; letter-spacing: .05em; display: block; }
 .ways span { color: var(--muted); font-size: .95rem; }
 .ways em.v { font-style: normal; text-transform: none; letter-spacing: 0; }
