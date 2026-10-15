@@ -77,9 +77,32 @@ static struct {
     uint32_t sig[3];                   /* what each band shows: redrawn when it changes */
 } ui;
 
-static void say(const char *a, const char *b)
+/* the screen reader (announce.c; speak() below): a message went to it this frame, so speak() leaves what it
+ * changed be; and the transport as last said (PLAY says its own: the engine takes it a block later) */
+static uint8_t sp_said;
+static struct {
+    uint8_t playing;
+    uint32_t play_t;                   /* when PLAY (or the start) set it: the engine catches up within ms */
+} sp_tp;
+static void sp_piece(void);
+static void msg_text(const char *a, const char *b, char *t)   /* the message as a reader gets it: "a b" */
+{
+    uint32_t i, k = 0;
+    for (i = 0; i < 23u && a && a[i]; i++)
+        t[k++] = a[i];
+    if (b && b[0])
+        t[k++] = ' ';
+    for (i = 0; i < 23u && b && b[i]; i++)
+        t[k++] = b[i];
+    while (k && t[k - 1] == '.')               /* "UPDATE MODE IN 3..": the dots are for the eye */
+        k--;
+    t[k] = 0;
+}
+/* a message for a moment in the header; flags: how a screen reader gets it (0: the caller tells it) */
+static void say_as(const char *a, const char *b, uint32_t flags)
 {
     uint32_t i;
+    char t[48];
     for (i = 0; i < 23u && a && a[i]; i++)
         ui.msg[0][i] = a[i];
     ui.msg[0][i] = 0;
@@ -87,7 +110,15 @@ static void say(const char *a, const char *b)
         ui.msg[1][i] = b[i];
     ui.msg[1][i] = 0;
     ui.msg_until = plat_ms() + 1300u;
+    if (flags && ann_on()) {
+        msg_text(a, b, t);
+        ann_say(t, 0, flags);
+        sp_said = 1;
+    }
 }
+static void say(const char *a, const char *b) { say_as(a, b, ANN_NOW); }
+/* something did not happen: a screen reader says it whole (what follows does not cut it off) */
+static void warn(const char *a, const char *b) { say_as(a, b, ANN_NOW | ANN_KEEP); }
 void ui_say(const char *a, const char *b) { say(a, b); }
 
 static void itoa_u(uint32_t v, char *b)
@@ -224,11 +255,11 @@ static void toggle_note(int pc)                 /* a key: its note in or out of 
     int rel = (pc - proj.par[P_ROOT] + 12) % 12;
     uint32_t p = proj.pool ^ (1u << rel);
     if (rel == 0) {
-        say("THE ROOT STAYS", "(SETUP)");
+        warn("THE ROOT STAYS", "(SETUP)");
         return;
     }
     if (pool_count(p) < 3) {
-        say("3 NOTES", "AT LEAST");
+        warn("3 NOTES", "AT LEAST");
         return;
     }
     proj.pool = (uint16_t)p;
@@ -254,7 +285,8 @@ static void set_piece(int i)                    /* the piece playing kept as it 
     project_apply();
     en_seed(plat_ms());
     en_regrow();
-    say("PIECE", piece_name(proj.piece));
+    say_as("PIECE", piece_name(proj.piece), 0);
+    sp_piece();                                  /* a screen reader: the piece with its key and tempo */
     mark_dirty();
 }
 
@@ -279,6 +311,8 @@ static void button(int b)
         say("NEXT CHORD", en_playing ? "ON THE BAR" : 0);
         break;
     case B_PLAY:
+        sp_tp.playing = !en_playing;
+        sp_tp.play_t = plat_ms();
         if (en_playing) {
             en_play(0);
             say("RESTING", 0);
@@ -305,7 +339,7 @@ static void button(int b)
             ui.dirty = 0;
             say("SAVED", 0);
         } else {
-            say("NOT SAVED", "FLASH ERROR");
+            warn("NOT SAVED", "FLASH ERROR");
         }
         break;
     default: break;
@@ -664,6 +698,15 @@ static void polar(int32_t cx, int32_t cy, float r, int i, int n, int32_t *x, int
     *y = cy - (int32_t)(sy + (sy < 0.0f ? -0.5f : 0.5f));
 }
 
+static const char *chord_now(char *nm)          /* the chord's name, as the garden shows it ("Em7") */
+{
+    int pcs[EN_NPAD + 1], k;
+    pcs[0] = en_chord_root;
+    for (k = 0; k < EN_NPAD; k++)
+        pcs[k + 1] = en_chord[k] % 12;
+    return en_chord_name(pcs, EN_NPAD + 1, nm);
+}
+
 static void draw_ring(void)
 {
     uint32_t abs_pool = pool_abs(), chord = 0;
@@ -701,11 +744,7 @@ static void draw_ring(void)
     }
     {   /* the chord's name, in the middle */
         char nm[16];
-        int pcs[EN_NPAD + 1], k;
-        pcs[0] = en_chord_root;
-        for (k = 0; k < EN_NPAD; k++)
-            pcs[k + 1] = en_chord[k] % 12;
-        en_chord_name(pcs, EN_NPAD + 1, nm);
+        chord_now(nm);
         if (text_w(&FONT_B, nm) <= 38)
             text_c(CX, CY - 8, &FONT_B, nm, en_frozen ? K_FROST : K_TEXT);
         else
@@ -759,7 +798,8 @@ static void draw_pulse(void)                     /* right: the three Euclidean r
     }
 }
 
-/* a button's card (help_tick): its name, then what it does, in the garden's place */
+/* a button's card (help_tick): its name, then what it does, in the garden's place. A line starting with a
+ * space goes on from the one before (a screen reader joins them: sp_line) */
 #define HELP_LINES 4
 static const char *const BTN_LABEL[NB] = {"FX", "SEL", "ENV", "LFO", "EDIT", "GLO", "HOME", "SAVE", "ARP", "SEQ",
                                           "PLAY", "REC", "OCT-", "OCT+"};
@@ -776,10 +816,10 @@ static int help_lines(int b, const char *l[HELP_LINES])
     case B_FX: L("THE SPACE"); L("ECHO, ECHO TIME, REVERB,"); L("SIZE"); break;
     case B_GLO: L("SETUP"); L("ROOT, TUNE, MIDI OUT, LIGHTS"); break;
     case B_EDIT: L("THE NEXT CHORD,"); L("ON THE NEXT BAR"); break;
-    case B_REC: L("FREEZE: THE CHORD HOLDS"); L("AND THE REVERB RINGS ON"); L("AGAIN: THAW"); break;
+    case B_REC: L("FREEZE: THE CHORD HOLDS"); L(" AND THE REVERB RINGS ON"); L("AGAIN: THAW"); break;
     case B_OCTDN: L("THE BELLS AN OCTAVE DOWN"); L("WITH OCT+, 5 S: UPDATE MODE"); break;
     case B_OCTUP: L("THE BELLS AN OCTAVE UP"); L("WITH OCT-, 5 S: UPDATE MODE"); break;
-    case B_SAVE: L("SAVES ALL EIGHT PIECES"); L("KEEP HOLDING: THE PIECE"); L("BACK TO ITS RECIPE"); break;
+    case B_SAVE: L("SAVES ALL EIGHT PIECES"); L("KEEP HOLDING: THE PIECE"); L(" BACK TO ITS RECIPE"); break;
     default: break;
     }
 #undef L
@@ -795,7 +835,7 @@ static void draw_help(void)
     cv_rect(16, 34, 208, 6, K_TEXT);
     text_c(120, 18, &FONT_B, BTN_LABEL[ui.help - 1], K_BG);
     for (k = 0; k < n; k++)
-        text_c(120, 56 + k * 20, &FONT_S, l[k], K_TEXT);
+        text_c(120, 56 + k * 20, &FONT_S, l[k] + (l[k][0] == ' '), K_TEXT);
 }
 
 static void draw_main(void)
@@ -929,6 +969,432 @@ static void autosave(void)
     }
 }
 
+/* ------------------------------------------------------ screen reader --- */
+/* The screen as text for a screen reader on the computer (announce.c; fm1-reader): a page once it settles,
+ * with its knobs; a knob's value as it turns; a help card as it comes up; the chord as it moves (queued: the
+ * garden moves it by itself, every 20 s at the quickest); growing and resting from MIDI, and a MIDI clock
+ * arriving or going; what a button did (say). WHERE (the reader asks, or it has just started listening) is
+ * the whole screen in two: the page, its knobs and the header, then the garden (the chord, the scale).
+ * Nothing is built while no reader listens. */
+static struct {
+    uint8_t view, help, ext, started;
+    int16_t val[4];
+    uint32_t chord;                            /* the chord's name, hashed */
+} sp;
+static char sp_buf[ANN_MAX + 1];
+static uint32_t sp_n;
+/* the chord names (en_chord_name's, after the root) in words: "m" and "M7" differ only in capitals, which
+ * the words file ignores */
+static const char *const CHORD_Q[][2] = {
+    {"", "major"}, {"m", "minor"}, {"7", "7"}, {"M7", "major 7"}, {"m7", "minor 7"}, {"6", "6"},
+    {"m6", "minor 6"}, {"add9", "add 9"}, {"madd9", "minor add 9"}, {"aug", "augmented"}, {"dim", "diminished"},
+    {"dim7", "diminished 7"}, {"m7b5", "half diminished"}, {"mM7", "minor major 7"}, {"sus2", "suspended 2"},
+    {"sus4", "suspended 4"}, {"7sus4", "7 suspended 4"}, {"5", "5"},
+};
+#define NCHORD_Q (sizeof CHORD_Q / sizeof CHORD_Q[0])
+
+static void sp_cat(const char *s)
+{
+    while (*s && sp_n < ANN_MAX)
+        sp_buf[sp_n++] = *s++;
+    sp_buf[sp_n] = 0;
+}
+static void sp_int(uint32_t v)
+{
+    char t[12];
+    itoa_u(v, t);
+    sp_cat(t);
+}
+static int sp_same(const char *a, const char *b)
+{
+    while (*a && *a == *b)
+        a++, b++;
+    return *a == *b;
+}
+
+/* a value as it is said: Drift in minutes and seconds (the screen's "1:05", "45s"), the rest as shown */
+static void sp_value(int k)
+{
+    char t[16];
+    knob_text(k, t);
+    if (k == P_DRIFT) {
+        uint32_t m = 0, s = 0, i;
+        for (i = 0; t[i] >= '0' && t[i] <= '9'; i++)
+            s = s * 10u + (uint32_t)(t[i] - '0');
+        if (t[i] == ':') {
+            m = s;
+            s = 0;
+            for (i++; t[i] >= '0' && t[i] <= '9'; i++)
+                s = s * 10u + (uint32_t)(t[i] - '0');
+        }
+        if (m) {
+            sp_int(m);
+            sp_cat(m == 1u ? " minute" : " minutes");
+            if (!s)
+                return;
+            sp_cat(" ");
+        }
+        sp_int(s);
+        sp_cat(s == 1u ? " second" : " seconds");
+        return;
+    }
+    sp_cat(t);
+}
+static void sp_knob(int view, int i)           /* "Swell 60": the name the page gives it, then its value */
+{
+    sp_cat(KNOB_LABEL[view][i]);
+    sp_cat(" ");
+    sp_value(VIEW_KNOB[view][i]);
+}
+
+static void sp_chord_q(int root, const char *q)   /* "E minor 7" */
+{
+    uint32_t i;
+    sp_cat(EN_NOTE_NAME[root % 12]);
+    sp_cat(" ");
+    for (i = 0; i < NCHORD_Q; i++)
+        if (sp_same(q, CHORD_Q[i][0])) {
+            sp_cat(CHORD_Q[i][1]);
+            return;
+        }
+    sp_cat(q);
+}
+static void sp_chord(void)                     /* the chord in the middle of the garden */
+{
+    char nm[16];
+    const char *q = chord_now(nm), *r = EN_NOTE_NAME[en_chord_root % 12u];
+    while (*r && *q == *r)
+        q++, r++;
+    sp_chord_q(en_chord_root % 12u, q);
+}
+
+/* the page: its name and its knobs; all: the header too (the piece, its key, the tempo, growing or resting) */
+static void sp_page(int all)
+{
+    int i;
+    sp_n = 0;
+    sp_buf[0] = 0;
+    sp_cat(VIEW_NAME[ui.view]);
+    sp_cat(" page");
+    for (i = 0; i < 4; i++) {
+        sp_cat(i ? ", " : ": ");
+        sp_knob(ui.view, i);
+    }
+    if (!all)
+        return;
+    sp_cat(". Piece ");
+    sp_cat(piece_name(proj.piece));
+    sp_cat(", ");
+    sp_cat(EN_NOTE_NAME[proj.par[P_ROOT]]);
+    sp_cat(" ");
+    sp_cat(mode_name());
+    if (en_ext) {
+        sp_cat(", tempo EXT");
+    } else if (ui.view != V_GARDEN) {          /* (the Garden's first knob says it) */
+        sp_cat(", tempo ");
+        sp_int((uint32_t)proj.par[P_TEMPO]);
+    }
+    sp_cat(sp_tp.playing ? ", growing" : ", resting");
+    if (ui.dirty)
+        sp_cat(", not saved yet");
+    if (ui.view == V_SETUP) {
+        sp_cat(". CPU ");
+        sp_int(plat_cpu_pct());
+        sp_cat("%");
+    }
+}
+
+/* the garden: the chord and how far to the next, the scale from the root up ("F and F sharp": one letter's
+ * two notes joined, so they are heard as two), the pulse sitting out */
+static void sp_garden(void)
+{
+    uint32_t ap = pool_abs();
+    int i, last = -1;
+    sp_n = 0;
+    sp_buf[0] = 0;
+    sp_cat("Chord ");
+    sp_chord();
+    if (en_frozen) {
+        sp_cat(", frozen");
+    } else {
+        sp_cat(", next chord ");
+        sp_int((uint32_t)(fm_clampf(en_drift, 0.0f, 1.0f) * 100.0f + 0.5f));
+        sp_cat("% of the way");
+    }
+    sp_cat(". Scale");
+    for (i = 0; i < 12; i++) {
+        int pc = (proj.par[P_ROOT] + i) % 12;
+        if (ap >> pc & 1u) {
+            sp_cat(last < 0 ? " " : EN_NOTE_NAME[last][0] == EN_NOTE_NAME[pc][0] ? " and " : ", ");
+            sp_cat(EN_NOTE_NAME[pc]);
+            last = pc;
+        }
+    }
+    if (en_pulse_rest && proj.par[P_PULSE])
+        sp_cat(". Pulse resting");
+}
+
+/* a help card: its button, then its lines ("ENV button. THE PAD. LEVEL, SWELL, BRIGHT, COLOUR") */
+static void sp_line(const char *s)
+{
+    char p = sp_n ? sp_buf[sp_n - 1] : 0;
+    if (*s == ' ')                             /* it goes on from the line before */
+        s++;
+    else if (p != ',' && p != ':')
+        sp_cat(".");
+    sp_cat(" ");
+    sp_cat(s);
+}
+static void sp_help(void)
+{
+    const char *l[HELP_LINES];
+    int n = help_lines(ui.help - 1, l), k;
+    sp_n = 0;
+    sp_buf[0] = 0;
+    sp_cat(BTN_LABEL[ui.help - 1]);
+    sp_cat(" button");
+    for (k = 0; k < n; k++)
+        sp_line(l[k]);
+}
+
+static void sp_piece_text(void)                /* "PIECE Departures, C# Ionian, tempo 60" */
+{
+    sp_n = 0;
+    sp_buf[0] = 0;
+    sp_cat("PIECE ");
+    sp_cat(piece_name(proj.piece));
+    sp_cat(", ");
+    sp_cat(EN_NOTE_NAME[proj.par[P_ROOT]]);
+    sp_cat(" ");
+    sp_cat(mode_name());
+    sp_cat(", tempo ");
+    sp_int((uint32_t)proj.par[P_TEMPO]);
+}
+static void sp_piece(void)
+{
+    if (!ann_on())
+        return;
+    sp_piece_text();
+    ann_say(sp_buf, 0, ANN_NOW);
+    sp_said = 1;
+}
+
+static uint32_t sp_chord_sig(void)
+{
+    char nm[16];
+    const char *s = chord_now(nm);
+    uint32_t h = 2166136261u;
+    while (*s)
+        h = hash(h, (uint8_t)*s++);
+    return h;
+}
+static void sp_snap(void)
+{
+    int i;
+    for (i = 0; i < 4; i++)
+        sp.val[i] = (int16_t)knob_get(VIEW_KNOB[ui.view][i]);
+    sp.view = ui.view;
+    sp.help = ui.help;
+    sp.ext = en_ext;
+    sp.chord = sp_chord_sig();
+}
+
+static void speak(void)
+{
+    uint32_t now = plat_ms(), c;
+    int where = ann_where(), i, changed = -1;
+    if (!ann_on()) {
+        sp.started = 0;
+        sp_said = 0;
+        return;
+    }
+    if (!sp.started || where) {                       /* everything on the screen, in two */
+        sp.started = 1;
+        sp_snap();
+        if (ui.help) {
+            sp_help();
+            ann_say(sp_buf, 0, ANN_NOW);
+            sp_page(1);
+        } else {
+            sp_page(1);
+            ann_say(sp_buf, 0, ANN_NOW);
+            sp_garden();
+        }
+        ann_say(sp_buf, 0, 0);
+        sp_said = 0;
+        return;
+    }
+    if (sp_said) {                                    /* a button said what it did (and what it changed) */
+        sp_said = 0;
+        sp_snap();
+        return;
+    }
+    if (en_playing != sp_tp.playing && now - sp_tp.play_t > 150u) {   /* MIDI start / stop */
+        sp_tp.playing = en_playing;
+        ann_say(en_playing ? "GROWING" : "RESTING", 0, 0);
+    }
+    if (en_ext != sp.ext) {                           /* a MIDI clock arrived, or stopped */
+        sp.ext = en_ext;
+        sp_n = 0;
+        sp_cat("Tempo ");
+        if (en_ext)
+            sp_cat("EXT");
+        else
+            sp_int((uint32_t)proj.par[P_TEMPO]);
+        ann_say(sp_buf, 0, 0);
+    }
+    if (ui.help != sp.help) {                         /* a help card: at once */
+        sp.help = ui.help;
+        if (ui.help) {
+            sp_help();
+            ann_say(sp_buf, 0, ANN_NOW);
+            return;
+        }
+    }
+    if (ui.view != sp.view) {                         /* a new page: said when it settles */
+        sp_snap();
+        sp_page(0);
+        ann_later(sp_buf, ANN_NOW, 200u, now);
+        return;
+    }
+    for (i = 0; i < 4; i++) {                         /* a knob turning */
+        int v = knob_get(VIEW_KNOB[ui.view][i]);
+        if (v != sp.val[i]) {
+            sp.val[i] = (int16_t)v;
+            if (changed < 0)
+                changed = i;
+        }
+    }
+    if (changed >= 0) {
+        sp_n = 0;
+        sp_knob(ui.view, changed);
+        ann_later(sp_buf, ANN_NOW, 120u, now);
+    }
+    c = sp_chord_sig();
+    if (c != sp.chord) {                              /* the chord moved: queued, after what is being said */
+        sp.chord = c;
+        sp_n = 0;
+        sp_cat("Chord ");
+        sp_chord();
+        ann_say(sp_buf, 0, 0);
+    }
+}
+
+#ifdef EN_HOST
+/* every page, knob value, help card, chord and message as a screen reader gets them (the "speakdump"
+ * command): KIND <tab> the text sent (fm1-reader/tools/audit.mjs puts it in words with web/words/ and checks it) */
+static void sp_print(const char *kind, const char *t) { printf("%s\t%s\n", kind, t); }
+static void speak_dump(void)
+{
+    static const char *const MSG[][2] = {{"UPDATE MODE IN", "3.."}, {"UPDATE MODE", "CANCELLED"},
+                                         {"NEXT CHORD", "ON THE BAR"}, {"NEXT CHORD", 0}, {"RESTING", 0},
+                                         {"GROWING", 0}, {"FREEZE", "ON"}, {"FREEZE", "OFF"}, {"SAVED", 0}};
+    static const char *const WARN[][2] = {{"THE ROOT STAYS", "(SETUP)"}, {"3 NOTES", "AT LEAST"},
+                                          {"NOT SAVED", "FLASH ERROR"}};
+    project_t keep = proj;
+    uint8_t keep_view = ui.view, keep_help = ui.help, keep_dirty = ui.dirty, keep_play = sp_tp.playing;
+    uint8_t keep_ext = en_ext, keep_frozen = en_frozen, keep_rest = en_pulse_rest;
+    int v, i, x, lo, hi;
+    char t[48];
+    for (v = 0; v < NVIEWS; v++) {
+        ui.view = (uint8_t)v;
+        sp_page(0);
+        sp_print("SCREEN", sp_buf);
+        for (i = 0; i < 4; i++) {
+            int k = VIEW_KNOB[v][i];
+            knob_range(k, &lo, &hi);
+            for (x = lo; x <= hi; x++) {
+                if (k < P_NPARAMS)
+                    proj.par[k] = (int16_t)x;
+                else
+                    proj.leds = (uint8_t)x;
+                sp_n = 0;
+                sp_knob(v, i);
+                sp_print("KNOB", sp_buf);
+            }
+            proj = keep;
+        }
+    }
+    for (x = 0; x < 8; x++) {                         /* WHERE: growing, resting, unsaved, a clock, frozen, custom */
+        ui.view = (uint8_t)(x * 3 % NVIEWS);
+        sp_tp.playing = (uint8_t)(x & 1);
+        ui.dirty = (uint8_t)(x >> 1 & 1);
+        en_ext = (uint8_t)(x == 3);
+        en_frozen = (uint8_t)(x == 5);
+        en_pulse_rest = (uint8_t)(x == 2);
+        proj.pool = x == 6 ? 0xFFFu : x == 7 ? 0x91u : keep.pool;
+        proj.par[P_ROOT] = (int16_t)(x * 5 % 12);
+        sp_page(1);
+        sp_print("WHERE", sp_buf);
+        sp_garden();
+        sp_print("WHERE", sp_buf);
+    }
+    proj = keep;
+    ui.dirty = keep_dirty;
+    sp_tp.playing = keep_play;
+    en_ext = keep_ext;
+    en_frozen = keep_frozen;
+    en_pulse_rest = keep_rest;
+    ui.view = keep_view;
+    for (i = 0; i < NB; i++) {
+        const char *l[HELP_LINES];
+        if (!help_lines(i, l))
+            continue;
+        ui.help = (uint8_t)(i + 1);
+        sp_help();
+        sp_print("HELP", sp_buf);
+    }
+    ui.help = keep_help;
+    for (x = 0; x < 12; x++)
+        for (i = 0; i < (int)NCHORD_Q; i++) {
+            sp_n = 0;
+            sp_cat("Chord ");
+            sp_chord_q(x, CHORD_Q[i][0]);
+            sp_print("CHORD", sp_buf);
+        }
+    for (i = 0; i < (int)(sizeof MSG / sizeof MSG[0]); i++) {
+        msg_text(MSG[i][0], MSG[i][1], t);
+        sp_print("MSG", t);
+    }
+    for (i = 0; i < (int)(sizeof WARN / sizeof WARN[0]); i++) {
+        msg_text(WARN[i][0], WARN[i][1], t);
+        sp_print("WARN", t);
+    }
+    for (x = 0; x < 12; x++) {
+        msg_text("ADDED", EN_NOTE_NAME[x], t);
+        sp_print("MSG", t);
+        msg_text("REMOVED", EN_NOTE_NAME[x], t);
+        sp_print("MSG", t);
+    }
+    for (x = 0; x < EN_NMODES; x++) {
+        msg_text("MODE", EN_MODE_NAME[x], t);
+        sp_print("MSG", t);
+    }
+    for (x = -2; x <= 2; x++) {
+        char o[8];
+        en_param_text(P_BOCT, x, o);
+        msg_text("BELL OCTAVE", o, t);
+        sp_print("MSG", t);
+    }
+    for (x = 30; x <= 120; x += 45) {
+        char o[8];
+        itoa_u((uint32_t)x, o);
+        msg_text("TEMPO", o, t);
+        sp_print("MSG", t);
+    }
+    for (x = 0; x < NPIECES; x++) {
+        project_piece(x);
+        sp_piece_text();
+        sp_print("MSG", sp_buf);
+        msg_text("RESET", piece_name(x), t);
+        sp_print("MSG", t);
+    }
+    proj = keep;
+    sp_print("MSG", "Tempo EXT");
+    sp_print("MSG", "Tempo 72");
+}
+#endif
+
 void ui_init(void)
 {
     memset(&ui, 0, sizeof ui);
@@ -936,6 +1402,8 @@ void ui_init(void)
     lcd_fill(0, 0, 240, 240, K_BG);
     if (!en_playing)
         en_play(1);                              /* it grows from the start */
+    sp_tp.playing = 1;
+    sp_tp.play_t = plat_ms();
 }
 
 void ui_frame(void)
@@ -946,6 +1414,8 @@ void ui_frame(void)
     draw_main();
     draw_knobs();
     leds();
+    speak();
+    ann_tick(plat_ms());
     ui.frame++;
 }
 

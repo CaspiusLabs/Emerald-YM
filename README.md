@@ -31,6 +31,10 @@ installer can reach.
 
 Hold any button for a second and a card says what it does.
 
+AMB-1 also tells the [FM-1 Screen Reader](https://charlesvestal.github.io/fm1-reader/) what its screen
+shows, over USB: the page and its knobs, a knob's value as it turns, the piece, the chord as it moves,
+and what each button did.
+
 The [manual](https://charlesvestal.github.io/fm1-amb/manual/) has the rest.
 
 ## Building and testing

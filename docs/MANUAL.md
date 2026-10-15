@@ -283,6 +283,18 @@ MIDI comes in over USB and the TRS jack, and goes out over USB.
   and clock with start / stop when AMB-1 runs on its own tempo. Turning MIDI out off sends all
   notes off.
 
+### Screen reader
+
+AMB-1 can tell a screen reader what its screen shows. Connect the FM-1 by USB, open the
+[FM-1 Screen Reader](https://charlesvestal.github.io/fm1-reader/) in Chrome or Edge, and click
+Connect. It reads out the page you're on and its knobs, a knob's value as you turn it, the piece
+and its key, the notes you add or take out, help cards, every message, and the chord each time
+the garden moves on, in words: "E flat pentatonic minor", not "Eb Pent min".
+
+The page can speak with its own voice or pass everything to your own screen reader (VoiceOver,
+NVDA, JAWS, TalkBack). Press W to hear the whole screen again: the page, the piece, the chord and
+the scale. The FM-1 says nothing until the page connects, so a DAW on the same cable never sees it.
+
 ---
 
 ## 9. Saving

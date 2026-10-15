@@ -1,0 +1,115 @@
+# the screen reader (fm1-reader, announce.c): a reader listens, and each page, knob, help card, button and
+# chord change is said once, in the screen's own text (the words file says it in full)
+wait 200
+listen
+wait 100
+said Garden page: Tempo 72, Evolve 35, Motion 50, Drift 39 seconds. Piece Garden, D Dorian, growing
+# (the garden follows, queued: the chord, how far to the next, the scale from the root up)
+listen
+where
+said Scale D, E, F, G, A, B, C
+# a page settles before it is said
+tap ENV
+wait 300
+said Pad page: Level 60, Swell 60, Bright 40, Colour Rhodes
+tap GLO
+wait 300
+said Setup page: Root D, Tune 0, MIDI out On, Lights On
+# a knob: its name and value, once it settles
+spin K2 3
+wait 300
+said Tune +3
+spin K4 1
+wait 300
+said Lights Keys
+spin K4 -1
+wait 300
+# SELECT turns the pages
+turn SELECT -1
+wait 300
+said Space page: Echo 45, Echo time 1 bar, Reverb 65, Size 80
+spin K2 -1
+wait 300
+said Echo time 1/2.
+tap HOME
+wait 300
+said Garden page
+spin K4 20
+wait 300
+said Drift 1 minute 8 seconds
+# HOME + SELECT: the tempo (the Garden's first knob says it)
+press HOME
+turn SELECT 2 200
+release HOME
+wait 300
+said Tempo 74
+# the keys: a note out of the scale and back in; the root stays
+tapkey w1
+said REMOVED G
+tapkey w1
+said ADDED G
+tapkey b3
+said ADDED C#
+tapkey b3
+said REMOVED C#
+tapkey w5
+said THE ROOT STAYS (SETUP)
+# the encoders: the mode, the piece (with its key and tempo)
+turn ALGO 1
+said MODE Phrygian
+turn ALGO -1
+said MODE Dorian
+turn PRESET 1
+said PIECE Departures, C# Ionian, tempo 60
+wait 300
+said_none Level
+turn PRESET -1
+said PIECE Garden, D Dorian, tempo 74
+wait 300
+# the buttons' messages, said once
+tap REC
+said FREEZE ON
+tap REC
+said FREEZE OFF
+tap PLAY
+said RESTING
+wait 300
+said_none GROWING
+tap PLAY
+said GROWING
+wait 300
+said_none RESTING
+tap OCT+
+said BELL OCTAVE +1
+tap OCT-
+said BELL OCTAVE 0
+tap EDIT
+said NEXT CHORD ON THE BAR
+# a help card: its button, then its lines
+press SAVE
+wait 1000
+said SAVE button. SAVES ALL EIGHT PIECES. KEEP HOLDING: THE PIECE BACK TO ITS RECIPE
+release SAVE
+tap SAVE
+said SAVED
+press REC
+wait 1000
+said REC button. FREEZE: THE CHORD HOLDS AND THE REVERB RINGS ON. AGAIN: THAW
+release REC
+wait 100
+# the chord moving by itself: queued (said after what is being said)
+wait 8000
+said Chord
+# a MIDI clock arriving, and start / stop from it
+midi FA 00 00
+midi F8 00 00
+wait 20
+said Tempo EXT
+midi FC 00 00
+wait 300
+said RESTING
+wait 1000
+said Tempo 74
+# WHERE: everything again
+where
+said Garden page: Tempo 74, Evolve 35, Motion 50, Drift 1 minute 8 seconds. Piece Garden, D Dorian, resting
