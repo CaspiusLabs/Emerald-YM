@@ -117,17 +117,61 @@ measurement (renders analysed for level, timing and spectrum).
 - [ ] The basses are too alike: something punchier, from the classic FM bass patches (later).
 - [x] Brass was too like the other chord voices: now Tonewheel, a second organ.
 
-## Next: a voice page (the user's plan)
+## Next: a sound page for each layer (the user's plan)
 
-A second page for each layer's voice, to shape it beyond the presets: the FM algorithm, ratios,
-index and its envelope, feedback, the filter (type, resonance, envelope amount), attack and decay.
-- [ ] Each preset becomes the starting point; the second page edits that layer's copy, kept by the
-      piece. The table rows in `amb.c` already hold most of these values.
-- [ ] How to reach it: the layer's button pressed again (a second press: its voice page), or held
-      with ALGORITHM.
-- [ ] A small common FM core (2–4 operators, the FM-1's own algorithms as a reference) for the chord
-      and the pings, so the algorithms are a real choice.
-- [ ] Watch the CPU on the device first (the Setup page's CPU): four chord voices x 4 operators.
+Each layer gets a second page, its **sound page**, to shape its voice beyond the preset.
+
+### How it works
+
+- **Reaching it:** press the layer's button again (ENV on the Chord page: the Chord's sound page;
+  ENV again: back). The page's name shows it ("CHORD · SOUND"), and its button blinks while there.
+  SELECT's round of pages stays as it is (the sound pages are off it). ALGORITHM still picks the
+  voice, on either page.
+- **Four knobs a layer**, with the same meaning for every voice of that layer: each voice maps
+  them onto its own insides (for a saw voice, "Colour" is the detune; for an FM voice, the
+  modulation index; for the organ, the drawbars' balance).
+- **Relative to the preset:** each knob's centre (shown as 0) is the preset as it is; turning
+  moves away from it. Changing the voice with ALGORITHM keeps your turns, so a "brighter, slower"
+  chord stays brighter and slower on the next voice. A press of SAVE held (the piece's reset)
+  puts them back to 0, with the rest.
+- **Saved with the piece**, like everything else: 16 more values a piece (4 layers x 4); the
+  project grows from ~700 to ~980 bytes, under the 3840-byte limit. Project format 3.
+- **The screen**, on a sound page: the main area shows the voice's shape instead of the ripples,
+  its envelope drawn (attack, decay, the filter's own), redrawn as you turn. Later, for the FM
+  voices, the algorithm as a diagram.
+- Two values only the pieces set today get a knob here: the pings' tone and the hats' colour.
+
+### The knobs
+
+| Layer | KNOB 1 | KNOB 2 | KNOB 3 | KNOB 4 |
+|---|---|---|---|---|
+| Chord | **Attack** (a stab .. a swell) | **Colour** (detune / FM index / drawbars / noise colour) | **Resonance** (the filter's) | **Env** (how far each stab opens the filter) |
+| Pings | **Tone** (round .. metallic: the index, today's Ping tone) | **Ratio** (the modulator: harmonic .. bell-like .. clangy) | **Length** | **Bend** (the pitch falling at the strike) |
+| Bass | **Bite** (FM index / drive at each note) | **Shape** (sine .. square-ish) | **Length** (how long each note holds, against the groove's) | **Slide** (glide between notes) |
+| Drums | **Kick tune** (semitones from the key's note) | **Kick length** | **Punch** (the kick's start pitch and click) | **Hats** (dark .. bright, today's piece value) |
+
+### Then: a real FM core (phase 2)
+
+- One 4-operator FM engine (sine operators, ratios, levels, feedback on one, an index
+  envelope), with the classic algorithms (the eight 4-op layouts, as the FM-1's own firmware and
+  the DX-style synths have them), for the chord and the pings. The FM voices (Keys, Bell, Marimba,
+  Glass, Wood) become patches of it, and new ones come from the classic FM patch libraries (the
+  punchier basses wanted, electric pianos, clavs, bells).
+- The sound page gets a second set of four on an FM voice (the layer's button a third time):
+  **Algorithm**, **Ratio** (of the modulator in focus), **Feedback**, **Index env** (its decay).
+- **CPU first:** four chord voices x 4 operators is the heaviest thing DUB-1 would do. Measure on
+  the device (the Setup page's CPU) before, and keep a lighter algorithm set if it's tight.
+
+### Steps
+
+- [ ] The sound pages: the UI (the second press, the page, the help cards, the screen reader), 16
+      parameters, project format 3, tests
+- [ ] Each voice's mapping of the four knobs, layer by layer, starting with the chord; renders
+      to check the ranges sound useful at both ends
+- [ ] The envelope drawing on a sound page
+- [ ] The FM core, its algorithms, the FM voices moved onto it; the punchier basses
+- [ ] The FM page (Algorithm, Ratio, Feedback, Index env); the algorithm diagram
+- [ ] CPU on the device at each step
 
 ## Done: DUB-1's own interface
 
