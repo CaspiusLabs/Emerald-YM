@@ -138,6 +138,7 @@ static uint32_t cpu_pct;
 uint32_t plat_cpu_pct(void) { return cpu_pct; }
 uint32_t plat_xruns(void) { return 0; }
 uint32_t plat_cpu_peak(void) { return cpu_pct; }
+int32_t plat_battery(void) { return -1; }
 
 /* -------------------------------------------------------------- app --- */
 #include "../firmware/src/app/app.h"

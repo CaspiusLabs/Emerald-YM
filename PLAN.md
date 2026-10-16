@@ -227,9 +227,24 @@ hold). Sixteen in four groups of four, the first of each group lit:
 | Space | Reverb throw | Spring crash | Cloud freeze | Wash (echo and reverb flooding) |
 | Rhythm / FX | Stutter (1/8 or 1/16 repeat) | Gate (the chord in 16ths) | Siren | Noise riser |
 
-- [ ] The grid on screen while REC is held; the keys lit by group
-- [ ] Each effect, eased in and out; a stutter needs a short buffer of the mix (memory: RAM ~28 KB free)
-- [ ] PERFORM keeps the mix and mutes; the grid is the effects
+- [x] The grid on screen while REC is held; the keys lit by group; said whole to a screen reader
+- [x] Each effect, eased in and out (Stutter borrows the Echoplex's buffer; Gate lets the chord ring on to be
+      chopped; Freeze brings the frozen cloud forward). CPU (host): one filter effect +22%, all sixteen +55%
+      (in Night Drive on the device that could reach ~100%: the effects are momentary, but worth watching)
+- [x] PERFORM keeps the mix and mutes; the grid is the effects (`tests/scenarios/effects.amb`)
+- Found on the way: at Cloud 30 with Reverb 35, the cloud was all but silent (its input came after the
+  Reverb knob): it now listens as if Reverb were at least 63
+
+## From the user's testing (2026-10-16)
+
+- [x] PERFORM's Mix knobs in the layers' colours (chord teal, pings blue, bass brass, drums amber)
+- [x] The Drums knob follows the Kick and Hats keys (0 when both are out, 100 when one comes back)
+- [x] A muted layer (or one at level 0) leaves its lane at once
+- [x] The stabs' lane shows the echo's repeats as rings, flashing as the playhead reaches them
+- [ ] **Battery:** an icon on every page, the charge in % on Setup. The divider is read (PB1, ADC ch 3,
+      10 bit) and shown raw on Setup ("BATT n"); to calibrate: the readings full, low (before it shuts
+      down) and on USB
+- [ ] **Editing the chords** (asked): see the proposal in the conversation; to decide
 
 ## Ideas for later
 

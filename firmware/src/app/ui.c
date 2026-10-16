@@ -4,7 +4,8 @@
  *
  *   keys           the scale: each key adds or removes its note from the pool (the root stays)
  *   PLAY           plays / rests                   EDIT  the next chord, on the next bar
- *   REC            DUB HOLD: the echo repeats what it holds, the chord holds   OCT- / OCT+   the pings' octave
+ *   REC            tapped: DUB HOLD (the echo repeats what it holds, the chord holds); held: the EFFECTS grid, played
+ *                  on the white keys while they're held             OCT- / OCT+   the pings' octave
  *   SEL            PERFORM: the keys mute the layers (white 1-5) and, held, make the dub moves (white 6-10)
  *   SELECT         the pages (with HOME held: the tempo)   ALGORITHM mode (loads a pool)   PRESETS the piece
  *   HOME ENV ARP LFO SEQ FX GLO   the pages: DUB, CHORD, TEXTURE, BASS, DRUMS, SPACE, SETUP
@@ -95,6 +96,8 @@ static struct {
     uint8_t perf, perf_from;           /* PERFORM (SEL): the keys play the mutes and the moves, the knobs
                                         * the mix; the page it was started from */
     uint32_t mutes, moves;             /* the layers muted (EN_M_*), the moves held (EN_PF_*) */
+    uint32_t fx;                       /* the effects held (EN_FX_*), REC's grid */
+    uint8_t grid_said;
     uint32_t btn, keys, btn_used;
     uint32_t enc_t[NE];
     uint8_t enc_run[NE];               /* detents in the current quick run, per knob (accel) */
@@ -378,6 +381,15 @@ static void perf_key(uint32_t key, int down)
             return;
         ui.mutes ^= 1u << i;
         en_mute(ui.mutes);
+        /* the Drums knob follows: 0 once both are out, 100 when one comes back (from 0) */
+        if ((ui.mutes & (EN_M_KICK | EN_M_HATS)) == (EN_M_KICK | EN_M_HATS))
+            knob_set(P_DRUMS, 0);
+        else if (proj.par[P_DRUMS] == 0 || !(ui.mutes >> i & 1u))
+            knob_set(P_DRUMS, 100);
+        if (ui.view == V_MIX) {
+            ui.touched = 3;
+            ui.touch_until = plat_ms() + 1200u;
+        }
         say(PERF_NAME[i], ui.mutes >> i & 1u ? "OFF" : "ON");
         return;
     }
@@ -407,6 +419,31 @@ static void perf_set(int on)                     /* on: the mixer on the knobs; 
             set_view(ui.perf_from);
     }
     say("PERFORM", on ? "ON" : "OFF");
+}
+
+/* ------------------------------------------------------- the effects grid --- */
+/* REC held: the white keys from F3 up are the sixteen effects (four groups of four: the echo, the filter,
+ * the space, rhythm and noise), each as long as its key is held, even once REC is let go. A tap on REC alone
+ * is still dub hold (REC's release does nothing once a key played) */
+static const uint8_t FX_KEY[EN_NFX] = {0, 2, 4, 6, 7, 9, 11, 12, 14, 16, 18, 19, 21, 23, 24, 26};
+#define GRID_HOLD 300u                   /* ms of REC held before the grid shows */
+static int grid_up(void) { return ui.fx || ((ui.btn >> B_REC & 1u) && plat_ms() - ui.down_t[B_REC] >= GRID_HOLD); }
+static int fx_key(uint32_t key, int down)        /* 1: the key was an effect's */
+{
+    int e;
+    for (e = 0; e < EN_NFX && FX_KEY[e] != key; e++)
+        ;
+    if (e >= EN_NFX)
+        return 0;
+    if (down) {
+        ui.fx |= 1u << e;
+        ui.btn_used |= 1u << B_REC;              /* (REC's release: no dub hold now) */
+        say(EN_FX_NAME[e], 0);
+    } else {
+        ui.fx &= ~(1u << e);
+    }
+    en_fx(ui.fx);
+    return 1;
 }
 
 /* ------------------------------------------------------------ buttons --- */
@@ -457,6 +494,8 @@ static void button(int b)
         }
         break;
     case B_REC:
+        if (plat_ms() - ui.down_t[B_REC] >= GRID_HOLD)
+            break;                               /* held long enough for the grid: only a tap is dub hold */
         say("DUB HOLD", en_frozen ? "OFF" : "ON");
         en_freeze(!en_frozen);                   /* the engine takes it at its next block */
         break;
@@ -512,7 +551,7 @@ static void help_tick(uint32_t btn, uint32_t keys)
     if (!btn || (btn & (btn - 1u)) || keys)
         return;
     for (i = 0; i < NB; i++)
-        if (btn == 1u << i && i != B_PLAY && !(ui.btn_used & btn) && now - ui.down_t[i] >= HELP_HOLD &&
+        if (btn == 1u << i && i != B_PLAY && i != B_REC && !(ui.btn_used & btn) && now - ui.down_t[i] >= HELP_HOLD &&
             (int32_t)(ui.turn_t - ui.down_t[i]) <= 0) {
             ui.help = (uint8_t)(i + 1);
             ui.btn_used |= btn;                  /* its release now does nothing */
@@ -544,6 +583,12 @@ static void input(void)
     ui.keys = keys;
     for (i = 0; i < NKEYS; i++)
         if (ch >> i & 1u) {
+            int down = (int)(keys >> i & 1u);
+            if (((btn >> B_REC & 1u) && down) || (!down && ui.fx))
+                if (fx_key(i, down))
+                    continue;                    /* REC held: the effects (and their keys let go) */
+            if (btn >> B_REC & 1u)
+                continue;                        /* (REC held: the other keys do nothing) */
             if (ui.perf)
                 perf_key(i, (int)(keys >> i & 1u));
             else if (keys >> i & 1u)
@@ -1078,19 +1123,42 @@ static void draw_duck(void)                      /* right: the kick's ducking, f
 static void draw_lanes(void)                     /* below: the bar, a lane a layer */
 {
     static const uint16_t C[4] = {K_PAD, K_PULSE, K_TEXT, K_BASS}, T[4] = {K_PAD_T, K_PULSE_T, K_LINE, K_BASS_T};
-    int l, i, pos = en_drum_pos[0];
+    int l, i, k, pos = en_drum_pos[0];
+    float ghost[16];
     if (en_playing)                              /* the step playing: a column */
         cv_round(38 + pos * 11, 95, 9, 47, 2, K_PANEL);
+    for (i = 0; i < 16; i++)
+        ghost[i] = 0.0f;
+    if (!en_ext && proj.par[P_TEMPO] > 0) {      /* the stabs' echoes: where each repeat lands, as faint as it is */
+        float e = en_echo_ms * (float)proj.par[P_TEMPO] * (1.0f / 15000.0f), g = en_echo_in;   /* (in sixteenths) */
+        for (i = 0; i < 16; i++)
+            if (en_lane[0] >> i & 1u) {
+                float a = g;
+                for (k = 1; k <= 6; k++) {
+                    int q = (int)((float)i + (float)k * e + 0.5f) % 16;
+                    a *= en_echo_g;
+                    if (a < 0.06f)
+                        break;
+                    if (a > ghost[q])
+                        ghost[q] = a;
+                }
+            }
+    }
     for (l = 0; l < 4; l++) {                    /* (in the layers' colours: stabs, kick, hats, bass) */
         uint32_t p = en_lane[l];
         int32_t y = 98 + l * 11;
         cv_round(30, y + 1, 4, 3, 1, C[l]);
         for (i = 0; i < 16; i++) {
             int32_t x = 40 + i * 11;
-            if (p >> i & 1u)
+            if (p >> i & 1u) {
                 cv_round(x, y, 5, 5, 2, en_playing && i == pos ? C[l] : mix(T[l], C[l], 9));
-            else
+            } else if (l == 0 && ghost[i] > 0.0f) {   /* an echo's repeat: a ring, flashing as the playhead hits it */
+                uint16_t c = en_playing && i == pos ? K_ACC : mix(K_BG, K_PAD, 3 + q16(ghost[i]) / 2);
+                cv_rect(x + 1, y, 3, 1, c), cv_rect(x + 1, y + 4, 3, 1, c);
+                cv_rect(x, y + 1, 1, 3, c), cv_rect(x + 4, y + 1, 1, 3, c);
+            } else {
                 cv_rect(x + 2, y + 2, 1, 1, (i & 3) ? K_LINE : K_DIM);
+            }
         }
     }
 }
@@ -1114,7 +1182,7 @@ static int help_lines(int b, const char *l[HELP_LINES])
     case B_GLO: L("SETUP"); L("ROOT, TUNE, MIDI OUT, LIGHTS"); break;
     case B_EDIT: L("THE NEXT CHORD,"); L("ON THE NEXT BAR"); break;
     case B_SEL: L("PERFORM: KNOBS MIX; KEYS 1-5"); L(" MUTE CHORD PINGS BASS KICK HATS;"); L("6-10 HELD: THROW OPEN SHUT"); L(" KICK DROP ECHO"); break;
-    case B_REC: L("DUB HOLD: THE ECHO"); L(" REPEATS WHAT IT HOLDS"); L("AGAIN: LET GO"); break;
+    case B_REC: L("TAP: DUB HOLD (THE ECHO"); L(" REPEATS WHAT IT HOLDS)"); L("HOLD: THE EFFECTS GRID,"); L(" PLAYED ON THE WHITE KEYS"); break;
     case B_OCTDN: L("THE PINGS AN OCTAVE DOWN"); L("WITH OCT+, 5 S: UPDATE MODE"); break;
     case B_OCTUP: L("THE PINGS AN OCTAVE UP"); L("WITH OCT-, 5 S: UPDATE MODE"); break;
     case B_SAVE: L("SAVES ALL EIGHT PIECES"); L("KEEP HOLDING: THE PIECE"); L(" BACK TO ITS RECIPE"); break;
@@ -1136,12 +1204,63 @@ static void draw_help(void)
         text_c(120, 56 + k * 20, &FONT_S, l[k] + (l[k][0] == ' '), K_TEXT);
 }
 
+static char sp_buf[ANN_MAX + 1];                 /* (the screen reader's, below) */
+static uint32_t sp_n;
+static void sp_cat(const char *s);
+
+/* the effects grid, in the main screen's place while REC is held: four rows of four, the first of each lit
+ * as the group's (its key lit too), the ones held filled */
+static void draw_grid(void)
+{
+    static const char *const GROUP[4] = {"ECHO", "FILTER", "SPACE", "RHYTHM"};
+    static const char *const CELL[EN_NFX] = {"Throw", "Time x2", "Stop", "Swell", "Low", "High", "Wah", "Phone",
+                                             "Verb", "Crash", "Freeze", "Wash", "Stutter", "Gate", "Siren", "Riser"};
+    int r, c;
+    text_c(120, -1, &FONT_XS, "TAP: DUB HOLD    KEYS: EFFECTS", K_DIM);
+    for (r = 0; r < 4; r++) {
+        cv_text(4, 18 + r * 31, &FONT_XS, GROUP[r], K_DIM);
+        for (c = 0; c < 4; c++) {
+            int e = r * 4 + c, on = (int)(ui.fx >> e & 1u);
+            int32_t x = 46 + c * 48, y = 14 + r * 31;
+            char t[12];
+            cv_round(x, y, 45, 26, 4, on ? K_ACC : c == 0 ? K_PANEL : mix(K_BG, K_PANEL, 8));
+            if (c == 0 && !on)
+                cv_rect(x + 3, y + 23, 39, 1, K_ACC);
+            caps(t, CELL[e], sizeof t);
+            text_c(x + 23, y + 5, &FONT_XS, t, on ? K_BG : K_TEXT);
+        }
+    }
+}
+
 static void draw_main(void)
 {
     uint32_t now = plat_ms(), h = hash(2166136261u, (uint32_t)en_frozen << 16 | proj.piece << 24 | (uint32_t)en_playing << 17), i;
     static uint8_t moving;
     if (ui.frame % 3u)                           /* 20 frames a second is plenty */
         return;
+    if (grid_up()) {                             /* REC held: the effects grid */
+        h = hash(0x47524944u, ui.fx);
+        if (h != ui.sig[1]) {
+            ui.sig[1] = h;
+            cv_begin(240, MAIN_H, K_BG);
+            draw_grid();
+            cv_blit(0, MAIN_Y);
+        }
+        if (!ui.grid_said && ann_on()) {         /* the grid in words: the white keys' effects, a group at a time */
+            int e;
+            sp_n = 0;
+            sp_buf[0] = 0;
+            sp_cat("EFFECTS GRID. White keys");
+            for (e = 0; e < EN_NFX; e++) {
+                sp_cat(e == 0 ? ": " : (e & 3) ? ", " : "; ");
+                sp_cat(EN_FX_NAME[e]);
+            }
+            ann_say(sp_buf, 0, ANN_NOW);
+            ui.grid_said = 1;
+        }
+        return;
+    }
+    ui.grid_said = 0;
     if (ui.help) {
         h = hash(0x48454C50u, ui.help);
         if (h != ui.sig[1]) {
@@ -1158,6 +1277,7 @@ static void draw_main(void)
     for (i = 0; i < 4; i++)
         h = hash(h, en_lane[i] | (uint32_t)proj.par[i] << 16);
     h = hash(h, en_drum_pos[0] | (uint32_t)q16(en_duck) << 4 | (uint32_t)q16(en_pad_level) << 9 | (uint32_t)q16(en_bass_level) << 14);
+    h = hash(h, (uint32_t)(ui.view == V_SETUP ? plat_battery() + 1 : 0));
     h = hash(h, (uint32_t)(en_drift * 40.0f) | en_section << 8 | (uint32_t)en_phrase_bar << 12 | (uint32_t)ui.perf << 16);
     for (i = 0; i < EN_NLOOP; i++)
         h = hash(h, (uint32_t)q16(en_loop_glow[i]));
@@ -1211,6 +1331,11 @@ static void draw_main(void)
     draw_meters();
     draw_duck();
     draw_lanes();
+    if (ui.view == V_SETUP && plat_battery() >= 0) {   /* the battery, raw for now (to be calibrated: PLAN.md) */
+        char t[16] = "BATT ";
+        itoa_u((uint32_t)plat_battery(), t + 5);
+        cv_text(160, 76, &FONT_XS, t, K_DIM);
+    }
     cv_blit(0, MAIN_Y);
 }
 
@@ -1253,7 +1378,8 @@ static void draw_knobs(void)
         int k = VIEW_KNOB[ui.view][i], lo, hi, v, hot = now_touch && ui.touched == (int)i;
         int32_t x = (int32_t)i * 60, cx = x + 30;
         char t[16];
-        uint16_t bg = hot ? K_PANEL : K_BG, fill = hot ? K_ACC : K_PAD;
+        static const uint16_t MIXC[4] = {K_PAD, K_BELL, K_BASS, K_PULSE};   /* (the Mix page: the layers' colours) */
+        uint16_t bg = hot ? K_PANEL : K_BG, fill = ui.view == V_MIX ? MIXC[i] : hot ? K_ACC : K_PAD;
         if (k == K_NONE)
             continue;
         if (i)
@@ -1286,7 +1412,11 @@ static void leds(void)
         b |= 1u << B_PLAY;
     if (en_frozen)
         b |= 1u << B_REC;
-    if (ui.perf) {                               /* PERFORM: the layers playing, the moves held */
+    if (grid_up()) {                             /* the grid: each group's first key, and the effects held */
+        for (i = 0; i < EN_NFX; i++)
+            if (!(i & 3) || (ui.fx >> i & 1u))
+                k |= 1u << FX_KEY[i];
+    } else if (ui.perf) {                        /* PERFORM: the layers playing, the moves held */
         b |= 1u << B_SEL;
         static const uint8_t LEVEL[3] = {P_CHORD, P_PINGS, P_BASS};
         for (i = 0; i < 3; i++)
@@ -1440,6 +1570,10 @@ static void sp_page(int all)
         sp_cat("%, peak ");
         sp_int(plat_cpu_peak());
         sp_cat("%");
+        if (plat_battery() >= 0) {
+            sp_cat(", battery reading ");
+            sp_int((uint32_t)plat_battery());
+        }
         if (plat_xruns()) {
             sp_cat(", ");
             sp_int(plat_xruns());

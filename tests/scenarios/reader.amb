@@ -134,7 +134,7 @@ tap SAVE
 said SAVED
 press REC
 wait 1000
-said REC button. DUB HOLD: THE ECHO REPEATS WHAT IT HOLDS. AGAIN: LET GO
+said EFFECTS GRID. White keys: Throw, Time x2, Tape stop, Swell; Low-pass
 release REC
 wait 100
 # the chord moving by itself (every two bars now): queued (said after what is being said)

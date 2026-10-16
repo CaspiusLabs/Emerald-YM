@@ -408,6 +408,32 @@ int main(void)
         CHECK(en_playing && en_bars > 16u && peak > 0.02f, "a piece's parameters, then PLAY: not playing (%u)", en_bars);
     }
 
+    /* the effects grid: each effect alone, then all sixteen at once, then let go: no NaN, under full scale,
+     * and back to the music after */
+    {
+        int e;
+        for (e = 0; e < EN_NFX; e++) {
+            fresh();
+            en_play(1);
+            run(2.0f);
+            en_fx(1u << e);
+            run(3.0f);
+            CHECK(!bad && peak < 0.99f, "effect %s: peak %f", EN_FX_NAME[e], (double)peak);
+            en_fx(0);
+            run(2.0f);
+            CHECK(!bad && peak > 0.02f, "after %s: silent (%f)", EN_FX_NAME[e], (double)peak);
+        }
+        fresh();
+        en_play(1);
+        run(2.0f);
+        en_fx(0xFFFFu);
+        run(6.0f);
+        CHECK(!bad && peak < 0.995f, "all sixteen effects: peak %f", (double)peak);
+        en_fx(0);
+        run(4.0f);
+        CHECK(!bad && peak > 0.02f && peak < 0.99f, "after all effects: %f", (double)peak);
+    }
+
     /* every voice of every layer: it sounds, without NaN, under full scale */
     {
         static const int VP[4] = {P_CVOICE, P_PVOICE, P_BVOICE, P_KIT};

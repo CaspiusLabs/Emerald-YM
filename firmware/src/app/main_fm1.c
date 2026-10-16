@@ -327,6 +327,15 @@ static void fm1_main(void)
                 master_q12 = (k10 * k10) >> 8;           /* 0 .. ~4096 */
             }
         }
+        {   /* the battery's divider (PB1, read only: never driven), twice a second, smoothed */
+            static uint32_t t_batt;
+            if (fm1_ms - t_batt >= 500u) {
+                int32_t b = fm1_adc_read(FM1_ADC_BATT);
+                t_batt = fm1_ms;
+                if (b >= 0)
+                    batt_raw = batt_raw < 0 ? b : batt_raw + (b - batt_raw) / 4;
+            }
+        }
         {   /* OCT- + OCT+ held 5 s: update mode (Felucca's, unchanged) */
             static uint32_t t0, shown;
             uint32_t both = (1u << panel.btn[B_OCTDN]) | (1u << panel.btn[B_OCTUP]);

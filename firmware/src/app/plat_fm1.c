@@ -90,4 +90,6 @@ int plat_store_save(uint32_t obj, const void *src, uint32_t len) { return flash_
 static volatile uint32_t audio_cpu_pct, audio_xruns, audio_cpu_peak;
 uint32_t plat_cpu_pct(void) { return audio_cpu_pct; }
 uint32_t plat_cpu_peak(void) { return audio_cpu_peak; }
+static int32_t batt_raw = -1;
+int32_t plat_battery(void) { return batt_raw; }
 uint32_t plat_xruns(void) { return audio_xruns; }

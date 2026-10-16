@@ -90,7 +90,7 @@ The drawing at the top shows them all; here they are in more detail.
 |---|---|
 | Keys | The scale. Each key adds its note to the scale or takes it out; the keys light up for the notes in it. Every octave of a note is the same key. The root stays ("THE ROOT STAYS"), and the scale keeps at least three notes ("3 NOTES AT LEAST"). |
 | PLAY | Play / rest. DUB-1 starts playing by itself when it's switched on. At rest, the echo's feedback eases under 90% so its tails die away, the reverb rings out and the crackle fades. Playing again starts from the first bar of a phrase. Lit while playing. |
-| REC | **Dub hold**: the echo stops listening and repeats what it holds, sample for sample, for ever; the reverb stops listening too and rings on; the chord doesn't move. The stabs, pings and drums go on, dry, above it. Press again to let go. Lit while held. |
+| REC | A tap: **dub hold**: the echo stops listening and repeats what it holds, sample for sample, for ever; the reverb stops listening too and rings on; the chord doesn't move. The stabs, pings and drums go on, dry, above it. Tap again to let go. Lit while held. Held: the **effects grid** (below). |
 | EDIT | The next chord, at the start of the next bar (at once while resting). While playing in dub hold, it waits until you let go. |
 | SEL | **PERFORM**: the knobs become a mixer and the keys stop being the scale and play the layers (see below). Press again to go back; lit while on. |
 | HOME | The Dub page: tempo and the machine's movement. |
@@ -116,14 +116,30 @@ Mix page, back to the page you started from). The white keys from the lowest up:
 - **1–3, the chord, pings and bass:** a press turns the layer's level (its Mix knob) to 0, the
   next to 100; the knob shows it. The key is lit while the level is up.
 - **4–5, the kick and the hats** (one Drums knob for both): a press mutes, another brings back;
-  lit while playing. The mutes stay when you leave PERFORM. The music goes on underneath: a muted
+  lit while playing. The Drums knob follows: 0 once both are out, 100 when one comes back. The
+  mutes stay when you leave PERFORM. The music goes on underneath: a muted
   layer comes back where it would have been.
 - **6–10, moves, held:** as long as the key is down, every stab is thrown into the echo (Throw);
   the filter, and the echo's band-pass with it, pushed open (Open) or shut (Shut); the kick dropped
   (Kick drop); the echo pushed: everything into it, feeding back more (Echo). Letting go eases back.
 - The black keys do nothing in PERFORM; MIDI notes in still change the scale.
 
-**Help:** hold any button but PLAY for a second and a card says what it does. A key, a knob or
+**The effects grid** (REC held). After a moment the screen shows sixteen effects, four rows of four;
+the white keys from the lowest play them, each as long as its key is held (even after you let go of
+REC). The first key of each row is lit, to find the rows by touch.
+
+| Row | Key 1 | 2 | 3 | 4 |
+|---|---|---|---|---|
+| Echo (white 1–4) | **Throw**: every stab thrown into the echo | **Time x2**: the echo's time doubled (halved if the tape is too short), gliding there and back | **Tape stop**: the echo's tape slowing to a quarter, its pitch diving | **Swell**: everything into the echo, feeding back more |
+| Filter (5–8) | **Low**: a low-pass on everything, sweeping down to 350 Hz | **High**: a high-pass, up to 1.3 kHz (thin, a radio) | **Wah**: a resonant band sweeping, 1.3 times a second | **Phone**: a narrow band, 450 Hz to 3 kHz, overdriven |
+| Space (9–12) | **Verb**: everything into the plate | **Crash**: a burst of noise into the plate, a splash | **Freeze**: the cloud stops listening, its grains thick and brought forward | **Wash**: the dry down, everything into the echo and the plate |
+| Rhythm (13–16) | **Stutter**: a sixteenth of the mix caught and looped | **Gate**: the chord ringing on, chopped in sixteenths | **Siren**: the dub siren, into the echo | **Riser**: noise rising through a band-pass, louder as it climbs |
+
+A tap on REC alone is still dub hold; held long enough for the grid (or with a key played), its
+release does nothing. Each effect eases in and out. All sixteen at once is the heaviest thing DUB-1
+can do: in a heavy piece it can approach the FM-1's limit (watch the Setup page's CPU).
+
+**Help:** hold any button but PLAY and REC for a second and a card says what it does. A key, a knob or
 another button puts the card away; letting go after it does nothing else.
 
 ![SAVE's card over the main screen: SAVES ALL EIGHT PIECES. KEEP HOLDING: THE PIECE BACK TO ITS RECIPE](img/screen-help.png "SAVE's card")
@@ -153,7 +169,9 @@ another button puts the card away; letting go after it does nothing else.
 - **Right:** DUCK, how far the kick is ducking the rest, falling from the top with each kick.
 - **The lanes:** the bar as it plays, sixteen steps, a lane a layer, each marked in its colour on
   the left: the stabs (teal), the kick (amber), the hats (white), the bass (brass). The step playing
-  is lit. A layer that's out (in a Break, or muted in PERFORM) has an empty lane.
+  is lit. A layer that's out (in a Break, muted in PERFORM, or at level 0) has an empty lane at once.
+  In the stabs' lane, rings show where the echo's repeats land, fainter for each, as the echo's
+  time and Feedback have them; each flashes as the playhead reaches it.
 - **Bottom:** the page's name and seven dots, one a page, then its four values, one for each knob:
   a dial (or, for a switch, its positions) and the value. The one you're turning lights up.
 
@@ -422,7 +440,9 @@ How long the plate rings comes with the piece.
 
 The top right of this page shows how much of the FM-1's time the sound takes: **CPU 35/61** is
 35% now (smoothed) and 61% at the heaviest moment of the last two seconds. Under 100% the sound
-never breaks up; if it ever did, a **!** and a count of the dropouts would follow.
+never breaks up; if it ever did, a **!** and a count of the dropouts would follow. On the main
+screen, **BATT** and a number: the battery's raw reading (not yet a charge level: to be
+calibrated).
 
 ---
 

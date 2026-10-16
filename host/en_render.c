@@ -5,7 +5,7 @@
  *
  * piece=N takes piece N's recipe (0..7) first; NAME=V sets a parameter by its name as amb.c's table
  * has it, spaces as underscores (Echo_time=2, Cutoff=60); freeze=T0-T1 holds from T0 to T1 seconds;
- * NAME=V@T sets it at T seconds instead; log prints each bar's section and stabs, and the chord as it moves.
+ * NAME=V@T sets it at T seconds instead; fx=N@T0-T1 holds the effects grid's effect N (0..15) from T0 to T1; log prints each bar's section and stabs, and the chord as it moves.
  *   cc -O2 -ffp-contract=off -DEN_HOST -Ifirmware/src/dsp -o build/host/en_render host/en_render.c \
  *      firmware/src/dsp/amb.c -lm */
 #define EN_HOST 1
@@ -43,7 +43,9 @@ int main(int argc, char **argv)
     double secs;
     uint32_t frames, done = 0, last16 = 0;
     int i, logit = 0, piece = 0, sec_was = -1;
-    double fz0 = -1, fz1 = -1;
+    double fz0 = -1, fz1 = -1, fx0[16], fx1[16];
+    int nfx = 0, fxn[16];
+    uint32_t fxwas = 0;
     unsigned seed = 0;
     struct { double t; int p, v; } ev[64];
     int nev = 0, e;
@@ -67,6 +69,9 @@ int main(int argc, char **argv)
             logit = 1;
         } else if (!strncmp(a, "freeze=", 7)) {
             sscanf(a + 7, "%lf-%lf", &fz0, &fz1);
+        } else if (!strncmp(a, "fx=", 3) && nfx < 16) {
+            sscanf(a + 3, "%d@%lf-%lf", &fxn[nfx], &fx0[nfx], &fx1[nfx]);
+            nfx++;
         } else if (!strncmp(a, "seed=", 5)) {
             seed = (unsigned)atoi(a + 5);
         } else if (eq && strncmp(a, "piece=", 6)) {
@@ -102,6 +107,14 @@ int main(int argc, char **argv)
             int want = t >= fz0 && t < fz1;
             if (want != fzs)
                 en_freeze(fzs = want);
+        }
+        {
+            uint32_t m = 0;
+            for (e = 0; e < nfx; e++)
+                if (t >= fx0[e] && t < fx1[e])
+                    m |= 1u << fxn[e];
+            if (m != fxwas)
+                en_fx(fxwas = m);
         }
         for (e = 0; e < nev; e++)
             if (ev[e].t >= 0 && t >= ev[e].t) {

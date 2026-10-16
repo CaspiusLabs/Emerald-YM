@@ -331,7 +331,7 @@ const char *en_chord_name(const int *pcs, int n, char *buf)
 }
 
 /* ------------------------------------------------------------ commands --- */
-enum { C_SET, C_POOL, C_PLAY, C_NEXT, C_FREEZE, C_SEED, C_PANIC, C_CLOCK, C_REGROW, C_MUTE, C_PERF };
+enum { C_SET, C_POOL, C_PLAY, C_NEXT, C_FREEZE, C_SEED, C_PANIC, C_CLOCK, C_REGROW, C_MUTE, C_PERF, C_FX };
 #define QN 256u                                 /* (a piece is every parameter at once: room for four) */
 _Static_assert(QN >= 2u * (P_NPARAMS + 8), "the command queue can't hold a piece's parameters twice over");
 static uint32_t q[QN];
@@ -356,6 +356,9 @@ void en_clock(int msg) { post(C_CLOCK, msg, 0); }
 void en_regrow(void) { post(C_REGROW, 0, 0); }
 void en_mute(uint32_t m) { post(C_MUTE, (int)(m & 0xFFu), 0); }
 void en_perf(uint32_t f) { post(C_PERF, (int)(f & 0xFFu), 0); }
+void en_fx(uint32_t m) { post(C_FX, 0, (int)(m & 0xFFFFu)); }
+const char *const EN_FX_NAME[EN_NFX] = {"Throw", "Time x2", "Tape stop", "Swell", "Low-pass", "High-pass", "Wah",
+                                        "Phone", "Verb", "Crash", "Freeze", "Wash", "Stutter", "Gate", "Siren", "Riser"};
 
 /* -------------------------------------------------------------- state --- */
 volatile uint8_t en_playing, en_frozen, en_ext;
@@ -377,7 +380,7 @@ volatile uint32_t en_stab_pat, en_throws, en_stabs;
 volatile float en_stab_vel, en_echo_ms, en_echo_g, en_echo_in, en_duck;
 volatile uint8_t en_stab_thrown;
 volatile uint16_t en_lane[4];
-static uint32_t mutes, perf;                    /* performance: the layers muted, the moves held */
+static uint32_t mutes, perf, fxm, fxm_was;      /* performance: the layers muted, the moves held; the effects held */
 static float perf_sw, perf_echo;                /* the filter pushed open (+) or shut (-), the echo pushed */
 
 static int16_t par[P_NPARAMS];
@@ -605,6 +608,8 @@ static int32_t st_midi_left;
 static int shape, root_note = 53;               /* the voicing's shape, the chord's root as voiced (MIDI) */
 static const float STAB_PAN[EN_NPAD] = {-0.5f, -0.15f, 0.2f, 0.55f};
 static float stab_gl[EN_NPAD], stab_gr[EN_NPAD];
+static int32_t gate_ctr;                        /* samples since the sixteenth began (the grid's Gate) */
+static float fx_gate, gate_g, gate_dec;
 /* the chord's voices: how it sounds (CV_*), how quickly it strikes (the amplitude's smoothing a sample:
  * 0.035 ~0.6 ms .. 0.00012 ~190 ms), its length (times Decay's), how far its own envelope opens the filter
  * (octaves), its modulator's ratio and index (FM voices, in turns: the index at the strike, and at rest),
@@ -695,6 +700,7 @@ static int kit;
 /* ------------------------------------------------------------------ space --- */
 static float echo_send, rev_send, echo_len, echo_len_t, echo_fb = 0.6f, ein_gain = 1.0f;
 static float fb_cap = 2.0f;                     /* stopped, the feedback eases under 90%: the tails die */
+static float fx_em = 1.0f, fx_ek = 0.001f, fx_ts = 1.0f;   /* the grid on the echo: its time's multiple, its easing; the tape stop */
 static float rev_in_gain = 1.0f;                /* falls to 0 while frozen */
 static float tape_lpc = 0.55f, tape_hpc = 0.08f; /* the echo's feedback band-pass */
 static float crackle_vol, cloud_amt;
@@ -1235,20 +1241,27 @@ static void bar_start(void)
     bar++;
 }
 
+/* the screen's lanes, the bar as it plays: what is muted or at level 0, gone at once */
+static void lanes(void)
+{
+    const int kick = lay_kick && !(mutes & EN_M_KICK) && !(perf & EN_PF_KICKDROP) && par[P_DRUMS] > 0,
+              hats = !(mutes & EN_M_HATS) && par[P_DRUMS] > 0;
+    en_lane[0] = (uint16_t)(mutes & EN_M_CHORD || !par[P_CHORD] ? 0u : en_stab_pat);
+    en_lane[1] = (uint16_t)(kick ? (fill ? 0x0011u : 0x1111u) : 0u);
+    en_lane[2] = (uint16_t)(hats ? (lay_hats ? drum_pat[1] : 0u) | (lay_open || fill ? drum_pat[2] : 0u) : 0u);
+    en_lane[3] = (uint16_t)(lay_bass && !(mutes & EN_M_BASS) && par[P_BASS] > 0 ? en_groove(par[P_GROOVE]) : 0u);
+}
+
 /* the grid: one call a sixteenth (MIDI clock: 6 ticks) */
 static void tick(void)
 {
     int st = (int)(sixteenth & 15u), l, d;
     float r = frand();
+    gate_ctr = 0;
     if (st == 0)
         bar_start();
     const int kick = lay_kick && !(mutes & EN_M_KICK) && !(perf & EN_PF_KICKDROP), hats = !(mutes & EN_M_HATS);
-    if (st == 0) {                              /* the bar's lanes, for the screen */
-        en_lane[0] = (uint16_t)(mutes & EN_M_CHORD ? 0u : en_stab_pat);
-        en_lane[2] = (uint16_t)(hats ? (lay_hats ? drum_pat[1] : 0u) | (lay_open || fill ? drum_pat[2] : 0u) : 0u);
-        en_lane[3] = (uint16_t)(lay_bass && !(mutes & EN_M_BASS) ? en_groove(par[P_GROOVE]) : 0u);
-    }
-    en_lane[1] = (uint16_t)(kick ? (fill ? 0x0011u : 0x1111u) : 0u);
+    lanes();
     if (kick && (st & 3) == 0 && !(fill && st >= 8))
         drum_hit(0, st ? 0.88f : 1.0f, 0);
     if (hats && lay_hats && drum_pat[1] >> st & 1u)
@@ -1262,7 +1275,7 @@ static void tick(void)
         int last = !later, thr = (fill && last) || frand() < 0.075f * evolve * (sec == SEC_BREAK ? 2.5f : 1.0f);
         float vel = st == (int)__builtin_ctz(en_stab_pat) ? 0.9f + 0.1f * frand() : 0.65f + 0.25f * frand();
         if (!(mutes & EN_M_CHORD))
-            stab_fire(vel, thr || (perf & EN_PF_THROW));
+            stab_fire(vel, thr || (perf & EN_PF_THROW) || (fxm >> EN_FX_THROW & 1u));
     }
     for (d = 0; d < EN_NDRUM; d++)
         en_drum_pos[d] = (uint8_t)st;
@@ -1402,6 +1415,8 @@ static uint32_t head_left;                       /* samples until the second hea
 #define PLEX_N 7100                              /* 160 ms at 44.1 kHz */
 #define PLEX_TAP 2700                            /* the right's tap: ~100 ms */
 static int16_t plex[PLEX_N];
+static int stt_state, stt_len, stt_pos;         /* Stutter: 0 off, 1 recording a sixteenth, 2 looping it */
+static float stt_mix;
 static int plex_w;
 static float plex_lp, plex_lp2;
 
@@ -1475,16 +1490,20 @@ static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
     int t = plex_w - PLEX_TAP;
     plex_lp += 0.3f * (y - plex_lp);
     plex_lp2 += 0.3f * ((float)plex[t < 0 ? t + PLEX_N : t] * (1.0f / 12000.0f) - plex_lp2);
-    plex[plex_w] = s16(in + 0.45f * plex_lp);
-    if (++plex_w >= PLEX_N)
-        plex_w = 0;
-    *xl = plex_lp;
-    *xr = plex_lp2;
+    if (stt_state) {                             /* (the grid's Stutter has the Echoplex's buffer) */
+        *xl = *xr = 0.0f;
+    } else {
+        plex[plex_w] = s16(in + 0.45f * plex_lp);
+        if (++plex_w >= PLEX_N)
+            plex_w = 0;
+        *xl = plex_lp;
+        *xr = plex_lp2;
+    }
     tape_acc += in + 0.2f * plex_lp;
     if (++tape_ph >= 4) {                        /* the tape, a quarter of the time */
         float d, h1, h2, fb, w;
         tape_ph = 0;
-        echo_len += (echo_len_t - echo_len) * 0.001f;
+        echo_len += (echo_len_t * fx_em - echo_len) * fx_ek;   /* (the grid: the time doubled, the tape slowing) */
         head2 += head2_v;
         d = echo_len * (1.0f + 0.002f * motion * mod[5].v);   /* wow */
         if (d > (float)(TAPE_N - 4))
@@ -1575,7 +1594,7 @@ static inline void cloud(float in, float *ol, float *or_)
         float l = 0.0f, r = 0.0f;
         int k;
         cl_ph = 0;
-        if (!en_frozen) {
+        if (!en_frozen && !(fxm >> EN_FX_FREEZE & 1u)) {   /* (the grid's Freeze: the cloud alone holds) */
             if (++cl_w >= CL_LEN)
                 cl_w = 0;
             cl_buf[cl_w] = s16(cl_acc * 0.25f + (0.25f + 0.3f * cloud_amt) * cl_fb);
@@ -1711,10 +1730,10 @@ static void apply(int p, int v)
         v = pi->hi;
     par[p] = (int16_t)v;
     switch (p) {
-    case P_CHORD: chord_vol = (float)(v * v) * 0.0001f; break;
+    case P_CHORD: chord_vol = (float)(v * v) * 0.0001f; lanes(); break;
     case P_PINGS: bell_vol = (float)(v * v) * 0.0001f; break;
-    case P_BASS: bass_vol = (float)(v * v) * 0.0001f; break;
-    case P_DRUMS: pulse_vol = (float)(v * v) * 0.0001f; break;
+    case P_BASS: bass_vol = (float)(v * v) * 0.0001f; lanes(); break;
+    case P_DRUMS: pulse_vol = (float)(v * v) * 0.0001f; lanes(); break;
     case P_HITS: hats_home(); break;
     case P_STABS: stabs_home(); break;
     case P_SWING: swing = (float)v * 0.004f; break;      /* the off sixteenths up to 0.4 of a step late */
@@ -1857,6 +1876,7 @@ void en_init(void)
     duck_rel = fm_expf(-1.0f / (0.13f * EN_SR));
     throw_dec = fm_expf(-1.0f / (0.5f * EN_SR));
     bite_dec = fm_expf(-1.0f / (0.07f * EN_SR));
+    gate_dec = fm_expf(-6.9f / (1.5f * EN_SR));
     arcm = arc = 0.0f;
     for (i = 0; i < P_NPARAMS; i++)
         apply(i, PARAMS[i].def);
@@ -1958,8 +1978,9 @@ static void drain(void)
             break;
         case C_PANIC: quiet(); break;
         case C_REGROW: regrow(); break;
-        case C_MUTE: mutes = (uint32_t)a; break;
-        case C_PERF: perf = (uint32_t)a; break;
+        case C_MUTE: mutes = (uint32_t)a; lanes(); break;
+        case C_PERF: perf = (uint32_t)a; lanes(); break;
+        case C_FX: fxm = c & 0xFFFFu; break;
         }
     }
 }
@@ -1981,6 +2002,7 @@ static void render_stabs(uint32_t n)
     const float att = fm_clampf(CV[cv].att * fm_exp2f(-(xa > 0.0f ? 9.0f : 3.0f) * xa), 0.00004f, 0.3f),
                 fe = CV[cv].fenv * fm_maxf(1.0f + rel(P_CENV), 0.0f);
     float pc = 0.0f, ck = click;
+    const float dk = st_dec + (gate_dec - st_dec) * fx_gate;   /* (the grid's Gate: the chord rings on, to be chopped) */
     const fmpatch_t *pt = cv_patch(cv);
     const int alg = pt ? fm_alg_of(P_CALG, pt) : 0;
     const float cfb = pt ? fm_fb(P_CFB, pt) : 0.0f;
@@ -2007,7 +2029,7 @@ static void render_stabs(uint32_t n)
                 for (i = 0; i < EN_NPAD; i++)
                     fm_ctl(&cfm[i], pt, alg, fx);   /* (Colour: the modulators' levels) */
         }
-        env *= st_dec;
+        env *= dk;
         amp += (env - amp) * att;               /* the strike, without a click (or a swell, for the Pad) */
         if (cv == CV_NOISE) {                   /* one noise for all four: the filter gives it its pitch */
             noise = noise * 1664525u + 1013904223u;
@@ -2074,12 +2096,20 @@ static void render_stabs(uint32_t n)
         e = amp * g;
         yl = sat(yl * e * 3.0f) * 0.4f;
         yr = sat(yr * e * 3.0f) * 0.4f;
+        if (fx_gate > 0.001f) {                  /* the grid's Gate: the chord in sixteenths */
+            float gt = (float)(gate_ctr + j) < 0.5f * step_len ? 1.0f : 0.0f, gg;
+            gate_g += (gt - gate_g) * 0.05f;
+            gg = 1.0f - fx_gate * (1.0f - gate_g);
+            yl *= gg;
+            yr *= gg;
+        }
         mixl[j] += yl;
         mixr[j] += yr;
         esend[j] += (yl + yr) * (0.8f + 2.5f * thr);
         rsend[j] += (yl + yr) * 0.35f;
         thr *= throw_dec;
     }
+    gate_ctr += (int32_t)n;
     st_s[0] = fm_flush(s0);
     st_s[1] = fm_flush(s1);
     st_s[2] = fm_flush(s2);
@@ -2303,10 +2333,140 @@ static void render_crackle(uint32_t n)
     cr_fr = fm_flush(cr_fr);
 }
 
+/* -------------------------------------------------------- the effects grid --- */
+/* REC held, the keys: each effect eased in while its key is held and out when let go, costing nothing until
+ * then. The echo ones (Throw, Time, Tape stop, Swell) are in the echo; Gate in the chord; Freeze in the cloud;
+ * the rest here: a master filter on everything (Low-pass and High-pass sweeping, Wah, Phone), the plate thrown
+ * (Verb, Crash), Wash (everything into the echo and the plate, the dry down), Stutter (a sixteenth caught and
+ * looped), a dub Siren and a noise Riser */
+static float mf_lp = 14.2f, mf_hp = 4.3f, mf_wah, mf_ph, mf_lfo;   /* the master filter: log2 of its cutoffs */
+static float mf_c[3][4], mf_s[12];
+static float fx_vt, fx_wash, fx_cf, crash, sir_amp, sir_ph, sir_lfo, ris_amp, ris_oct, ris_s[2], ris_c[4];
+static uint32_t fx_noise = 9871u;
+
+static void fx_ctl(uint32_t n)                   /* once a chunk: the effects' easing, the filters' coefficients */
+{
+    const float t = (float)n / EN_SR;
+    uint32_t on = fxm, rise = fxm & ~fxm_was;
+    float lpt, hpt, ec;
+    fxm_was = fxm;
+    /* the echo: Time doubles it (halves it, if the tape is too short), Tape stop slows the tape to a quarter */
+    fx_ts += ((on >> EN_FX_TAPESTOP & 1u ? 4.0f : 1.0f) - fx_ts) * fm_minf(t / (on >> EN_FX_TAPESTOP & 1u ? 0.7f : 0.25f), 1.0f);
+    ec = on >> EN_FX_TIME & 1u ? (echo_len_t * 2.0f <= (float)(TAPE_N - 8) ? 2.0f : 0.5f) : 1.0f;
+    fx_em = ec * fx_ts;
+    fx_ek = fx_ts > 1.01f ? 0.004f : 0.001f;
+    /* the master filter's targets: Low-pass down to 350 Hz, High-pass up to 1.3 kHz, Phone a band 450..3 kHz */
+    lpt = on >> EN_FX_LOWPASS & 1u ? 8.45f : on >> EN_FX_PHONE & 1u ? 11.55f : 14.2f;
+    hpt = on >> EN_FX_HIGHPASS & 1u ? 10.35f : on >> EN_FX_PHONE & 1u ? 8.8f : 4.3f;
+    mf_lp += (lpt - mf_lp) * fm_minf(t / (lpt < mf_lp ? 0.5f : 0.3f), 1.0f);
+    mf_hp += (hpt - mf_hp) * fm_minf(t / (hpt > mf_hp ? 0.5f : 0.3f), 1.0f);
+    mf_wah += ((on >> EN_FX_WAH & 1u ? 1.0f : 0.0f) - mf_wah) * fm_minf(t / 0.08f, 1.0f);
+    mf_ph += ((on >> EN_FX_PHONE & 1u ? 1.0f : 0.0f) - mf_ph) * fm_minf(t / 0.05f, 1.0f);
+    if (mf_lp < 14.15f || mf_hp > 4.35f || mf_wah > 0.001f) {
+        float wf;
+        mf_lfo += t * 1.3f;                      /* (the wah: 1.3 sweeps a second) */
+        if (mf_lfo >= 1.0f)
+            mf_lfo -= 1.0f;
+        wf = 350.0f * fm_exp2f(2.2f * (0.5f + 0.5f * sine(mf_lfo)));
+        svf_coefs(mf_c[0], fm_exp2f(mf_lp), 1.0f);
+        svf_coefs(mf_c[1], fm_exp2f(mf_hp), 1.2f);
+        svf_coefs(mf_c[2], wf, 0.35f);
+    }
+    fx_gate += ((on >> EN_FX_GATE & 1u ? 1.0f : 0.0f) - fx_gate) * fm_minf(t / 0.03f, 1.0f);
+    fx_vt += ((on >> EN_FX_VERB & 1u ? 1.0f : 0.0f) - fx_vt) * fm_minf(t / 0.03f, 1.0f);
+    fx_cf += ((on >> EN_FX_FREEZE & 1u ? 1.0f : 0.0f) - fx_cf) * fm_minf(t / 0.1f, 1.0f);
+    fx_wash += ((on >> EN_FX_WASH & 1u ? 1.0f : 0.0f) - fx_wash) * fm_minf(t / (on >> EN_FX_WASH & 1u ? 0.4f : 0.8f), 1.0f);
+    if (rise >> EN_FX_CRASH & 1u)
+        crash = 1.0f;
+    if (rise >> EN_FX_STUTTER & 1u) {            /* a sixteenth, caught from now */
+        stt_state = 1;
+        stt_pos = 0;
+        stt_len = (int)fm_clampf(step_len, 1000.0f, (float)PLEX_N);
+    } else if (!(on >> EN_FX_STUTTER & 1u) && stt_mix < 0.001f) {
+        stt_state = 0;
+    }
+    sir_amp += ((on >> EN_FX_SIREN & 1u ? 1.0f : 0.0f) - sir_amp) * fm_minf(t / (on >> EN_FX_SIREN & 1u ? 0.02f : 0.15f), 1.0f);
+    if (on >> EN_FX_RISER & 1u) {                /* the riser: up an octave and a half a second, louder as it goes */
+        ris_oct = fm_minf(ris_oct + t * 1.5f, 5.2f);
+        ris_amp += (fm_minf(0.25f + ris_oct * 0.15f, 1.0f) - ris_amp) * fm_minf(t / 0.05f, 1.0f);
+    } else {
+        ris_amp *= fm_expf(-t / 0.15f);
+        if (ris_amp < 0.001f)
+            ris_oct = 0.0f;
+    }
+    if (ris_amp > 0.0005f)
+        svf_coefs(ris_c, 250.0f * fm_exp2f(ris_oct), 0.5f);
+}
+
+static void render_fx(uint32_t n)                /* the Siren and the Riser: two more voices, into the mix */
+{
+    uint32_t j;
+    if (sir_amp > 0.0005f)
+        for (j = 0; j < n; j++) {               /* a square-ish tone, its pitch swung by a triangle, ~0.8 a second */
+            float tri, x;
+            sir_lfo += 0.8f / EN_SR;
+            if (sir_lfo >= 1.0f)
+                sir_lfo -= 1.0f;
+            tri = sir_lfo < 0.5f ? 4.0f * sir_lfo - 1.0f : 3.0f - 4.0f * sir_lfo;
+            sir_ph += 480.0f * fm_exp2f(1.3f * tri) * (1.0f / EN_SR);
+            if (sir_ph >= 1.0f)
+                sir_ph -= 1.0f;
+            x = sat(sine(sir_ph) * 3.0f) * 0.12f * sir_amp;
+            mixl[j] += x;
+            mixr[j] += x;
+            esend[j] += x * 2.0f;
+        }
+    if (ris_amp > 0.0005f)
+        for (j = 0; j < n; j++) {               /* noise through a rising band-pass */
+            float w, v1, v2, v3, x;
+            fx_noise = fx_noise * 1664525u + 1013904223u;
+            w = (float)(int32_t)fx_noise * (1.0f / 2147483648.0f);
+            v3 = w - ris_s[1];
+            v1 = ris_c[0] * ris_s[0] + ris_c[1] * v3;
+            v2 = ris_s[1] + ris_c[1] * ris_s[0] + ris_c[2] * v3;
+            ris_s[0] = 2.0f * v1 - ris_s[0];
+            ris_s[1] = 2.0f * v2 - ris_s[1];
+            x = v1 * 0.35f * ris_amp;
+            mixl[j] += x;
+            mixr[j] += x;
+            rsend[j] += x * 1.2f;
+            esend[j] += x * 0.5f;
+        }
+    ris_s[0] = fm_flush(ris_s[0]);
+    ris_s[1] = fm_flush(ris_s[1]);
+}
+
+static inline float svf_lp(const float *c, float *s, float x, float *bp)   /* one TPT SVF step: low-pass (bp: its band) */
+{
+    float v3 = x - s[1], v1 = c[0] * s[0] + c[1] * v3, v2 = s[1] + c[1] * s[0] + c[2] * v3;
+    s[0] = 2.0f * v1 - s[0];
+    s[1] = 2.0f * v2 - s[1];
+    *bp = v1;
+    return v2;
+}
+
+/* the master filter on one side (s: its six states): the low-pass, then the high-pass, the wah's band, the phone */
+static inline float mfx(float x, float *s)
+{
+    float bp, lp;
+    x = svf_lp(mf_c[0], s, x, &bp);
+    lp = svf_lp(mf_c[1], s + 2, x, &bp);
+    x = x - mf_c[1][3] * bp - lp;
+    if (mf_wah > 0.001f) {
+        (void)svf_lp(mf_c[2], s + 4, x, &bp);
+        x += mf_wah * (bp * 1.8f - x);
+    }
+    if (mf_ph > 0.001f)
+        x += mf_ph * (sat(x * 2.2f) * 0.6f - x);
+    return x;
+}
+
 static void render_chunk(int32_t *out, uint32_t n, float gain)
 {
     uint32_t j;
     const float rg = rev_send * rev_in_gain * (1.0f - 0.2f * arcm);
+    /* (the cloud listens as if Reverb were at 63 at least, so Cloud works with little reverb too) */
+    const float cl_in = rev_send > 0.0001f ? fm_maxf(rev_send, 0.4f) / rev_send : 0.0f;
     float eg = (echo_send + (1.0f - echo_send) * perf_echo) * ein_gain, ca = cloud_amt * (sec == SEC_BREAK ? 1.4f : 1.0f);   /* more in a Break */
     for (j = 0; j < n; j++)
         mixl[j] = mixr[j] = rsend[j] = esend[j] = kickb[j] = 0.0f;
@@ -2315,19 +2475,54 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
     render_bells(n);
     render_drums(n);
     render_crackle(n);
+    if (fxm || sir_amp > 0.0005f || ris_amp > 0.0005f)
+        render_fx(n);
+    eg += (1.0f - eg) * fx_wash;                 /* Wash: everything into the echo */
     for (j = 0; j < n; j++) {
-        float wl, wr, l, r, el, er, xl, xr, dg, rin, cl, cr;
+        float wl, wr, l, r, el, er, xl, xr, dg, rin, cl, cr, dry = 1.0f - 0.75f * fx_wash;
         duck_d += (duck_x - duck_d) * 0.08f;
         duck_x *= duck_rel;
         dg = 1.0f - duck_depth * duck_d;
         echoes(esend[j] * eg, &el, &er, &xl, &xr);
         rin = (rsend[j] * rg + (el + er) * 0.25f * rev_send) * 0.8f;
-        cloud(rin * ca * 2.5f + pl_back * cloud_amt * 0.22f, &cl, &cr);   /* the grains, into the plate: they bloom;
+        if (fx_vt + fx_wash > 0.001f || crash > 0.001f) {   /* Verb, Wash: the dry into the plate; Crash: a burst */
+            rin += (mixl[j] + mixr[j]) * (0.35f * fx_vt + 0.3f * fx_wash);
+            if (crash > 0.001f) {
+                fx_noise = fx_noise * 1664525u + 1013904223u;
+                rin += (float)(int32_t)fx_noise * (1.0f / 2147483648.0f) * crash * 2.0f;
+                crash *= 0.99971f;               /* (~80 ms) */
+            }
+        }
+        cloud(rin * ca * 2.5f * cl_in + pl_back * cloud_amt * 0.22f, &cl, &cr);   /* the grains, into the plate: they bloom;
                                                  * the plate's tail back into the line: the wash grows on itself */
         reverb(rin * (1.0f - 0.5f * cloud_amt) + (cl + cr) * 0.8f, &wl, &wr);
         pl_back = 0.5f * (wl + wr);
-        l = ((mixl[j] + 1.2f * el + 0.25f * xl + 1.1f * wl + 1.4f * cl) * dg + kickb[j] + crl[j]) * 0.5f * gain;
-        r = ((mixr[j] + 1.2f * er + 0.25f * xr + 1.1f * wr + 1.4f * cr) * dg + kickb[j] + crr[j]) * 0.5f * gain;
+        cl *= 1.0f + 9.0f * fx_cf;               /* (Freeze: the held cloud brought forward) */
+        cr *= 1.0f + 9.0f * fx_cf;
+        l = ((mixl[j] * dry + 1.2f * el + 0.25f * xl + 1.1f * wl + 1.4f * cl) * dg + kickb[j] * (1.0f - 0.5f * fx_wash) + crl[j]) * 0.5f * gain;
+        r = ((mixr[j] * dry + 1.2f * er + 0.25f * xr + 1.1f * wr + 1.4f * cr) * dg + kickb[j] * (1.0f - 0.5f * fx_wash) + crr[j]) * 0.5f * gain;
+        if (mf_lp < 14.15f || mf_hp > 4.35f || mf_wah > 0.001f) {   /* the master filter */
+            l = mfx(l, mf_s);
+            r = mfx(r, mf_s + 6);
+        }
+        if (stt_state) {                         /* Stutter: catch a sixteenth (mono), then loop it */
+            float m = 0.5f * (l + r), v = 0.0f, tg = 0.0f;
+            if (stt_state == 1) {
+                plex[stt_pos] = s16(m * 0.5f);
+                if (++stt_pos >= stt_len)
+                    stt_state = 2, stt_pos = 0;
+            } else {
+                int e = stt_pos < stt_len - stt_pos ? stt_pos : stt_len - stt_pos;
+                v = (float)plex[stt_pos] * (2.0f / 12000.0f) * fm_minf((float)e * (1.0f / 64.0f), 1.0f);
+                if (++stt_pos >= stt_len)
+                    stt_pos = 0;
+                tg = fxm >> EN_FX_STUTTER & 1u ? 1.0f : 0.0f;
+            }
+            stt_mix += (tg - stt_mix) * 0.005f;
+            l += stt_mix * (v - l);
+            r += stt_mix * (v - r);
+        }
+
         out[2 * j] = (int32_t)(fm_tanhf(l) * 8300000.0f);
         out[2 * j + 1] = (int32_t)(fm_tanhf(r) * 8300000.0f);
     }
@@ -2339,6 +2534,7 @@ static void control(uint32_t n)                 /* once a chunk: the slow things
 {
     int i;
     mods_step(n);
+    fx_ctl(n);
     heads_step(n);
     if (en_playing)
         arc += (arc_tgt - arc) * fm_minf((float)n / arc_tau, 1.0f);
@@ -2352,7 +2548,7 @@ static void control(uint32_t n)                 /* once a chunk: the slow things
     {   /* the performance's pushes, eased in and out (~150 ms, ~40 ms for the echo) */
         float t = (perf & EN_PF_OPEN ? 2.0f : 0.0f) - (perf & EN_PF_CLOSE ? 2.5f : 0.0f);
         perf_sw += (t - perf_sw) * fm_minf((float)n / (0.15f * EN_SR), 1.0f);
-        perf_echo += ((perf & EN_PF_ECHO ? 1.0f : 0.0f) - perf_echo) * fm_minf((float)n / (0.04f * EN_SR), 1.0f);
+        perf_echo += ((perf & EN_PF_ECHO || fxm >> EN_FX_SWELL & 1u ? 1.0f : 0.0f) - perf_echo) * fm_minf((float)n / (0.04f * EN_SR), 1.0f);
     }
     if (echo_len > 0.0f)                        /* for the screen's ripples */
         en_echo_ms = echo_len * (1000.0f / TAPE_SR);
@@ -2360,6 +2556,8 @@ static void control(uint32_t n)                 /* once a chunk: the slow things
     en_echo_in = echo_send + (1.0f - echo_send) * perf_echo;
     en_duck = duck_d * (duck_depth > 0.0f ? 1.0f : 0.0f);
     cl_dens = cloud_amt > 0.0f ? fm_clampf(0.25f + 0.5f * cloud_amt + 0.3f * arcm, 0.05f, 1.0f) : 0.0f;
+    if (fx_cf > 0.01f)                          /* (Freeze: the grains thick, even at Cloud 0) */
+        cl_dens = fm_maxf(cl_dens, fx_cf);
     for (i = 0; i < EN_NLOOP; i++)
         en_loop_glow[i] *= 0.985f;
     for (i = 0; i < EN_NDRUM; i++)
