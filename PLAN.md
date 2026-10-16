@@ -89,13 +89,14 @@ measurement (renders analysed for level, timing and spectrum).
       the levels could leave more room
 
 - [ ] `tools/gen_manual_figures.py` and `tools/make_pages.py` still make AMB-1's panel figure and site
-- [ ] Decisions on behaviour (each works as the manual says now):
-  - Bass Octave -1 is C1..B1, not the E1 band an octave down (too low for most speakers)
-  - Fifth does nothing with the Drone groove (its only note is the bar's first, always the root)
-  - In a Break all three drum rings fade, though the open hat may still play (Motion under 50)
-  - At Evolve 0 a stab still drops out ~6% of the time, and a phrase can end in a fill at Motion 0
-  - [x] The kick follows the key (decided 2026-10-16): the root in F1..B1, below F its fifth (44..62 Hz)
-  - Pentatonic pieces (Concrete) have three-note chords in fourths (7sus4 sounds), not 7ths
+- [x] Decisions on behaviour (2026-10-16):
+  - Bass Octave −1: a true octave down (E0..Eb1)
+  - Fifth with Drone: how often a whole bar is the fifth
+  - Evolve 0 (with Motion 0): a strict loop, no stab gaps, no throws, no fills
+  - The kick follows the key: the root in F1..B1, below F its fifth (44..62 Hz)
+  - Concrete keeps its chords in fourths (7sus4 sounds)
+- [ ] **Sound design** with your ears: the stab's character, the kick, the bass, the hats, the
+      echo's colour, the cloud, the crackle (a round of its own)
 
 ## Done: DUB-1's own interface
 

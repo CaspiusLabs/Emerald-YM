@@ -22,6 +22,7 @@ static int fails;
 /* MIDI out: counted; the kick's note-ons (36 on channel 10) by the bar they fall in, and each bar's
  * section (as a note-on from the grid sees it; 0xFF: no note that bar) */
 static uint32_t midi_count, kicks, kick_off_beat;
+static int bass_lo = 999, bass_hi = -1, bass_pcs;  /* the bass's note-ons (channel 3): its range, its pitch classes */
 #define KBARS 512
 static uint8_t kick_bar[KBARS], bar_sec[KBARS];
 void en_midi_out(uint32_t st, uint32_t d1, uint32_t d2)
@@ -30,6 +31,11 @@ void en_midi_out(uint32_t st, uint32_t d1, uint32_t d2)
     midi_count++;
     if ((st & 0xF0u) == 0x90u && d2 > 0u && b < KBARS)
         bar_sec[b] = en_section;
+    if (st == 0x92u && d2 > 0u) {
+        bass_lo = (int)d1 < bass_lo ? (int)d1 : bass_lo;
+        bass_hi = (int)d1 > bass_hi ? (int)d1 : bass_hi;
+        bass_pcs |= 1 << (d1 % 12u);
+    }
     if (st == 0x99u && d1 == 36u && d2 > 0u) {
         kicks++;
         kick_off_beat += (en_bars & 3u) != 0u;
@@ -78,6 +84,8 @@ static void run(float secs)
 }
 
 /* a new engine, stopped, the count from the top (en_init leaves the transport, en_bars, as they were) */
+static int chord_root_pc(void) { return en_chord_root % 12; }
+
 static void fresh(void)
 {
     en_play(0);
@@ -332,8 +340,56 @@ int main(void)
         }
         CHECK(!moved, "the chord moved while frozen (%d s)", moved);
         en_freeze(0);
-        run(10.0f);
-        CHECK(chord_sig() != held, "the chord stayed after the freeze");
+        for (k = 0, moved = 0; k < 10; k++) {   /* (it may move and come home again: any move counts) */
+            run(1.0f);
+            moved += chord_sig() != held;
+        }
+        CHECK(moved, "the chord stayed after the freeze");
+    }
+
+    /* Evolve 0, Motion 0: a strict loop, every stab every bar */
+    {
+        uint32_t first = 0, t0;
+        int k, diff = 0;
+        fresh();
+        en_set(P_EVOLVE, 0);
+        en_set(P_MOTION, 0);
+        en_set(P_DRIFT, 6);
+        en_regrow();
+        en_play(1);
+        run(2.5f);
+        first = en_stab_pat;
+        t0 = en_throws;
+        for (k = 0; k < 60; k++) {
+            run(2.0f);
+            diff += en_stab_pat != first;
+        }
+        CHECK(first && !diff && en_throws == t0, "Evolve 0: the stabs changed (%d of 60, %u throws)", diff, en_throws - t0);
+    }
+
+    /* the bass: Octave -1 a true octave under 0 (E0..Eb1); with Drone, Fifth gives whole bars of the fifth */
+    {
+        int lo0, hi0;
+        fresh();
+        en_set(P_DRIFT, 6);
+        en_set(P_GROOVE, 3);
+        en_set(P_FIFTH, 0);
+        en_regrow();
+        en_play(1);
+        bass_lo = 999, bass_hi = -1;
+        run(20.0f);
+        lo0 = bass_lo, hi0 = bass_hi;
+        en_set(P_BASSOCT, -1);
+        bass_lo = 999, bass_hi = -1;
+        run(20.0f);
+        CHECK(lo0 >= 28 && hi0 <= 51 && bass_lo == lo0 - 12, "Octave -1: %d..%d, at 0 %d..%d", bass_lo, bass_hi, lo0, hi0);
+        en_set(P_BASSOCT, 0);
+        en_set(P_GROOVE, 0);
+        en_set(P_FIFTH, 100);
+        run(4.0f);
+        bass_pcs = 0;
+        run(20.0f);
+        CHECK(bass_pcs == 1 << ((chord_root_pc() + 7) % 12), "Drone at Fifth 100: only the fifth (%x)", bass_pcs);
     }
 
     /* the arrangement: at Motion 100, it leaves Full now and then; at Motion 0, never */
@@ -387,7 +443,7 @@ int main(void)
         run(120.0f);
         hi = en_throws - t0;
         printf("  throws in 2 min: %u at Evolve 0, %u at Evolve 100\n", lo, hi);
-        CHECK(hi >= 10u && hi > 2u * lo, "throws: %u at Evolve 100, %u at 0", hi, lo);
+        CHECK(hi >= 5u && lo == 0u, "throws: %u at Evolve 100, %u at 0", hi, lo);
     }
 
     /* the loops evolve: with Evolve at 100, the phrases change */

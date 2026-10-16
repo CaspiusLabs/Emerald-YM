@@ -228,7 +228,8 @@ Break is the likeliest, then a Groove, then Thin. From any other section it goes
 three times in four (or else from a Break to Thin, from the others to a Break).
 
 **Fills:** the last bar before the kick comes back from a Break is always a fill, and other
-phrases end with one now and then (more often with Motion up), unless a Break follows. In a fill
+phrases end with one now and then (more often with Motion up; never at Motion 0), unless a Break
+follows. In a fill
 the kick (if it's playing) drops out for the second half of the bar, the open hat plays (if Hits
 gives it any steps), and the last stab is thrown into the echo.
 
@@ -270,7 +271,8 @@ in this order.
 - **Tempo:** 90 to 140 (also HOME + SELECT, from any page).
 - **Evolve:** how restless it is: the stab pattern turning and gaining or losing stabs, stabs
   dropping out, the shaker's pattern, the pings' notes, loops sitting out, octave jumps in the
-  bass, and dub throws (see [The layers](#5-the-layers)).
+  bass, and dub throws (see [The layers](#5-the-layers)). At 0, with Motion at 0 too, it's a strict
+  loop: every stab every bar, no throws, no fills (good for playing along with other gear).
 - **Motion:** how often the arrangement leaves Full, how far the filter sweeps, how likely a fill
   is, and how much the echo's heads, the filter and the band-pass wander.
 - **Drift:** how many bars a chord lasts before it moves on: 2, 4, 8, 16, 32 or 64 bars, or Hold
@@ -307,13 +309,14 @@ OCT− and OCT+ set the pings' octave, two down to two up.
 ![The Bass page: LEVEL 60, OCTAVE 0, GROOVE Offbeat, FIFTH 20](img/screen-bass.png "The Bass page")
 
 - **Level.**
-- **Octave:** −1, 0 or +1. At 0 the bass sits between E1 and Eb2; at +1 an octave higher; at −1,
-  between C1 and B1.
+- **Octave:** −1, 0 or +1. At 0 the bass sits between E1 and Eb2 (41 to 78 Hz); at +1 an octave
+  higher; at −1 an octave lower, E0 to Eb1 (21 to 39 Hz): felt more than heard, and lost on small
+  speakers.
 - **Groove:** Drone (one note a bar, held almost to the next), Offbeat (the four off-beat
   eighths), Dotted (two notes a dotted eighth apart, twice a bar), Roller (six notes a bar,
   rolling) or Sync (three notes, syncopated).
 - **Fifth:** how often a note is the chord's fifth instead of its root. A note on the bar's first
-  sixteenth is always the root, so with Drone, whose one note sits there, the fifth never comes.
+  sixteenth is the root, except with Drone: there Fifth sets how often a whole bar is the fifth.
 
 ### SEQ: Drums
 

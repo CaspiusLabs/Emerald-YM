@@ -544,12 +544,9 @@ static void voice_chord(void)
     en_chord_n = (uint8_t)chord_nt;
 }
 
-static int bass_note(int pc)                    /* E1..Eb2 (an octave up or down): the sub's band */
+static int bass_note(int pc)                    /* E1..Eb2, an octave up or down (E0..Eb1: felt more than heard) */
 {
-    int o = par[P_BASSOCT];
-    if (o < 0)
-        return 24 + pc % 12;
-    return 28 + ((pc - 4) % 12 + 12) % 12 + 12 * o;
+    return 28 + ((pc - 4) % 12 + 12) % 12 + 12 * par[P_BASSOCT];
 }
 
 /* to another degree: home most of all, then the subdominant, the seventh, the dominant; away from home,
@@ -759,7 +756,7 @@ static void stabs_bar(void)                     /* this bar's stabs: the pattern
     first = 1;
     for (i = 0; i < 16; i++)
         if (p >> i & 1u) {
-            if (first || frand() >= 0.06f + 0.14f * evolve)
+            if (first || frand() >= 0.2f * evolve)
                 out |= 1u << i;
             first = 0;
         }
@@ -909,8 +906,8 @@ static void drums_wait_step(int32_t k)          /* k samples went by: hits whose
 static void bass_hit(int first)
 {
     int pc = chord_pcs[0], n, g = par[P_GROOVE];
-    if (!first && chord_nt >= 3 && frand() < (float)par[P_FIFTH] * 0.01f)
-        pc = chord_pcs[2];                      /* the fifth */
+    if ((!first || g == 0) && chord_nt >= 3 && frand() < (float)par[P_FIFTH] * 0.01f)
+        pc = chord_pcs[2];                      /* the fifth (with Drone: a whole bar of it) */
     n = bass_note(pc);
     if (!first && frand() < evolve * 0.08f)
         n += 12;                                /* now and then, an octave up */
@@ -980,7 +977,7 @@ static void bar_start(void)
     if (pb == 7) {
         sec_next = (uint8_t)section_pick();
         /* the last bar before the kick: a fill (the kick drops out halfway, the last stab is thrown) */
-        if (sec_next != SEC_BREAK && (sec == SEC_BREAK || frand() < 0.15f + 0.35f * motion))
+        if (sec_next != SEC_BREAK && (sec == SEC_BREAK || frand() < 0.5f * motion))
             fill = 1;
     }
     if (!en_frozen && (change_pending || (db && bar > 0 && chord_bars >= (uint32_t)db))) {
@@ -1021,7 +1018,7 @@ static void tick(void)
         bass_hit(st == 0);
     if (en_stab_pat >> st & 1u) {               /* (the random draws made muted or not: the music goes on the same) */
         uint32_t later = en_stab_pat >> (st + 1);
-        int last = !later, thr = (fill && last) || frand() < (0.015f + 0.06f * evolve) * (sec == SEC_BREAK ? 2.5f : 1.0f);
+        int last = !later, thr = (fill && last) || frand() < 0.075f * evolve * (sec == SEC_BREAK ? 2.5f : 1.0f);
         float vel = st == (int)__builtin_ctz(en_stab_pat) ? 0.9f + 0.1f * frand() : 0.65f + 0.25f * frand();
         if (!(mutes & EN_M_CHORD))
             stab_fire(vel, thr || (perf & EN_PF_THROW));
