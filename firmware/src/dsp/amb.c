@@ -59,7 +59,7 @@ static const struct {
                     1, 0, 4, 25, 25, 55, 35, 30, 50, 60}},
     {"Pressure",   {70, 20, 75, 80, 20, 30, 6, 65, 45, 1, 20, 55, 40, 30, 35, 35, 0, 1, 128, 4, 2, 0,
                     0, 0, 1, 10, 5, 65, 25, 15, 70, 40}},
-    {"Haze",       {75, 50, 45, 40, 50, 60, 4, 35, 80, 3, 60, 85, 35, 80, 30, 80, 0, 1, 116, 3, 0, 1,
+    {"Haze",       {62, 50, 45, 40, 50, 60, 4, 35, 80, 3, 60, 85, 35, 80, 30, 80, 0, 1, 116, 3, 0, 1,
                     1, 0, 0, 20, 10, 35, 30, 70, 30, 85}},
 };
 
@@ -482,6 +482,7 @@ static float duck_x, duck_d, duck_depth, duck_rel;
 
 /* ------------------------------------------------------------------ space --- */
 static float echo_send, rev_send, echo_len, echo_len_t, echo_fb = 0.6f, ein_gain = 1.0f;
+static float fb_cap = 2.0f;                     /* stopped, the feedback eases under 90%: the tails die */
 static float rev_in_gain = 1.0f;                /* falls to 0 while frozen */
 static float tape_lpc = 0.55f, tape_hpc = 0.08f; /* the echo's feedback band-pass */
 static float crackle_vol;
@@ -1230,7 +1231,7 @@ static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
                 tape_w = 0;
             tape[tape_w] = s;
         } else {
-            float g = echo_fb + 0.15f * st_throw;
+            float g = fm_minf(echo_fb + 0.15f * st_throw, fb_cap);
             tape_lp += tape_lpc * (h1 + fb_lean * (h2 - h1) - tape_lp);   /* each time round: thinner, darker */
             tape_hp += tape_hpc * (tape_lp - tape_hp);
             fb = tape_lp - tape_hp;
@@ -1427,6 +1428,7 @@ static void play_start(int from_top)
     if (from_top) {
         pulse = 0;
         sixteenth = 0;
+        en_bars = 0;
         bar = 0;
         for (i = 0; i < EN_NLOOP; i++)
             loop_pos[i] = 0;
@@ -1538,7 +1540,7 @@ static void render_stabs(uint32_t n)
             float x;
             if (keys) {                          /* FM, the modulator at the carrier's pitch */
                 float m = sine(v->ph[0]) * (0.06f + 0.35f * amp);
-                x = (sine(v->ph[0] + m + 1.0f) + 0.15f * sine(2.0f * v->ph[0])) * 1.5f;
+                x = (sine(v->ph[0] + m + 1.0f) + 0.15f * sine(2.0f * v->ph[0])) * 0.8f;   /* as loud as the saws, filtered */
             } else {
                 x = blep_saw(v->ph[0], v->inc[0]) + blep_saw(v->ph[1], v->inc[1]);
             }
@@ -1738,12 +1740,16 @@ static void render_drums(uint32_t n)
 }
 
 /* the vinyl: a hiss (noise, band-passed ~1..7 kHz) and crackle (clicks at random, mostly small, now
- * and then a pop; each its own side) */
-static float cr_lp, cr_hp, cr_cl, cr_cr, cr_fl, cr_fr;
+ * and then a pop; each its own side). It plays while the music plays, fading in and out over a second */
+static float cr_lp, cr_hp, cr_cl, cr_cr, cr_fl, cr_fr, cr_gate;
 static void render_crackle(uint32_t n)
 {
     uint32_t j, thr;
-    const float g = crackle_vol;
+    float g;
+    cr_gate += ((en_playing ? 1.0f : 0.0f) - cr_gate) * fm_minf((float)n / (0.5f * EN_SR), 1.0f);
+    if (cr_gate < 1e-4f)
+        cr_gate = 0.0f;
+    g = crackle_vol * cr_gate;
     if (g <= 0.0f) {
         for (j = 0; j < n; j++)
             crl[j] = crr[j] = 0.0f;
@@ -1818,6 +1824,7 @@ static void control(uint32_t n)                 /* once a chunk: the slow things
     pl_dd2 = fm_clampf(pl_decay + 0.15f, 0.25f, 0.5f);
     rev_in_gain += ((en_frozen ? 0.0f : 1.0f) - rev_in_gain) * 0.01f;
     ein_gain += ((en_frozen ? 0.0f : 1.0f) - ein_gain) * 0.05f;
+    fb_cap += ((en_playing ? 2.0f : 0.9f) - fb_cap) * fm_minf((float)n / (2.0f * EN_SR), 1.0f);
     for (i = 0; i < EN_NLOOP; i++)
         en_loop_glow[i] *= 0.985f;
     for (i = 0; i < EN_NDRUM; i++)

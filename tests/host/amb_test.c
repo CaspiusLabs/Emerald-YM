@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* The instrument on the host: the pure parts (Euclid, scales, chords, voice leading, names) and the
- * render (sound, no NaN, bounded, the loops evolve, the chord drifts, freeze holds). */
+/* The instrument on the host: the pure parts (Euclid, scales, chords, voicings, grooves, names, texts) and
+ * the render (sound, no NaN, bounded; the kick on the floor, the chord drifts and holds, never on a
+ * diminished fifth, freeze holds, the arrangement moves with Motion, throws, the loops evolve). */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -18,13 +19,23 @@ static int fails;
         }                                                                                                          \
     } while (0)
 
-static uint32_t midi_count;
+/* MIDI out: counted; the kick's note-ons (36 on channel 10) by the bar they fall in, and each bar's
+ * section (as a note-on from the grid sees it; 0xFF: no note that bar) */
+static uint32_t midi_count, kicks, kick_off_beat;
+#define KBARS 512
+static uint8_t kick_bar[KBARS], bar_sec[KBARS];
 void en_midi_out(uint32_t st, uint32_t d1, uint32_t d2)
 {
-    (void)st;
-    (void)d1;
-    (void)d2;
+    uint32_t b = en_bars / 16u;
     midi_count++;
+    if ((st & 0xF0u) == 0x90u && d2 > 0u && b < KBARS)
+        bar_sec[b] = en_section;
+    if (st == 0x99u && d1 == 36u && d2 > 0u) {
+        kicks++;
+        kick_off_beat += (en_bars & 3u) != 0u;
+        if (b < KBARS)
+            kick_bar[b]++;
+    }
 }
 
 static uint32_t pat(const char *s)
@@ -66,6 +77,37 @@ static void run(float secs)
     }
 }
 
+/* a new engine, stopped, the count from the top (en_init leaves the transport, en_bars, as they were) */
+static void fresh(void)
+{
+    en_play(0);
+    run(0.01f);
+    en_init();
+    en_bars = 0;
+    bad = 0;
+    memset(kick_bar, 0, sizeof kick_bar);
+    memset(bar_sec, 0xFF, sizeof bar_sec);
+}
+
+static uint32_t chord_sig(void)
+{
+    return (uint32_t)en_chord[0] | (uint32_t)en_chord[1] << 7 | (uint32_t)en_chord[2] << 14 |
+           (uint32_t)en_chord[3] << 21;
+}
+
+/* the chord playing, by its root: on the degree whose pitch class it is, its tones and name; 0 if none */
+static int chord_now(uint32_t pl, int root, int *pcs, char *name)
+{
+    int st[12], m = en_scale(pl, st), d, n;
+    for (d = 0; d < m; d++)
+        if ((root + st[d]) % 12 == en_chord_root) {
+            n = en_chord_tones(pl, root, d, pcs);
+            en_chord_name(pcs, n, name);
+            return n;
+        }
+    return 0;
+}
+
 int main(void)
 {
     int pcs[4], n, i;
@@ -95,6 +137,8 @@ int main(void)
     CHECK(!strcmp(en_chord_name(pcs, n, name), "Dm7"), "D Dorian i: %s", name);
     n = en_chord_tones(EN_MODE_POOL[MODE_DORIAN], 2, 3, pcs);
     CHECK(!strcmp(en_chord_name(pcs, n, name), "G7"), "D Dorian IV: %s", name);
+    n = en_chord_tones(EN_MODE_POOL[MODE_IONIAN], 0, 6, pcs);
+    CHECK(!strcmp(en_chord_name(pcs, n, name), "Bm7b5"), "C Ionian vii: %s", name);
     n = en_chord_tones(EN_MODE_POOL[MODE_PENT_MAJ], 0, 0, pcs);
     CHECK(n == 3, "pentatonic chords have three tones (%d)", n);
     n = en_chord_tones(1u | 1u << 4 | 1u << 7 | 1u << 9, 0, 0, pcs);   /* four notes: no doubled tones */
@@ -102,102 +146,258 @@ int main(void)
     n = en_chord_tones(1u | 1u << 4 | 1u << 7, 0, 1, pcs);
     CHECK(n == 3, "3-note pool: all three (%d)", n);
 
-    /* voice leading: small moves, in range, no unisons */
+    /* voicings: four rising notes from the root, within two octaves, no pitch class twice, in the pool */
     {
-        int from[4] = {50, 57, 62, 66}, to[4], cm7[4] = {0, 4, 7, 11}, f7[4] = {5, 9, 0, 4}, tot = 0;
-        en_voice_lead(from, cm7, 4, to, 48, 77);
-        for (i = 0; i < 4; i++) {
-            CHECK(to[i] >= 48 && to[i] <= 77, "range %d", to[i]);
-            tot += abs(to[i] - from[i]);
+        int iv[4], m, d, s, st[12];
+        en_voicing(EN_MODE_POOL[MODE_DORIAN], 0, 0, iv);
+        CHECK(iv[0] == 0 && iv[1] == 7 && iv[2] == 10 && iv[3] == 15, "Dorian i open: %d %d %d %d", iv[0], iv[1],
+              iv[2], iv[3]);
+        en_voicing(EN_MODE_POOL[MODE_DORIAN], 0, 1, iv);
+        CHECK(iv[0] == 0 && iv[1] == 10 && iv[2] == 14 && iv[3] == 15, "Dorian i 9th: %d %d %d %d",
+              iv[0], iv[1], iv[2], iv[3]);
+        for (m = 0; m < EN_NMODES; m++) {
+            int ns = en_scale(EN_MODE_POOL[m], st);
+            for (d = 0; d < ns; d++)
+                for (s = 0; s < 2; s++) {
+                    int k, j, ok = 1;
+                    en_voicing(EN_MODE_POOL[m], d, s, iv);
+                    ok &= iv[0] == 0 && iv[3] <= 26;
+                    for (k = 1; k < 4; k++)
+                        ok &= iv[k] > iv[k - 1];
+                    for (k = 0; k < 4; k++) {
+                        for (j = 0; j < k; j++)
+                            ok &= iv[k] % 12 != iv[j] % 12;
+                        ok &= EN_MODE_POOL[m] >> ((st[d] + iv[k]) % 12) & 1u;
+                    }
+                    CHECK(ok, "%s degree %d shape %d: %d %d %d %d", EN_MODE_NAME[m], d, s, iv[0], iv[1], iv[2], iv[3]);
+                }
         }
-        CHECK(tot <= 8, "Cmaj7 from D-ish: moved %d", tot);
-        memcpy(from, to, sizeof from);
-        en_voice_lead(from, f7, 4, to, 48, 77);
-        tot = 0;
-        for (i = 0; i < 4; i++)
-            tot += abs(to[i] - from[i]);
-        CHECK(tot <= 6, "CM7 -> FM7 moved %d", tot);
-        CHECK(to[0] != to[1] && to[1] != to[2] && to[2] != to[3] && to[0] != to[3], "no unisons");
     }
+
+    /* grooves, drift */
+    CHECK(en_groove(0) == 1u, "Drone: the downbeat");
+    for (i = 0; i < 5; i++)
+        CHECK(en_groove(i) & 0xFFFFu && !(en_groove(i) >> 16), "groove %d: %x", i, en_groove(i));
+    CHECK(en_groove(1) == 0x4444u, "Offbeat: %x", en_groove(1));
+    CHECK(en_drift_bars(0) == 2 && en_drift_bars(5) == 64 && en_drift_bars(6) == 0, "drift bars");
 
     /* texts */
     {
         char t[12];
+        static const char *const GRV[5] = {"Drone", "Offbeat", "Dotted", "Roller", "Sync"};
+        en_param_text(P_DRIFT, 6, t);
+        CHECK(!strcmp(t, "Hold"), "drift 6: %s", t);
+        en_param_text(P_DRIFT, 4, t);
+        CHECK(!strcmp(t, "32 bars"), "drift 4: %s", t);
         en_param_text(P_DRIFT, 0, t);
-        CHECK(!strcmp(t, "20s"), "drift 0: %s", t);
-        en_param_text(P_DRIFT, 100, t);
-        CHECK(!strcmp(t, "5:00"), "drift 100: %s", t);
-        en_param_text(P_ETIME, 3, t);
-        CHECK(!strcmp(t, "1 bar"), "etime: %s", t);
-        en_param_text(P_BOCT, 1, t);
-        CHECK(!strcmp(t, "+1"), "boct: %s", t);
+        CHECK(!strcmp(t, "2 bars"), "drift 0: %s", t);
+        en_param_text(P_ETIME, 1, t);
+        CHECK(!strcmp(t, "1/8."), "etime 1: %s", t);
+        en_param_text(P_ETIME, 5, t);
+        CHECK(!strcmp(t, "1 bar"), "etime 5: %s", t);
+        for (i = 0; i < 5; i++) {
+            en_param_text(P_GROOVE, i, t);
+            CHECK(!strcmp(t, GRV[i]), "groove %d: %s", i, t);
+        }
+        en_param_text(P_CTONE, 0, t);
+        CHECK(!strcmp(t, "Saws"), "ctone 0: %s", t);
+        en_param_text(P_CTONE, 1, t);
+        CHECK(!strcmp(t, "Keys"), "ctone 1: %s", t);
+        en_param_text(P_SWING, 0, t);
+        CHECK(!strcmp(t, "50%"), "swing 0: %s", t);
+        en_param_text(P_BASSOCT, 1, t);
+        CHECK(!strcmp(t, "+1"), "bass oct: %s", t);
+        en_param_text(P_MODE, MODE_DORIAN, t);
+        CHECK(!strcmp(t, "Dorian"), "mode: %s", t);
+        for (i = 0; i < P_NPARAMS; i++) {
+            const en_param_t *pi = en_param_info(i);
+            CHECK(pi->lo <= pi->def && pi->def <= pi->hi, "%s: default %d out of %d..%d", pi->name, pi->def, pi->lo,
+                  pi->hi);
+            en_param_text(i, pi->hi, t);
+            CHECK(strlen(t) < 10, "%s: text too long", pi->name);
+        }
     }
 
-    /* the render: silent at rest, sound when growing, never NaN, bounded */
+    /* the render: silent at rest, sound when playing, never NaN, bounded */
     en_init();
+    CHECK(en_drum_pat[0] == 0x1111u, "four on the floor: %x", en_drum_pat[0]);
+    en_set(P_CRACKLE, 0);
     run(1.0f);
     CHECK(peak == 0.0f, "silent before play (%f)", (double)peak);
+    en_set(P_CRACKLE, en_param_info(P_CRACKLE)->def);
     en_play(1);
     peak = sum2 = 0.0f;
     run(20.0f);
     CHECK(!bad, "NaN in the output");
-    CHECK(peak > 0.05f && peak < 0.99f, "peak %f", (double)peak);
-    printf("  20 s playing: peak %.3f, rms %.4f, bars %u\n", (double)peak,
-           (double)sqrtf(sum2 / (20.0f * 44100.0f * 2.0f)), en_bars / 16u);
-    CHECK(en_bars / 16u >= 5u, "the grid ran (%u sixteenths)", en_bars);
-    CHECK(en_pad_level > 0.5f, "the pad swelled (%f)", (double)en_pad_level);
+    CHECK(peak > 0.1f && peak < 0.95f, "peak %f", (double)peak);
+    printf("  20 s playing: peak %.3f, rms %.4f, bars %u, kicks %u\n", (double)peak,
+           (double)sqrtf(sum2 / (20.0f * 44100.0f * 2.0f)), en_bars / 16u, kicks);
+    CHECK(en_bars / 16u >= 9u, "the grid ran (%u sixteenths)", en_bars);
 
-    /* the chord drifts: with Drift at its shortest, a few changes in two minutes */
+    /* the kick: four on the floor, on the beats, while Full (Motion 0: always Full; a fill halves a phrase's
+     * last bar) */
     {
-        int changes = 0, last = en_chord_root * 16 + en_chord[0] % 16, k;
-        en_set(P_DRIFT, 0);
-        for (k = 0; k < 120; k++) {
-            int now;
-            run(1.0f);
-            now = en_chord_root * 16 + en_chord[0] % 16;
-            changes += now != last;
-            last = now;
+        uint32_t b, full = 0, two = 0, other = 0;
+        fresh();
+        en_set(P_MOTION, 0);
+        kicks = kick_off_beat = 0;
+        en_play(1);
+        run(200.0f);
+        for (b = 0; b + 1 < en_bars / 16u && b < KBARS; b++) {
+            if (kick_bar[b] == 4)
+                full++;
+            else if (kick_bar[b] == 2 && (b & 7u) == 7u)
+                two++;
+            else
+                other++;
         }
-        CHECK(changes >= 3, "chord changes in 2 min at Drift 0: %d", changes);
-        printf("  chord changes in 2 min: %d\n", changes);
+        CHECK(!kick_off_beat, "%u kicks off the beat", kick_off_beat);
+        CHECK(!other && full > 80u, "kick bars: %u of four, %u fills, %u else", full, two, other);
+        printf("  200 s at Motion 0: %u bars of four kicks, %u fills\n", full, two);
     }
 
-    /* a chord change is heard: within 2 s no sounding voice sings a note outside the new chord */
+    /* the chord drifts: at 2 bars, it moves every 4 s or so; never onto a diminished fifth; in the pool */
     {
-        int k, i, bad_s = 0, changes = 0, last = -1;
-        en_set(P_DRIFT, 0);
-        for (k = 0; k < 90 * 4; k++) {
-            int sig = en_chord[0] | en_chord[1] << 7 | en_chord[2] << 14 | en_chord[3] << 21;
-            static int since = -1;
-            run(0.25f);
-            if (sig != last) {
-                if (last >= 0) {
-                    changes++;
-                    since = 0;
+        static const int MODES[2] = {MODE_IONIAN, MODE_DORIAN};
+        int mi;
+        for (mi = 0; mi < 2; mi++) {
+            uint32_t pl = EN_MODE_POOL[MODES[mi]], last;
+            int changes = 0, dim = 0, out = 0, k, seen = 0;
+            fresh();
+            en_set(P_ROOT, 0);
+            en_pool(pl);
+            en_set(P_DRIFT, 0);
+            en_play(1);
+            run(0.1f);
+            last = chord_sig();
+            for (k = 0; k < 4 * 180; k++) {
+                int t[4], nt;
+                uint32_t s;
+                run(0.25f);
+                s = chord_sig();
+                changes += s != last;
+                last = s;
+                nt = chord_now(pl, 0, t, name);
+                CHECK(nt, "%s: chord root %d off the scale", EN_MODE_NAME[MODES[mi]], en_chord_root);
+                if (nt) {
+                    seen |= 1 << en_chord_root;
+                    dim += strstr(name, "b5") || strstr(name, "dim");
                 }
-                last = sig;
-            } else if (since >= 0 && ++since == 8) {   /* 2 s after a change */
-                uint32_t pcs = 0;
-                for (i = 0; i < EN_NPAD; i++)
-                    pcs |= 1u << (en_chord[i] % 12);
-                for (i = 0; i < EN_NPAD; i++)
-                    if (en_pad_amp[i] > 0.05f && !(pcs >> (en_pad_note[i] % 12) & 1u))
-                        bad_s++;
-                since = -1;
+                for (i = 0; i < EN_NPAD; i++) {
+                    out += !(pl >> (en_chord[i] % 12) & 1u);
+                    dim += en_chord[i] % 12 == (en_chord_root + 6) % 12;
+                }
             }
+            CHECK(changes >= 30, "%s: %d chord changes in 3 min at 2 bars", EN_MODE_NAME[MODES[mi]], changes);
+            CHECK(popcount((uint32_t)seen) >= 3, "%s: only %d roots", EN_MODE_NAME[MODES[mi]], popcount((uint32_t)seen));
+            CHECK(!dim, "%s: %d times on a diminished fifth", EN_MODE_NAME[MODES[mi]], dim);
+            CHECK(!out, "%s: %d chord notes off the pool", EN_MODE_NAME[MODES[mi]], out);
+            printf("  %s, 3 min at 2 bars: %d chord changes, %d roots\n", EN_MODE_NAME[MODES[mi]], changes,
+                   popcount((uint32_t)seen));
         }
-        CHECK(changes >= 3, "chord changes in 90 s at Drift 0: %d", changes);
-        CHECK(!bad_s, "%d voices still off the new chord 2 s after a change", bad_s);
+    }
+
+    /* Drift Hold: one chord */
+    {
+        uint32_t held;
+        int k, moved = 0;
+        fresh();
+        en_set(P_DRIFT, 6);
+        en_play(1);
+        run(0.1f);
+        held = chord_sig();
+        for (k = 0; k < 120; k++) {
+            run(1.0f);
+            moved += chord_sig() != held;
+        }
+        CHECK(!moved && en_drift == 0.0f, "Hold: the chord moved (%d s)", moved);
+        en_next();                               /* but Next still moves it, on the bar */
+        run(2.5f);
+        CHECK(chord_sig() != held, "Next while holding: no change");
+    }
+
+    /* freeze (dub hold): the chord holds, though Drift is at its shortest; then moves again */
+    {
+        uint32_t held;
+        int k, moved = 0;
+        en_set(P_DRIFT, 0);
+        run(5.0f);
+        en_freeze(1);
+        run(0.1f);
+        CHECK(en_frozen, "not frozen");
+        held = chord_sig();
+        for (k = 0; k < 60; k++) {
+            run(1.0f);
+            moved += chord_sig() != held;
+        }
+        CHECK(!moved, "the chord moved while frozen (%d s)", moved);
+        en_freeze(0);
+        run(10.0f);
+        CHECK(chord_sig() != held, "the chord stayed after the freeze");
+    }
+
+    /* the arrangement: at Motion 100, it leaves Full now and then; at Motion 0, never */
+    {
+        int k, m, secs[EN_NSEC];
+        static const int MOT[2] = {100, 0};
+        for (m = 0; m < 2; m++) {
+            memset(secs, 0, sizeof secs);
+            fresh();
+            en_set(P_MOTION, MOT[m]);
+            en_play(1);
+            for (k = 0; k < 600; k++) {
+                run(1.0f);
+                secs[en_section < EN_NSEC ? en_section : 0]++;
+            }
+            if (MOT[m]) {                        /* the kick: four a bar while Full (but a fill), none in a Break */
+                uint32_t b, kf = 0, kb = 0, nb = 0;
+                for (b = 0; b + 1 < en_bars / 16u && b < KBARS; b++) {
+                    if (bar_sec[b] == SEC_FULL && (b & 7u) != 7u)
+                        kf += kick_bar[b] != 4;
+                    if (bar_sec[b] == SEC_BREAK)
+                        nb++, kb += kick_bar[b];
+                }
+                CHECK(!kf && !kb && nb > 20u, "Motion 100: %u Full bars without four kicks, %u kicks in %u Break bars",
+                      kf, kb, nb);
+            }
+            printf("  10 min at Motion %d: Full %d s, Break %d, Groove %d, Thin %d\n", MOT[m], secs[SEC_FULL],
+                   secs[SEC_BREAK], secs[SEC_GROOVE], secs[SEC_THIN]);
+            if (MOT[m])
+                CHECK(secs[SEC_FULL] < 500 && secs[SEC_FULL] > 150 && secs[SEC_BREAK] > 0,
+                      "Motion 100: Full %d s, Break %d s", secs[SEC_FULL], secs[SEC_BREAK]);
+            else
+                CHECK(secs[SEC_FULL] == 600, "Motion 0 left Full (%d s Full)", secs[SEC_FULL]);
+        }
+    }
+
+    /* throws: with Evolve high, stabs go into the echo */
+    {
+        uint32_t t0, lo, hi;
+        fresh();
+        en_set(P_EVOLVE, 0);
+        en_set(P_MOTION, 0);
+        en_play(1);
+        t0 = en_throws;
+        run(120.0f);
+        lo = en_throws - t0;
+        fresh();
+        en_set(P_EVOLVE, 100);
+        en_play(1);
+        t0 = en_throws;
+        run(120.0f);
+        hi = en_throws - t0;
+        printf("  throws in 2 min: %u at Evolve 0, %u at Evolve 100\n", lo, hi);
+        CHECK(hi >= 10u && hi > 2u * lo, "throws: %u at Evolve 100, %u at 0", hi, lo);
     }
 
     /* the loops evolve: with Evolve at 100, the phrases change */
     {
         int8_t before[EN_NLOOP][EN_LOOP_MAX];
         int diff = 0, l;
-        en_set(P_EVOLVE, 100);
         en_set(P_DENSITY, 80);
+        run(5.0f);
         memcpy(before, (const void *)en_loop_note, sizeof before);
-        run(90.0f);
+        run(60.0f);
         for (l = 0; l < EN_NLOOP; l++)
             for (i = 0; i < EN_LOOP_MAX; i++)
                 diff += before[l][i] != en_loop_note[l][i];
@@ -207,101 +407,83 @@ int main(void)
                 CHECK(en_loop_note[l][i] == -1, "loop %d slot %d past its end", l, i);
     }
 
-    /* freeze: the chord holds */
-    {
-        int held = en_chord[0] + 128 * en_chord[1], k;
-        en_freeze(1);
-        for (k = 0; k < 60; k++) {
-            run(1.0f);
-            CHECK(en_chord[0] + 128 * en_chord[1] == held, "the chord moved while frozen");
-        }
-        en_freeze(0);
-    }
-
-    /* a new key while playing (a piece, the root, the scale): within 3 s no voice still sings the old
-     * chord (a voice only takes its note at its next breath otherwise, up to a minute later) */
-    {
-        int k, stale = 0;
-        en_freeze(0);
-        en_set(P_ROOT, 6);                       /* a tritone away: nothing in common to hide behind */
-        en_pool(EN_MODE_POOL[MODE_LYDIAN]);
-        en_regrow();
-        run(3.0f);
-        for (k = 0; k < EN_NPAD; k++)
-            if (en_pad_amp[k] > 0.02f && en_pad_note[k] != en_chord[k]) {
-                printf("  voice %d sings %d, the chord has %d (amp %.2f)\n", k, en_pad_note[k], en_chord[k],
-                       (double)en_pad_amp[k]);
-                stale++;
-            }
-        CHECK(!stale, "%d voices still in the old key after 3 s", stale);
-        en_set(P_ROOT, 2);
-    }
-
-    /* a pool change: the chord's tones are in it */
+    /* a new key while playing: the chord's notes in it at once */
     {
         uint32_t pent = EN_MODE_POOL[MODE_PENT_MIN];
+        en_set(P_ROOT, 2);
         en_pool(pent);
+        en_regrow();
         run(0.1f);
-        for (i = 0; i < 4; i++)
+        for (i = 0; i < EN_NPAD; i++) {
             CHECK(pent >> ((en_chord[i] - 2 + 120) % 12) & 1u, "chord note %d not in the pool", en_chord[i]);
+            CHECK(en_chord[i] >= 36 && en_chord[i] <= 84, "chord note %d out of range", en_chord[i]);
+        }
+        CHECK(en_chord_root == 2, "regrow: the home chord (root %d)", en_chord_root);
+    }
+
+    /* the dub echo at its wildest: Feedback 100, Echo 100, frozen and not; bounded, and it dies away */
+    {
+        float p1, rms;
+        fresh();
+        en_set(P_FEEDBACK, 100);
+        en_set(P_ECHO, 100);
+        en_set(P_EVOLVE, 100);
+        en_set(P_MOTION, 100);
+        en_play(1);
+        bad = 0;
+        peak = sum2 = 0.0f;
+        run(180.0f);
+        p1 = peak;
+        rms = sqrtf(sum2 / (180.0f * 44100.0f * 2.0f));
+        CHECK(!bad && peak < 0.97f, "Feedback 100: peak %f", (double)peak);
+        en_freeze(1);
+        peak = 0.0f;
+        run(30.0f);
+        CHECK(!bad && peak < 0.97f, "Feedback 100 frozen: peak %f", (double)peak);
+        en_freeze(0);
+        en_set(P_CRACKLE, 0);
+        en_play(0);
+        run(60.0f);
+        peak = 0.0f;
+        run(1.0f);
+        printf("  3 min at Feedback 100: peak %.3f, rms %.4f; a minute after stop: %.4f\n", (double)p1,
+               (double)rms, (double)peak);
+        CHECK(peak < 0.3f, "Feedback 100: still %f a minute after stopping", (double)peak);
     }
 
     /* every setting at its extremes: still bounded */
     {
         int p;
+        fresh();
+        en_play(1);
         for (p = 0; p < P_NPARAMS; p++)
             en_set(p, en_param_info(p)->hi);
         en_set(P_MIDI, 1);
         peak = 0.0f;
         run(30.0f);
         CHECK(!bad && peak < 1.0f, "all at max: peak %f", (double)peak);
+        en_set(P_CTONE, 0);
+        run(30.0f);
+        CHECK(!bad && peak < 1.0f, "all at max, saws: peak %f", (double)peak);
+        printf("  a minute at max: peak %.3f\n", (double)peak);
         for (p = 0; p < P_NPARAMS; p++)
             en_set(p, en_param_info(p)->lo);
-        en_set(P_TEMPO, 30);
-        run(10.0f);
+        run(30.0f);
         CHECK(!bad, "all at min: NaN");
     }
 
-    /* Bell tone and Bell oct are heard: brighter (zero crossings) and higher with them, bells alone */
-    {
-        float zc[3];
-        int k;
-        static const int TONE[3] = {0, 100, 0}, OCT[3] = {0, 0, 2};
-        for (k = 0; k < 3; k++) {
-            int b2, j;
-            long z = 0;
-            float prev = 0.0f;
-            en_init();
-            en_set(P_PAD, 0);
-            en_set(P_BASS, 0);
-            en_set(P_PULSE, 0);
-            en_set(P_ECHO, 0);
-            en_set(P_REVERB, 0);
-            en_set(P_DENSITY, 100);
-            en_set(P_BTONE, TONE[k]);
-            en_set(P_BOCT, OCT[k]);
-            en_play(1);
-            for (b2 = 0; b2 < 20 * 44100 / 256; b2++) {
-                en_render(buf, 256, 2048);
-                for (j = 0; j < 256; j++) {
-                    float x = (float)buf[2 * j];
-                    z += (x > 0.0f) != (prev > 0.0f);
-                    prev = x;
-                }
-            }
-            zc[k] = (float)z;
-        }
-        CHECK(zc[1] > 2.5f * zc[0], "Bell tone 100 not brighter: %.0f vs %.0f", (double)zc[1], (double)zc[0]);
-        CHECK(zc[2] > 1.8f * zc[0], "Bell oct +2 not higher: %.0f vs %.0f", (double)zc[2], (double)zc[0]);
-        en_init();
-        en_play(1);
-    }
-
-    /* stop: the tails die away */
-    for (i = 0; i < P_NPARAMS; i++)
-        en_set(i, en_param_info(i)->def);
+    /* stop: the tails die away (but the vinyl turns on) */
+    fresh();
+    en_play(1);
+    run(20.0f);
     en_play(0);
-    run(40.0f);
+    run(30.0f);
+    peak = 0.0f;
+    run(1.0f);
+    printf("  30 s after stop, crackle on: %.4f\n", (double)peak);
+    CHECK(peak < 0.05f, "quiet after stopping, crackle on (%f)", (double)peak);
+    en_set(P_CRACKLE, 0);
+    run(1.0f);
     peak = 0.0f;
     run(1.0f);
     CHECK(peak < 0.01f, "quiet after stopping (%f)", (double)peak);

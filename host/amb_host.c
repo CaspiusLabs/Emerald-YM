@@ -19,7 +19,6 @@
  *   leds                         print the lit buttons and keys
  *   expect WHAT VALUE            check state: exit 1 on mismatch; VALUE "<N" / ">N" is a bound
  *   reboot                       re-run boot from the simulated flash (persistence test)
- *   storev3 N                    write the project as format 3 did, with the playing piece's Pad at N
  *   listen                       a screen reader starts listening (HELLO, again every 2 s): each SAY is printed
  *                                ("said: ..."; "said!:" cuts off what was being said)
  *   where                        the reader asks for everything on the screen
@@ -581,27 +580,7 @@ int main(int argc, char **argv)
             printf("\n");
         } else if (!strcmp(cmd, "expect"))
             fails += expect(a, b);
-        else if (!strcmp(cmd, "storev3")) {          /* the project as format 3 (0.9 before the layer
-                                                         * pages) wrote it, Pad of the playing piece at N */
-            static project_v3_t o;
-            int i, k;
-            memset(&o, 0, sizeof o);
-            o.magic = PROJ_MAGIC;
-            o.format = 3u;
-            for (k = 0; k < V3_NPARAMS; k++)
-                o.par[k] = proj.par[k];
-            o.par[P_PAD] = (int16_t)atoi(a);
-            o.pool = proj.pool;
-            o.leds = proj.leds;
-            o.piece = proj.piece;
-            for (i = 0; i < NPIECES; i++) {
-                for (k = 0; k < V3_NPARAMS; k++)
-                    o.slot[i].par[k] = proj.slot[i].par[k];
-                o.slot[i].pool = proj.slot[i].pool;
-            }
-            o.slot[proj.piece].par[P_PAD] = o.par[P_PAD];
-            plat_store_save(OBJ_PROJ, &o, sizeof o);
-        } else if (!strcmp(cmd, "reboot")) {
+        else if (!strcmp(cmd, "reboot")) {
             memset(&proj, 0, sizeof proj);
             boot();
         } else if (!strcmp(cmd, "listen")) {

@@ -1,62 +1,61 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* AMB-1 UI: the panel and the screen. Part of the unity build (after gfx.c and project.c); the host
+/* DUB-1 UI: the panel and the screen. Part of the unity build (after gfx.c and project.c); the host
  * simulator includes it too.
  *
  *   keys           the scale: each key adds or removes its note from the pool (the root stays)
- *   PLAY           the garden grows / rests        ARP   the next chord, now
- *   REC            FREEZE: the chord holds, the reverb rings on    OCT- / OCT+   the bells' octave
- *   ENV            the pad's colour: Rhodes / Voices (lit: Voices), kept with the piece
- *   SELECT tempo   ALGORITHM mode (loads a pool)   PRESETS the piece (Root is on the Setup page)
- *   HOME SEQ FX SEL GLO   the pages: LAYERS, MOTION, SPACE, TONE, SETUP (EDIT steps through them)
+ *   PLAY           plays / rests                   EDIT  the next chord, on the next bar
+ *   REC            DUB HOLD: the echo repeats what it holds, the chord holds   OCT- / OCT+   the pings' octave
+ *   SELECT         the pages (with HOME held: the tempo)   ALGORITHM mode (loads a pool)   PRESETS the piece
+ *   HOME ENV ARP LFO SEQ FX GLO   the pages: DUB, CHORD, TEXTURE, BASS, DRUMS, SPACE, SETUP
  *   KNOB 1-4       the page's four values
  *   SAVE           saves (it also saves by itself a few seconds after a change, while resting);
  *                  held 1.5 s: the piece back to its recipe */
 #include "../dsp/fastmath.h"
 
 /* the pages, one a layer (a button each); SELECT steps through them in this order */
-enum { V_GARDEN, V_PAD, V_BELLS, V_BASS, V_PULSE, V_SPACE, V_SETUP, NVIEWS };
-static const char *const VIEW_NAME[NVIEWS] = {"Garden", "Pad", "Bells", "Bass", "Pulse", "Space", "Setup"};
+enum { V_DUB, V_CHORD, V_TEXTURE, V_BASS, V_DRUMS, V_SPACE, V_SETUP, NVIEWS };
+static const char *const VIEW_NAME[NVIEWS] = {"Dub", "Chord", "Texture", "Bass", "Drums", "Space", "Setup"};
 static const uint8_t VIEW_BTN[NVIEWS] = {B_HOME, B_ENV, B_ARP, B_LFO, B_SEQ, B_FX, B_GLO};
 /* the four knobs of each page: a parameter, or one of these; and what the knob is called there */
 enum { K_LEDS = 100, K_CPU, K_NONE };
 static const uint8_t VIEW_KNOB[NVIEWS][4] = {
     {P_TEMPO, P_EVOLVE, P_MOTION, P_DRIFT},
-    {P_PAD, P_SWELL, P_BRIGHT, P_PADTONE},
-    {P_BELLS, P_DENSITY, P_BTONE, P_BOCT},
-    {P_BASS, P_BASSOCT, P_GLIDE, P_FIFTH},
-    {P_PULSE, P_HITS, P_SWING, P_HATS},
-    {P_ECHO, P_ETIME, P_REVERB, P_SIZE},
+    {P_CHORD, P_STABS, P_DECAY, P_CUTOFF},
+    {P_PINGS, P_DENSITY, P_PTONE, P_CRACKLE},
+    {P_BASS, P_BASSOCT, P_GROOVE, P_FIFTH},
+    {P_DRUMS, P_HITS, P_SWING, P_DUCK},
+    {P_ECHO, P_ETIME, P_FEEDBACK, P_REVERB},
     {P_ROOT, P_TUNE, P_MIDI, K_LEDS},
 };
 static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Tempo", "Evolve", "Motion", "Drift"},
-    {"Level", "Swell", "Bright", "Colour"},
-    {"Level", "Density", "Tone", "Octave"},
-    {"Level", "Octave", "Glide", "Fifth"},
-    {"Level", "Hits", "Swing", "Hats"},
-    {"Echo", "Echo time", "Reverb", "Size"},
+    {"Level", "Stabs", "Decay", "Cutoff"},
+    {"Pings", "Density", "Tone", "Crackle"},
+    {"Level", "Octave", "Groove", "Fifth"},
+    {"Level", "Hits", "Swing", "Duck"},
+    {"Echo", "Echo time", "Feedback", "Reverb"},
     {"Root", "Tune", "MIDI out", "Lights"},
 };
 
-/* the screen's colours: the cover of Ambient 1: Music for Airports (1978), as the web app and the site.
- * The map's paper, its ink; the land's greens for the pad (the chord) and the scale, its rivers for the
- * bells; the bass and the pulse in darker inks. Each layer has a pale tint for the shapes at rest. */
-#define K_BG RGB(246, 238, 181)
-#define K_PANEL RGB(255, 251, 224)
-#define K_LINE RGB(208, 214, 150)
-#define K_DIM RGB(112, 106, 58)
-#define K_TEXT RGB(29, 27, 2)
-#define K_ACC RGB(64, 128, 124)          /* the accent: the page, the knob being turned, a message's word */
-#define K_BELL RGB(84, 153, 149)
-#define K_BELL_T RGB(176, 214, 206)
-#define K_PAD RGB(112, 142, 62)
-#define K_PAD_T RGB(208, 220, 146)
-#define K_PULSE RGB(70, 66, 28)
-#define K_PULSE_T RGB(214, 214, 160)
-#define K_BASS RGB(138, 128, 52)
-#define K_BASS_T RGB(222, 218, 160)
-#define K_FROST RGB(60, 132, 160)
-#define K_FROST_T RGB(170, 210, 216)
+/* the screen's colours: a dark room, as a dub techno sleeve (grey on black, a cold blue). The chord and
+ * the scale in teal, the pings in a paler blue, the bass in brass, the drums in amber; dub hold in red.
+ * Each layer has a dark tint for the shapes at rest. */
+#define K_BG RGB(16, 20, 26)
+#define K_PANEL RGB(30, 37, 47)
+#define K_LINE RGB(46, 56, 70)
+#define K_DIM RGB(112, 126, 142)
+#define K_TEXT RGB(222, 228, 232)
+#define K_ACC RGB(92, 196, 204)          /* the accent: the page, the knob being turned, a message's word */
+#define K_BELL RGB(128, 170, 224)
+#define K_BELL_T RGB(40, 56, 82)
+#define K_PAD RGB(84, 200, 186)
+#define K_PAD_T RGB(30, 70, 72)
+#define K_PULSE RGB(236, 150, 84)
+#define K_PULSE_T RGB(78, 54, 38)
+#define K_BASS RGB(204, 180, 112)
+#define K_BASS_T RGB(72, 64, 44)
+#define K_FROST RGB(232, 92, 84)         /* dub hold */
+#define K_FROST_T RGB(96, 42, 40)
 
 static struct {
     uint8_t view;
@@ -319,19 +318,19 @@ static void button(int b)
         } else {
             en_seed(plat_ms());
             en_play(1);
-            say("GROWING", 0);
+            say("PLAYING", 0);
         }
         break;
     case B_REC:
-        say("FREEZE", en_frozen ? "OFF" : "ON");
+        say("DUB HOLD", en_frozen ? "OFF" : "ON");
         en_freeze(!en_frozen);                   /* the engine takes it at its next block */
         break;
     case B_OCTDN: case B_OCTUP:
-        knob_set(P_BOCT, proj.par[P_BOCT] + (b == B_OCTUP ? 1 : -1));
+        knob_set(P_POCT, proj.par[P_POCT] + (b == B_OCTUP ? 1 : -1));
         {
             char t[8];
-            en_param_text(P_BOCT, proj.par[P_BOCT], t);
-            say("BELL OCTAVE", t);
+            en_param_text(P_POCT, proj.par[P_POCT], t);
+            say("PING OCTAVE", t);
         }
         break;
     case B_SAVE:
@@ -418,7 +417,7 @@ static void input(void)
         if (btn >> B_HOME & 1u) {
             turn(EN_SELECT, P_TEMPO, e);
             ui.btn_used |= 1u << B_HOME;
-            if (ui.view == V_GARDEN) {           /* Tempo is the Garden's first knob */
+            if (ui.view == V_DUB) {              /* Tempo is the Dub page's first knob */
                 ui.touched = 0;
                 ui.touch_until = plat_ms() + 1200u;
             } else {
@@ -462,7 +461,7 @@ static void input(void)
 }
 
 /* ------------------------------------------------------------- screen --- */
-/* three bands: the header (28 px), the garden (144), the knobs (68) */
+/* three bands: the header (28 px), the main screen (144), the knobs (68) */
 #define HDR_H 28
 #define MAIN_Y 28
 #define MAIN_H 144
@@ -683,9 +682,9 @@ static void draw_header(void)
     cv_blit(0, 0);
 }
 
-/* the garden: the scale as a ring of twelve, the chord lit in it; the four bell loops around it, each
- * a ring of its steps with its notes on it and its playhead going round; the three pulses on the
- * right, the four layers' levels on the left */
+/* the main screen: the scale as a ring of twelve, the chord lit in it; the four ping loops around it, each
+ * a ring of its steps with its notes on it and its playhead going round; the three drums on the
+ * right, the four layers' levels on the left, the section top left */
 #define CX 120
 #define CY 84
 static const int32_t LOOP_R[EN_NLOOP] = {36, 43, 50, 57};
@@ -761,10 +760,10 @@ static void draw_meters(void)                    /* left: the four layers */
         bm = fm_maxf(bm, en_loop_glow[i]);
     for (i = 0; i < EN_NDRUM; i++)
         dm = fm_maxf(dm, en_drum_glow[i]);
-    lv[0] = en_pad_level * (float)proj.par[P_PAD] * 0.01f;
-    lv[1] = bm * (float)proj.par[P_BELLS] * 0.01f;
+    lv[0] = en_pad_level * (float)proj.par[P_CHORD] * 0.01f;
+    lv[1] = bm * (float)proj.par[P_PINGS] * 0.01f;
     lv[2] = en_bass_level * (float)proj.par[P_BASS] * 0.01f;
-    lv[3] = dm * (float)proj.par[P_PULSE] * 0.01f;
+    lv[3] = dm * (float)proj.par[P_DRUMS] * 0.01f;
     for (i = 0; i < 4; i++) {
         int32_t x = 10 + i * 11, h = (int32_t)(fm_clampf(lv[i], 0.0f, 1.0f) * 80.0f + 0.5f);
         cv_round(x, 46, 7, 86, 3, T[i]);
@@ -773,7 +772,7 @@ static void draw_meters(void)                    /* left: the four layers */
     }
 }
 
-static void draw_pulse(void)                     /* right: the three Euclidean rings */
+static void draw_pulse(void)                     /* right: the kick, the shaker, the open hat (16 steps each) */
 {
     int d;
     for (d = 0; d < EN_NDRUM; d++) {
@@ -784,7 +783,7 @@ static void draw_pulse(void)                     /* right: the three Euclidean r
             int32_t x, y;
             int cur = en_playing && s == en_drum_pos[d];
             polar(cx, cy, 13.0f, s, n, &x, &y);
-            if ((p >> s & 1u) && en_pulse_rest)   /* sitting a few bars out: faded */
+            if ((p >> s & 1u) && en_pulse_rest)   /* a Break: faded */
                 cv_disc(x, y, 2, K_LINE);
             else if (p >> s & 1u)
                 cv_disc(x, y, cur ? 3 : 2, cur ? K_PULSE : mix(K_PULSE_T, K_PULSE, 10));
@@ -808,17 +807,17 @@ static int help_lines(int b, const char *l[HELP_LINES])
     int n = 0;
 #define L(t) (l[n++] = (t))
     switch (b) {
-    case B_HOME: L("THE GARDEN"); L("TEMPO, EVOLVE, MOTION, DRIFT"); L("+ SELECT: TEMPO"); break;
-    case B_ENV: L("THE PAD"); L("LEVEL, SWELL, BRIGHT,"); L("COLOUR"); break;
-    case B_ARP: L("THE BELLS"); L("LEVEL, DENSITY, TONE,"); L("OCTAVE"); break;
-    case B_LFO: L("THE BASS"); L("LEVEL, OCTAVE, GLIDE, FIFTH"); break;
-    case B_SEQ: L("THE PULSE"); L("LEVEL, HITS, SWING, HATS"); break;
-    case B_FX: L("THE SPACE"); L("ECHO, ECHO TIME, REVERB,"); L("SIZE"); break;
+    case B_HOME: L("DUB"); L("TEMPO, EVOLVE, MOTION, DRIFT"); L("+ SELECT: TEMPO"); break;
+    case B_ENV: L("THE CHORD"); L("LEVEL, STABS, DECAY,"); L("CUTOFF"); break;
+    case B_ARP: L("TEXTURE"); L("PINGS, DENSITY, TONE,"); L("CRACKLE"); break;
+    case B_LFO: L("THE BASS"); L("LEVEL, OCTAVE, GROOVE, FIFTH"); break;
+    case B_SEQ: L("THE DRUMS"); L("LEVEL, HITS, SWING, DUCK"); break;
+    case B_FX: L("THE SPACE"); L("ECHO, ECHO TIME, FEEDBACK,"); L("REVERB"); break;
     case B_GLO: L("SETUP"); L("ROOT, TUNE, MIDI OUT, LIGHTS"); break;
     case B_EDIT: L("THE NEXT CHORD,"); L("ON THE NEXT BAR"); break;
-    case B_REC: L("FREEZE: THE CHORD HOLDS"); L(" AND THE REVERB RINGS ON"); L("AGAIN: THAW"); break;
-    case B_OCTDN: L("THE BELLS AN OCTAVE DOWN"); L("WITH OCT+, 5 S: UPDATE MODE"); break;
-    case B_OCTUP: L("THE BELLS AN OCTAVE UP"); L("WITH OCT-, 5 S: UPDATE MODE"); break;
+    case B_REC: L("DUB HOLD: THE ECHO"); L(" REPEATS WHAT IT HOLDS"); L("AGAIN: LET GO"); break;
+    case B_OCTDN: L("THE PINGS AN OCTAVE DOWN"); L("WITH OCT+, 5 S: UPDATE MODE"); break;
+    case B_OCTUP: L("THE PINGS AN OCTAVE UP"); L("WITH OCT-, 5 S: UPDATE MODE"); break;
     case B_SAVE: L("SAVES ALL EIGHT PIECES"); L("KEEP HOLDING: THE PIECE"); L(" BACK TO ITS RECIPE"); break;
     default: break;
     }
@@ -865,15 +864,24 @@ static void draw_main(void)
     for (i = 0; i < EN_NDRUM; i++)
         h = hash(h, en_drum_pos[i] | (uint32_t)q16(en_drum_glow[i]) << 8 | en_drum_pat[i] << 13 | (uint32_t)en_pulse_rest << 31);
     h = hash(h, (uint32_t)(en_drift * 40.0f) | (uint32_t)q16(en_pad_level) << 8 | (uint32_t)q16(en_bass_level) << 13);
+    h = hash(h, en_section | (uint32_t)en_phrase_bar << 4 | (uint32_t)en_playing << 8);
     for (i = 0; i < 4; i++)
         h = hash(h, (uint32_t)proj.par[i]);
     if (h == ui.sig[1])
         return;
     ui.sig[1] = h;
     cv_begin(240, MAIN_H, K_BG);
-    if (en_frozen) {                             /* the way to the next chord, top right (held: frozen) */
-        cv_text(232 - text_w(&FONT_XS, "held"), 4, &FONT_XS, "held", K_FROST);
-    } else {
+    {   /* top left: the phrase's section and its eight bars */
+        char t[12];
+        int b;
+        caps(t, EN_SEC_NAME[en_section], sizeof t);
+        cv_text(8, 2, &FONT_XS, t, en_section == SEC_FULL ? K_DIM : K_ACC);
+        for (b = 0; b < 8; b++)
+            cv_round(9 + b * 5, 22, 3, 3, 1, en_playing && b <= en_phrase_bar ? K_DIM : K_LINE);
+    }
+    if (en_frozen) {                             /* the way to the next chord, top right (dub hold: hold) */
+        cv_text(232 - text_w(&FONT_XS, "hold"), 4, &FONT_XS, "hold", K_FROST);
+    } else if (en_drift_bars(proj.par[P_DRIFT])) {
         int32_t w = 30, f = (int32_t)(en_drift * (float)w + 0.5f);
         cv_round(232 - w, 8, w, 6, 3, K_LINE);
         if (f > 0)
@@ -1012,35 +1020,14 @@ static int sp_same(const char *a, const char *b)
     return *a == *b;
 }
 
-/* a value as it is said: Drift in minutes and seconds (the screen's "1:05", "45s"), the rest as shown */
+/* a value as it is said: as shown */
 static void sp_value(int k)
 {
     char t[16];
     knob_text(k, t);
-    if (k == P_DRIFT) {
-        uint32_t m = 0, s = 0, i;
-        for (i = 0; t[i] >= '0' && t[i] <= '9'; i++)
-            s = s * 10u + (uint32_t)(t[i] - '0');
-        if (t[i] == ':') {
-            m = s;
-            s = 0;
-            for (i++; t[i] >= '0' && t[i] <= '9'; i++)
-                s = s * 10u + (uint32_t)(t[i] - '0');
-        }
-        if (m) {
-            sp_int(m);
-            sp_cat(m == 1u ? " minute" : " minutes");
-            if (!s)
-                return;
-            sp_cat(" ");
-        }
-        sp_int(s);
-        sp_cat(s == 1u ? " second" : " seconds");
-        return;
-    }
     sp_cat(t);
 }
-static void sp_knob(int view, int i)           /* "Swell 60": the name the page gives it, then its value */
+static void sp_knob(int view, int i)           /* "Stabs 30": the name the page gives it, then its value */
 {
     sp_cat(KNOB_LABEL[view][i]);
     sp_cat(" ");
@@ -1068,7 +1055,7 @@ static void sp_chord(void)                     /* the chord in the middle of the
     sp_chord_q(en_chord_root % 12u, q);
 }
 
-/* the page: its name and its knobs; all: the header too (the piece, its key, the tempo, growing or resting) */
+/* the page: its name and its knobs; all: the header too (the piece, its key, the tempo, playing or resting) */
 static void sp_page(int all)
 {
     int i;
@@ -1090,11 +1077,11 @@ static void sp_page(int all)
     sp_cat(mode_name());
     if (en_ext) {
         sp_cat(", tempo EXT");
-    } else if (ui.view != V_GARDEN) {          /* (the Garden's first knob says it) */
+    } else if (ui.view != V_DUB) {             /* (the Dub page's first knob says it) */
         sp_cat(", tempo ");
         sp_int((uint32_t)proj.par[P_TEMPO]);
     }
-    sp_cat(sp_tp.playing ? ", growing" : ", resting");
+    sp_cat(sp_tp.playing ? ", playing" : ", resting");
     if (ui.dirty)
         sp_cat(", not saved yet");
     if (ui.view == V_SETUP) {
@@ -1104,8 +1091,8 @@ static void sp_page(int all)
     }
 }
 
-/* the garden: the chord and how far to the next, the scale from the root up ("F and F sharp": one letter's
- * two notes joined, so they are heard as two), the pulse sitting out */
+/* the main screen: the chord and how far to the next, the section, the scale from the root up ("F and F
+ * sharp": one letter's two notes joined, so they are heard as two) */
 static void sp_garden(void)
 {
     uint32_t ap = pool_abs();
@@ -1115,12 +1102,18 @@ static void sp_garden(void)
     sp_cat("Chord ");
     sp_chord();
     if (en_frozen) {
-        sp_cat(", frozen");
-    } else {
+        sp_cat(", dub hold");
+    } else if (en_drift_bars(proj.par[P_DRIFT])) {
         sp_cat(", next chord ");
         sp_int((uint32_t)(fm_clampf(en_drift, 0.0f, 1.0f) * 100.0f + 0.5f));
         sp_cat("% of the way");
+    } else {
+        sp_cat(", held");
     }
+    sp_cat(". Section ");
+    sp_cat(EN_SEC_NAME[en_section]);
+    sp_cat(", bar ");
+    sp_int((uint32_t)en_phrase_bar + 1u);
     sp_cat(". Scale");
     for (i = 0; i < 12; i++) {
         int pc = (proj.par[P_ROOT] + i) % 12;
@@ -1130,11 +1123,11 @@ static void sp_garden(void)
             last = pc;
         }
     }
-    if (en_pulse_rest && proj.par[P_PULSE])
-        sp_cat(". Pulse resting");
+    if (en_pulse_rest && proj.par[P_DRUMS])
+        sp_cat(". Kick out");
 }
 
-/* a help card: its button, then its lines ("ENV button. THE PAD. LEVEL, SWELL, BRIGHT, COLOUR") */
+/* a help card: its button, then its lines ("ENV button. THE CHORD. LEVEL, STABS, DECAY, CUTOFF") */
 static void sp_line(const char *s)
 {
     char p = sp_n ? sp_buf[sp_n - 1] : 0;
@@ -1157,7 +1150,7 @@ static void sp_help(void)
         sp_line(l[k]);
 }
 
-static void sp_piece_text(void)                /* "PIECE Departures, C# Ionian, tempo 60" */
+static void sp_piece_text(void)                /* "PIECE Chamber, A Aeolian, tempo 118" */
 {
     sp_n = 0;
     sp_buf[0] = 0;
@@ -1231,7 +1224,7 @@ static void speak(void)
     }
     if (en_playing != sp_tp.playing && now - sp_tp.play_t > 150u) {   /* MIDI start / stop */
         sp_tp.playing = en_playing;
-        ann_say(en_playing ? "GROWING" : "RESTING", 0, 0);
+        ann_say(en_playing ? "PLAYING" : "RESTING", 0, 0);
     }
     if (en_ext != sp.ext) {                           /* a MIDI clock arrived, or stopped */
         sp.ext = en_ext;
@@ -1288,12 +1281,12 @@ static void speak_dump(void)
 {
     static const char *const MSG[][2] = {{"UPDATE MODE IN", "3.."}, {"UPDATE MODE", "CANCELLED"},
                                          {"NEXT CHORD", "ON THE BAR"}, {"NEXT CHORD", 0}, {"RESTING", 0},
-                                         {"GROWING", 0}, {"FREEZE", "ON"}, {"FREEZE", "OFF"}, {"SAVED", 0}};
+                                         {"PLAYING", 0}, {"DUB HOLD", "ON"}, {"DUB HOLD", "OFF"}, {"SAVED", 0}};
     static const char *const WARN[][2] = {{"THE ROOT STAYS", "(SETUP)"}, {"3 NOTES", "AT LEAST"},
                                           {"NOT SAVED", "FLASH ERROR"}};
     project_t keep = proj;
     uint8_t keep_view = ui.view, keep_help = ui.help, keep_dirty = ui.dirty, keep_play = sp_tp.playing;
-    uint8_t keep_ext = en_ext, keep_frozen = en_frozen, keep_rest = en_pulse_rest;
+    uint8_t keep_ext = en_ext, keep_frozen = en_frozen, keep_rest = en_pulse_rest, keep_sec = en_section;
     int v, i, x, lo, hi;
     char t[48];
     for (v = 0; v < NVIEWS; v++) {
@@ -1315,13 +1308,14 @@ static void speak_dump(void)
             proj = keep;
         }
     }
-    for (x = 0; x < 8; x++) {                         /* WHERE: growing, resting, unsaved, a clock, frozen, custom */
+    for (x = 0; x < 8; x++) {                         /* WHERE: playing, resting, unsaved, a clock, held, custom */
         ui.view = (uint8_t)(x * 3 % NVIEWS);
         sp_tp.playing = (uint8_t)(x & 1);
         ui.dirty = (uint8_t)(x >> 1 & 1);
         en_ext = (uint8_t)(x == 3);
         en_frozen = (uint8_t)(x == 5);
         en_pulse_rest = (uint8_t)(x == 2);
+        en_section = (uint8_t)(x % EN_NSEC);
         proj.pool = x == 6 ? 0xFFFu : x == 7 ? 0x91u : keep.pool;
         proj.par[P_ROOT] = (int16_t)(x * 5 % 12);
         sp_page(1);
@@ -1335,6 +1329,7 @@ static void speak_dump(void)
     en_ext = keep_ext;
     en_frozen = keep_frozen;
     en_pulse_rest = keep_rest;
+    en_section = keep_sec;
     ui.view = keep_view;
     for (i = 0; i < NB; i++) {
         const char *l[HELP_LINES];
@@ -1372,11 +1367,11 @@ static void speak_dump(void)
     }
     for (x = -2; x <= 2; x++) {
         char o[8];
-        en_param_text(P_BOCT, x, o);
-        msg_text("BELL OCTAVE", o, t);
+        en_param_text(P_POCT, x, o);
+        msg_text("PING OCTAVE", o, t);
         sp_print("MSG", t);
     }
-    for (x = 30; x <= 120; x += 45) {
+    for (x = 90; x <= 140; x += 25) {
         char o[8];
         itoa_u((uint32_t)x, o);
         msg_text("TEMPO", o, t);
@@ -1391,7 +1386,7 @@ static void speak_dump(void)
     }
     proj = keep;
     sp_print("MSG", "Tempo EXT");
-    sp_print("MSG", "Tempo 72");
+    sp_print("MSG", "Tempo 122");
 }
 #endif
 
@@ -1401,7 +1396,7 @@ void ui_init(void)
     ui.touched = -1;
     lcd_fill(0, 0, 240, 240, K_BG);
     if (!en_playing)
-        en_play(1);                              /* it grows from the start */
+        en_play(1);                              /* it plays from the start */
     sp_tp.playing = 1;
     sp_tp.play_t = plat_ms();
 }

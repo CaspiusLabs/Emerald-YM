@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* AMB-1 project: one flash object (OBJ_PROJ). A project of another format, or none, gives the
+/* DUB-1 project: one flash object (OBJ_PROJ). A project of another format, or none, gives the
  * defaults. Part of the unity build, after app.h.
  *
  * The pieces (their recipes are the engine's, en_piece): each keeps its own settings as you leave it;
@@ -75,55 +75,13 @@ static int project_valid(void)                  /* an older format: the recipes 
     return 1;
 }
 
-/* format 3 (0.9 before the layer pages): 23 settings a piece. Carried over: each piece's own, the
- * new ones from its recipe */
-#define V3_NPARAMS (P_PADTONE + 1)
-typedef struct {
-    int16_t par[V3_NPARAMS];
-    uint16_t pool;
-} slot_v3_t;
-typedef struct {
-    uint32_t magic, format;
-    int16_t par[V3_NPARAMS];
-    uint16_t pool;
-    uint8_t leds, piece, rsv0[2];
-    slot_v3_t slot[NPIECES];
-    uint8_t rsv[16];
-} project_v3_t;
-
-static void from_v3(const project_v3_t *o)
-{
-    slot_t r;
-    int i, p;
-    proj.magic = PROJ_MAGIC;
-    proj.format = PROJ_FORMAT;
-    proj.pool = o->pool;
-    proj.leds = o->leds;
-    proj.piece = o->piece < NPIECES ? o->piece : 0;
-    for (i = 0; i < NPIECES; i++) {
-        recipe(i, &r);
-        for (p = 0; p < P_NPARAMS; p++)
-            proj.slot[i].par[p] = p < V3_NPARAMS ? o->slot[i].par[p] : r.par[p];
-        proj.slot[i].pool = o->slot[i].pool;
-    }
-    recipe(proj.piece, &r);
-    for (p = 0; p < P_NPARAMS; p++)
-        proj.par[p] = p < V3_NPARAMS ? o->par[p] : r.par[p];
-}
-
 int project_load(void)
 {
-    static union {
-        project_t now;
-        project_v3_t v3;
-    } buf;
+    static project_t buf;
     int n;
     memset(&buf, 0, sizeof buf);
     n = plat_store_load(OBJ_PROJ, &buf, sizeof buf);
-    if (n >= 8 && buf.now.magic == PROJ_MAGIC && buf.now.format == 3u)
-        from_v3(&buf.v3);
-    else
-        proj = buf.now;
+    proj = buf;
     if (n >= 8 && project_valid())
         return 0;
     project_defaults();

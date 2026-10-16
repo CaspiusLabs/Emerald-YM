@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* AMB-1 app: the project (everything that is saved) and the app's entry points. Included by the unity
+/* DUB-1 app: the project (everything that is saved) and the app's entry points. Included by the unity
  * build after gfx.c (drawing helpers in scope) and by the host simulator. */
 #pragma once
 #include <stdint.h>
@@ -9,9 +9,8 @@
 #ifndef EN_VERSION                       /* a release build passes its own (tools/build.py --release) */
 #define EN_VERSION "DEV"
 #endif
-#define PROJ_MAGIC 0x314F4E45u           /* "ENO1" */
-#define PROJ_FORMAT 4u                   /* 4: the bass's and the pulse's own settings (3 is carried over;
-                                          * older formats give the recipes) */
+#define PROJ_MAGIC 0x31425544u           /* "DUB1": AMB-1's projects ("ENO1") give the recipes */
+#define PROJ_FORMAT 1u
 #define NPIECES EN_NPIECES
 
 typedef struct {
