@@ -207,9 +207,9 @@ int main(void)
             en_param_text(P_GROOVE, i, t);
             CHECK(!strcmp(t, GRV[i]), "groove %d: %s", i, t);
         }
-        en_param_text(P_CTONE, 0, t);
+        en_param_text(P_CVOICE, 0, t);
         CHECK(!strcmp(t, "Saws"), "ctone 0: %s", t);
-        en_param_text(P_CTONE, 1, t);
+        en_param_text(P_CVOICE, 1, t);
         CHECK(!strcmp(t, "Keys"), "ctone 1: %s", t);
         en_param_text(P_SWING, 0, t);
         CHECK(!strcmp(t, "50%"), "swing 0: %s", t);
@@ -392,6 +392,22 @@ int main(void)
         CHECK(bass_pcs == 1 << ((chord_root_pc() + 7) % 12), "Drone at Fifth 100: only the fifth (%x)", bass_pcs);
     }
 
+    /* every voice of every layer: it sounds, without NaN, under full scale */
+    {
+        static const int VP[4] = {P_CVOICE, P_PVOICE, P_BVOICE, P_KIT};
+        int l, v;
+        for (l = 0; l < 4; l++)
+            for (v = en_param_info(VP[l])->lo; v <= en_param_info(VP[l])->hi; v++) {
+                fresh();
+                en_set(P_DENSITY, 80);
+                en_set(VP[l], v);
+                en_regrow();
+                en_play(1);
+                run(6.0f);
+                CHECK(!bad && peak > 0.02f && peak < 0.99f, "voice %d of %s: peak %f", v, en_param_info(VP[l])->name, (double)peak);
+            }
+    }
+
     /* the arrangement: at Motion 100, it leaves Full now and then; at Motion 0, never */
     {
         int k, m, secs[EN_NSEC];
@@ -518,7 +534,7 @@ int main(void)
         peak = 0.0f;
         run(30.0f);
         CHECK(!bad && peak < 1.0f, "all at max: peak %f", (double)peak);
-        en_set(P_CTONE, 0);
+        en_set(P_CVOICE, 0);
         run(30.0f);
         CHECK(!bad && peak < 1.0f, "all at max, saws: peak %f", (double)peak);
         printf("  a minute at max: peak %.3f\n", (double)peak);

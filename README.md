@@ -31,7 +31,8 @@ installer can reach.
 | SEL | PERFORM: the knobs a mixer; the keys mute the layers and, held, throw, open, shut, drop the kick, push the echo |
 | HOME · ENV · ARP · LFO · SEQ · FX · GLO | The pages: Dub, Chord, Texture, Bass, Drums, Space, Setup; KNOB 1–4 set their four values |
 | SELECT | The previous or next page; with HOME held, the tempo |
-| ALGORITHM · PRESETS | The mode · the piece (eight of them) |
+| ALGORITHM | On a layer's page, its voice (7 chord, 5 ping, 4 bass voices, 5 kits); elsewhere, the mode |
+| PRESETS | The piece (eight of them) |
 | OCT− / OCT+ | The pings' octave |
 | SAVE | Saves; held, puts the piece back to its recipe |
 

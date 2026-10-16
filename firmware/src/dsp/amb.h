@@ -48,11 +48,12 @@ enum {
     P_ECHO, P_ETIME, P_REVERB, P_FEEDBACK,            /* space */
     P_CUTOFF, P_DECAY, P_PTONE, P_MOTION,             /* the stab's filter and length, the pings' tone, the arrangement */
     P_TUNE, P_MIDI, P_TEMPO, P_ROOT, P_MODE, P_POCT,  /* setup, panel encoders, the pings' octave */
-    P_CTONE,                                          /* the chord's colour: Saws, Keys */
+    P_CVOICE,                                         /* the chord's voice (EN_CV_NAME) */
     P_BASSOCT, P_GROOVE, P_FIFTH,                     /* bass: its octave, its pattern, how often the fifth */
     P_SWING, P_HATS,                                  /* drums: swing, the hats' colour */
     P_STABS, P_CRACKLE, P_DUCK, P_SIZE,               /* stabs a bar, the vinyl, the kick's ducking, the plate */
     P_CLOUD,                                          /* the granular reverb */
+    P_PVOICE, P_BVOICE, P_KIT,                        /* the pings' voice, the bass's, the drums' kit */
     P_NPARAMS
 };
 typedef struct {
@@ -86,6 +87,14 @@ void en_render(int32_t *out_lr, uint32_t n, uint32_t gain_q12);
 
 /* MIDI out, from the render: the app sends it (USB); status, data 1, data 2 */
 void en_midi_out(uint32_t st, uint32_t d1, uint32_t d2);
+
+/* the voices: each layer's sounds (ALGORITHM on the layer's page) */
+#define EN_NCV 7
+#define EN_NPV 5
+#define EN_NBV 4
+#define EN_NKIT 5
+extern const char *const EN_CV_NAME[EN_NCV], *const EN_PV_NAME[EN_NPV], *const EN_BV_NAME[EN_NBV],
+    *const EN_KIT_NAME[EN_NKIT];
 
 /* the arrangement's sections */
 enum { SEC_FULL, SEC_BREAK, SEC_GROOVE, SEC_THIN, EN_NSEC };

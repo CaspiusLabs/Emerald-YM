@@ -137,7 +137,7 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
 <section class="help" aria-label="How to play it">
   <div class="knobs">
     <h2>Pages and knobs</h2>
-    <p>One page a layer, each on its own button; a layer's level is always KNOB 1. <b>SELECT</b> steps through the pages. Each piece remembers its own settings.</p>
+    <p>One page a layer, each on its own button; a layer's level is always KNOB 1. <b>SELECT</b> steps through the pages. On a layer's page, <b>ALGORITHM</b> changes its voice (the chord: Saws, Keys, Organ, Pad, Bell, Brass, Noise; the pings: Blip, Marimba, Glass, Wood, Drop; the bass: Sub, Round, Growl, Pulse; the drums' kit: Tight, Deep, Punch, Soft, Dusty). Each piece remembers its own settings.</p>
     <div class="pages">
       <div>
         <h3>Dub <span>HOME</span></h3>
@@ -329,7 +329,7 @@ const TIP = { FX: "The Space page.", SEL: "PERFORM: the knobs are a mixer; the k
   GLO: "The Setup page.", HOME: "The Dub page. Hold it and turn SELECT for the tempo.", SAVE: "Saves all eight pieces. Hold it to put the piece back to its recipe.",
   ARP: "The Texture page.", SEQ: "The Drums page.", PLAY: "Play or rest.", REC: "Dub hold: the echo and the cloud repeat what they hold; the chord holds.",
   "OCT-": "The pings an octave down.", "OCT+": "The pings an octave up.", SELECT: "The previous or next page; with HOME held, the tempo.",
-  ALGORITHM: "The mode.", PRESETS: "The piece.", KNOB1: "The first value on the screen.", KNOB2: "The second value on the screen.",
+  ALGORITHM: "On a layer's page, its voice; elsewhere, the mode.", PRESETS: "The piece.", KNOB1: "The first value on the screen.", KNOB2: "The second value on the screen.",
   KNOB3: "The third value on the screen.", KNOB4: "The fourth value on the screen." };
 const LIGHTS = new Set(["FX", "SEL", "ENV", "LFO", "GLO", "HOME", "ARP", "SEQ", "PLAY", "REC"]);
 const spokenLabel = (l) => l.replace("OCT-", "OCT minus").replace("OCT+", "OCT plus").replace(/^KNOB(\d)$/, "KNOB $1");

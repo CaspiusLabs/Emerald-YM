@@ -286,6 +286,24 @@ static void set_mode(int m)
     mark_dirty();
 }
 
+/* the voices: ALGORITHM on a layer's page steps through that layer's (round: after the last, the first) */
+static int view_voice(int v)
+{
+    return v == V_CHORD ? P_CVOICE : v == V_TEXTURE ? P_PVOICE : v == V_BASS ? P_BVOICE : v == V_DRUMS ? P_KIT : -1;
+}
+static void set_voice(int p, int v)
+{
+    const en_param_t *pi = en_param_info(p);
+    char t[12];
+    int n = pi->hi - pi->lo + 1;
+    v = ((v - pi->lo) % n + n) % n + pi->lo;
+    proj.par[p] = (int16_t)v;
+    en_set(p, v);
+    en_param_text(p, v, t);
+    say(p == P_KIT ? "KIT" : "VOICE", t);
+    mark_dirty();
+}
+
 static void set_piece(int i)                    /* the piece playing kept as it is; piece i as it was left */
 {
     project_piece(i);
@@ -514,8 +532,12 @@ static void input(void)
         }
         ui.turn_t = plat_ms();
     }
-    if ((e = plat_enc(EN_ALGO)) != 0) {
-        set_mode(proj.par[P_MODE] + (e > 0 ? 1 : -1));
+    if ((e = plat_enc(EN_ALGO)) != 0) {         /* on a layer's page: its voice; elsewhere: the mode */
+        int vp = view_voice(ui.view);
+        if (vp >= 0)
+            set_voice(vp, proj.par[vp] + (e > 0 ? 1 : -1));
+        else
+            set_mode(proj.par[P_MODE] + (e > 0 ? 1 : -1));
         ui.turn_t = plat_ms();
     }
     if ((e = plat_enc(EN_PRESET)) != 0) {
@@ -927,10 +949,10 @@ static int help_lines(int b, const char *l[HELP_LINES])
 #define L(t) (l[n++] = (t))
     switch (b) {
     case B_HOME: L("DUB"); L("TEMPO, EVOLVE, MOTION, DRIFT"); L("+ SELECT: TEMPO"); break;
-    case B_ENV: L("THE CHORD"); L("LEVEL, STABS, DECAY,"); L("CUTOFF"); break;
-    case B_ARP: L("TEXTURE"); L("PINGS, DENSITY, CLOUD,"); L("CRACKLE"); break;
-    case B_LFO: L("THE BASS"); L("LEVEL, OCTAVE, GROOVE, FIFTH"); break;
-    case B_SEQ: L("THE DRUMS"); L("LEVEL, HITS, SWING, DUCK"); break;
+    case B_ENV: L("THE CHORD"); L("LEVEL, STABS, DECAY,"); L(" CUTOFF"); L("ALGORITHM: ITS VOICE"); break;
+    case B_ARP: L("TEXTURE"); L("PINGS, DENSITY, CLOUD,"); L(" CRACKLE"); L("ALGORITHM: THE PINGS' VOICE"); break;
+    case B_LFO: L("THE BASS"); L("LEVEL, OCTAVE, GROOVE, FIFTH"); L("ALGORITHM: ITS VOICE"); break;
+    case B_SEQ: L("THE DRUMS"); L("LEVEL, HITS, SWING, DUCK"); L("ALGORITHM: THE KIT"); break;
     case B_FX: L("THE SPACE"); L("ECHO, ECHO TIME, FEEDBACK,"); L("REVERB"); break;
     case B_GLO: L("SETUP"); L("ROOT, TUNE, MIDI OUT, LIGHTS"); break;
     case B_EDIT: L("THE NEXT CHORD,"); L("ON THE NEXT BAR"); break;
@@ -1028,6 +1050,8 @@ static void draw_main(void)
 static void draw_knobs(void)
 {
     uint32_t h = hash(2166136261u, ui.view | (uint32_t)ui.touched << 8), i;
+    if (view_voice(ui.view) >= 0)
+        h = hash(h, (uint32_t)proj.par[view_voice(ui.view)]);
     int now_touch = plat_ms() < ui.touch_until;
     for (i = 0; i < 4; i++)
         h = hash(h, (uint32_t)knob_get(VIEW_KNOB[ui.view][i]));
@@ -1040,9 +1064,16 @@ static void draw_knobs(void)
         char t[12];
         int k;
         int32_t xd = 237 - NPAGES * 6, xt;
+        int32_t x0 = 4;
+        if (view_voice(ui.view) >= 0) {          /* a layer's page: its voice, at the rule's start */
+            char vn[12];
+            en_param_text(view_voice(ui.view), proj.par[view_voice(ui.view)], vn);
+            caps(t, vn, sizeof t);
+            x0 = cv_text(6, -1, &FONT_XS, t, K_DIM) + 5;
+        }
         caps(t, VIEW_NAME[ui.view], sizeof t);
         xt = xd - 5 - text_w(&FONT_XS, t);
-        cv_rect(4, 5, xt - 9, 1, K_LINE);
+        cv_rect(x0, 5, xt - 5 - x0, 1, K_LINE);
         cv_text(xt, -1, &FONT_XS, t, K_ACC);
         for (k = 0; k < NPAGES; k++)
             cv_round(xd + k * 6, 3, 4, 4, 2, k == ui.view ? K_ACC : K_LINE);
@@ -1205,6 +1236,12 @@ static void sp_page(int all)
     sp_buf[0] = 0;
     sp_cat(VIEW_NAME[ui.view]);
     sp_cat(" page");
+    if (view_voice(ui.view) >= 0) {
+        char vn[12];
+        en_param_text(view_voice(ui.view), proj.par[view_voice(ui.view)], vn);
+        sp_cat(view_voice(ui.view) == P_KIT ? ", kit " : ", voice ");
+        sp_cat(vn);
+    }
     for (i = 0; i < 4; i++) {
         sp_cat(i ? ", " : ": ");
         sp_knob(ui.view, i);

@@ -12,7 +12,7 @@ said % of the way. Section Full, bar 1. Scale F, G, Ab, Bb, C, D, Eb
 # a page settles before it is said
 tap ENV
 wait 300
-said Chord page: Level 
+said Chord page, voice Saws: Level 
 tap GLO
 wait 300
 said Setup page: Root F, Tune 0, MIDI out On, Lights On
@@ -60,7 +60,7 @@ said Reverb 0
 # the page again, as now set
 tap SEQ
 wait 300
-said Drums page: Level 
+said Drums page, kit Tight: Level 
 tap FX
 wait 300
 said Space page: Echo 0, Echo time 1 bar, Feedback 0, Reverb 0

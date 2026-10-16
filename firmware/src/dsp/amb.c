@@ -28,40 +28,41 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     {"Echo", 0, 100, 55},     {"Echo time", 0, 5, 1},   {"Reverb", 0, 100, 35},   {"Feedback", 0, 100, 60},
     {"Cutoff", 0, 100, 45},   {"Decay", 0, 100, 35},    {"Ping tone", 0, 100, 40}, {"Motion", 0, 100, 50},
     {"Tune", -50, 50, 0},     {"MIDI out", 0, 1, 1},    {"Tempo", 90, 140, 122},  {"Root", 0, 11, 5},
-    {"Mode", 0, EN_NMODES - 1, MODE_DORIAN}, {"Ping oct", -2, 2, 0}, {"Chord tone", 0, 1, 0},
+    {"Mode", 0, EN_NMODES - 1, MODE_DORIAN}, {"Ping oct", -2, 2, 0}, {"Chord voice", 0, EN_NCV - 1, 0},
     {"Bass oct", -1, 1, 0},   {"Groove", 0, 4, 1},      {"Fifth", 0, 100, 20},
     {"Swing", 0, 100, 10},    {"Hats", 0, 100, 50},
     {"Stabs", 0, 100, 30},    {"Crackle", 0, 100, 35},  {"Duck", 0, 100, 50},     {"Size", 0, 100, 55},
     {"Cloud", 0, 100, 30},
+    {"Ping voice", 0, EN_NPV - 1, 0}, {"Bass voice", 0, EN_NBV - 1, 0}, {"Kit", 0, EN_NKIT - 1, 0},
 };
 const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PARAMS[i] : &PARAMS[0]; }
 
 /* the pieces: eight recipes for the whole machine (the FM-1's PRESETS, the web app's cards). Tune and
  * MIDI out are taken from here by neither: they belong to the player, not the piece */
 /*                  Cho Pin Bas Dru  Den Evo Dri Hit  Ech ET Rev Fdb  Cut Dec PTo Mot  Tun MI Tem Rt Md Oc
- *                  CT BO Grv Fif Swi Hat  Stb Crk Dck Siz  Clo
- * (Dri: Drift, 2 4 8 16 32 64 bars or Hold; ET: Echo time, 1/8 1/8. 1/4 1/4. 1/2 1 bar; CT: Saws, Keys;
- *  Grv: Drone, Offbeat, Dotted, Roller, Sync) */
+ *                  CV BO Grv Fif Swi Hat  Stb Crk Dck Siz  Clo PV BV Kit
+ * (Dri: Drift, 2 4 8 16 32 64 bars or Hold; ET: Echo time, 1/8 1/8. 1/4 1/4. 1/2 1 bar; Grv: Drone, Offbeat,
+ *  Dotted, Roller, Sync; CV, PV, BV, Kit: the voices, EN_CV_NAME ...) */
 static const struct {
     const char *name;
     int16_t v[P_NPARAMS];
 } PIECES[EN_NPIECES] = {
     {"Basic",      {70, 30, 60, 65, 30, 40, 4, 50, 55, 1, 35, 60, 45, 35, 40, 50, 0, 1, 122, 5, 1, 0,
-                    0, 0, 1, 20, 10, 50, 30, 35, 50, 55, 30}},
+                    0, 0, 1, 20, 10, 50, 30, 35, 50, 55, 30, 0, 0, 0}},
     {"Chamber",    {75, 20, 55, 55, 20, 45, 6, 40, 70, 1, 45, 75, 35, 55, 30, 60, 0, 1, 118, 9, 5, 0,
-                    0, 0, 0, 10, 0, 40, 15, 45, 45, 70, 45}},
+                    2, 0, 0, 10, 0, 40, 15, 45, 45, 70, 45, 2, 0, 1}},
     {"Steppers",   {60, 35, 70, 70, 35, 40, 3, 60, 50, 3, 30, 55, 55, 25, 50, 45, 0, 1, 126, 2, 1, 0,
-                    0, 0, 2, 35, 15, 60, 45, 25, 60, 50, 20}},
+                    0, 0, 2, 35, 15, 60, 45, 25, 60, 50, 20, 1, 1, 2}},
     {"Fog",        {70, 40, 50, 45, 40, 55, 5, 30, 75, 2, 55, 80, 30, 70, 25, 70, 0, 1, 112, 7, 5, 0,
-                    1, -1, 0, 15, 0, 30, 20, 60, 35, 80, 60}},
+                    1, -1, 0, 15, 0, 30, 20, 60, 35, 80, 60, 0, 0, 3}},
     {"Concrete",   {65, 25, 65, 75, 25, 35, 4, 75, 50, 1, 25, 60, 60, 20, 60, 40, 0, 1, 130, 0, 7, 0,
-                    0, 0, 3, 30, 20, 75, 50, 20, 65, 45, 15}},
-    {"Night Drive",{65, 45, 60, 65, 45, 50, 3, 55, 60, 4, 35, 65, 50, 40, 45, 55, 0, 1, 124, 10, 1, 0,
-                    1, 0, 4, 25, 25, 55, 35, 30, 50, 60, 35}},
+                    6, 0, 3, 30, 20, 75, 50, 20, 65, 45, 15, 3, 3, 2}},
+    {"Night Drive", {65, 45, 60, 65, 45, 50, 3, 55, 60, 4, 35, 65, 50, 40, 45, 55, 0, 1, 124, 10, 1, 0,
+                    1, 0, 4, 25, 25, 55, 35, 30, 50, 60, 35, 4, 2, 0}},
     {"Pressure",   {70, 20, 75, 80, 20, 30, 6, 65, 45, 1, 20, 55, 40, 30, 35, 35, 0, 1, 128, 4, 2, 0,
-                    0, 0, 1, 10, 5, 65, 25, 15, 70, 40, 20}},
+                    5, 0, 1, 10, 5, 65, 25, 15, 70, 40, 20, 3, 2, 1}},
     {"Haze",       {62, 50, 45, 40, 50, 60, 4, 35, 80, 3, 60, 85, 35, 80, 30, 80, 0, 1, 116, 3, 0, 1,
-                    1, 0, 0, 20, 10, 35, 30, 70, 30, 85, 70}},
+                    3, 0, 0, 20, 10, 35, 30, 70, 30, 85, 70, 2, 0, 4}},
 };
 
 const char *en_piece_name(int i) { return PIECES[(unsigned)i < EN_NPIECES ? i : 0].name; }
@@ -74,6 +75,10 @@ void en_piece(int i, int16_t *par, uint16_t *pool)
     *pool = EN_MODE_POOL[PIECES[i].v[P_MODE]];
 }
 
+const char *const EN_CV_NAME[EN_NCV] = {"Saws", "Keys", "Organ", "Pad", "Bell", "Brass", "Noise"};
+const char *const EN_PV_NAME[EN_NPV] = {"Blip", "Marimba", "Glass", "Wood", "Drop"};
+const char *const EN_BV_NAME[EN_NBV] = {"Sub", "Round", "Growl", "Pulse"};
+const char *const EN_KIT_NAME[EN_NKIT] = {"Tight", "Deep", "Punch", "Soft", "Dusty"};
 static const char *const ETIME_NAME[6] = {"1/8", "1/8.", "1/4", "1/4.", "1/2", "1 bar"};
 static const float ETIME_BEATS[6] = {0.5f, 0.75f, 1.0f, 1.5f, 2.0f, 4.0f};
 static const char *const GROOVE_NAME[5] = {"Drone", "Offbeat", "Dotted", "Roller", "Sync"};
@@ -111,8 +116,14 @@ void en_param_text(int i, int v, char *b)
         s = ETIME_NAME[(unsigned)v < 6u ? v : 0];
     else if (i == P_MIDI)
         s = ONOFF[v ? 1 : 0];
-    else if (i == P_CTONE)
-        s = v ? "Keys" : "Saws";
+    else if (i == P_CVOICE)
+        s = EN_CV_NAME[(unsigned)v < EN_NCV ? v : 0];
+    else if (i == P_PVOICE)
+        s = EN_PV_NAME[(unsigned)v < EN_NPV ? v : 0];
+    else if (i == P_BVOICE)
+        s = EN_BV_NAME[(unsigned)v < EN_NBV ? v : 0];
+    else if (i == P_KIT)
+        s = EN_KIT_NAME[(unsigned)v < EN_NKIT ? v : 0];
     else if (i == P_GROOVE)
         s = GROOVE_NAME[(unsigned)v < 5u ? v : 0];
     else if (i == P_MODE)
@@ -444,6 +455,23 @@ static int32_t st_midi_left;
 static int shape, root_note = 53;               /* the voicing's shape, the chord's root as voiced (MIDI) */
 static const float STAB_PAN[EN_NPAD] = {-0.5f, -0.15f, 0.2f, 0.55f};
 static float stab_gl[EN_NPAD], stab_gr[EN_NPAD];
+/* the chord's voices: how it sounds (CV_*), how quickly it strikes (the amplitude's smoothing a sample:
+ * 0.035 ~0.6 ms .. 0.00012 ~190 ms), its length (times Decay's), how far its own envelope opens the filter
+ * (octaves), its modulator's ratio and index (FM voices, in turns: the index at the strike, and at rest),
+ * and a level to match the others */
+enum { CV_SAWS, CV_KEYS, CV_ORGAN, CV_PAD, CV_BELL, CV_BRASS, CV_NOISE };
+static const struct {
+    float att, dec, fenv, ratio, idx_hi, idx_lo, gain;
+} CV[EN_NCV] = {
+    {0.035f, 1.0f, 1.7f, 0.0f, 0.0f, 0.0f, 1.0f},        /* Saws: two saws a voice, 7 cents apart */
+    {0.035f, 1.3f, 1.0f, 1.0f, 0.41f, 0.06f, 1.23f},     /* Keys: FM at the carrier's pitch, an electric piano */
+    {0.02f, 2.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.75f},        /* Organ: four drawbars (1, 2, 3, 4) */
+    {0.00012f, 4.0f, 0.4f, 0.0f, 0.0f, 0.0f, 0.72f},     /* Pad: the saws, swelling in, long */
+    {0.05f, 1.8f, 0.8f, 3.5f, 0.35f, 0.05f, 0.83f},      /* Bell: FM at 3.5, the clang dying first */
+    {0.004f, 1.2f, 2.2f, 1.0f, 0.3f, 0.12f, 1.0f},       /* Brass: FM at 1, soft in, the filter swelling */
+    {0.05f, 0.6f, 2.0f, 0.0f, 0.0f, 0.0f, 3.6f},         /* Noise: noise and a little saw, the filter's pitch */
+};
+static int cvoice;                              /* the chord's voice now */
 
 /* ------------------------------------------------------------------ bass --- */
 static struct {
@@ -452,11 +480,17 @@ static struct {
     uint8_t midi_note;
 } bass;
 static float bass_vol;
+/* the bass's voices: Sub (a sine and a little of its octave, softly clipped), Round (its third harmonic
+ * too, rounder), Growl (FM at 1, a bite that opens with each note and closes), Pulse (a sine clipped hard
+ * towards a square) */
+enum { BV_SUB, BV_ROUND, BV_GROWL, BV_PULSE };
+static const float BV_GAIN[EN_NBV] = {1.0f, 1.0f, 1.16f, 0.86f};
+static float bass_bite, bite_dec;
 
 /* ----------------------------------------------------------------- pings --- */
 #define NBELL 6
 typedef struct {
-    float cph, mph, cinc, minc, amp, adec, idx, idec, att, gl, gr;
+    float cph, mph, cinc, minc, amp, adec, idx, idec, att, gl, gr, drop;
     int32_t wait;
     uint8_t on, note, loop;
 } bell_t;
@@ -487,6 +521,18 @@ static uint8_t hat_order[12];
 static const uint8_t HAT_ORDER[12] = {3, 11, 7, 15, 1, 9, 5, 13, 0, 8, 4, 12};
 static int hat_k, hat_kb;
 static float duck_x, duck_d, duck_depth, duck_rel;
+/* the kits: the kick (its pitch at the strike, times its note; how quickly it falls; its length; its click;
+ * its drive) and the hats (their high-pass, times Hats'; how much noise against the metal; their length) */
+static const struct {
+    float start, fall, t60, click, drive, hat_f, noise, hat_t, gain;
+} KIT[EN_NKIT] = {
+    {5.0f, 0.0016f, 0.42f, 0.5f, 1.5f, 1.0f, 0.7f, 1.0f, 1.0f},    /* Tight */
+    {3.0f, 0.0008f, 0.9f, 0.2f, 1.3f, 0.92f, 0.7f, 1.2f, 0.67f},   /* Deep: long, 808-ish */
+    {7.0f, 0.003f, 0.25f, 0.9f, 2.5f, 1.05f, 0.6f, 0.8f, 1.35f},   /* Punch: short and hard */
+    {2.5f, 0.0012f, 0.5f, 0.0f, 1.0f, 0.82f, 0.85f, 1.3f, 0.86f},  /* Soft: a muffled thump */
+    {4.5f, 0.0016f, 0.4f, 0.35f, 1.8f, 0.75f, 1.0f, 1.1f, 1.0f},   /* Dusty: darker, noisier hats */
+};
+static int kit;
 
 /* ------------------------------------------------------------------ space --- */
 static float echo_send, rev_send, echo_len, echo_len_t, echo_fb = 0.6f, ein_gain = 1.0f;
@@ -672,10 +718,21 @@ static void loop_pass(int l)                    /* the end of a pass: grow, prun
 /* each loop its own ping: index, decay and ratio a little apart */
 static const float LOOP_IDX[EN_NLOOP] = {1.0f, 0.55f, 1.5f, 0.8f}, LOOP_DEC[EN_NLOOP] = {1.0f, 1.3f, 0.7f, 1.5f};
 static const int8_t LOOP_RAT[EN_NLOOP] = {0, 0, 1, -1};
+/* the pings' voices: the modulator's ratio (0: by Ping tone, RATIO), the index, its decay and the ping's
+ * length (times the Blip's), a falling pitch (Drop: from this many times its note), a level */
+static const struct {
+    float ratio, idx, idec, t60, drop, gain;
+} PV[EN_NPV] = {
+    {0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f},               /* Blip */
+    {4.0f, 1.2f, 0.4f, 0.6f, 0.0f, 1.45f},              /* Marimba: a wooden bar's fourth partial */
+    {3.5f, 0.8f, 2.0f, 1.7f, 0.0f, 0.79f},              /* Glass: a long, bright ring */
+    {1.41f, 2.5f, 0.2f, 0.25f, 0.0f, 2.4f},             /* Wood: a knock */
+    {1.0f, 0.6f, 1.0f, 0.8f, 1.0f, 1.29f},              /* Drop: the pitch falling from an octave up */
+};
 
 static void bell_voice(int l, int n, float vel, int32_t wait)
 {
-    int i, best = 0, ri;
+    int i, best = 0, ri, pv;
     float lo = 9.0f, t60, p;
     bell_t *v;
     for (i = 0; i < NBELL; i++) {               /* a free voice, or the quietest */
@@ -692,15 +749,17 @@ static void bell_voice(int l, int n, float vel, int32_t wait)
     v->note = (uint8_t)n;
     v->loop = (uint8_t)l;
     v->cph = v->mph = 0.0f;
+    pv = (unsigned)par[P_PVOICE] < EN_NPV ? par[P_PVOICE] : 0;
     v->cinc = mtof((float)n) * (1.0f / EN_SR);
     ri = par[P_PTONE] * 5 / 101 + LOOP_RAT[l];
-    v->minc = v->cinc * RATIO[ri < 0 ? 0 : ri > 4 ? 4 : ri];
-    v->amp = vel;
-    t60 = fm_clampf(0.9f - (float)(n - 60) * 0.02f, 0.25f, 1.1f) * LOOP_DEC[l];   /* short: a ping */
+    v->minc = v->cinc * (PV[pv].ratio > 0.0f ? PV[pv].ratio : RATIO[ri < 0 ? 0 : ri > 4 ? 4 : ri]);
+    v->drop = PV[pv].drop;
+    v->amp = vel * PV[pv].gain;
+    t60 = fm_clampf(0.9f - (float)(n - 60) * 0.02f, 0.25f, 1.1f) * LOOP_DEC[l] * PV[pv].t60;   /* short: a ping */
     v->adec = fm_expf(-6.9f / (t60 * EN_SR));
     /* Ping tone: 0 a round blip; 100 a metallic clank (index in radians, as turns) */
-    v->idx = (0.2f + 5.0f * btone * btone) * LOOP_IDX[l] * (0.6f + 0.4f * vel) * (1.0f / FM_TWO_PI);
-    v->idec = fm_expf(-6.9f / ((0.08f + 0.5f * btone) * EN_SR));
+    v->idx = (0.2f + 5.0f * btone * btone) * LOOP_IDX[l] * (0.6f + 0.4f * vel) * PV[pv].idx * (1.0f / FM_TWO_PI);
+    v->idec = fm_expf(-6.9f / ((0.08f + 0.5f * btone) * PV[pv].idec * EN_SR));
     v->att = 0.0f;
     p = (LOOP_PAN[l] + 1.0f) * (FM_PI / 4.0f);
     v->gl = fm_cosf(p);
@@ -772,7 +831,8 @@ static void stab_fire(float vel, int throw_it)
     for (i = 0; i < EN_NPAD; i++) {
         float f = mtof((float)stab[i].note);
         stab[i].inc[0] = f * 0.99798f * (1.0f / EN_SR);    /* -3.5 and +3.5 cents */
-        stab[i].inc[1] = f * 1.00202f * (1.0f / EN_SR);
+        stab[i].inc[1] = CV[cvoice].ratio > 0.0f ? f * CV[cvoice].ratio * (1.0f / EN_SR)   /* FM: the modulator */
+                                                 : f * 1.00202f * (1.0f / EN_SR);
         stab[i].midi_note = stab[i].note;
         midi(0x90, stab[i].note, (uint32_t)(40.0f + 80.0f * vel));
     }
@@ -849,21 +909,21 @@ static void drum_fire(int d, float vel)
     case 0: {                                   /* kick: a sine falling fast from ~5x to its note */
         float f = mtof((float)kick_note(par[P_ROOT]));
         v->note = DRUM_GM[0];
-        v->inc = f * 5.0f * (1.0f / EN_SR);
+        v->inc = f * KIT[kit].start * (1.0f / EN_SR);
         v->inc_end = f * (1.0f / EN_SR);
-        v->adec = fm_expf(-6.9f / (0.42f * EN_SR));
-        v->clk = 1.0f;
+        v->adec = fm_expf(-6.9f / (KIT[kit].t60 * EN_SR));
+        v->clk = KIT[kit].click * 2.0f;   /* (Tight: 1, as before) */
         duck_x = 1.0f;
         break;
     }
     case 1:                                     /* the shaker: short; it chokes the open hat */
         v->note = DRUM_GM[1];
-        v->adec = fm_expf(-6.9f / (0.045f * EN_SR));
+        v->adec = fm_expf(-6.9f / (0.045f * KIT[kit].hat_t * EN_SR));
         drum[2].adec = fm_expf(-6.9f / (0.03f * EN_SR));
         break;
     default:                                    /* open hat: the "tss" off the beat */
         v->note = DRUM_GM[2];
-        v->adec = fm_expf(-6.9f / (hat_open * EN_SR));
+        v->adec = fm_expf(-6.9f / (hat_open * KIT[kit].hat_t * EN_SR));
         break;
     }
     en_drum_glow[d] = 1.0f;
@@ -917,6 +977,7 @@ static void bass_hit(int first)
     if (bass.gate > 0 || bass.midi_note)
         midi(0x82, bass.midi_note, 0);
     bass.gate = (int32_t)(GROOVE_GATE[(unsigned)g < 5u ? g : 0] * step_len);
+    bass_bite = 1.0f;
     bass.midi_note = (uint8_t)n;
     midi(0x92, (uint32_t)n, 90);
 }
@@ -1416,8 +1477,9 @@ static void apply(int p, int v)
     case P_FEEDBACK: echo_fb = 0.45f + 0.0067f * (float)v; break;   /* to 1.12: past 100%, held by the clip */
     case P_SIZE: pl_decay_t = 0.5f + 0.0045f * (float)v; break;      /* to 0.95 */
     case P_CUTOFF: cut_base = 110.0f * fm_exp2f((float)v * 0.055f); break;   /* 110 Hz .. 5.4 kHz */
-    case P_DECAY:                                /* 60 ms .. 1.5 s; the filter's envelope, quicker */
-        st_t60 = 0.06f * fm_exp2f((float)v * 0.0464f);
+    case P_DECAY: case P_CVOICE:                 /* 60 ms .. 1.5 s (times the voice's); the filter's envelope, quicker */
+        cvoice = (unsigned)par[P_CVOICE] < EN_NCV ? par[P_CVOICE] : 0;
+        st_t60 = 0.06f * fm_exp2f((float)par[P_DECAY] * 0.0464f) * CV[cvoice].dec;
         st_dec = fm_expf(-6.9f / (st_t60 * EN_SR));
         st_fdec = fm_expf(-6.9f * 32.0f / ((0.4f * st_t60 + 0.03f) * EN_SR));
         break;
@@ -1427,6 +1489,7 @@ static void apply(int p, int v)
     case P_CRACKLE: crackle_vol = (float)(v * v) * 0.0001f; break;
     case P_DUCK: duck_depth = (float)v * 0.0075f; break;   /* to -12 dB */
     case P_CLOUD: cloud_amt = (float)v * 0.01f; break;
+    case P_KIT: kit = (unsigned)v < EN_NKIT ? v : 0; break;
     case P_POCT:                                 /* let it be heard now: a ping from the first loop */
         if (en_playing && nsteps) {
             int l, k;
@@ -1476,7 +1539,7 @@ static void regrow(void)                        /* a new piece: fresh loops, hom
         loop_rest[l] = 0;
     }
     deg = 0;
-    shape = par[P_CTONE] ? 1 : 0;                /* the keys like the 9th, the saws the open 7th */
+    shape = cvoice == CV_KEYS || cvoice == CV_PAD || cvoice == CV_BELL;   /* these like the 9th; the rest the open 7th */
     voice_chord();
     stabs_home();
     hats_home();
@@ -1540,6 +1603,7 @@ void en_init(void)
     }
     duck_rel = fm_expf(-1.0f / (0.13f * EN_SR));
     throw_dec = fm_expf(-1.0f / (0.5f * EN_SR));
+    bite_dec = fm_expf(-1.0f / (0.07f * EN_SR));
     arcm = arc = 0.0f;
     for (i = 0; i < P_NPARAMS; i++)
         apply(i, PARAMS[i].def);
@@ -1654,8 +1718,10 @@ static float mixl[BLK], mixr[BLK], rsend[BLK], esend[BLK], kickb[BLK], crl[BLK],
 static void render_stabs(uint32_t n)
 {
     uint32_t j;
-    int i, keys = par[P_CTONE] != 0;
-    const float g = chord_vol * 0.5f, k = 1.25f - 0.6f * fm_clampf(0.5f + 0.5f * arcm, 0.0f, 1.0f);
+    int i;
+    const int cv = cvoice;
+    const float g = chord_vol * 0.5f * CV[cv].gain, k = 1.25f - 0.6f * fm_clampf(0.5f + 0.5f * arcm, 0.0f, 1.0f);
+    const float att = CV[cv].att, fe = CV[cv].fenv, ihi = CV[cv].idx_hi - CV[cv].idx_lo, ilo = CV[cv].idx_lo;
     float s0 = st_s[0], s1 = st_s[1], s2 = st_s[2], s3 = st_s[3], env = st_env, amp = st_amp, thr = st_throw;
     if (st_midi_left > 0 && (st_midi_left -= (int32_t)n) <= 0)
         for (i = 0; i < EN_NPAD; i++)
@@ -1671,20 +1737,41 @@ static void render_stabs(uint32_t n)
     for (j = 0; j < n; j++) {
         float l = 0.0f, r = 0.0f, v1, v2, v3, yl, yr, e;
         if (!(j & 31u)) {                        /* the filter: its base, its envelope, the sweep */
-            float fc = cut_base * fm_exp2f(1.7f * st_fenv + 1.0f * arcm + perf_sw + 0.3f * motion * mod[0].v);
+            float fc = cut_base * fm_exp2f(fe * st_fenv + 1.0f * arcm + perf_sw + 0.3f * motion * mod[0].v);
             svf_coefs(st_c, fm_minf(fc, 12000.0f), k);
             st_fenv *= st_fdec;
         }
         env *= st_dec;
-        amp += (env - amp) * 0.035f;            /* ~0.6 ms: the strike, without a click */
+        amp += (env - amp) * att;               /* the strike, without a click (or a swell, for the Pad) */
+        if (cv == CV_NOISE) {                   /* one noise for all four: the filter gives it its pitch */
+            noise = noise * 1664525u + 1013904223u;
+            l = r = (float)(int32_t)noise * (1.0f / 2147483648.0f) * 1.6f;
+        }
         for (i = 0; i < EN_NPAD; i++) {
             stab_t *v = &stab[i];
             float x;
-            if (keys) {                          /* FM, the modulator at the carrier's pitch */
-                float m = sine(v->ph[0]) * (0.06f + 0.35f * amp);
+            switch (cv) {
+            case CV_KEYS: {                      /* FM, the modulator at the carrier's pitch */
+                float m = sine(v->ph[0]) * (ilo + ihi * amp);
                 x = (sine(v->ph[0] + m + 1.0f) + 0.15f * sine(2.0f * v->ph[0])) * 0.8f;   /* as loud as the saws, filtered */
-            } else {
+                break;
+            }
+            case CV_BELL: case CV_BRASS: {      /* FM, the modulator its own phase (Brass: at the carrier's) */
+                float m = sine(v->ph[1]) * (ilo + ihi * amp);
+                x = sine(v->ph[0] + m + 1.0f) * 1.1f;
+                break;
+            }
+            case CV_ORGAN: {
+                float p = v->ph[0];
+                x = (sine(p) + 0.5f * sine(2.0f * p) + 0.33f * sine(3.0f * p) + 0.2f * sine(4.0f * p)) * 0.8f;
+                break;
+            }
+            case CV_NOISE:
+                x = 0.35f * blep_saw(v->ph[0], v->inc[0]);
+                break;
+            default:                             /* Saws, Pad */
                 x = blep_saw(v->ph[0], v->inc[0]) + blep_saw(v->ph[1], v->inc[1]);
+                break;
             }
             v->ph[0] += v->inc[0];
             if (v->ph[0] >= 1.0f)
@@ -1733,8 +1820,9 @@ static void render_stabs(uint32_t n)
 static void render_bass(uint32_t n)
 {
     uint32_t j;
-    const float g = bass_vol * 0.5f;
-    float ph = bass.ph, env = bass.env, inc;
+    const int bv = (unsigned)par[P_BVOICE] < EN_NBV ? par[P_BVOICE] : 0;
+    const float g = bass_vol * 0.5f * BV_GAIN[bv];
+    float ph = bass.ph, env = bass.env, inc, bite = bass_bite;
     int32_t gate = bass.gate;
     if (env < 1e-5f && gate <= 0) {
         bass.env = 0.0f;
@@ -1748,7 +1836,13 @@ static void render_bass(uint32_t n)
         if (gate > 0 && --gate == 0)
             midi(0x82, bass.midi_note, 0);
         env += (tgt - env) * (tgt > env ? 0.02f : 0.0012f);   /* ~1 ms in, ~20 ms out */
-        x = sine(ph) + 0.2f * sine(2.0f * ph);
+        switch (bv) {
+        case BV_ROUND: x = sine(ph) + 0.15f * sine(2.0f * ph) + 0.22f * sine(3.0f * ph); break;
+        case BV_GROWL: x = sine(ph + sine(ph) * (0.04f + 0.4f * bite) + 1.0f); break;
+        case BV_PULSE: x = sat(sine(ph) * 3.0f) * 0.9f; break;
+        default: x = sine(ph) + 0.2f * sine(2.0f * ph); break;
+        }
+        bite *= bite_dec;
         ph += inc;
         if (ph >= 1.0f)
             ph -= 1.0f;
@@ -1758,6 +1852,7 @@ static void render_bass(uint32_t n)
         rsend[j] += x * 0.04f;
     }
     bass.ph = ph;
+    bass_bite = fm_flush(bite);
     bass.env = fm_flush(env);
     bass.gate = gate;
     en_bass_level = env;
@@ -1783,14 +1878,15 @@ static void render_bells(uint32_t n)
         }
         for (; j < n; j++) {
             float m = sine(mph) * idx, x;
-            float p = cph + m + 4.0f;            /* + 4 turns: positive for the table */
+            float p = cph + m + 4.0f, dk = 1.0f + v->drop;   /* + 4 turns: positive for the table */
             x = sine(p) * amp * att * g;
             mixl[j] += x * v->gl;
             mixr[j] += x * v->gr;
             rsend[j] += x * 0.4f;
             esend[j] += x * 1.1f;
-            cph += v->cinc;
-            mph += v->minc;
+            cph += v->cinc * dk;
+            mph += v->minc * dk;
+            v->drop *= 0.9993f;                  /* (Drop: ~35 ms to fall) */
             if (cph >= 1.0f)
                 cph -= 1.0f;
             if (mph >= 1.0f)
@@ -1816,7 +1912,7 @@ static void render_hat(drum_t *v, uint32_t n, float g, float pl, float pr, float
 {
     uint32_t j;
     int k;
-    float x1, x2, amp, att;
+    float x1, x2, amp, att, hf = fm_minf(hat_f * KIT[kit].hat_f, 1.2f);
     if (!v->on)
         return;
     x1 = v->x1, x2 = v->x2, amp = v->amp, att = v->att;
@@ -1829,10 +1925,10 @@ static void render_hat(drum_t *v, uint32_t n, float g, float pl, float pr, float
             in += v->mph[k] < 0.5f ? 0.25f : -0.25f;
         }
         noise = noise * 1664525u + 1013904223u;
-        in = 0.4f * in + 0.7f * (float)(int32_t)noise * (1.0f / 2147483648.0f);
+        in = (1.1f - KIT[kit].noise) * in + KIT[kit].noise * (float)(int32_t)noise * (1.0f / 2147483648.0f);
         hp = in - x2 - 0.8f * x1;
-        x1 += hat_f * hp;
-        x2 += hat_f * x1;
+        x1 += hf * hp;
+        x2 += hf * x1;
         x = hp * amp * att * g;
         mixl[j] += x * pl;
         mixr[j] += x * pr;
@@ -1851,7 +1947,7 @@ static void render_hat(drum_t *v, uint32_t n, float g, float pl, float pr, float
 static void render_drums(uint32_t n)
 {
     uint32_t j;
-    const float g = pulse_vol;
+    const float g = pulse_vol * KIT[kit].gain, fall = KIT[kit].fall, drive = KIT[kit].drive;
     drum_t *v = &drum[0];
     if (v->on) {                                 /* the kick: its own bus, ducked by nothing */
         float ph = v->ph, inc = v->inc, amp = v->amp, att = v->att, clk = v->clk, cl = v->x1;
@@ -1860,11 +1956,11 @@ static void render_drums(uint32_t n)
             noise = noise * 1664525u + 1013904223u;
             cl += 0.5f * ((float)(int32_t)noise * (1.0f / 2147483648.0f) - cl);   /* the click: noise, softened */
             x = (sine(ph) * att + 0.5f * cl * clk) * amp;
-            kickb[j] += sat(x * 1.5f) * g * 0.75f;
+            kickb[j] += sat(x * drive) * g * (1.125f / drive + 0.0f);
             ph += inc;
             if (ph >= 1.0f)
                 ph -= 1.0f;
-            inc += (v->inc_end - inc) * 0.0016f;
+            inc += (v->inc_end - inc) * fall;
             amp *= v->adec;
             att += (1.0f - att) * 0.2f;
             clk *= 0.985f;

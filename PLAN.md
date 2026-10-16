@@ -99,6 +99,30 @@ measurement (renders analysed for level, timing and spectrum).
 - [ ] **Sound design** with your ears: the stab's character, the kick, the bass, the hats, the
       echo's colour, the cloud, the crackle (a round of its own)
 
+## Done: voices (a first approach)
+
+- ALGORITHM on a layer's page steps through its voices; on Dub, Space, Setup and Mix it is still the
+  mode. The voice shows at the left of the knob strip, is said ("VOICE Organ"), and is kept by the
+  piece.
+- Chord: Saws, Keys, Organ, Pad, Bell, Brass, Noise. Pings: Blip, Marimba, Glass, Wood, Drop. Bass:
+  Sub, Round, Growl, Pulse. Kits: Tight, Deep, Punch, Soft, Dusty.
+- Each voice is a row of a table in `amb.c` (`CV`, `PV`, `BV_GAIN`, `KIT`). Levels are matched by
+  measurement (within ~2 dB of the layer's first voice).
+- The pieces got their own voices. The project format is now 2.
+- CPU (host): Organ is the heaviest, 0.33% of real time (AMB-1's worst: 0.31%).
+
+## Next: a voice page (the user's plan)
+
+A second page for each layer's voice, to shape it beyond the presets: the FM algorithm, ratios,
+index and its envelope, feedback, the filter (type, resonance, envelope amount), attack and decay.
+- [ ] Each preset becomes the starting point; the second page edits that layer's copy, kept by the
+      piece. The table rows in `amb.c` already hold most of these values.
+- [ ] How to reach it: the layer's button pressed again (a second press: its voice page), or held
+      with ALGORITHM.
+- [ ] A small common FM core (2–4 operators, the FM-1's own algorithms as a reference) for the chord
+      and the pings, so the algorithms are a real choice.
+- [ ] Watch the CPU on the device first (the Setup page's CPU): four chord voices x 4 operators.
+
 ## Done: DUB-1's own interface
 
 - **Main screen, echo ripples:** each stab drops a ring that spreads and fades; the echo's repeats

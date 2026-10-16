@@ -10,7 +10,7 @@
 #define EN_VERSION "DEV"
 #endif
 #define PROJ_MAGIC 0x31425544u           /* "DUB1": AMB-1's projects ("ENO1") give the recipes */
-#define PROJ_FORMAT 1u
+#define PROJ_FORMAT 2u                   /* 2: the layers' voices (1's projects give the recipes) */
 #define NPIECES EN_NPIECES
 
 typedef struct {

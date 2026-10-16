@@ -97,7 +97,7 @@ The drawing at the top shows them all; here they are in more detail.
 | ENV · ARP · LFO · SEQ | The layers' pages: Chord, Texture (the pings and the crackle), Bass, Drums. |
 | FX · GLO | The Space and Setup pages. The lit button shows the page. |
 | SELECT | The previous or next page. Hold HOME and turn it for the tempo, from any page. |
-| ALGORITHM | Mode: Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, pentatonic major and minor. Loads the mode's scale; editing it with the keys makes it Custom. |
+| ALGORITHM | On a layer's page (Chord, Texture, Bass, Drums): that layer's **voice** (see [The voices](#the-voices)). On the other pages: the mode, Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, pentatonic major and minor; it loads the mode's scale, and editing it with the keys makes it Custom. |
 | PRESETS | The piece (see [The pieces](#7-the-pieces)). |
 | KNOB 1–4 | The four values on the screen. A few clicks are always single steps; a quick turn speeds up, so half a turn sweeps the range. |
 | OCT− / OCT+ | The pings' octave, two down to two up, from any page. While playing, a ping sounds at once in the new octave. |
@@ -268,6 +268,22 @@ Tune, MIDI out and Lights are the same for all.
 
 One page a part, each on its own button, with four values on KNOB 1–4. SELECT steps through them
 in this order.
+
+### The voices
+
+On a layer's page, ALGORITHM steps through that layer's voices (after the last, the first again).
+The voice's name shows at the left of the knob strip, and a message says it ("VOICE Organ").
+Each piece keeps its own.
+
+| Page | Voices |
+|---|---|
+| Chord (ENV) | **Saws** (two detuned saws a voice), **Keys** (an FM electric piano), **Organ** (four drawbars, longer), **Pad** (the saws swelling in, long), **Bell** (FM at 3.5, the clang dying first), **Brass** (FM, soft in, the filter swelling), **Noise** (noise through the resonant filter, a little saw under it) |
+| Texture (ARP), the pings | **Blip**, **Marimba** (a wooden bar), **Glass** (long and bright), **Wood** (a knock), **Drop** (the pitch falling from an octave up) |
+| Bass (LFO) | **Sub** (a sine and a little of its octave), **Round** (its third harmonic too), **Growl** (FM: a bite at each note), **Pulse** (towards a square) |
+| Drums (SEQ), the kit | **Tight**, **Deep** (long, 808-ish), **Punch** (short and hard), **Soft** (a muffled thump, no click), **Dusty** (darker, noisier hats) |
+
+The voices are matched in level, so changing one keeps the mix. Decay (Chord page) is the
+voice's length times its own: an Organ or a Pad rings longer than Saws at the same Decay.
 
 ### HOME: Dub
 
@@ -495,23 +511,26 @@ The defaults are Basic's; each piece has its own.
 | Setup | Tune | −50 – +50 cents | 0 |
 | Setup | MIDI out | Off, On | On |
 | Setup | Lights | Off, On, Keys | On |
-| ALGORITHM | Mode | 8 modes, or Custom | Dorian |
+| ALGORITHM | Mode (Dub, Space, Setup, Mix pages) | 8 modes, or Custom | Dorian |
+| ALGORITHM | Chord voice (Chord page) | 7 voices | Saws |
+| ALGORITHM | Ping voice (Texture page) | 5 voices | Blip |
+| ALGORITHM | Bass voice (Bass page) | 4 voices | Sub |
+| ALGORITHM | Kit (Drums page) | 5 kits | Tight |
 | OCT− / OCT+ | Ping octave | −2 – +2 | 0 |
 
-Set by the piece only (no knob): the chord's sound (Saws or Keys), the pings' tone (from a round
-blip to a metallic clank), the hats' colour, and the plate's size. Each piece also has its own
-Cloud.
+Set by the piece only (no knob): the pings' tone (from a round blip to a metallic clank), the
+hats' colour, and the plate's size. Each piece also has its own voices and Cloud.
 
-| Piece | Sound | Ping tone | Hats | Size | Cloud |
-|---|---|---|---|---|---|
-| Basic | Saws | 40 | 50 | 55 | 30 |
-| Chamber | Saws | 30 | 40 | 70 | 45 |
-| Steppers | Saws | 50 | 60 | 50 | 20 |
-| Fog | Keys | 25 | 30 | 80 | 60 |
-| Concrete | Saws | 60 | 75 | 45 | 15 |
-| Night Drive | Keys | 45 | 55 | 60 | 35 |
-| Pressure | Saws | 35 | 65 | 40 | 20 |
-| Haze | Keys | 30 | 35 | 85 | 70 |
+| Piece | Chord | Pings | Bass | Kit | Ping tone | Hats | Size | Cloud |
+|---|---|---|---|---|---|---|---|---|
+| Basic | Saws | Blip | Sub | Tight | 40 | 50 | 55 | 30 |
+| Chamber | Organ | Glass | Sub | Deep | 30 | 40 | 70 | 45 |
+| Steppers | Saws | Marimba | Round | Punch | 50 | 60 | 50 | 20 |
+| Fog | Keys | Blip | Sub | Soft | 25 | 30 | 80 | 60 |
+| Concrete | Noise | Wood | Pulse | Punch | 60 | 75 | 45 | 15 |
+| Night Drive | Keys | Drop | Growl | Tight | 45 | 55 | 60 | 35 |
+| Pressure | Brass | Wood | Growl | Deep | 35 | 65 | 40 | 20 |
+| Haze | Pad | Glass | Sub | Dusty | 30 | 35 | 85 | 70 |
 
 ---
 
