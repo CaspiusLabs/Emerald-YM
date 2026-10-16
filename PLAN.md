@@ -104,12 +104,18 @@ measurement (renders analysed for level, timing and spectrum).
 - ALGORITHM on a layer's page steps through its voices; on Dub, Space, Setup and Mix it is still the
   mode. The voice shows at the left of the knob strip, is said ("VOICE Organ"), and is kept by the
   piece.
-- Chord: Saws, Keys, Organ, Pad, Bell, Brass, Noise. Pings: Blip, Marimba, Glass, Wood, Drop. Bass:
+- Chord: Saws, Keys, Organ, Pad, Bell, Tonewheel (replaced Brass, too like the others), Noise. Pings: Blip, Marimba, Glass, Wood, Drop. Bass:
   Sub, Round, Growl, Pulse. Kits: Tight, Deep, Punch, Soft, Dusty.
 - Each voice is a row of a table in `amb.c` (`CV`, `PV`, `BV_GAIN`, `KIT`). Levels are matched by
   measurement (within ~2 dB of the layer's first voice).
 - The pieces got their own voices. The project format is now 2.
 - CPU (host): Organ is the heaviest, 0.33% of real time (AMB-1's worst: 0.31%).
+
+### Voices: feedback (2026-10-16)
+
+- The Mix page's labels (CHORD, PINGS, BASS, DRUMS) are fine.
+- [ ] The basses are too alike: something punchier, from the classic FM bass patches (later).
+- [x] Brass was too like the other chord voices: now Tonewheel, a second organ.
 
 ## Next: a voice page (the user's plan)
 

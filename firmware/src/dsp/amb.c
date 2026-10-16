@@ -75,7 +75,7 @@ void en_piece(int i, int16_t *par, uint16_t *pool)
     *pool = EN_MODE_POOL[PIECES[i].v[P_MODE]];
 }
 
-const char *const EN_CV_NAME[EN_NCV] = {"Saws", "Keys", "Organ", "Pad", "Bell", "Brass", "Noise"};
+const char *const EN_CV_NAME[EN_NCV] = {"Saws", "Keys", "Organ", "Pad", "Bell", "Tonewheel", "Noise"};
 const char *const EN_PV_NAME[EN_NPV] = {"Blip", "Marimba", "Glass", "Wood", "Drop"};
 const char *const EN_BV_NAME[EN_NBV] = {"Sub", "Round", "Growl", "Pulse"};
 const char *const EN_KIT_NAME[EN_NKIT] = {"Tight", "Deep", "Punch", "Soft", "Dusty"};
@@ -459,7 +459,7 @@ static float stab_gl[EN_NPAD], stab_gr[EN_NPAD];
  * 0.035 ~0.6 ms .. 0.00012 ~190 ms), its length (times Decay's), how far its own envelope opens the filter
  * (octaves), its modulator's ratio and index (FM voices, in turns: the index at the strike, and at rest),
  * and a level to match the others */
-enum { CV_SAWS, CV_KEYS, CV_ORGAN, CV_PAD, CV_BELL, CV_BRASS, CV_NOISE };
+enum { CV_SAWS, CV_KEYS, CV_ORGAN, CV_PAD, CV_BELL, CV_WHEEL, CV_NOISE };
 static const struct {
     float att, dec, fenv, ratio, idx_hi, idx_lo, gain;
 } CV[EN_NCV] = {
@@ -468,10 +468,12 @@ static const struct {
     {0.02f, 2.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.75f},        /* Organ: four drawbars (1, 2, 3, 4) */
     {0.00012f, 4.0f, 0.4f, 0.0f, 0.0f, 0.0f, 0.72f},     /* Pad: the saws, swelling in, long */
     {0.05f, 1.8f, 0.8f, 3.5f, 0.35f, 0.05f, 0.83f},      /* Bell: FM at 3.5, the clang dying first */
-    {0.004f, 1.2f, 2.2f, 1.0f, 0.3f, 0.12f, 1.0f},       /* Brass: FM at 1, soft in, the filter swelling */
+    {0.03f, 3.0f, 0.3f, 0.0f, 0.0f, 0.0f, 0.67f},        /* Tonewheel: drawbars, a percussion and a click at the
+                                                          * strike, a rotary speaker turning (left against right) */
     {0.05f, 0.6f, 2.0f, 0.0f, 0.0f, 0.0f, 3.6f},         /* Noise: noise and a little saw, the filter's pitch */
 };
 static int cvoice;                              /* the chord's voice now */
+static float rotor, click;                      /* Tonewheel: the rotor's turn, the key click */
 
 /* ------------------------------------------------------------------ bass --- */
 static struct {
@@ -838,6 +840,7 @@ static void stab_fire(float vel, int throw_it)
     }
     st_env = vel;
     st_fenv = 1.0f;
+    click = cvoice == CV_WHEEL ? 0.12f * vel : 0.0f;
     en_stab_vel = vel;
     en_stab_thrown = (uint8_t)(throw_it != 0);
     en_stabs++;
@@ -1722,6 +1725,7 @@ static void render_stabs(uint32_t n)
     const int cv = cvoice;
     const float g = chord_vol * 0.5f * CV[cv].gain, k = 1.25f - 0.6f * fm_clampf(0.5f + 0.5f * arcm, 0.0f, 1.0f);
     const float att = CV[cv].att, fe = CV[cv].fenv, ihi = CV[cv].idx_hi - CV[cv].idx_lo, ilo = CV[cv].idx_lo;
+    float pc = 0.0f, ck = click;
     float s0 = st_s[0], s1 = st_s[1], s2 = st_s[2], s3 = st_s[3], env = st_env, amp = st_amp, thr = st_throw;
     if (st_midi_left > 0 && (st_midi_left -= (int32_t)n) <= 0)
         for (i = 0; i < EN_NPAD; i++)
@@ -1740,6 +1744,7 @@ static void render_stabs(uint32_t n)
             float fc = cut_base * fm_exp2f(fe * st_fenv + 1.0f * arcm + perf_sw + 0.3f * motion * mod[0].v);
             svf_coefs(st_c, fm_minf(fc, 12000.0f), k);
             st_fenv *= st_fdec;
+            pc = st_fenv * st_fenv;              /* (Tonewheel: the percussion, quicker still) */
         }
         env *= st_dec;
         amp += (env - amp) * att;               /* the strike, without a click (or a swell, for the Pad) */
@@ -1756,7 +1761,7 @@ static void render_stabs(uint32_t n)
                 x = (sine(v->ph[0] + m + 1.0f) + 0.15f * sine(2.0f * v->ph[0])) * 0.8f;   /* as loud as the saws, filtered */
                 break;
             }
-            case CV_BELL: case CV_BRASS: {      /* FM, the modulator its own phase (Brass: at the carrier's) */
+            case CV_BELL: {                      /* FM, the modulator its own phase */
                 float m = sine(v->ph[1]) * (ilo + ihi * amp);
                 x = sine(v->ph[0] + m + 1.0f) * 1.1f;
                 break;
@@ -1764,6 +1769,11 @@ static void render_stabs(uint32_t n)
             case CV_ORGAN: {
                 float p = v->ph[0];
                 x = (sine(p) + 0.5f * sine(2.0f * p) + 0.33f * sine(3.0f * p) + 0.2f * sine(4.0f * p)) * 0.8f;
+                break;
+            }
+            case CV_WHEEL: {                     /* 8', 4', 2 2/3' and 2'; the percussion (the third harmonic) dies fast */
+                float p = v->ph[0];
+                x = (sine(p) + 0.7f * sine(2.0f * p) + (0.35f + 0.9f * pc) * sine(3.0f * p) + 0.3f * sine(4.0f * p)) * 0.7f;
                 break;
             }
             case CV_NOISE:
@@ -1781,6 +1791,19 @@ static void render_stabs(uint32_t n)
                 v->ph[1] -= 1.0f;
             l += x * stab_gl[i];
             r += x * stab_gr[i];
+        }
+        if (cv == CV_WHEEL) {                   /* the click, and the rotor: left and right in turn */
+            float ro;
+            noise = noise * 1664525u + 1013904223u;
+            ck *= 0.996f;
+            l += ck * (float)(int32_t)noise * (1.0f / 2147483648.0f);
+            r += ck * (float)(int32_t)noise * (1.0f / 2147483648.0f);
+            rotor += 5.6f / EN_SR;              /* the fast speed, ~5.6 turns a second */
+            if (rotor >= 1.0f)
+                rotor -= 1.0f;
+            ro = 0.3f * sine(rotor);
+            l *= 1.0f + ro;
+            r *= 1.0f - ro;
         }
         v3 = l - s1;                             /* the low-pass, left */
         v1 = st_c[0] * s0 + st_c[1] * v3;
@@ -1810,6 +1833,7 @@ static void render_stabs(uint32_t n)
     st_env = env;
     st_amp = amp;
     st_throw = thr;
+    click = fm_flush(ck);
     en_pad_level = fm_minf(amp * 1.2f, 1.0f);
     for (i = 0; i < EN_NPAD; i++) {
         en_pad_note[i] = stab[i].note;

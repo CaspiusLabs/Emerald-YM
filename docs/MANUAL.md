@@ -277,7 +277,7 @@ Each piece keeps its own.
 
 | Page | Voices |
 |---|---|
-| Chord (ENV) | **Saws** (two detuned saws a voice), **Keys** (an FM electric piano), **Organ** (four drawbars, longer), **Pad** (the saws swelling in, long), **Bell** (FM at 3.5, the clang dying first), **Brass** (FM, soft in, the filter swelling), **Noise** (noise through the resonant filter, a little saw under it) |
+| Chord (ENV) | **Saws** (two detuned saws a voice), **Keys** (an FM electric piano), **Organ** (four drawbars, longer), **Pad** (the saws swelling in, long), **Bell** (FM at 3.5, the clang dying first), **Tonewheel** (a second organ: drawbars, a quick percussion and a key click at each strike, a rotary speaker turning left and right), **Noise** (noise through the resonant filter, a little saw under it) |
 | Texture (ARP), the pings | **Blip**, **Marimba** (a wooden bar), **Glass** (long and bright), **Wood** (a knock), **Drop** (the pitch falling from an octave up) |
 | Bass (LFO) | **Sub** (a sine and a little of its octave), **Round** (its third harmonic too), **Growl** (FM: a bite at each note), **Pulse** (towards a square) |
 | Drums (SEQ), the kit | **Tight**, **Deep** (long, 808-ish), **Punch** (short and hard), **Soft** (a muffled thump, no click), **Dusty** (darker, noisier hats) |
@@ -529,7 +529,7 @@ hats' colour, and the plate's size. Each piece also has its own voices and Cloud
 | Fog | Keys | Blip | Sub | Soft | 25 | 30 | 80 | 60 |
 | Concrete | Noise | Wood | Pulse | Punch | 60 | 75 | 45 | 15 |
 | Night Drive | Keys | Drop | Growl | Tight | 45 | 55 | 60 | 35 |
-| Pressure | Brass | Wood | Growl | Deep | 35 | 65 | 40 | 20 |
+| Pressure | Tonewheel | Wood | Growl | Deep | 35 | 65 | 40 | 20 |
 | Haze | Pad | Glass | Sub | Dusty | 30 | 35 | 85 | 70 |
 
 ---
