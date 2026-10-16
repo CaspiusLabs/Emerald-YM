@@ -428,8 +428,14 @@ static int expect(const char *what, const char *val)
         for (l = 0; l < EN_NLOOP; l++)
             for (i = 0; i < EN_LOOP_MAX; i++)
                 got += en_loop_note[l][i] >= 0;
-    } else if (!strncmp(what, "par", 3))          /* parN: parameter N (amb.h P_*) */
-        got = proj.par[atoi(what + 3)];
+    } else if (!strncmp(what, "par", 3)) {        /* parN: parameter N (amb.h P_*) */
+        int k = atoi(what + 3);
+        if (k < 0 || k >= P_NPARAMS) {
+            printf("  FAIL expect %s: no such parameter (0..%d)\n", what, P_NPARAMS - 1);
+            return 1;
+        }
+        got = proj.par[k];
+    }
     else if (!strcmp(what, "peak_db_max") || !strcmp(what, "peak_db_min")) {
         double db = 20.0 * log10(peak_out > 1e-9f ? peak_out : 1e-9f);
         int bad = what[8] == 'm' && what[9] == 'a' ? db > atof(val) : db < atof(val);

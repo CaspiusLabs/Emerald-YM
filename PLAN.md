@@ -164,11 +164,10 @@ Each layer gets a second page, its **sound page**, to shape its voice beyond the
 
 ### Steps
 
-- [ ] The sound pages: the UI (the second press, the page, the help cards, the screen reader), 16
-      parameters, project format 3, tests
-- [ ] Each voice's mapping of the four knobs, layer by layer, starting with the chord; renders
-      to check the ranges sound useful at both ends
-- [ ] The envelope drawing on a sound page
+- [x] The sound pages: the UI (the second press, the page, the help cards, the screen reader), 16
+      parameters, project format 3, tests (`tests/scenarios/sound.amb`)
+- [x] Each voice's mapping of the four knobs (a first pass; to tune by ear)
+- [x] The envelope drawing on a sound page
 - [ ] The FM core, its algorithms, the FM voices moved onto it; the punchier basses
 - [ ] The FM page (Algorithm, Ratio, Feedback, Index env); the algorithm diagram
 - [ ] CPU on the device at each step

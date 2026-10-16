@@ -282,7 +282,29 @@ Each piece keeps its own.
 | Bass (LFO) | **Sub** (a sine and a little of its octave), **Round** (its third harmonic too), **Growl** (FM: a bite at each note), **Pulse** (towards a square) |
 | Drums (SEQ), the kit | **Tight**, **Deep** (long, 808-ish), **Punch** (short and hard), **Soft** (a muffled thump, no click), **Dusty** (darker, noisier hats) |
 
-The voices are matched in level, so changing one keeps the mix. Decay (Chord page) is the
+The voices are matched in level, so changing one keeps the mix.
+
+### The sound pages
+
+Press a layer's button again (ENV on the Chord page, ARP on Texture, LFO on Bass, SEQ on Drums)
+for its **sound page**: four more knobs that shape its voice. The button blinks while you're
+there; press it again to go back, or go anywhere else as usual. ALGORITHM still changes the voice.
+
+Each knob is **relative to the voice as it is**: 0, the middle, is the preset; turning moves away
+from it, to −50 or +50. Your turns stay when you change the voice, so a chord made slower and
+brighter stays slower and brighter on the next voice. Holding SAVE (the piece back to its recipe)
+puts them back to 0. Each piece keeps its own.
+
+In place of the ripples, the screen draws the layer's envelope as it will sound, and how long it
+lasts; the second, dotted curve is the chord's filter envelope, the pings' bend or the kick's pitch.
+
+| Sound page | KNOB 1 | KNOB 2 | KNOB 3 | KNOB 4 |
+|---|---|---|---|---|
+| Chord | **Attack**: up, a slower strike, to a swell; down, a snap | **Colour**: as each voice has it: the saws' detune, the FM voices' brightness, the organs' upper drawbars, the noise against its saw | **Reso**: the filter's resonance | **Env**: how far each stab opens the filter |
+| Pings | **Tone**: round to metallic (moves the piece's Ping tone) | **Ratio**: the FM modulator, from harmonic to clangy | **Length** | **Bend**: the pitch falling at the strike (up to from four times its note) |
+| Bass | **Bite**: drive, and Growl's bite | **Shape**: up, towards a square; down, towards a pure sine | **Length**: how long each note holds, against its groove's | **Slide**: the glide between notes, ~1 ms to ~250 ms |
+| Drums | **Kick tune**: semitones from the key's note, −12 to +12 | **Kick len** | **Punch**: the kick's start pitch and its click | **Hats**: dark to bright (moves the piece's Hats colour) |
+ Decay (Chord page) is the
 voice's length times its own: an Organ or a Pad rings longer than Saws at the same Decay.
 
 ### HOME: Dub
@@ -516,6 +538,11 @@ The defaults are Basic's; each piece has its own.
 | ALGORITHM | Ping voice (Texture page) | 5 voices | Blip |
 | ALGORITHM | Bass voice (Bass page) | 4 voices | Sub |
 | ALGORITHM | Kit (Drums page) | 5 kits | Tight |
+| Chord sound | Attack, Colour, Reso, Env | −50 – +50 | 0 |
+| Ping sound | Tone, Ratio, Length, Bend | −50 – +50 | 0 |
+| Bass sound | Bite, Shape, Length, Slide | −50 – +50 | 0 |
+| Drum sound | Kick tune | −12 – +12 semitones | 0 |
+| Drum sound | Kick len, Punch, Hats | −50 – +50 | 0 |
 | OCT− / OCT+ | Ping octave | −2 – +2 | 0 |
 
 Set by the piece only (no knob): the pings' tone (from a round blip to a metallic clank), the

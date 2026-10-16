@@ -34,6 +34,10 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     {"Stabs", 0, 100, 30},    {"Crackle", 0, 100, 35},  {"Duck", 0, 100, 50},     {"Size", 0, 100, 55},
     {"Cloud", 0, 100, 30},
     {"Ping voice", 0, EN_NPV - 1, 0}, {"Bass voice", 0, EN_NBV - 1, 0}, {"Kit", 0, EN_NKIT - 1, 0},
+    {"Attack", -50, 50, 0},   {"Colour", -50, 50, 0},   {"Resonance", -50, 50, 0}, {"Env amount", -50, 50, 0},
+    {"Tone", -50, 50, 0},     {"Ratio", -50, 50, 0},    {"Ping len", -50, 50, 0}, {"Bend", -50, 50, 0},
+    {"Bite", -50, 50, 0},     {"Shape", -50, 50, 0},    {"Bass len", -50, 50, 0}, {"Slide", -50, 50, 0},
+    {"Kick tune", -12, 12, 0}, {"Kick len", -50, 50, 0}, {"Punch", -50, 50, 0},   {"Hat tone", -50, 50, 0},
 };
 const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PARAMS[i] : &PARAMS[0]; }
 
@@ -41,6 +45,7 @@ const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PAR
  * MIDI out are taken from here by neither: they belong to the player, not the piece */
 /*                  Cho Pin Bas Dru  Den Evo Dri Hit  Ech ET Rev Fdb  Cut Dec PTo Mot  Tun MI Tem Rt Md Oc
  *                  CV BO Grv Fif Swi Hat  Stb Crk Dck Siz  Clo PV BV Kit
+ *                  then the sound pages' sixteen, all 0: the voices as they are
  * (Dri: Drift, 2 4 8 16 32 64 bars or Hold; ET: Echo time, 1/8 1/8. 1/4 1/4. 1/2 1 bar; Grv: Drone, Offbeat,
  *  Dotted, Roller, Sync; CV, PV, BV, Kit: the voices, EN_CV_NAME ...) */
 static const struct {
@@ -48,21 +53,29 @@ static const struct {
     int16_t v[P_NPARAMS];
 } PIECES[EN_NPIECES] = {
     {"Basic",      {70, 30, 60, 65, 30, 40, 4, 50, 55, 1, 35, 60, 45, 35, 40, 50, 0, 1, 122, 5, 1, 0,
-                    0, 0, 1, 20, 10, 50, 30, 35, 50, 55, 30, 0, 0, 0}},
+                    0, 0, 1, 20, 10, 50, 30, 35, 50, 55, 30, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
     {"Chamber",    {75, 20, 55, 55, 20, 45, 6, 40, 70, 1, 45, 75, 35, 55, 30, 60, 0, 1, 118, 9, 5, 0,
-                    2, 0, 0, 10, 0, 40, 15, 45, 45, 70, 45, 2, 0, 1}},
+                    2, 0, 0, 10, 0, 40, 15, 45, 45, 70, 45, 2, 0, 1,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
     {"Steppers",   {60, 35, 70, 70, 35, 40, 3, 60, 50, 3, 30, 55, 55, 25, 50, 45, 0, 1, 126, 2, 1, 0,
-                    0, 0, 2, 35, 15, 60, 45, 25, 60, 50, 20, 1, 1, 2}},
+                    0, 0, 2, 35, 15, 60, 45, 25, 60, 50, 20, 1, 1, 2,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
     {"Fog",        {70, 40, 50, 45, 40, 55, 5, 30, 75, 2, 55, 80, 30, 70, 25, 70, 0, 1, 112, 7, 5, 0,
-                    1, -1, 0, 15, 0, 30, 20, 60, 35, 80, 60, 0, 0, 3}},
+                    1, -1, 0, 15, 0, 30, 20, 60, 35, 80, 60, 0, 0, 3,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
     {"Concrete",   {65, 25, 65, 75, 25, 35, 4, 75, 50, 1, 25, 60, 60, 20, 60, 40, 0, 1, 130, 0, 7, 0,
-                    6, 0, 3, 30, 20, 75, 50, 20, 65, 45, 15, 3, 3, 2}},
+                    6, 0, 3, 30, 20, 75, 50, 20, 65, 45, 15, 3, 3, 2,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
     {"Night Drive", {65, 45, 60, 65, 45, 50, 3, 55, 60, 4, 35, 65, 50, 40, 45, 55, 0, 1, 124, 10, 1, 0,
-                    1, 0, 4, 25, 25, 55, 35, 30, 50, 60, 35, 4, 2, 0}},
+                    1, 0, 4, 25, 25, 55, 35, 30, 50, 60, 35, 4, 2, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
     {"Pressure",   {70, 20, 75, 80, 20, 30, 6, 65, 45, 1, 20, 55, 40, 30, 35, 35, 0, 1, 128, 4, 2, 0,
-                    5, 0, 1, 10, 5, 65, 25, 15, 70, 40, 20, 3, 2, 1}},
+                    5, 0, 1, 10, 5, 65, 25, 15, 70, 40, 20, 3, 2, 1,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
     {"Haze",       {62, 50, 45, 40, 50, 60, 4, 35, 80, 3, 60, 85, 35, 80, 30, 80, 0, 1, 116, 3, 0, 1,
-                    3, 0, 0, 20, 10, 35, 30, 70, 30, 85, 70, 2, 0, 4}},
+                    3, 0, 0, 20, 10, 35, 30, 70, 30, 85, 70, 2, 0, 4,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 };
 
 const char *en_piece_name(int i) { return PIECES[(unsigned)i < EN_NPIECES ? i : 0].name; }
@@ -157,7 +170,7 @@ void en_param_text(int i, int v, char *b)
         *b = 0;
         return;
     }
-    if ((i == P_TUNE || i == P_POCT || i == P_BASSOCT) && v > 0)
+    if ((i == P_TUNE || i == P_POCT || i == P_BASSOCT || i >= P_CATT) && v > 0)
         *b++ = '+';
     itoa_s(v, b);
 }
@@ -368,6 +381,8 @@ static void midi(uint32_t st, uint32_t d1, uint32_t d2)
     if (par[P_MIDI])
         en_midi_out(st, d1, d2);
 }
+
+static float rel(int p) { return (float)par[p] * 0.02f; }   /* a sound page's value, -1 .. +1 */
 
 static float mtof(float n) { return 440.0f * tunefac * fm_exp2f((n - 69.0f) * (1.0f / 12.0f)); }
 
@@ -753,11 +768,12 @@ static void bell_voice(int l, int n, float vel, int32_t wait)
     v->cph = v->mph = 0.0f;
     pv = (unsigned)par[P_PVOICE] < EN_NPV ? par[P_PVOICE] : 0;
     v->cinc = mtof((float)n) * (1.0f / EN_SR);
-    ri = par[P_PTONE] * 5 / 101 + LOOP_RAT[l];
-    v->minc = v->cinc * (PV[pv].ratio > 0.0f ? PV[pv].ratio : RATIO[ri < 0 ? 0 : ri > 4 ? 4 : ri]);
-    v->drop = PV[pv].drop;
+    ri = (int)(btone * 100.0f + 0.5f) * 5 / 101 + LOOP_RAT[l];
+    v->minc = v->cinc * (PV[pv].ratio > 0.0f ? PV[pv].ratio : RATIO[ri < 0 ? 0 : ri > 4 ? 4 : ri]) * fm_exp2f(0.8f * rel(P_PRAT));
+    v->drop = fm_clampf(PV[pv].drop + 1.5f * rel(P_PBEND), 0.0f, 3.0f);   /* Bend: from up to four times its note */
     v->amp = vel * PV[pv].gain;
-    t60 = fm_clampf(0.9f - (float)(n - 60) * 0.02f, 0.25f, 1.1f) * LOOP_DEC[l] * PV[pv].t60;   /* short: a ping */
+    t60 = fm_clampf(0.9f - (float)(n - 60) * 0.02f, 0.25f, 1.1f) * LOOP_DEC[l] * PV[pv].t60   /* short: a ping */
+          * fm_exp2f(1.5f * rel(P_PLEN));
     v->adec = fm_expf(-6.9f / (t60 * EN_SR));
     /* Ping tone: 0 a round blip; 100 a metallic clank (index in radians, as turns) */
     v->idx = (0.2f + 5.0f * btone * btone) * LOOP_IDX[l] * (0.6f + 0.4f * vel) * PV[pv].idx * (1.0f / FM_TWO_PI);
@@ -832,9 +848,10 @@ static void stab_fire(float vel, int throw_it)
             midi(0x80, stab[i].midi_note, 0);
     for (i = 0; i < EN_NPAD; i++) {
         float f = mtof((float)stab[i].note);
-        stab[i].inc[0] = f * 0.99798f * (1.0f / EN_SR);    /* -3.5 and +3.5 cents */
+        float dt = 0.00202f * fm_exp2f(2.0f * rel(P_CCOL));   /* +-3.5 cents (Colour: +-0.9 .. +-14) */
+        stab[i].inc[0] = f * (1.0f - dt) * (1.0f / EN_SR);
         stab[i].inc[1] = CV[cvoice].ratio > 0.0f ? f * CV[cvoice].ratio * (1.0f / EN_SR)   /* FM: the modulator */
-                                                 : f * 1.00202f * (1.0f / EN_SR);
+                                                 : f * (1.0f + dt) * (1.0f / EN_SR);
         stab[i].midi_note = stab[i].note;
         midi(0x90, stab[i].note, (uint32_t)(40.0f + 80.0f * vel));
     }
@@ -910,12 +927,12 @@ static void drum_fire(int d, float vel)
     v->att = 0.0f;
     switch (d) {
     case 0: {                                   /* kick: a sine falling fast from ~5x to its note */
-        float f = mtof((float)kick_note(par[P_ROOT]));
+        float f = mtof((float)(kick_note(par[P_ROOT]) + par[P_KTUNE])), pu = rel(P_KPUNCH);
         v->note = DRUM_GM[0];
-        v->inc = f * KIT[kit].start * (1.0f / EN_SR);
+        v->inc = f * KIT[kit].start * fm_exp2f(0.8f * pu) * (1.0f / EN_SR);
         v->inc_end = f * (1.0f / EN_SR);
-        v->adec = fm_expf(-6.9f / (KIT[kit].t60 * EN_SR));
-        v->clk = KIT[kit].click * 2.0f;   /* (Tight: 1, as before) */
+        v->adec = fm_expf(-6.9f / (KIT[kit].t60 * fm_exp2f(1.2f * rel(P_KLEN)) * EN_SR));
+        v->clk = KIT[kit].click * 2.0f * fm_maxf(1.0f + pu, 0.0f);   /* (Tight: 1, as before) */
         duck_x = 1.0f;
         break;
     }
@@ -979,7 +996,7 @@ static void bass_hit(int first)
     bass.target = (float)n;
     if (bass.gate > 0 || bass.midi_note)
         midi(0x82, bass.midi_note, 0);
-    bass.gate = (int32_t)(GROOVE_GATE[(unsigned)g < 5u ? g : 0] * step_len);
+    bass.gate = (int32_t)(fm_minf(GROOVE_GATE[(unsigned)g < 5u ? g : 0] * fm_exp2f(rel(P_BLEN)), 15.8f) * step_len);
     bass_bite = 1.0f;
     bass.midi_note = (uint8_t)n;
     midi(0x92, (uint32_t)n, 90);
@@ -1448,6 +1465,58 @@ static inline void cloud(float in, float *ol, float *or_)
     }
 }
 
+/* a layer's envelope, for a sound page (computed from the values, as the render would play them) */
+void en_env_shape(int layer, float *lvl, float *aux, int n, float *secs)
+{
+    int i;
+    float T = 1.0f, a = 0.035f, t60 = 0.3f, ft = 0.1f, fe = 0.0f, rel_s = 0.02f, hold = 0.0f;
+    switch (layer) {
+    case 0: {                                   /* the chord: the strike (or swell), the decay; the filter's envelope */
+        float xa = rel(P_CATT);
+        a = fm_clampf(CV[cvoice].att * fm_exp2f(-(xa > 0.0f ? 9.0f : 3.0f) * xa), 0.00004f, 0.3f);
+        t60 = st_t60;
+        ft = 0.4f * st_t60 + 0.03f;
+        fe = fm_clampf(CV[cvoice].fenv * fm_maxf(1.0f + rel(P_CENV), 0.0f) / 3.4f, 0.0f, 1.0f);
+        T = fm_clampf(t60 * 1.2f, 0.25f, 4.0f);
+        break;
+    }
+    case 1: {
+        int pv = (unsigned)par[P_PVOICE] < EN_NPV ? par[P_PVOICE] : 0;
+        t60 = 0.8f * PV[pv].t60 * fm_exp2f(1.5f * rel(P_PLEN));
+        a = 0.004f + 0.02f * fm_minf(btone * 2.0f, 1.0f);
+        fe = fm_clampf(PV[pv].drop + 1.5f * rel(P_PBEND), 0.0f, 3.0f) / 3.0f;   /* the bend */
+        ft = 0.035f;
+        T = fm_clampf(t60 * 1.2f, 0.25f, 4.0f);
+        break;
+    }
+    case 2: {                                   /* the bass: in, held for its gate, out */
+        int g = par[P_GROOVE];
+        hold = fm_minf(GROOVE_GATE[(unsigned)g < 5u ? g : 0] * fm_exp2f(rel(P_BLEN)), 15.8f) * step_len / EN_SR;
+        a = 0.02f;
+        T = fm_clampf(hold * 1.5f + 0.1f, 0.25f, 4.0f);
+        break;
+    }
+    default: {                                  /* the kick: its decay; its pitch falling */
+        t60 = KIT[kit].t60 * fm_exp2f(1.2f * rel(P_KLEN));
+        a = 0.2f;
+        ft = 1.0f / (KIT[kit].fall * EN_SR);
+        fe = fm_clampf(KIT[kit].start * fm_exp2f(0.8f * rel(P_KPUNCH)) / 10.0f, 0.0f, 1.0f);
+        T = fm_clampf(t60 * 1.2f, 0.25f, 2.0f);
+        break;
+    }
+    }
+    for (i = 0; i < n; i++) {
+        float t = T * (float)i / (float)(n - 1), up = 1.0f - fm_expf(-a * EN_SR * t), v;
+        if (layer == 2)
+            v = t < hold ? up : up * fm_expf(-(t - hold) / rel_s);
+        else
+            v = up * fm_expf(-6.9f * t / t60);
+        lvl[i] = fm_clampf(v, 0.0f, 1.0f);
+        aux[i] = fe > 0.0f ? fe * fm_expf(-t / ft) : 0.0f;
+    }
+    *secs = T;
+}
+
 /* ------------------------------------------------------------ parameters --- */
 static int pulse;
 static uint32_t ext_age;
@@ -1470,10 +1539,12 @@ static void apply(int p, int v)
     case P_HITS: hats_home(); break;
     case P_STABS: stabs_home(); break;
     case P_SWING: swing = (float)v * 0.004f; break;      /* the off sixteenths up to 0.4 of a step late */
-    case P_HATS:
-        hat_f = 0.55f + 0.0070f * (float)v;               /* the high-pass: ~4 kHz dark .. ~10 kHz bright */
-        hat_open = 0.4f - 0.0025f * (float)v;             /* the open hat: long and soft .. short and crisp */
+    case P_HATS: case P_HTONE: {                 /* the piece's colour, moved by the sound page's Hats */
+        float h = fm_clampf((float)(par[P_HATS] + par[P_HTONE]), 0.0f, 100.0f);
+        hat_f = 0.55f + 0.0070f * h;                      /* the high-pass: ~4 kHz dark .. ~10 kHz bright */
+        hat_open = 0.4f - 0.0025f * h;                    /* the open hat: long and soft .. short and crisp */
         break;
+    }
     case P_ECHO: echo_send = (float)(v * v) * 0.0001f; break;
     case P_ETIME: echo_time(); break;
     case P_REVERB: rev_send = (float)(v * v) * 0.0001f; break;
@@ -1486,7 +1557,7 @@ static void apply(int p, int v)
         st_dec = fm_expf(-6.9f / (st_t60 * EN_SR));
         st_fdec = fm_expf(-6.9f * 32.0f / ((0.4f * st_t60 + 0.03f) * EN_SR));
         break;
-    case P_PTONE: btone = (float)v * 0.01f; break;
+    case P_PTONE: case P_PTON: btone = fm_clampf((float)(par[P_PTONE] + par[P_PTON]), 0.0f, 100.0f) * 0.01f; break;
     case P_MOTION: motion = (float)v * 0.01f; break;
     case P_EVOLVE: evolve = (float)v * 0.01f; break;
     case P_CRACKLE: crackle_vol = (float)(v * v) * 0.0001f; break;
@@ -1723,8 +1794,14 @@ static void render_stabs(uint32_t n)
     uint32_t j;
     int i;
     const int cv = cvoice;
-    const float g = chord_vol * 0.5f * CV[cv].gain, k = 1.25f - 0.6f * fm_clampf(0.5f + 0.5f * arcm, 0.0f, 1.0f);
-    const float att = CV[cv].att, fe = CV[cv].fenv, ihi = CV[cv].idx_hi - CV[cv].idx_lo, ilo = CV[cv].idx_lo;
+    /* the sound page: Attack (a swell up, a snap down), Colour (as each voice has it: the detune, the FM index, the
+     * drawbars, the noise against the saw), Resonance, Env (how far each stab opens the filter) */
+    const float xa = rel(P_CATT), xc = rel(P_CCOL), up = fm_clampf(1.0f + xc, 0.0f, 2.0f), fx = fm_exp2f(1.5f * xc);
+    const float g = chord_vol * 0.5f * CV[cv].gain,
+                k = fm_clampf(1.25f - 0.6f * fm_clampf(0.5f + 0.5f * arcm, 0.0f, 1.0f) - 0.55f * rel(P_CRES), 0.12f, 2.0f);
+    const float att = fm_clampf(CV[cv].att * fm_exp2f(-(xa > 0.0f ? 9.0f : 3.0f) * xa), 0.00004f, 0.3f),
+                fe = CV[cv].fenv * fm_maxf(1.0f + rel(P_CENV), 0.0f),
+                ihi = (CV[cv].idx_hi - CV[cv].idx_lo) * fx, ilo = CV[cv].idx_lo * fx;
     float pc = 0.0f, ck = click;
     float s0 = st_s[0], s1 = st_s[1], s2 = st_s[2], s3 = st_s[3], env = st_env, amp = st_amp, thr = st_throw;
     if (st_midi_left > 0 && (st_midi_left -= (int32_t)n) <= 0)
@@ -1750,7 +1827,7 @@ static void render_stabs(uint32_t n)
         amp += (env - amp) * att;               /* the strike, without a click (or a swell, for the Pad) */
         if (cv == CV_NOISE) {                   /* one noise for all four: the filter gives it its pitch */
             noise = noise * 1664525u + 1013904223u;
-            l = r = (float)(int32_t)noise * (1.0f / 2147483648.0f) * 1.6f;
+            l = r = (float)(int32_t)noise * (1.0f / 2147483648.0f) * 1.6f * (1.0f - 0.5f * xc);
         }
         for (i = 0; i < EN_NPAD; i++) {
             stab_t *v = &stab[i];
@@ -1768,16 +1845,16 @@ static void render_stabs(uint32_t n)
             }
             case CV_ORGAN: {
                 float p = v->ph[0];
-                x = (sine(p) + 0.5f * sine(2.0f * p) + 0.33f * sine(3.0f * p) + 0.2f * sine(4.0f * p)) * 0.8f;
+                x = (sine(p) + up * (0.5f * sine(2.0f * p) + 0.33f * sine(3.0f * p) + 0.2f * sine(4.0f * p))) * 0.8f;
                 break;
             }
             case CV_WHEEL: {                     /* 8', 4', 2 2/3' and 2'; the percussion (the third harmonic) dies fast */
                 float p = v->ph[0];
-                x = (sine(p) + 0.7f * sine(2.0f * p) + (0.35f + 0.9f * pc) * sine(3.0f * p) + 0.3f * sine(4.0f * p)) * 0.7f;
+                x = (sine(p) + up * (0.7f * sine(2.0f * p) + 0.3f * sine(4.0f * p)) + (0.35f * up + 0.9f * pc) * sine(3.0f * p)) * 0.7f;
                 break;
             }
             case CV_NOISE:
-                x = 0.35f * blep_saw(v->ph[0], v->inc[0]);
+                x = 0.35f * up * blep_saw(v->ph[0], v->inc[0]);
                 break;
             default:                             /* Saws, Pad */
                 x = blep_saw(v->ph[0], v->inc[0]) + blep_saw(v->ph[1], v->inc[1]);
@@ -1845,7 +1922,8 @@ static void render_bass(uint32_t n)
 {
     uint32_t j;
     const int bv = (unsigned)par[P_BVOICE] < EN_NBV ? par[P_BVOICE] : 0;
-    const float g = bass_vol * 0.5f * BV_GAIN[bv];
+    const float g = bass_vol * 0.5f * BV_GAIN[bv], xb = rel(P_BBITE), xs = rel(P_BSHAPE),
+                drv = 1.2f * fm_exp2f(1.2f * xb), bi = fm_maxf(1.0f + xb, 0.0f);   /* Bite: the drive, Growl's bite */
     float ph = bass.ph, env = bass.env, inc, bite = bass_bite;
     int32_t gate = bass.gate;
     if (env < 1e-5f && gate <= 0) {
@@ -1853,7 +1931,8 @@ static void render_bass(uint32_t n)
         en_bass_level = 0.0f;
         return;
     }
-    bass.note += (bass.target - bass.note) * fm_minf((float)n / (0.012f * EN_SR), 1.0f);   /* a short slide */
+    bass.note += (bass.target - bass.note) * fm_minf((float)n / (0.012f * fm_exp2f(4.4f * rel(P_BSLIDE)) * EN_SR), 1.0f);
+                                                 /* a short slide (Slide: ~1 ms .. ~250 ms) */
     inc = mtof(bass.note) * (1.0f / EN_SR);
     for (j = 0; j < n; j++) {
         float x, tgt = gate > 0 ? 1.0f : 0.0f;
@@ -1862,15 +1941,19 @@ static void render_bass(uint32_t n)
         env += (tgt - env) * (tgt > env ? 0.02f : 0.0012f);   /* ~1 ms in, ~20 ms out */
         switch (bv) {
         case BV_ROUND: x = sine(ph) + 0.15f * sine(2.0f * ph) + 0.22f * sine(3.0f * ph); break;
-        case BV_GROWL: x = sine(ph + sine(ph) * (0.04f + 0.4f * bite) + 1.0f); break;
+        case BV_GROWL: x = sine(ph + sine(ph) * (0.04f + 0.4f * bite * bi) + 1.0f); break;
         case BV_PULSE: x = sat(sine(ph) * 3.0f) * 0.9f; break;
         default: x = sine(ph) + 0.2f * sine(2.0f * ph); break;
         }
+        if (xs > 0.0f)                           /* Shape: towards a square, or back to a sine */
+            x += xs * (sat(x * 4.0f) - x);
+        else if (xs < 0.0f)
+            x -= xs * (sine(ph) - x);
         bite *= bite_dec;
         ph += inc;
         if (ph >= 1.0f)
             ph -= 1.0f;
-        x = sat(x * 1.2f) * env * g;
+        x = sat(x * drv) * env * g * (1.2f / drv + 0.0f) * (0.6f + 0.4f * fm_minf(drv / 1.2f, 1.6f));
         mixl[j] += x;
         mixr[j] += x;
         rsend[j] += x * 0.04f;

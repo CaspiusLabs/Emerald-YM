@@ -14,11 +14,18 @@
 #include "../dsp/fastmath.h"
 
 /* the pages, one a layer (a button each); SELECT steps through them in this order */
-/* (V_MIX: PERFORM's knobs, the four layers' levels; on no button and not in SELECT's round: NPAGES) */
-enum { V_DUB, V_CHORD, V_TEXTURE, V_BASS, V_DRUMS, V_SPACE, V_SETUP, NPAGES, V_MIX = NPAGES, NVIEWS };
-static const char *const VIEW_NAME[NVIEWS] = {"Dub", "Chord", "Texture", "Bass", "Drums", "Space", "Setup", "Mix"};
+/* (past NPAGES, off SELECT's round and on no button of their own: V_MIX, PERFORM's knobs, the four layers'
+ * levels; the layers' sound pages, the layer's button pressed again) */
+enum { V_DUB, V_CHORD, V_TEXTURE, V_BASS, V_DRUMS, V_SPACE, V_SETUP, NPAGES, V_MIX = NPAGES, V_CSND, V_PSND, V_BSND,
+       V_DSND, NVIEWS };
+static const char *const VIEW_NAME[NVIEWS] = {"Dub", "Chord", "Texture", "Bass", "Drums", "Space", "Setup", "Mix",
+                                              "Chord sound", "Ping sound", "Bass sound", "Drum sound"};
 #define B_NONE 0xFFu
-static const uint8_t VIEW_BTN[NVIEWS] = {B_HOME, B_ENV, B_ARP, B_LFO, B_SEQ, B_FX, B_GLO, B_NONE};
+static const uint8_t VIEW_BTN[NVIEWS] = {B_HOME, B_ENV, B_ARP, B_LFO, B_SEQ, B_FX, B_GLO, B_NONE, B_NONE, B_NONE, B_NONE,
+                                         B_NONE};
+static int sound_of(int v) { return v == V_CHORD ? V_CSND : v == V_TEXTURE ? V_PSND : v == V_BASS ? V_BSND : v == V_DRUMS ? V_DSND : -1; }
+static int parent_of(int v) { return v == V_CSND ? V_CHORD : v == V_PSND ? V_TEXTURE : v == V_BSND ? V_BASS : v == V_DSND ? V_DRUMS : -1; }
+static int page_of(int v) { return parent_of(v) >= 0 ? parent_of(v) : v; }   /* a sound page: its layer's */
 /* the four knobs of each page: a parameter, or one of these; and what the knob is called there */
 enum { K_LEDS = 100, K_CPU, K_NONE };
 static const uint8_t VIEW_KNOB[NVIEWS][4] = {
@@ -30,6 +37,10 @@ static const uint8_t VIEW_KNOB[NVIEWS][4] = {
     {P_ECHO, P_ETIME, P_FEEDBACK, P_REVERB},
     {P_ROOT, P_TUNE, P_MIDI, K_LEDS},
     {P_CHORD, P_PINGS, P_BASS, P_DRUMS},
+    {P_CATT, P_CCOL, P_CRES, P_CENV},
+    {P_PTON, P_PRAT, P_PLEN, P_PBEND},
+    {P_BBITE, P_BSHAPE, P_BLEN, P_BSLIDE},
+    {P_KTUNE, P_KLEN, P_KPUNCH, P_HTONE},
 };
 static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Tempo", "Evolve", "Motion", "Drift"},
@@ -40,6 +51,10 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Echo", "Echo time", "Feedback", "Reverb"},
     {"Root", "Tune", "MIDI out", "Lights"},
     {"Chord", "Pings", "Bass", "Drums"},
+    {"Attack", "Colour", "Reso", "Env"},
+    {"Tone", "Ratio", "Length", "Bend"},
+    {"Bite", "Shape", "Length", "Slide"},
+    {"Kick tune", "Kick len", "Punch", "Hats"},
 };
 
 /* the screen's colours: a dark room, as a dub techno sleeve (grey on black, a cold blue). The chord and
@@ -289,6 +304,7 @@ static void set_mode(int m)
 /* the voices: ALGORITHM on a layer's page steps through that layer's (round: after the last, the first) */
 static int view_voice(int v)
 {
+    v = page_of(v);
     return v == V_CHORD ? P_CVOICE : v == V_TEXTURE ? P_PVOICE : v == V_BASS ? P_BVOICE : v == V_DRUMS ? P_KIT : -1;
 }
 static void set_voice(int p, int v)
@@ -390,6 +406,14 @@ static void set_view(int v)
 static void button(int b)
 {
     int v;
+    if (sound_of(ui.view) >= 0 && b == VIEW_BTN[ui.view]) {   /* the layer's button again: its sound page */
+        set_view(sound_of(ui.view));
+        return;
+    }
+    if (parent_of(ui.view) >= 0 && b == VIEW_BTN[parent_of(ui.view)]) {   /* and again: back */
+        set_view(parent_of(ui.view));
+        return;
+    }
     for (v = 0; v < NPAGES; v++)                 /* a page's button: its page */
         if (VIEW_BTN[v] == b) {
             set_view(v);
@@ -524,7 +548,7 @@ static void input(void)
                 say("TEMPO", t);
             }
         } else {
-            int v = (int)ui.view + (e > 0 ? 1 : -1);
+            int v = page_of(ui.view) + (e > 0 ? 1 : -1);
             if (ui.view == V_MIX)                /* from the mixer: SELECT goes on from the page it came from */
                 v = (int)ui.perf_from + (e > 0 ? 1 : -1);
             if (v >= 0 && v < NPAGES)
@@ -888,6 +912,34 @@ static int draw_ripples(uint32_t now)           /* 1: something still moves */
     return live;
 }
 
+/* a sound page: its layer's envelope (its level; the chord's filter envelope, the pings' bend, the kick's
+ * pitch, dimmer), over the time it lasts */
+static void draw_env(int layer_view)
+{
+    float lv[48], ax[48], secs;
+    int i, layer = layer_view == V_CHORD ? 0 : layer_view == V_TEXTURE ? 1 : layer_view == V_BASS ? 2 : 3;
+    int32_t x0 = 58, w = 124, y0 = 8, h = 76;
+    char t[12];
+    en_env_shape(layer, lv, ax, 48, &secs);
+    cv_rect(x0, y0 + h, w + 4, 1, K_LINE);
+    cv_rect(x0, y0, 1, h, K_LINE);
+    for (i = 0; i < 48; i++) {
+        int32_t x = x0 + 2 + i * w / 47, ya = y0 + h - (int32_t)(ax[i] * (float)h), yl = y0 + h - (int32_t)(lv[i] * (float)h);
+        if (ax[i] > 0.01f)
+            cv_rect(x, ya, 2, 2, K_LINE);
+        cv_rect(x, yl, 2, y0 + h - yl, mix(K_BG, K_PAD, 5));
+        cv_rect(x, yl, 2, 2, K_PAD);
+    }
+    itoa_u((uint32_t)(secs * 1000.0f + 0.5f), t);
+    {
+        uint32_t k = 0;
+        while (t[k])
+            k++;
+        t[k++] = ' ', t[k++] = 'm', t[k++] = 's', t[k] = 0;
+    }
+    cv_text(x0 + w - text_w(&FONT_XS, t), y0 + h + 1, &FONT_XS, t, K_DIM);
+}
+
 static void draw_meters(void)                    /* left: the four layers */
 {
     static const uint16_t C[4] = {K_PAD, K_BELL, K_BASS, K_PULSE}, T[4] = {K_PAD_T, K_BELL_T, K_BASS_T, K_PULSE_T};
@@ -949,10 +1001,10 @@ static int help_lines(int b, const char *l[HELP_LINES])
 #define L(t) (l[n++] = (t))
     switch (b) {
     case B_HOME: L("DUB"); L("TEMPO, EVOLVE, MOTION, DRIFT"); L("+ SELECT: TEMPO"); break;
-    case B_ENV: L("THE CHORD"); L("LEVEL, STABS, DECAY,"); L(" CUTOFF"); L("ALGORITHM: ITS VOICE"); break;
-    case B_ARP: L("TEXTURE"); L("PINGS, DENSITY, CLOUD,"); L(" CRACKLE"); L("ALGORITHM: THE PINGS' VOICE"); break;
-    case B_LFO: L("THE BASS"); L("LEVEL, OCTAVE, GROOVE, FIFTH"); L("ALGORITHM: ITS VOICE"); break;
-    case B_SEQ: L("THE DRUMS"); L("LEVEL, HITS, SWING, DUCK"); L("ALGORITHM: THE KIT"); break;
+    case B_ENV: L("THE CHORD: LEVEL, STABS,"); L(" DECAY, CUTOFF"); L("ALGORITHM: ITS VOICE"); L("AGAIN: ITS SOUND"); break;
+    case B_ARP: L("TEXTURE: PINGS, DENSITY,"); L(" CLOUD, CRACKLE"); L("ALGORITHM: THE PINGS' VOICE"); L("AGAIN: THEIR SOUND"); break;
+    case B_LFO: L("THE BASS"); L("LEVEL, OCTAVE, GROOVE, FIFTH"); L("ALGORITHM: ITS VOICE"); L("AGAIN: ITS SOUND"); break;
+    case B_SEQ: L("THE DRUMS"); L("LEVEL, HITS, SWING, DUCK"); L("ALGORITHM: THE KIT"); L("AGAIN: ITS SOUND"); break;
     case B_FX: L("THE SPACE"); L("ECHO, ECHO TIME, FEEDBACK,"); L("REVERB"); break;
     case B_GLO: L("SETUP"); L("ROOT, TUNE, MIDI OUT, LIGHTS"); break;
     case B_EDIT: L("THE NEXT CHORD,"); L("ON THE NEXT BAR"); break;
@@ -1006,12 +1058,18 @@ static void draw_main(void)
         h = hash(h, (uint32_t)q16(en_loop_glow[i]));
     for (i = 0; i < EN_NDRUM; i++)
         h = hash(h, (uint32_t)q16(en_drum_glow[i]));
+    h = hash(h, ui.view);
     if (h == ui.sig[1] && !moving)
         return;
     ui.sig[1] = h;
     cv_begin(240, MAIN_H, K_BG);
-    moving = (uint8_t)draw_ripples(now);
-    {   /* the chord, in the middle */
+    if (parent_of(ui.view) >= 0) {               /* a sound page: the layer's envelope instead of the ripples */
+        draw_env(parent_of(ui.view));
+        moving = 1;
+    } else {
+        moving = (uint8_t)draw_ripples(now);
+    }
+    if (parent_of(ui.view) < 0) {                /* the chord, in the middle */
         char nm[16];
         chord_now(nm);
         if (text_w(&FONT_B, nm) <= 44)
@@ -1076,7 +1134,7 @@ static void draw_knobs(void)
         cv_rect(x0, 5, xt - 5 - x0, 1, K_LINE);
         cv_text(xt, -1, &FONT_XS, t, K_ACC);
         for (k = 0; k < NPAGES; k++)
-            cv_round(xd + k * 6, 3, 4, 4, 2, k == ui.view ? K_ACC : K_LINE);
+            cv_round(xd + k * 6, 3, 4, 4, 2, k == page_of(ui.view) ? K_ACC : K_LINE);
     }
     for (i = 0; i < 4; i++) {
         int k = VIEW_KNOB[ui.view][i], lo, hi, v, hot = now_touch && ui.touched == (int)i;
@@ -1109,8 +1167,8 @@ static void draw_knobs(void)
 static void leds(void)
 {
     uint32_t b = 0, k = 0, i, ap = pool_abs();
-    if (VIEW_BTN[ui.view] != B_NONE)
-        b |= 1u << VIEW_BTN[ui.view];
+    if (VIEW_BTN[page_of(ui.view)] != B_NONE && (parent_of(ui.view) < 0 || (plat_ms() / 300u) & 1u))
+        b |= 1u << VIEW_BTN[page_of(ui.view)];   /* (a sound page: its layer's button blinks) */
     if (en_playing)
         b |= 1u << B_PLAY;
     if (en_frozen)

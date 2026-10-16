@@ -54,6 +54,11 @@ enum {
     P_STABS, P_CRACKLE, P_DUCK, P_SIZE,               /* stabs a bar, the vinyl, the kick's ducking, the plate */
     P_CLOUD,                                          /* the granular reverb */
     P_PVOICE, P_BVOICE, P_KIT,                        /* the pings' voice, the bass's, the drums' kit */
+    /* the sound pages: each relative to the voice as it is (0), -50 .. +50 (the kick's tune: semitones) */
+    P_CATT, P_CCOL, P_CRES, P_CENV,                   /* the chord: attack, colour, resonance, the filter's envelope */
+    P_PTON, P_PRAT, P_PLEN, P_PBEND,                  /* the pings: tone, ratio, length, bend */
+    P_BBITE, P_BSHAPE, P_BLEN, P_BSLIDE,              /* the bass: bite, shape, length, slide */
+    P_KTUNE, P_KLEN, P_KPUNCH, P_HTONE,               /* the drums: the kick's tune, length, punch; the hats' tone */
     P_NPARAMS
 };
 typedef struct {
@@ -143,6 +148,10 @@ const char *en_chord_name(const int *pcs, int n, char *buf);   /* "Em7", "Dsus4"
 uint32_t en_groove(int g);                     /* the bass's pattern g: bit i, a note on step i */
 int en_drift_bars(int v);                      /* Drift's value in bars; 0: the chord holds */
 int en_kick_note(int root);                    /* the kick's note (MIDI) for the key's root: F1..B1 */
+/* a layer's envelope as it sounds now (0 chord, 1 pings, 2 bass, 3 kick), for a sound page's drawing: n points
+ * of its level (0..1) over *secs seconds, and of a second curve (the chord's filter envelope, the kick's
+ * pitch; else 0) */
+void en_env_shape(int layer, float *lvl, float *aux, int n, float *secs);
 
 /* the pieces: recipes for every parameter (Tune and MIDI out included, but they are the player's) */
 #define EN_NPIECES 8

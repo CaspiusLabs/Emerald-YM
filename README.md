@@ -29,7 +29,7 @@ installer can reach.
 | Keys | The scale: each key adds its note or takes it out |
 | PLAY · REC · EDIT | Play / rest · dub hold · the next chord, on the next bar |
 | SEL | PERFORM: the knobs a mixer; the keys mute the layers and, held, throw, open, shut, drop the kick, push the echo |
-| HOME · ENV · ARP · LFO · SEQ · FX · GLO | The pages: Dub, Chord, Texture, Bass, Drums, Space, Setup; KNOB 1–4 set their four values |
+| HOME · ENV · ARP · LFO · SEQ · FX · GLO | The pages: Dub, Chord, Texture, Bass, Drums, Space, Setup; KNOB 1–4 set their four values. A layer's button again: its sound page (four more, relative to the voice) |
 | SELECT | The previous or next page; with HOME held, the tempo |
 | ALGORITHM | On a layer's page, its voice (7 chord, 5 ping, 4 bass voices, 5 kits); elsewhere, the mode |
 | PRESETS | The piece (eight of them) |
