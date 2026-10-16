@@ -29,6 +29,9 @@ said VOICE Saws
 tap ENV
 tap ENV
 wait 300
+expect view 12
+tap ENV
+wait 300
 expect view 1
 tap ARP
 tap ARP

@@ -549,7 +549,7 @@ static void button(int b)
     }
     if (parent_of(ui.view) >= 0 && b == VIEW_BTN[parent_of(ui.view)]) {   /* again: an FM voice's FM page; then back */
         int pv = parent_of(ui.view);
-        if (ui.view == sound_of(pv) && fm_of(pv) >= 0 && en_voice_fm(layer_of(pv)))
+        if (ui.view == sound_of(pv) && fm_of(pv) >= 0)   /* (on a voice that isn't FM, the page says so) */
             set_view(fm_of(pv));
         else
             set_view(pv);
@@ -1176,8 +1176,14 @@ static void draw_alg(int layer)
     int alg = en_fm_alg(layer), k, f, t;
     int32_t px[4], py[4];
     char tt[12];
-    if (!en_voice_fm(layer)) {
-        text_c(120, 40, &FONT_XS, "NOT AN FM VOICE", K_DIM);
+    if (!en_voice_fm(layer)) {                   /* the FM voices, to choose with ALGORITHM */
+        char vn[12], t[24];
+        en_param_text(view_voice(ui.view), proj.par[view_voice(ui.view)], vn);
+        caps(t, vn, 12);
+        text_c(120, 28, &FONT_B, t, K_TEXT);
+        text_c(120, 48, &FONT_XS, "IS NOT AN FM VOICE", K_DIM);
+        text_c(120, 66, &FONT_XS, "ALGORITHM, FOR ONE:", K_DIM);
+        text_c(120, 80, &FONT_XS, layer == 0 ? "KEYS, BELL" : "PUNCH, RUBBER, PLUCK, GROWL", K_ACC);
         return;
     }
     for (k = 0; k < 4; k++) {
@@ -2095,40 +2101,46 @@ void ui_frame(void)
 
 void ui_input_only(void) { input(); }
 
-/* the launch screen, while the FM-1 starts: the name, then its echoes along the line, each smaller and
- * fainter and a few frames later (a delay dying away), the ripples spreading from it; then the line under it
- * and the version. Frame f of UI_SPLASH_N, drawn whole (two bands of 240 x 120) */
+/* the launch screen, while the FM-1 starts, as a delay throw: the name struck (a ring spreads from it),
+ * then, every four frames as an echo's time, a repeat thrown out of it to its place along the line, each
+ * smaller and fainter, in the layers' colours (the chord's teal, the pings' blue, the bass's brass, the
+ * drums' amber), each with its own ring; then the line under it and the version. Frame f of UI_SPLASH_N,
+ * drawn whole (two bands of 240 x 120) */
 static void splash_band(int f, int32_t oy)
 {
-    static const felucca_font_t *const F[4] = {&FONT_L, &FONT_M, &FONT_B, &FONT_S};
-    static const int32_t FH[4] = {32, 24, 16, 16};
-    int32_t w[4], x[4], tot = 0, cx, k;
-    for (k = 0; k < 4; k++) {
+    static const felucca_font_t *const F[5] = {&FONT_L, &FONT_L, &FONT_M, &FONT_B, &FONT_S};
+    static const int32_t FH[5] = {32, 32, 24, 16, 16}, YC = 70;
+    const uint16_t C[5] = {K_TEXT, K_PAD, K_BELL, K_BASS, K_PULSE};
+    int32_t w[5], x[5], k;
+    for (k = 0; k < 5; k++)
         w[k] = text_w(F[k], "DUB-1");
-        tot += w[k] + (k ? 7 : 0);
-    }
-    x[0] = (240 - tot) / 2;
-    for (k = 1; k < 4; k++)
-        x[k] = x[k - 1] + w[k - 1] + 7;
-    cx = x[0] + w[0] / 2;
+    x[0] = 120 - w[0] / 2;                        /* the name in the middle; the repeats down the screen */
     cv_begin(240, 120, K_BG);
-    for (k = 0; k < 4; k++) {                    /* the ripples, from the name */
-        int age = f - k * 5;
-        int32_t r = 10 + age * 7;
-        float a = 1.0f - (float)r / 130.0f;
+    for (k = 0; k < 5; k++) {                    /* the rings: one a strike, in its colour */
+        int born = 1 + k * 4, age = f - born;
+        int32_t r = 12 + age * 8;
+        float a = 1.0f - (float)r / 140.0f;
         if (age < 0 || a <= 0.0f)
             continue;
-        circle(cx, 94 - oy, r, mix(K_BG, K_PAD, q16(a * 0.7f)));
+        circle(120, YC - oy, r, mix(K_BG, k ? C[k] : K_PAD, q16(a * (k ? 0.8f : 0.6f))));
     }
-    for (k = 1; k < 4; k++)                      /* its echoes */
-        if (f >= 2 + k * 3)
-            cv_text(x[k], 94 - FH[k] / 2 - oy, F[k], "DUB-1", mix(K_BG, K_ACC, 14 - 4 * k));
-    if (f >= 1)
-        cv_text(x[0], 94 - FH[0] / 2 - oy, F[0], "DUB-1", mix(K_BG, K_TEXT, f >= 3 ? 16 : 6 * f));
-    if (f >= 12)
-        text_c(120, 132 - oy, &FONT_S, "Dub techno for the FM-1", mix(K_BG, K_ACC, f >= 15 ? 16 : (f - 11) * 4));
-    if (f >= 14)
-        text_c(120, 214 - oy, &FONT_XS, "DUB-1 " EN_VERSION, K_DIM);
+    for (k = 4; k >= 1; k--) {                   /* the repeats: thrown out of the name, falling to their places */
+        int born = 1 + k * 4, age = f - born;
+        int32_t yt = YC + 14 + k * 26, y;
+        float t;
+        if (age < 0)
+            continue;
+        t = fm_minf((float)age / 3.0f, 1.0f);
+        t = t * (2.0f - t);                      /* (eased) */
+        y = YC + (int32_t)((float)(yt - YC) * t);
+        cv_text(120 - w[k] / 2, y - FH[k] / 2 - oy, F[k], "DUB-1", mix(K_BG, C[k], (int)(16.0f * t) - 2 * k));
+    }
+    if (f >= 1)                                  /* the name, struck */
+        cv_text(x[0], YC - FH[0] / 2 - oy, F[0], "DUB-1", mix(K_BG, K_TEXT, f >= 3 ? 16 : 6 * f));
+    if (f >= 20)
+        text_c(120, 204 - oy, &FONT_S, "Dub techno for the FM-1", mix(K_BG, K_ACC, f >= 23 ? 16 : (f - 19) * 4));
+    if (f >= 22)
+        text_c(120, 224 - oy, &FONT_XS, "DUB-1 " EN_VERSION, K_DIM);
     cv_blit(0, (uint32_t)oy);
 }
 
