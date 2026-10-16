@@ -9,7 +9,9 @@ tap REC
 wait 50
 expect frozen 0
 # the next chord comes on the bar
-tap EDIT
+press EDIT
+wait 600
+release EDIT
 wait 4000
 # the pings an octave up (and back within the range)
 tap OCT+

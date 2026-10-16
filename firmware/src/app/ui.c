@@ -3,8 +3,8 @@
  * simulator includes it too.
  *
  *   keys           the scale: each key adds or removes its note from the pool (the root stays)
- *   PLAY           plays / rests                   EDIT  tapped: the next chord, on the next bar; held with keys: a
- *                  progression (up to eight chords, the keys' notes, in order); held alone: chords at random again
+ *   PLAY           plays / rests                   EDIT  tapped: the CHORDS page (eight slots: KNOB 1 the slot, the
+ *                  keys its root, KNOB 2 its kind, KNOB 3 its type, KNOB 4 Play: Random or the slots); held: the next chord
  *   REC            tapped: DUB HOLD (the echo repeats what it holds, the chord holds); held: the EFFECTS grid, played
  *                  on the white keys while they're held             OCT- / OCT+   the pings' octave
  *   SEL            PERFORM: the keys mute the layers (white 1-5) and, held, make the dub moves (white 6-10)
@@ -19,13 +19,13 @@
 /* (past NPAGES, off SELECT's round and on no button of their own: V_MIX, PERFORM's knobs, the four layers'
  * levels; the layers' sound pages, the layer's button pressed again) */
 enum { V_DUB, V_CHORD, V_TEXTURE, V_BASS, V_DRUMS, V_SPACE, V_SETUP, NPAGES, V_MIX = NPAGES, V_CSND, V_PSND, V_BSND,
-       V_DSND, V_CFM, V_PFM, V_BFM, NVIEWS };
+       V_DSND, V_CFM, V_PFM, V_BFM, V_CHORDS, NVIEWS };
 static const char *const VIEW_NAME[NVIEWS] = {"Dub", "Chord", "Texture", "Bass", "Drums", "Space", "Setup", "Mix",
                                               "Chord sound", "Ping sound", "Bass sound", "Drum sound",
-                                              "Chord FM", "Ping FM", "Bass FM"};
+                                              "Chord FM", "Ping FM", "Bass FM", "Chords"};
 #define B_NONE 0xFFu
 static const uint8_t VIEW_BTN[NVIEWS] = {B_HOME, B_ENV, B_ARP, B_LFO, B_SEQ, B_FX, B_GLO, B_NONE, B_NONE, B_NONE, B_NONE,
-                                         B_NONE, B_NONE, B_NONE, B_NONE};
+                                         B_NONE, B_NONE, B_NONE, B_NONE, B_NONE};
 static int sound_of(int v) { return v == V_CHORD ? V_CSND : v == V_TEXTURE ? V_PSND : v == V_BASS ? V_BSND : v == V_DRUMS ? V_DSND : -1; }
 static int fm_of(int v) { return v == V_CHORD ? V_CFM : v == V_TEXTURE ? V_PFM : v == V_BASS ? V_BFM : -1; }
 static int parent_of(int v)
@@ -36,7 +36,7 @@ static int parent_of(int v)
 static int layer_of(int v) { v = parent_of(v) >= 0 ? parent_of(v) : v; return v == V_CHORD ? 0 : v == V_TEXTURE ? 1 : v == V_BASS ? 2 : 3; }
 static int page_of(int v) { return parent_of(v) >= 0 ? parent_of(v) : v; }   /* a sound page: its layer's */
 /* the four knobs of each page: a parameter, or one of these; and what the knob is called there */
-enum { K_LEDS = 100, K_CPU, K_NONE };
+enum { K_LEDS = 100, K_CPU, K_NONE, K_SLOT, K_CQ, K_CX };   /* (the Chords page: the slot, and its kind and type) */
 static const uint8_t VIEW_KNOB[NVIEWS][4] = {
     {P_TEMPO, P_EVOLVE, P_MOTION, P_DRIFT},
     {P_CHORD, P_STABS, P_DECAY, P_CUTOFF},
@@ -53,6 +53,7 @@ static const uint8_t VIEW_KNOB[NVIEWS][4] = {
     {P_CALG, P_CFRAT, P_CFB, P_CFDEC},
     {P_PALG, P_PFRAT, P_PFB, P_PFDEC},
     {P_BALG, P_BFRAT, P_BFB, P_BFDEC},
+    {K_SLOT, K_CQ, K_CX, P_PMODE},
 };
 static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Tempo", "Evolve", "Motion", "Drift"},
@@ -70,6 +71,7 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Algo", "Ratio", "Feedback", "Mod dec"},
     {"Algo", "Ratio", "Feedback", "Mod dec"},
     {"Algo", "Ratio", "Feedback", "Mod dec"},
+    {"Slot", "Chord", "Type", "Play"},
 };
 
 /* the screen's colours: a dark room, as a dub techno sleeve (grey on black, a cold blue). The chord and
@@ -98,8 +100,7 @@ static struct {
                                         * the mix; the page it was started from */
     uint32_t mutes, moves;             /* the layers muted (EN_M_*), the moves held (EN_PF_*) */
     uint32_t fx;                       /* the effects held (EN_FX_*), REC's grid */
-    uint8_t prog[EN_NPROG], prog_n;    /* a progression being written (EDIT held, the keys) */
-    uint8_t chords_said;
+    uint8_t slot, chords_from;         /* the Chords page: the slot edited; the page it was opened from */
     uint8_t grid_said;
     uint32_t btn, keys, btn_used;
     uint32_t enc_t[NE];
@@ -207,6 +208,10 @@ static int knob_get(int k)
         return proj.leds;
     if (k == K_CPU)
         return (int)plat_cpu_pct();
+    if (k == K_SLOT)
+        return ui.slot;
+    if (k == K_CQ || k == K_CX)
+        return proj.par[(k == K_CQ ? P_CQ0 : P_CX0) + ui.slot];
     return 0;
 }
 static void knob_range(int k, int *lo, int *hi)
@@ -216,14 +221,14 @@ static void knob_range(int k, int *lo, int *hi)
         *hi = en_param_info(k)->hi;
     } else {
         *lo = 0;
-        *hi = k == K_LEDS ? 2 : k == K_CPU ? 100 : 0;
+        *hi = k == K_LEDS ? 2 : k == K_CPU ? 100 : k == K_SLOT ? EN_NPROG - 1 : k == K_CQ ? EN_NCQ - 1 : k == K_CX ? EN_NCX - 1 : 0;
     }
 }
 static const char *knob_name(int k)
 {
     if (k < P_NPARAMS)
         return en_param_info(k)->name;
-    return k == K_LEDS ? "Lights" : k == K_CPU ? "CPU" : "";
+    return k == K_LEDS ? "Lights" : k == K_CPU ? "CPU" : k == K_SLOT ? "Slot" : k == K_CQ ? "Chord" : k == K_CX ? "Type" : "";
 }
 static void knob_text(int k, char *b)
 {
@@ -240,6 +245,10 @@ static void knob_text(int k, char *b)
             b++;
         *b++ = '%';
         *b = 0;
+    } else if (k == K_SLOT) {
+        itoa_u((uint32_t)v + 1u, b);
+    } else if (k == K_CQ || k == K_CX) {
+        en_param_text((k == K_CQ ? P_CQ0 : P_CX0) + ui.slot, v, b);
     } else {
         b[0] = 0;
     }
@@ -259,6 +268,14 @@ static void knob_set(int k, int v)
         en_set(k, v);
     } else if (k == K_LEDS) {
         proj.leds = (uint8_t)v;
+    } else if (k == K_SLOT) {
+        ui.slot = (uint8_t)v;
+        return;                                  /* (only where the page looks: nothing saved) */
+    } else if (k == K_CQ || k == K_CX) {
+        knob_set((k == K_CQ ? P_CQ0 : P_CX0) + ui.slot, v);
+        if (k == K_CQ && v && !proj.par[P_PMODE])
+            knob_set(P_PMODE, 1);                /* a chord written: the slots play */
+        return;
     }
     mark_dirty();
 }
@@ -453,83 +470,44 @@ static int fx_key(uint32_t key, int down)        /* 1: the key was an effect's *
 }
 
 /* ----------------------------------------------------------- the chords --- */
-/* EDIT held: the keys write a progression, a chord a key (its note's, in the scale), up to eight; let go, it
- * plays from its first chord, on the next bar, a chord every Drift bars (with Drift on Hold, a tap on EDIT
- * moves on). EDIT held a moment and let go with no key: the chords at random again, as they were */
-#define CHORDS_HOLD 300u                 /* ms of EDIT held before the chords show */
-#define RANDOM_HOLD 1500u                /* held this long, no key: random again (a look is shorter) */
-static int chords_up(void) { return ui.prog_n || ((ui.btn >> B_EDIT & 1u) && plat_ms() - ui.down_t[B_EDIT] >= CHORDS_HOLD); }
-static const char *prog_name(int rel, char *nm)  /* the chord on a note above the root, by its name ("Bbm7") */
+/* EDIT tapped: the Chords page, eight slots. KNOB 1 the slot, the keys its root (any note: an empty slot
+ * becomes a minor chord on it), KNOB 2 its kind, KNOB 3 its type, KNOB 4 Play: Random (the chords chosen as
+ * ever) or the slots in turn, a chord every Drift bars. An empty slot between two holds the one before; after
+ * the last filled one, round again. EDIT again, or any page's button: back. EDIT held: the next chord */
+#define NEXT_HOLD 500u
+static int prog_count(void)                      /* how far the slots run: to the last filled one */
 {
-    int pcs[4], n = en_chord_tones(proj.pool, proj.par[P_ROOT], en_deg_of(proj.pool, rel), pcs);
-    return en_chord_name(pcs, n, nm);
+    int i, n = 0;
+    for (i = 0; i < EN_NPROG; i++)
+        if (proj.par[P_CQ0 + i])
+            n = i + 1;
+    return n;
 }
-static void prog_key(uint32_t key)
+static const char *slot_label(int i, char *nm)
 {
-    int pc = (int)((5u + key) % 12u), rel = (pc - proj.par[P_ROOT] + 12) % 12;
-    char nm[16];
-    ui.btn_used |= 1u << B_EDIT;
-    if (!(proj.pool >> rel & 1u)) {
-        warn("NOT IN", "THE SCALE");
-        return;
-    }
-    if (ui.prog_n >= EN_NPROG) {
-        warn("8 CHORDS", "AT MOST");
-        return;
-    }
-    ui.prog[ui.prog_n++] = (uint8_t)(rel + 1);
-    say(prog_name(rel, nm), 0);
+    return en_chord_label(proj.par[P_CR0 + i], proj.par[P_CQ0 + i], proj.par[P_CX0 + i], nm);
 }
-static void prog_set(const uint8_t *pr, int n)   /* into the piece; it starts on the next bar */
-{
-    int i;
-    for (i = EN_NPROG - 1; i >= 0; i--)          /* (the first last: the engine starts over when it comes) */
-        knob_set(P_PROG0 + i, i < n ? pr[i] : 0);
-    en_next();
-}
-static void prog_said(int n)                     /* "CHORDS Fm7, Bbm7, Cm7" or "CHORDS RANDOM" */
+static void set_view(int v);
+static void slot_key(uint32_t key)               /* the Chords page: a key, the slot's root */
 {
     char nm[16];
-    int i;
-    if (!ann_on())
-        return;
-    sp_n = 0;
-    sp_buf[0] = 0;
-    sp_cat("CHORDS ");
-    if (!n)
-        sp_cat("RANDOM");
-    for (i = 0; i < n; i++) {
-        if (i)
-            sp_cat(", ");
-        sp_cat(prog_name(proj.par[P_PROG0 + i] - 1, nm));
-    }
-    ann_say(sp_buf, 0, ANN_NOW);
-    sp_said = 1;
-}
-static int prog_count(void)
-{
-    int i;
-    for (i = 0; i < EN_NPROG && proj.par[P_PROG0 + i]; i++)
-        ;
-    return i;
+    knob_set(P_CR0 + ui.slot, (int)((5u + key) % 12u));
+    if (!proj.par[P_CQ0 + ui.slot])
+        knob_set(K_CQ, EN_CQ_MINOR);
+    if (!proj.par[P_PMODE])
+        knob_set(P_PMODE, 1);
+    say(slot_label(ui.slot, nm), 0);
 }
 static void edit_released(uint32_t held)
 {
-    if (ui.prog_n) {                             /* the progression written */
-        prog_set(ui.prog, ui.prog_n);
-        ui.msg[0][0] = 0;
-        say_as("CHORDS", en_playing ? "ON THE BAR" : 0, 0);
-        prog_said(ui.prog_n);
-        ui.prog_n = 0;
-    } else if (held >= RANDOM_HOLD) {            /* held long, no key: random again */
-        if (prog_count()) {
-            prog_set(ui.prog, 0);
-            say_as("CHORDS", "RANDOM", 0);
-            prog_said(0);
-        }
-    } else if (held < CHORDS_HOLD) {             /* a tap: the next chord (between: a look, nothing) */
+    if (held >= NEXT_HOLD) {                     /* held: the next chord */
         en_next();
         say("NEXT CHORD", en_playing ? "ON THE BAR" : 0);
+    } else if (ui.view == V_CHORDS) {            /* tapped: the Chords page, or back from it */
+        set_view(ui.chords_from);
+    } else {
+        ui.chords_from = (uint8_t)ui.view;
+        set_view(V_CHORDS);
     }
 }
 
@@ -660,7 +638,7 @@ static void input(void)
                 ui.reset_done = 0;
             if (i == B_PLAY)                   /* transport on the press */
                 button((int)i);
-        } else if (i == B_EDIT) {               /* EDIT: a tap, a progression, or random again */
+        } else if (i == B_EDIT) {               /* EDIT: the Chords page (a tap), the next chord (held) */
             edit_released(plat_ms() - ui.down_t[B_EDIT]);
         } else if (!(ui.btn_used & m) && i != B_PLAY) {
             button((int)i);
@@ -676,9 +654,9 @@ static void input(void)
                     continue;                    /* REC held: the effects (and their keys let go) */
             if (btn >> B_REC & 1u)
                 continue;                        /* (REC held: the other keys do nothing) */
-            if (btn >> B_EDIT & 1u) {            /* EDIT held: the keys write a progression */
+            if (ui.view == V_CHORDS && !ui.perf) {   /* the Chords page: the keys, the slot's root */
                 if (down)
-                    prog_key(i);
+                    slot_key(i);
                 continue;
             }
             if (ui.perf)
@@ -705,6 +683,8 @@ static void input(void)
             int v = page_of(ui.view) + (e > 0 ? 1 : -1);
             if (ui.view == V_MIX)                /* from the mixer: SELECT goes on from the page it came from */
                 v = (int)ui.perf_from + (e > 0 ? 1 : -1);
+            if (ui.view == V_CHORDS)
+                v = (int)ui.chords_from + (e > 0 ? 1 : -1);
             if (v >= 0 && v < NPAGES)
                 set_view(v);
         }
@@ -1029,6 +1009,8 @@ static uint32_t rip_stabs;
 static const char *chord_now(char *nm)          /* the chord's name, as the screen shows it ("Em7") */
 {
     int pcs[EN_NPAD + 1], k;
+    if (en_chord_slot >= 0 && proj.par[P_CQ0 + en_chord_slot])   /* a slot's: its own name */
+        return slot_label(en_chord_slot, nm);
     pcs[0] = en_chord_root;
     for (k = 0; k < EN_NPAD; k++)
         pcs[k + 1] = en_chord[k] % 12;
@@ -1280,10 +1262,14 @@ static void draw_lanes(void)                     /* below: the bar, a lane a lay
             int32_t x = 40 + i * 11;
             if (p >> i & 1u) {
                 cv_round(x, y, 5, 5, 2, en_playing && i == pos ? C[l] : mix(T[l], C[l], 9));
-            } else if (l == 0 && ghost[i] > 0.0f) {   /* an echo's repeat: a ring, flashing as the playhead hits it */
-                uint16_t c = en_playing && i == pos ? K_ACC : mix(K_BG, K_PAD, 3 + q16(ghost[i]) / 2);
-                cv_rect(x + 1, y, 3, 1, c), cv_rect(x + 1, y + 4, 3, 1, c);
-                cv_rect(x, y + 1, 1, 3, c), cv_rect(x + 4, y + 1, 1, 3, c);
+            } else if (l == 0 && ghost[i] > 0.0f) {   /* an echo's repeat: a ring; as the playhead hits it, a flash */
+                if (en_playing && i == pos) {
+                    cv_round(x - 1, y - 1, 7, 7, 3, K_TEXT);
+                } else {
+                    uint16_t c = mix(K_BG, K_PAD, 8 + q16(ghost[i]) / 2);
+                    cv_rect(x + 1, y, 3, 1, c), cv_rect(x + 1, y + 4, 3, 1, c);
+                    cv_rect(x, y + 1, 1, 3, c), cv_rect(x + 4, y + 1, 1, 3, c);
+                }
             } else {
                 cv_rect(x + 2, y + 2, 1, 1, (i & 3) ? K_LINE : K_DIM);
             }
@@ -1308,7 +1294,7 @@ static int help_lines(int b, const char *l[HELP_LINES])
     case B_SEQ: L("THE DRUMS"); L("LEVEL, HITS, SWING, DUCK"); L("ALGORITHM: THE KIT"); L("AGAIN: ITS SOUND"); break;
     case B_FX: L("THE SPACE"); L("ECHO, ECHO TIME, FEEDBACK,"); L("REVERB"); break;
     case B_GLO: L("SETUP"); L("ROOT, TUNE, MIDI OUT, LIGHTS"); break;
-    case B_EDIT: L("TAP: THE NEXT CHORD"); L("HOLD + KEYS: A PROGRESSION"); L("HOLD 1.5 S ALONE: RANDOM AGAIN"); break;
+    case B_EDIT: L("TAP: THE CHORDS (8 SLOTS:"); L(" THE KEYS, THE SLOT'S ROOT)"); L("HOLD: THE NEXT CHORD"); break;
     case B_SEL: L("PERFORM: KNOBS MIX; KEYS 1-5"); L(" MUTE CHORD PINGS BASS KICK HATS;"); L("6-10 HELD: THROW OPEN SHUT"); L(" KICK DROP ECHO"); break;
     case B_REC: L("TAP: DUB HOLD (THE ECHO"); L(" REPEATS WHAT IT HOLDS)"); L("HOLD: THE EFFECTS GRID,"); L(" PLAYED ON THE WHITE KEYS"); break;
     case B_OCTDN: L("THE PINGS AN OCTAVE DOWN"); L("WITH OCT+, 5 S: UPDATE MODE"); break;
@@ -1356,27 +1342,32 @@ static void draw_grid(void)
     }
 }
 
-/* EDIT held: the progression, eight boxes (the one being written, or the piece's, dim), the chords named */
-static void draw_chords(void)
+/* the Chords page: the eight slots, the one edited outlined, the one playing lit; an empty slot inside the
+ * progression shows that the chord before it goes on */
+static void draw_slots(void)
 {
-    int i, n = ui.prog_n ? ui.prog_n : prog_count();
+    int i, n = prog_count(), play = proj.par[P_PMODE] && n;
     char nm[16];
-    text_c(120, -1, &FONT_XS, "TAP: NEXT CHORD   HOLD + KEYS: CHORDS", K_DIM);
+    text_c(120, -1, &FONT_XS, play ? "PLAY: THE SLOTS IN TURN" : "PLAY: RANDOM (THE SLOTS WAIT)", play ? K_ACC : K_DIM);
     for (i = 0; i < EN_NPROG; i++) {
-        int32_t x = 12 + (i & 3) * 55, y = 22 + (i >> 2) * 40;
-        int has = i < n, now = !ui.prog_n && i == en_prog_pos;
-        cv_round(x, y, 50, 32, 4, now ? K_ACC : has ? K_PANEL : mix(K_BG, K_PANEL, 6));
-        if (has) {
-            const char *t = prog_name((ui.prog_n ? ui.prog[i] : proj.par[P_PROG0 + i]) - 1, nm);
-            text_c(x + 25, y + 7, text_w(&FONT_B, t) <= 46 ? &FONT_B : &FONT_XS, t, now ? K_BG : ui.prog_n ? K_TEXT : K_DIM);
+        int32_t x = 12 + (i & 3) * 55, y = 18 + (i >> 2) * 42;
+        int filled = proj.par[P_CQ0 + i] != 0, now = play && i == en_prog_pos, sel = i == ui.slot;
+        if (sel)
+            cv_round(x - 2, y - 2, 54, 38, 5, K_ACC);
+        cv_round(x, y, 50, 34, 4, now ? K_PAD : filled ? K_PANEL : mix(K_BG, K_PANEL, 6));
+        {
+            char d[2];
+            d[0] = (char)('1' + i), d[1] = 0;
+            cv_text(x + 3, y + 1, &FONT_XS, d, now ? K_BG : K_DIM);
+        }
+        if (filled) {
+            const char *t = slot_label(i, nm);
+            text_c(x + 25, y + 11, text_w(&FONT_B, t) <= 46 ? &FONT_B : &FONT_XS, t, now ? K_BG : K_TEXT);
+        } else if (i < n) {
+            text_c(x + 25, y + 13, &FONT_XS, "(HOLDS)", now ? K_BG : K_DIM);
         }
     }
-    {
-        int clear = !ui.prog_n && n && plat_ms() - ui.down_t[B_EDIT] >= RANDOM_HOLD;
-        text_c(120, 104, &FONT_XS, ui.prog_n ? "LET GO: PLAY THEM" : clear ? "LET GO: RANDOM AGAIN"
-                                   : n ? "KEEP HOLDING: RANDOM AGAIN" : "RANDOM NOW: A KEY, A CHORD",
-               ui.prog_n || clear ? K_ACC : K_DIM);
-    }
+    text_c(120, 104, &FONT_XS, "KEYS: THE SLOT'S ROOT   EDIT: BACK", K_DIM);
 }
 
 static void draw_main(void)
@@ -1385,24 +1376,18 @@ static void draw_main(void)
     static uint8_t moving;
     if (ui.frame % 3u)                           /* 20 frames a second is plenty */
         return;
-    if (chords_up()) {                           /* EDIT held: the progression */
-        h = hash(hash(0x43484F52u, ui.prog_n | (uint32_t)(plat_ms() - ui.down_t[B_EDIT] >= RANDOM_HOLD) << 8),
-                 (uint32_t)en_prog_pos + 1u);
+    if (ui.view == V_CHORDS) {                   /* the Chords page: the slots */
+        h = hash(hash(0x43484F52u, ui.slot | (uint32_t)proj.par[P_PMODE] << 4), (uint32_t)en_prog_pos + 1u);
         for (i = 0; i < EN_NPROG; i++)
-            h = hash(h, (uint32_t)proj.par[P_PROG0 + i] | (uint32_t)ui.prog[i] << 8);
+            h = hash(h, (uint32_t)proj.par[P_CR0 + i] | (uint32_t)proj.par[P_CQ0 + i] << 4 | (uint32_t)proj.par[P_CX0 + i] << 8);
         if (h != ui.sig[1]) {
             ui.sig[1] = h;
             cv_begin(240, MAIN_H, K_BG);
-            draw_chords();
+            draw_slots();
             cv_blit(0, MAIN_Y);
-        }
-        if (!ui.chords_said && ann_on()) {
-            ann_say("CHORDS. Keys: a progression, up to 8; held a second and a half with no key: random", 0, ANN_NOW);
-            ui.chords_said = 1;
         }
         return;
     }
-    ui.chords_said = 0;
     if (grid_up()) {                             /* REC held: the effects grid */
         h = hash(0x47524944u, ui.fx);
         if (h != ui.sig[1]) {
@@ -1474,7 +1459,7 @@ static void draw_main(void)
             text_c(CX, CY - 8, &FONT_B, nm, en_frozen ? K_FROST : K_TEXT);
         else
             text_c(CX, CY - 6, &FONT_XS, nm, en_frozen ? K_FROST : K_TEXT);
-        if (en_prog_pos >= 0 && prog_count()) {  /* a progression: where it is in it ("2/4") */
+        if (proj.par[P_PMODE] && en_prog_pos >= 0 && prog_count()) {   /* the slots: where they are ("2/4") */
             char t[8];
             t[0] = (char)('1' + en_prog_pos), t[1] = '/', t[2] = (char)('0' + prog_count()), t[3] = 0;
             text_c(CX, CY + 8, &FONT_XS, t, K_DIM);
@@ -1594,7 +1579,12 @@ static void leds(void)
         b |= 1u << B_PLAY;
     if (en_frozen)
         b |= 1u << B_REC;
-    if (grid_up()) {                             /* the grid: each group's first key, and the effects held */
+    if (ui.view == V_CHORDS && !ui.perf && !grid_up()) {   /* the Chords page: the slot's root (if it has one) */
+        if (proj.par[P_CQ0 + ui.slot])
+            for (i = 0; i < NKEYS; i++)
+                if ((5u + i) % 12u == (uint32_t)proj.par[P_CR0 + ui.slot])
+                    k |= 1u << i;
+    } else if (grid_up()) {                      /* the grid: each group's first key, and the effects held */
         for (i = 0; i < EN_NFX; i++)
             if (!(i & 3) || (ui.fx >> i & 1u))
                 k |= 1u << FX_KEY[i];
@@ -1976,6 +1966,10 @@ static void speak_dump(void)
             for (x = lo; x <= hi; x++) {
                 if (k < P_NPARAMS)
                     proj.par[k] = (int16_t)x;
+                else if (k == K_SLOT)
+                    ui.slot = (uint8_t)x;
+                else if (k == K_CQ || k == K_CX)
+                    proj.par[(k == K_CQ ? P_CQ0 : P_CX0) + ui.slot] = (int16_t)x;
                 else
                     proj.leds = (uint8_t)x;
                 sp_n = 0;

@@ -1,47 +1,52 @@
-# the chords: EDIT held + keys writes a progression (the keys' notes in the scale, up to eight); a look keeps it;
-# held 1.5 s alone, random again; a tap, the next chord
+# the Chords page (EDIT tapped): KNOB 1 the slot, the keys its root (an empty slot: a minor chord), KNOB 2 its
+# kind, KNOB 3 its type, KNOB 4 Play; EDIT again: back; EDIT held: the next chord; kept by the piece
 listen
 wait 3000
-press EDIT
-wait 400
-said CHORDS. Keys: a progression
-tapkey w0
-said Fm7
-tapkey w3
-said NOT IN THE SCALE
-tapkey w4
-said Cm7
-release EDIT
-wait 300
-said CHORDS Fm7, Cm7
-expect par64 1
-expect par65 8
-expect par66 0
-press EDIT
-wait 600
-release EDIT
-wait 300
-expect par64 1
-press EDIT
-wait 1700
-release EDIT
-wait 300
-said CHORDS RANDOM
-expect par64 0
 tap EDIT
+wait 400
+expect view 15
+said Chords page: Slot 1, Chord Empty, Type Triad, Play Random
+tapkey w0
+wait 200
+said Fm
+expect par64 5
+expect par72 2
+expect par88 1
+spin K3 2
+wait 200
+said Type 7
+turn K1 1
+wait 200
+tapkey b2
+wait 200
+said Bbm
+spin K2 -1
+wait 200
+said Chord Major
+expect par73 1
+spin K4 -1
+wait 200
+expect par88 0
+said Play Random
+spin K4 1
+wait 200
+expect par88 1
+tap EDIT
+wait 300
+expect view 0
+press EDIT
+wait 700
+release EDIT
 wait 200
 said NEXT CHORD
-# a progression stays with the piece, through a reboot
-press EDIT
-wait 400
-tapkey w1
-tapkey w0
-release EDIT
-wait 300
 tap PLAY
 wait 6000
 expect store_writes >0
 reboot
 wait 1000
-expect par64 3
-expect par65 1
+expect par64 5
+expect par72 2
+expect par80 2
+expect par65 10
+expect par73 1
+expect par88 1

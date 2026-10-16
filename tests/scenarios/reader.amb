@@ -123,7 +123,9 @@ tap OCT+
 said PING OCTAVE +1
 tap OCT-
 said PING OCTAVE 0
-tap EDIT
+press EDIT
+wait 600
+release EDIT
 said NEXT CHORD ON THE BAR
 # a help card: its button, then its lines
 press SAVE

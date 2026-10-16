@@ -240,7 +240,8 @@ hold). Sixteen in four groups of four, the first of each group lit:
 - [x] PERFORM's Mix knobs in the layers' colours (chord teal, pings blue, bass brass, drums amber)
 - [x] The Drums knob follows the Kick and Hats keys (0 when both are out, 100 when one comes back)
 - [x] A muted layer (or one at level 0) leaves its lane at once
-- [x] The stabs' lane shows the echo's repeats as rings, flashing as the playhead reaches them
+- [x] The stabs' lane shows the echo's repeats as rings, flashing as the playhead reaches them (made
+      brighter, with a white flash: "they don't blink" on the device)
 - [x] **A launch screen** (asked: "fancier", then "the idea of the echoes", the voices' colours): ~1.4 s
       while the FM-1 starts, a delay throw: the name struck, then four repeats dropping out of it, smaller and
       fainter, in the layers' colours, each with its ring; the line under it, the version (`ui_splash`; the
@@ -253,7 +254,11 @@ hold). Sixteen in four groups of four, the first of each group lit:
       thresholds are dxsloop's (591 / 561 / 531 on the divider's raw reading, PB1, ADC ch 3); on USB the
       bars fill in turn (no charger line). The % (521..601) is an estimate: to check against the
       FM-1's real readings, full and low
-- [x] **Editing the chords** (option 2): EDIT held + keys, a progression of up to eight chords (the keys'
+- [x] **The Chords page** (the user's design, in place of option 2): EDIT tapped, eight slots; KNOB 1 the
+      slot, the keys its root, KNOB 2 its kind (Empty, Major, Minor, Sus2, Sus4, Dim, Aug), KNOB 3 its type
+      (Triad, 6, 7, Maj7, 9, 11, Add9), KNOB 4 Play (Random / Prog); an empty slot between two holds the
+      one before; EDIT held: the next chord. Project format 6 (`tests/scenarios/chords.amb`)
+- [x] (replaced) **Editing the chords** (option 2): EDIT held + keys, a progression of up to eight chords (the keys'
       notes in the scale), played in order every Drift bars (with Hold, on EDIT's tap); held 1.5 s
       alone, random again; "1/4" under the chord; kept by the piece (project format 5;
       `tests/scenarios/chords.amb`)

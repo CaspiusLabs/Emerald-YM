@@ -91,7 +91,7 @@ The drawing at the top shows them all; here they are in more detail.
 | Keys | The scale. Each key adds its note to the scale or takes it out; the keys light up for the notes in it. Every octave of a note is the same key. The root stays ("THE ROOT STAYS"), and the scale keeps at least three notes ("3 NOTES AT LEAST"). |
 | PLAY | Play / rest. DUB-1 starts playing by itself when it's switched on. At rest, the echo's feedback eases under 90% so its tails die away, the reverb rings out and the crackle fades. Playing again starts from the first bar of a phrase. Lit while playing. |
 | REC | A tap: **dub hold**: the echo stops listening and repeats what it holds, sample for sample, for ever; the reverb stops listening too and rings on; the chord doesn't move. The stabs, pings and drums go on, dry, above it. Tap again to let go. Lit while held. Held: the **effects grid** (below). |
-| EDIT | A tap: the next chord, at the start of the next bar (at once while resting; in dub hold, once you let go). Held: the **chords** (below): with keys, a progression; held 1.5 s alone, random chords again. |
+| EDIT | A tap: the **Chords page** (below): eight slots to write the chords. Held (half a second): the next chord, at the start of the next bar (at once while resting; in dub hold, once you let go). |
 | SEL | **PERFORM**: the knobs become a mixer and the keys stop being the scale and play the layers (see below). Press again to go back; lit while on. |
 | HOME | The Dub page: tempo and the machine's movement. |
 | ENV · ARP · LFO · SEQ | The layers' pages: Chord, Texture (the pings and the crackle), Bass, Drums. |
@@ -124,14 +124,23 @@ Mix page, back to the page you started from). The white keys from the lowest up:
   (Kick drop); the echo pushed: everything into it, feeding back more (Echo). Letting go eases back.
 - The black keys do nothing in PERFORM; MIDI notes in still change the scale.
 
-**The chords** (EDIT held). Hold EDIT and press keys, up to eight: each key's note becomes a chord of
-the scale (Fm7 on F in F Dorian, and so on), in the order pressed; a key outside the scale is refused
-("NOT IN THE SCALE"). Let go of EDIT and the **progression** plays from its first chord, at the next
-bar, moving on every Drift bars (with Drift on Hold, only when you tap EDIT). The screen shows
-"1/4" under the chord's name, where it is. Hold EDIT for a look: the eight boxes, the chord playing
-lit; keep holding it 1.5 seconds with no key and let go: the chords are chosen at random again, as
-before. A progression is kept with the piece; with none, the chords move as described in
-[The arrangement](#6-the-arrangement).
+**The Chords page** (EDIT tapped). Eight slots, to write the chords yourself:
+
+| | |
+|---|---|
+| KNOB 1 · Slot | the slot you're editing (1–8), outlined on the screen |
+| Keys | its root, any note (lit on the keys); an empty slot becomes a minor chord on it |
+| KNOB 2 · Chord | its kind: Empty, Major, Minor, Sus2, Sus4, Dim, Aug |
+| KNOB 3 · Type | Triad, 6, 7, Maj7, 9, 11, Add9 |
+| KNOB 4 · Play | Random (the chords chosen as described in [The arrangement](#6-the-arrangement); the slots wait) or Prog (the slots in turn) |
+
+With Play on Prog the slots play from the first, starting on the next bar, a chord every Drift bars
+(with Drift on Hold, only when you hold EDIT), round again after the last filled slot. An **empty
+slot between two** chords holds the one before it for one more turn (it shows "(HOLDS)"). Writing a
+chord in a slot switches Play to Prog; editing the slot that's playing is heard at once. The screen
+shows the slot playing lit, and "2/4" under the chord's name on the other pages. EDIT again, or any
+page's button, leaves the page; **EDIT held** (half a second), anywhere, moves to the next chord.
+The slots are kept with the piece.
 
 **The effects grid** (REC held). After a moment the screen shows sixteen effects, four rows of four;
 the white keys from the lowest play them, each as long as its key is held (even after you let go of
@@ -181,7 +190,7 @@ another button puts the card away; letting go after it does nothing else.
   the left: the stabs (teal), the kick (amber), the hats (white), the bass (brass). The step playing
   is lit. A layer that's out (in a Break, muted in PERFORM, or at level 0) has an empty lane at once.
   In the stabs' lane, rings show where the echo's repeats land, fainter for each, as the echo's
-  time and Feedback have them; each flashes as the playhead reaches it.
+  time and Feedback have them; each flashes white as the playhead reaches it.
 - **Bottom:** the page's name and seven dots, one a page, then its four values, one for each knob:
   a dial (or, for a switch, its positions) and the value. The one you're turning lights up.
 

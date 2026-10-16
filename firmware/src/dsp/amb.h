@@ -64,9 +64,12 @@ enum {
     P_CALG, P_CFRAT, P_CFB, P_CFDEC,
     P_PALG, P_PFRAT, P_PFB, P_PFDEC,
     P_BALG, P_BFRAT, P_BFB, P_BFDEC,
-    /* the progression (EDIT held, the keys): up to eight chords, each a note of the scale above the root, as
-     * 1 + semitones (1..12); 0 ends it. None: the chords chosen as they always were */
-    P_PROG0, P_PROG1, P_PROG2, P_PROG3, P_PROG4, P_PROG5, P_PROG6, P_PROG7,
+    /* the chords (EDIT's page): eight slots, each a root (0..11, absolute), a kind (EN_CQ_*: 0 empty) and a type
+     * (EN_CX_*); Play: chosen at random (0) or the slots in turn (1). An empty slot holds the chord before it */
+    P_CR0, P_CR1, P_CR2, P_CR3, P_CR4, P_CR5, P_CR6, P_CR7,
+    P_CQ0, P_CQ1, P_CQ2, P_CQ3, P_CQ4, P_CQ5, P_CQ6, P_CQ7,
+    P_CX0, P_CX1, P_CX2, P_CX3, P_CX4, P_CX5, P_CX6, P_CX7,
+    P_PMODE,
     P_NPARAMS
 };
 typedef struct {
@@ -168,8 +171,14 @@ void en_env_shape(int layer, float *lvl, float *aux, int n, float *secs);
 /* the FM pages: is the layer's voice FM now (0 chord, 1 pings, 2 bass), and its algorithm as it plays (0..8) */
 int en_voice_fm(int layer);
 #define EN_NPROG 8
-extern volatile int8_t en_prog_pos;            /* the progression's chord playing (0..), -1: none */
+enum { EN_CQ_EMPTY, EN_CQ_MAJOR, EN_CQ_MINOR, EN_CQ_SUS2, EN_CQ_SUS4, EN_CQ_DIM, EN_CQ_AUG, EN_NCQ };
+enum { EN_CX_TRIAD, EN_CX_6, EN_CX_7, EN_CX_MAJ7, EN_CX_9, EN_CX_11, EN_CX_ADD9, EN_NCX };
+extern const char *const EN_CQ_NAME[EN_NCQ], *const EN_CX_NAME[EN_NCX];
+extern volatile int8_t en_prog_pos;            /* the slot the progression is on (0..7), -1: chosen at random */
+extern volatile int8_t en_chord_slot;          /* the slot whose chord sounds, -1: a chord of the scale */
 int en_deg_of(uint32_t pool, int rel);         /* the scale degree for a note above the root (nearest in the pool) */
+void en_chord_iv(int kind, int type, int *iv); /* a slot's voicing: four intervals above its root, ascending */
+const char *en_chord_label(int root, int kind, int type, char *buf);   /* "Fm7", "Bbsus4", "Eb6" ("-": empty) */
 int en_fm_alg(int layer);
 #define EN_FM_NALG 9
 

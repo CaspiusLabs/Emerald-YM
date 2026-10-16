@@ -41,8 +41,13 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     {"Chord alg", 0, 9, 0},   {"Chord ratio", -50, 50, 0}, {"Chord fb", -50, 50, 0}, {"Chord mod", -50, 50, 0},
     {"Ping alg", 0, 9, 0},    {"Ping ratio", -50, 50, 0}, {"Ping fb", -50, 50, 0}, {"Ping mod", -50, 50, 0},
     {"Bass alg", 0, 9, 0},    {"Bass ratio", -50, 50, 0}, {"Bass fb", -50, 50, 0}, {"Bass mod", -50, 50, 0},
-    {"Chord 1", 0, 12, 0}, {"Chord 2", 0, 12, 0}, {"Chord 3", 0, 12, 0}, {"Chord 4", 0, 12, 0},
-    {"Chord 5", 0, 12, 0}, {"Chord 6", 0, 12, 0}, {"Chord 7", 0, 12, 0}, {"Chord 8", 0, 12, 0},
+    {"Root 1", 0, 11, 0}, {"Root 2", 0, 11, 0}, {"Root 3", 0, 11, 0}, {"Root 4", 0, 11, 0},
+    {"Root 5", 0, 11, 0}, {"Root 6", 0, 11, 0}, {"Root 7", 0, 11, 0}, {"Root 8", 0, 11, 0},
+    {"Kind 1", 0, EN_NCQ - 1, 0}, {"Kind 2", 0, EN_NCQ - 1, 0}, {"Kind 3", 0, EN_NCQ - 1, 0}, {"Kind 4", 0, EN_NCQ - 1, 0},
+    {"Kind 5", 0, EN_NCQ - 1, 0}, {"Kind 6", 0, EN_NCQ - 1, 0}, {"Kind 7", 0, EN_NCQ - 1, 0}, {"Kind 8", 0, EN_NCQ - 1, 0},
+    {"Type 1", 0, EN_NCX - 1, 0}, {"Type 2", 0, EN_NCX - 1, 0}, {"Type 3", 0, EN_NCX - 1, 0}, {"Type 4", 0, EN_NCX - 1, 0},
+    {"Type 5", 0, EN_NCX - 1, 0}, {"Type 6", 0, EN_NCX - 1, 0}, {"Type 7", 0, EN_NCX - 1, 0}, {"Type 8", 0, EN_NCX - 1, 0},
+    {"Play", 0, 1, 0},
 };
 const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PARAMS[i] : &PARAMS[0]; }
 
@@ -61,42 +66,42 @@ static const struct {
                     0, 0, 1, 20, 10, 50, 30, 35, 50, 55, 30, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
     {"Chamber",    {75, 20, 55, 55, 20, 45, 6, 40, 70, 1, 45, 75, 35, 55, 30, 60, 0, 1, 118, 9, 5, 0,
                     2, 0, 0, 10, 0, 40, 15, 45, 45, 70, 45, 2, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
     {"Steppers",   {60, 35, 70, 70, 35, 40, 3, 60, 50, 3, 30, 55, 55, 25, 50, 45, 0, 1, 126, 2, 1, 0,
                     0, 0, 2, 35, 15, 60, 45, 25, 60, 50, 20, 1, 1, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
     {"Fog",        {70, 40, 50, 45, 40, 55, 5, 30, 75, 2, 55, 80, 30, 70, 25, 70, 0, 1, 112, 7, 5, 0,
                     1, -1, 0, 15, 0, 30, 20, 60, 35, 80, 60, 0, 0, 3,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
     {"Concrete",   {65, 25, 65, 75, 25, 35, 4, 75, 50, 1, 25, 60, 60, 20, 60, 40, 0, 1, 130, 0, 7, 0,
                     6, 0, 3, 30, 20, 75, 50, 20, 65, 45, 15, 3, 3, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
     {"Night Drive", {65, 45, 60, 65, 45, 50, 3, 55, 60, 4, 35, 65, 50, 40, 45, 55, 0, 1, 124, 10, 1, 0,
                     1, 0, 4, 25, 25, 55, 35, 30, 50, 60, 35, 4, 4, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
     {"Pressure",   {70, 20, 75, 80, 20, 30, 6, 65, 45, 1, 20, 55, 40, 30, 35, 35, 0, 1, 128, 4, 2, 0,
                     5, 0, 1, 10, 5, 65, 25, 15, 70, 40, 20, 3, 4, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
     {"Haze",       {62, 50, 45, 40, 50, 60, 4, 35, 80, 3, 60, 85, 35, 80, 30, 80, 0, 1, 116, 3, 0, 1,
                     3, 0, 0, 20, 10, 35, 30, 70, 30, 85, 70, 2, 0, 4,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 };
 
 const char *en_piece_name(int i) { return PIECES[(unsigned)i < EN_NPIECES ? i : 0].name; }
@@ -113,6 +118,8 @@ const char *const EN_CV_NAME[EN_NCV] = {"Saws", "Keys", "Organ", "Pad", "Bell", 
 const char *const EN_PV_NAME[EN_NPV] = {"Blip", "Marimba", "Glass", "Wood", "Drop"};
 const char *const EN_BV_NAME[EN_NBV] = {"Sub", "Punch", "Rubber", "Pluck", "Growl"};
 const char *const EN_KIT_NAME[EN_NKIT] = {"Tight", "Deep", "Punch", "Soft", "Dusty"};
+const char *const EN_CQ_NAME[EN_NCQ] = {"Empty", "Major", "Minor", "Sus2", "Sus4", "Dim", "Aug"};
+const char *const EN_CX_NAME[EN_NCX] = {"Triad", "6", "7", "Maj7", "9", "11", "Add9"};
 static const char *const ETIME_NAME[6] = {"1/8", "1/8.", "1/4", "1/4.", "1/2", "1 bar"};
 static const float ETIME_BEATS[6] = {0.5f, 0.75f, 1.0f, 1.5f, 2.0f, 4.0f};
 static const char *const GROOVE_NAME[5] = {"Drone", "Offbeat", "Dotted", "Roller", "Sync"};
@@ -158,6 +165,14 @@ void en_param_text(int i, int v, char *b)
         s = EN_BV_NAME[(unsigned)v < EN_NBV ? v : 0];
     else if (i == P_KIT)
         s = EN_KIT_NAME[(unsigned)v < EN_NKIT ? v : 0];
+    else if (i >= P_CR0 && i <= P_CR7)
+        s = EN_NOTE_NAME[(unsigned)v < 12u ? v : 0];
+    else if (i >= P_CQ0 && i <= P_CQ7)
+        s = EN_CQ_NAME[(unsigned)v < EN_NCQ ? v : 0];
+    else if (i >= P_CX0 && i <= P_CX7)
+        s = EN_CX_NAME[(unsigned)v < EN_NCX ? v : 0];
+    else if (i == P_PMODE)
+        s = v ? "Prog" : "Random";
     else if (i == P_GROOVE)
         s = GROOVE_NAME[(unsigned)v < 5u ? v : 0];
     else if (i == P_MODE)
@@ -201,7 +216,7 @@ void en_param_text(int i, int v, char *b)
         }
         return;
     }
-    if ((i == P_TUNE || i == P_POCT || i == P_BASSOCT || i >= P_CATT) && v > 0)
+    if ((i == P_TUNE || i == P_POCT || i == P_BASSOCT || (i >= P_CATT && i < P_CR0)) && v > 0)
         *b++ = '+';
     itoa_s(v, b);
 }
@@ -742,11 +757,30 @@ static int bell_note(int l, int off)            /* a loop slot's note, from the 
 
 /* the chord to the four voices: the voicing on the degree, its root moved the least from the last one,
  * in F#2..F3 (as a chord memory: the shape kept, transposed whole) */
+static int chord_slot = -1;                     /* the slot whose chord sounds (-1: one of the scale) */
 static void voice_chord(void)
 {
     int iv[4], i, pc, n;
-    chord_nt = en_chord_tones(pool, par[P_ROOT], deg, chord_pcs);
-    en_voicing(pool, deg, shape, iv);
+    if (chord_slot >= 0 && par[P_CQ0 + chord_slot]) {   /* a slot's chord, as written */
+        int r = par[P_CR0 + chord_slot];
+        en_chord_iv(par[P_CQ0 + chord_slot], par[P_CX0 + chord_slot], iv);
+        for (i = 0; i < 4; i++)
+            chord_pcs[i] = (r + iv[i]) % 12;
+        {                                        /* (in name order for the bass: the root, its third, its fifth) */
+            int t[4];
+            en_chord_iv(par[P_CQ0 + chord_slot], EN_CX_7, t);
+            chord_pcs[1] = (r + t[3] - 12) % 12;
+            chord_pcs[2] = (r + t[1]) % 12;
+            chord_pcs[3] = (r + t[2]) % 12;
+        }
+        chord_nt = 4;
+        deg = en_deg_of(pool, r - par[P_ROOT]);
+    } else {
+        chord_slot = -1;
+        chord_nt = en_chord_tones(pool, par[P_ROOT], deg, chord_pcs);
+        en_voicing(pool, deg, shape, iv);
+    }
+    en_chord_slot = (int8_t)chord_slot;
     pc = chord_pcs[0];
     n = root_note + ((pc - root_note) % 12 + 12) % 12;
     if (n - root_note > 6)
@@ -769,14 +803,76 @@ static int bass_note(int pc)                    /* E1..Eb2, an octave up or down
     return 28 + ((pc - 4) % 12 + 12) % 12 + 12 * par[P_BASSOCT];
 }
 
-/* the progression: its length, a degree for a note above the root (nearest in the pool, the lower on a tie) */
-volatile int8_t en_prog_pos = -1;
+/* the chords' slots: how far the progression runs (to its last filled slot; 0: none, or Play at Random), a
+ * slot's chord built from its kind and type, and a degree for a note above the root (the pings take the
+ * scale's notes around it: nearest in the pool, the lower on a tie) */
+volatile int8_t en_prog_pos = -1, en_chord_slot = -1;
 static int prog_len(void)
 {
-    int i;
-    for (i = 0; i < EN_NPROG && par[P_PROG0 + i]; i++)
-        ;
-    return i;
+    int i, n = 0;
+    if (!par[P_PMODE])
+        return 0;
+    for (i = 0; i < EN_NPROG; i++)
+        if (par[P_CQ0 + i])
+            n = i + 1;
+    return n;
+}
+void en_chord_iv(int q, int x, int *iv)
+{
+    static const int8_t THIRD[EN_NCQ] = {3, 4, 3, 2, 5, 3, 4}, FIFTH[EN_NCQ] = {7, 7, 7, 7, 7, 6, 8};
+    int t = THIRD[(unsigned)q < EN_NCQ ? q : 0], f = FIFTH[(unsigned)q < EN_NCQ ? q : 0],
+        s = q == EN_CQ_DIM ? 9 : 10, i, j;   /* the seventh: minor (a diminished seventh on Dim) */
+    switch ((unsigned)x < EN_NCX ? x : 0) {
+    case EN_CX_6: iv[0] = 0, iv[1] = f, iv[2] = 9, iv[3] = t + 12; break;
+    case EN_CX_7: iv[0] = 0, iv[1] = f, iv[2] = s, iv[3] = t + 12; break;
+    case EN_CX_MAJ7: iv[0] = 0, iv[1] = f, iv[2] = 11, iv[3] = t + 12; break;
+    case EN_CX_9: iv[0] = 0, iv[1] = s, iv[2] = t + 12, iv[3] = 14; break;
+    case EN_CX_11: iv[0] = 0, iv[1] = s, iv[2] = t + 12, iv[3] = 17; break;
+    case EN_CX_ADD9: iv[0] = 0, iv[1] = f, iv[2] = t + 12, iv[3] = 14; break;
+    default: iv[0] = 0, iv[1] = f, iv[2] = 12, iv[3] = t + 12; break;   /* the triad, open, its root doubled */
+    }
+    for (i = 1; i < 4; i++)                      /* the type on the sus's own note (sus2 with a 9, sus4 with an 11): */
+        for (j = 0; j < i; j++)                  /* the fifth, an octave up, instead */
+            if (iv[i] == iv[j])
+                iv[i] = f + 12;
+    for (i = 1; i < 4; i++)                      /* ascending, no two alike */
+        for (j = i; j > 0 && iv[j] < iv[j - 1]; j--) {
+            int y = iv[j];
+            iv[j] = iv[j - 1];
+            iv[j - 1] = y;
+        }
+    for (i = 1; i < 4; i++)
+        while (iv[i] <= iv[i - 1])
+            iv[i] += 12;
+}
+const char *en_chord_label(int root, int q, int x, char *b)
+{
+    static const char *const QS[EN_NCQ] = {"", "", "m", "sus2", "sus4", "dim", "aug"};
+    static const char *const XS[EN_NCX] = {"", "6", "7", "M7", "9", "11", "add9"};
+    const char *r = EN_NOTE_NAME[(unsigned)root < 12u ? root : 0], *qs, *xs;
+    int k = 0, sus;
+    q = (unsigned)q < EN_NCQ ? q : 0;
+    x = (unsigned)x < EN_NCX ? x : 0;
+    if (!q) {
+        b[0] = '-', b[1] = 0;
+        return b;
+    }
+    qs = QS[q], xs = XS[x], sus = q == EN_CQ_SUS2 || q == EN_CQ_SUS4;
+    while (*r)
+        b[k++] = *r++;
+    if (sus) {                                   /* the type before a sus: "C7sus4" */
+        while (*xs)
+            b[k++] = *xs++;
+        while (*qs)
+            b[k++] = *qs++;
+    } else {
+        while (*qs)
+            b[k++] = *qs++;
+        while (*xs)
+            b[k++] = *xs++;
+    }
+    b[k] = 0;
+    return b;
 }
 int en_deg_of(uint32_t pl, int rel)
 {
@@ -800,15 +896,18 @@ static void chord_change(void)
     static const float W7[7] = {0.0f, 0.4f, 1.0f, 3.0f, 1.5f, 1.5f, 2.0f};
     float w[12], sum = 0.0f, r;
     int i, n = prog_len();
-    if (n) {                                    /* a progression: its next chord, as written */
+    if (n) {                                    /* the slots in turn: an empty one holds the chord before it */
         prog_pos = (prog_pos + 1) % n;
         en_prog_pos = (int8_t)prog_pos;
-        deg = en_deg_of(pool, par[P_PROG0 + prog_pos] - 1);
-        voice_chord();
+        if (par[P_CQ0 + prog_pos]) {
+            chord_slot = prog_pos;
+            voice_chord();
+        }
         chord_bars = 0;
         return;
     }
     en_prog_pos = -1;
+    chord_slot = -1;
     if (deg != 0 && frand() < 0.65f) {
         i = 0;
     } else {
@@ -1804,9 +1903,22 @@ static void apply(int p, int v)
     case P_CRACKLE: crackle_vol = (float)(v * v) * 0.0001f; break;
     case P_DUCK: duck_depth = (float)v * 0.0075f; break;   /* to -12 dB */
     case P_CLOUD: cloud_amt = (float)v * 0.01f; break;
-    case P_PROG0:                                /* a new progression (written from its first): from the top, next */
+    case P_CR0: case P_CR1: case P_CR2: case P_CR3: case P_CR4: case P_CR5: case P_CR6: case P_CR7:
+    case P_CQ0: case P_CQ1: case P_CQ2: case P_CQ3: case P_CQ4: case P_CQ5: case P_CQ6: case P_CQ7:
+    case P_CX0: case P_CX1: case P_CX2: case P_CX3: case P_CX4: case P_CX5: case P_CX6: case P_CX7:
+        if (nsteps && chord_slot >= 0 && (p - P_CR0) % 8 == chord_slot)
+            voice_chord();                       /* the slot playing, edited: heard at once */
+        break;
+    case P_PMODE:                                /* Play: the slots from the first, on the next bar; or random again */
         prog_pos = -1;
-        en_prog_pos = prog_len() ? 0 : -1;
+        if (v && en_playing)
+            change_pending = 1;
+        if (!v && chord_slot >= 0) {
+            chord_slot = -1;
+            if (nsteps)
+                voice_chord();
+        }
+        en_prog_pos = -1;
         break;
     case P_KIT: kit = (unsigned)v < EN_NKIT ? v : 0; break;
     case P_POCT:                                 /* let it be heard now: a ping from the first loop */
@@ -1857,9 +1969,16 @@ static void regrow(void)                        /* a new piece: fresh loops, hom
         loop_regrow(l);
         loop_rest[l] = 0;
     }
-    prog_pos = prog_len() ? 0 : -1;             /* a progression starts on its first chord */
+    prog_pos = -1;                               /* the slots: from the first filled one */
+    chord_slot = -1;
+    if (prog_len())
+        for (prog_pos = 0; prog_pos < EN_NPROG && !par[P_CQ0 + prog_pos]; prog_pos++)
+            ;
+    if (prog_pos >= EN_NPROG)
+        prog_pos = -1;
+    chord_slot = prog_pos;
     en_prog_pos = (int8_t)prog_pos;
-    deg = prog_pos >= 0 ? en_deg_of(pool, par[P_PROG0] - 1) : 0;
+    deg = 0;
     shape = cvoice == CV_KEYS || cvoice == CV_PAD || cvoice == CV_BELL;   /* these like the 9th; the rest the open 7th */
     voice_chord();
     stabs_home();

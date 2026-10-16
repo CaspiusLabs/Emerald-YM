@@ -408,34 +408,53 @@ int main(void)
         CHECK(en_playing && en_bars > 16u && peak > 0.02f, "a piece's parameters, then PLAY: not playing (%u)", en_bars);
     }
 
-    /* a progression: the chords in the order written (F Dorian: F, Bb, C, Eb), a change every two bars,
-     * round again; written over, from its first; cleared, random again */
+    /* the chords' slots: Fm7, Bb, (empty: Bb holds), C6, played in turn a change every two bars, round again; the
+     * slot playing edited, heard at once; Play at Random, chosen again; the labels */
     {
-        static const int WANT[4] = {5, 10, 0, 3};   /* the roots: F, Bb, C, Eb */
-        int k, seen[16], ns = 0, ok = 1, last = -1;
+        static const int WANT[6] = {5, 10, 0, 5, 10, 0};
+        int k, seen[16], ns = 0, ok = 1, last = -1, holds = 0;
+        char nm[16];
         fresh();
         en_set(P_ROOT, 5);
         en_pool(EN_MODE_POOL[MODE_DORIAN]);
         en_set(P_DRIFT, 0);
-        en_set(P_PROG0, 1), en_set(P_PROG1, 6), en_set(P_PROG2, 8), en_set(P_PROG3, 11);
+        en_set(P_CR0, 5), en_set(P_CQ0, EN_CQ_MINOR), en_set(P_CX0, EN_CX_7);
+        en_set(P_CR1, 10), en_set(P_CQ1, EN_CQ_MAJOR);
+        en_set(P_CR3, 0), en_set(P_CQ3, EN_CQ_MAJOR), en_set(P_CX3, EN_CX_6);
+        en_set(P_PMODE, 1);
         en_regrow();
         en_play(1);
-        for (k = 0; k < 600 && ns < 16; k++) {
+        for (k = 0; k < 900 && ns < 16; k++) {
             run(0.1f);
             if (en_chord_root != last) {
                 last = en_chord_root;
                 seen[ns++] = last;
             }
+            holds += en_prog_pos == 2 && en_chord_root == 10;
         }
-        for (k = 0; k < ns && k < 9; k++)
-            ok &= seen[k] == WANT[k % 4];
-        CHECK(ns >= 9 && ok, "the progression's roots: %d %d %d %d %d (%d changes)", seen[0], seen[1], seen[2], seen[3],
-              seen[4], ns);
-        CHECK(en_prog_pos >= 0, "the progression's place: %d", en_prog_pos);
-        for (k = 0; k < EN_NPROG; k++)
-            en_set(P_PROG0 + k, 0);
-        run(10.0f);
-        CHECK(en_prog_pos == -1, "cleared, still a progression (%d)", en_prog_pos);
+        for (k = 0; k < 6; k++)
+            ok &= seen[k] == WANT[k];
+        CHECK(ns >= 6 && ok, "the slots' roots: %d %d %d %d %d %d (%d changes)", seen[0], seen[1], seen[2], seen[3], seen[4],
+              seen[5], ns);
+        CHECK(holds > 0, "the empty slot didn't hold the chord before it");
+        while (en_chord_slot != 0)
+            run(0.1f);
+        en_set(P_CR0, 7);                        /* the slot playing, edited: G minor 7 now */
+        run(0.05f);
+        CHECK(en_chord_root == 7, "the slot playing, edited: root %d", en_chord_root);
+        en_set(P_PMODE, 0);
+        run(0.05f);
+        CHECK(en_prog_pos == -1 && en_chord_slot == -1, "Play at Random: still the slots (%d, %d)", en_prog_pos, en_chord_slot);
+        CHECK(!strcmp(en_chord_label(5, EN_CQ_MINOR, EN_CX_7, nm), "Fm7"), "label %s", nm);
+        CHECK(!strcmp(en_chord_label(0, EN_CQ_SUS4, EN_CX_7, nm), "C7sus4"), "label %s", nm);
+        CHECK(!strcmp(en_chord_label(10, EN_CQ_MAJOR, EN_CX_MAJ7, nm), "BbM7"), "label %s", nm);
+        CHECK(!strcmp(en_chord_label(3, EN_CQ_EMPTY, 0, nm), "-"), "label %s", nm);
+        for (k = 0; k < EN_NCQ * EN_NCX; k++) {   /* every voicing: four rising notes, within two octaves */
+            int iv[4];
+            en_chord_iv(k / EN_NCX, k % EN_NCX, iv);
+            ok = iv[0] == 0 && iv[1] > iv[0] && iv[2] > iv[1] && iv[3] > iv[2] && iv[3] <= 24;
+            CHECK(ok, "voicing %d/%d: %d %d %d %d", k / EN_NCX, k % EN_NCX, iv[0], iv[1], iv[2], iv[3]);
+        }
     }
 
     /* the effects grid: each effect alone, then all sixteen at once, then let go: no NaN, under full scale,
