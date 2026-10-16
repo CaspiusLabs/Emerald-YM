@@ -283,19 +283,19 @@ hold). Sixteen in four groups of four, the first of each group lit:
 - [ ] **Later: pattern styles** (the user's idea 2): a short list of classic dub techno grooves (steady,
       Steppers, Half-time, Broken, Shuffle with rim) to load into the Pattern page as a start
 
-## Release 1.0 (2026-10-16)
+## Release 1.0.0 (2026-10-16)
 
 - [x] Repository: github.com/sbegueria/fm1-dub (`origin`; AMB-1 kept as `upstream`)
-- [x] Release identity FM-1_8XXYYZZ (AMB-1 is 7..., X0X 9...): 1.0 is FM-1_8010000; packages `dub-X.Y.fwsc`
+- [x] Release identity FM-1_8XXYYZZ (AMB-1 is 7..., X0X 9...): 1.0.0 is FM-1_8010000; packages `dub-X.Y.Z.fwsc`
 - [x] The site (`tools/make_pages.py`, `tools/publish_pages.sh`): landing, emulator, web installer, manual, the
       words files, the firmware; at https://sbegueria.github.io/fm1-dub/
 - [x] The screen reader's words link: https://sbegueria.github.io/fm1-dub/words/
-- [ ] GitHub Pages enabled on the gh-pages branch (repository Settings -> Pages), a GitHub Release v1.0 with
-      dub-1.0.fwsc attached
+- [ ] GitHub Pages enabled on the gh-pages branch (repository Settings -> Pages), a GitHub Release v1.0.0 with
+      dub-1.0.0.fwsc attached (the earlier v1.0 tag was never released)
 - [ ] The phone/desktop web app (`web/app`) is still AMB-1's: not on the site; to port later
 - [ ] Announce (later): Elektronauts, MatrixSynth, the FM-1 groups
 
-## Done: a bolder screen, and the middle three ways (2026-10-16, after 1.0)
+## Done: a bolder screen, and the middle three ways (2026-10-16, in 1.0.0)
 
 The user found the screen dim and its lines and features too small. They also felt the chord and
 the ripples took too much of the middle.

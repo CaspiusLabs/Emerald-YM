@@ -42,12 +42,12 @@ same code the FM-1 runs, with sound.
 to install on the computer. Don't unplug it while it's writing; when it finishes, the FM-1 restarts
 into DUB-1.
 
-**Or from the command line:** download `dub-1.0.fwsc` from the
+**Or from the command line:** download `dub-1.0.0.fwsc` from the
 [releases](https://github.com/sbegueria/fm1-dub/releases), install Python 3 with
 `pip3 install mido python-rtmidi`, and run, in a checkout of the source:
 
 ```
-python3 tools/fm1_install.py dub-1.0.fwsc
+python3 tools/fm1_install.py dub-1.0.0.fwsc
 ```
 
 **Go back:** the installer page's "Back to the stock firmware", or M-VAVE's own updater, M-UPGRADE,

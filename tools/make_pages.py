@@ -11,7 +11,7 @@
   manual/index.html, img/     the manual (tools/manual_html.py, from docs/MANUAL.md)
   firmware/dub-VERSION.fwsc   the package the installer writes; also the download
 
-  tools/make_pages.py build/dub-1.0.fwsc 1.0 OUT_DIR
+  tools/make_pages.py build/dub-1.0.0.fwsc 1.0.0 OUT_DIR
 
 The package must be a release build (./build.sh --release X.Y): its identity, FM-1_8XXYYZZ, is what
 the installer checks the download against and what the FM-1 reports after the install."""
