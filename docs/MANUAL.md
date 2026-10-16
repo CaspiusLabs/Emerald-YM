@@ -152,8 +152,9 @@ another button puts the card away; letting go after it does nothing else.
 ![A Groove phrase: GROOVE lit top left, fewer stabs in the top lane](img/screen-groove.png "A Groove")
 
 - **Top line:** the piece in a tag, its root and mode. On the right, a beat light (a play triangle
-  while resting), the tempo (EXT when it follows MIDI clock) and a dot when there are unsaved
-  changes. Messages ("ADDED F#", "NEXT CHORD ON THE BAR", "DUB HOLD ON", "KICK OFF") show here for
+  while resting), the tempo (EXT when it follows MIDI clock), a dot when there are unsaved
+  changes, and the battery: three bars (the outline red when it's nearly empty), or the bars filling
+  in turn while USB powers and charges it. Messages ("ADDED F#", "NEXT CHORD ON THE BAR", "DUB HOLD ON", "KICK OFF") show here for
   a moment.
 - **Top left:** the section playing (FULL in grey; BREAK, GROOVE and THIN lit up) and eight dots,
   the phrase's bars, lit up to the bar playing.
@@ -440,9 +441,9 @@ How long the plate rings comes with the piece.
 
 The top right of this page shows how much of the FM-1's time the sound takes: **CPU 35/61** is
 35% now (smoothed) and 61% at the heaviest moment of the last two seconds. Under 100% the sound
-never breaks up; if it ever did, a **!** and a count of the dropouts would follow. On the main
-screen, **BATT** and a number: the battery's raw reading (not yet a charge level: to be
-calibrated).
+never breaks up; if it ever did, a **!** and a count of the dropouts would follow. Above the main
+screen, **BATT** and a rough charge in % (with the divider's raw reading), or USB when a computer
+powers (and charges) the FM-1.
 
 ---
 

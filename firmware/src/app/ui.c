@@ -810,6 +810,31 @@ static void tag(int32_t *x, const char *s, uint16_t bg, uint16_t fg)
     *x += w + 4;
 }
 
+/* the battery (dxsloop's thresholds on the divider's raw reading): three bars, 591 up, 561, 531; on USB
+ * (powering and charging it: there is no charger line) the bars fill one, two, three in turn */
+static int batt_bars(void)
+{
+    int32_t b = plat_battery();
+    return b >= 591 ? 3 : b >= 561 ? 2 : b >= 531 ? 1 : 0;
+}
+static int batt_pct(void)                        /* a rough charge, 521 .. 601 */
+{
+    int32_t p = (plat_battery() - 521) * 100 / 80;
+    return p < 0 ? 0 : p > 100 ? 100 : (int)p;
+}
+static void draw_battery(int32_t bx)
+{
+    int lvl = plat_usb_power() ? 1 + (int)((plat_ms() / 600u) % 3u) : batt_bars(), k;
+    uint16_t c = !plat_usb_power() && lvl <= 1 ? K_FROST : K_DIM, o = !plat_usb_power() && !lvl ? K_FROST : K_DIM;
+    cv_rect(bx, 9, 15, 1, o);                    /* (empty: the outline red) */
+    cv_rect(bx, 17, 15, 1, o);
+    cv_rect(bx, 9, 1, 9, o);
+    cv_rect(bx + 14, 9, 1, 9, o);
+    cv_rect(bx + 15, 11, 2, 5, o);
+    for (k = 0; k < lvl; k++)
+        cv_rect(bx + 2 + k * 4, 11, 3, 5, c);
+}
+
 /* the header: the piece in a tag, its root and mode; on the right, the tempo with a slow beat light
  * (a play triangle while resting) and a dot while there is something unsaved. Messages take its place
  * for a moment. */
@@ -819,7 +844,8 @@ static void draw_header(void)
     int msg = plat_ms() < ui.msg_until;
     uint32_t h = hash(hash(hash(2166136261u, proj.piece | (uint32_t)proj.par[P_ROOT] << 8 | (uint32_t)proj.pool << 12),
                            en_playing | ui.dirty << 4 | (uint32_t)msg << 5 | (uint32_t)en_ext << 6 | (uint32_t)proj.par[P_MODE] << 8),
-                      (uint32_t)proj.par[P_TEMPO] | (ui.view == V_SETUP ? plat_cpu_pct() << 8 | plat_cpu_peak() << 15 |
+                      (uint32_t)proj.par[P_TEMPO] | (uint32_t)batt_bars() << 29 | (uint32_t)plat_usb_power() << 31 |
+                      (plat_usb_power() ? (plat_ms() / 600u) % 3u << 7 : 0u) | (ui.view == V_SETUP ? plat_cpu_pct() << 8 | plat_cpu_peak() << 15 |
                                                                            (plat_xruns() & 0x1FFu) << 22 : 0u));
     if (msg)
         h = hash(hash(h, (uint32_t)ui.msg[0][0] << 8 | ui.msg[0][1]), ui.msg_until);
@@ -834,6 +860,10 @@ static void draw_header(void)
         cv_text(x + 8, 6, &FONT_B, ui.msg[1], K_ACC);
     } else {
         int32_t x = 232, w;
+        if (plat_battery() >= 0 || plat_usb_power()) {   /* the battery, at the right edge */
+            draw_battery(219);
+            x = 213;
+        }
         if (ui.dirty) {                            /* unsaved */
             cv_round(x - 5, 12, 5, 5, 2, K_DIM);
             x -= 11;
@@ -1331,10 +1361,22 @@ static void draw_main(void)
     draw_meters();
     draw_duck();
     draw_lanes();
-    if (ui.view == V_SETUP && plat_battery() >= 0) {   /* the battery, raw for now (to be calibrated: PLAN.md) */
-        char t[16] = "BATT ";
-        itoa_u((uint32_t)plat_battery(), t + 5);
-        cv_text(160, 76, &FONT_XS, t, K_DIM);
+    if (ui.view == V_SETUP && (plat_battery() >= 0 || plat_usb_power())) {   /* the battery: on USB, or ~% (raw) */
+        char t[24] = "BATT ";
+        uint32_t k = 5;
+        if (plat_usb_power()) {
+            t[k++] = 'U', t[k++] = 'S', t[k++] = 'B', t[k] = 0;
+        } else {
+            itoa_u((uint32_t)batt_pct(), t + k);
+            while (t[k])
+                k++;
+            t[k++] = '%', t[k] = 0;
+        }
+        if (plat_battery() >= 0) {               /* (and the raw reading, dim) */
+            t[k++] = ' ', t[k++] = ' ', t[k++] = 'r', t[k++] = 'a', t[k++] = 'w', t[k++] = ' ';
+            itoa_u((uint32_t)plat_battery(), t + k);
+        }
+        text_c(120, -1, &FONT_XS, t, K_DIM);
     }
     cv_blit(0, MAIN_Y);
 }
@@ -1570,9 +1612,12 @@ static void sp_page(int all)
         sp_cat("%, peak ");
         sp_int(plat_cpu_peak());
         sp_cat("%");
-        if (plat_battery() >= 0) {
-            sp_cat(", battery reading ");
-            sp_int((uint32_t)plat_battery());
+        if (plat_usb_power()) {
+            sp_cat(", on USB power");
+        } else if (plat_battery() >= 0) {
+            sp_cat(", battery about ");
+            sp_int((uint32_t)batt_pct());
+            sp_cat("%");
         }
         if (plat_xruns()) {
             sp_cat(", ");

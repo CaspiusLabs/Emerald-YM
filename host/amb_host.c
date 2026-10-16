@@ -138,7 +138,8 @@ static uint32_t cpu_pct;
 uint32_t plat_cpu_pct(void) { return cpu_pct; }
 uint32_t plat_xruns(void) { return 0; }
 uint32_t plat_cpu_peak(void) { return cpu_pct; }
-int32_t plat_battery(void) { return -1; }
+int32_t plat_battery(void) { return getenv("AMB_BATT") ? atoi(getenv("AMB_BATT")) : -1; }   /* (to see it drawn) */
+int plat_usb_power(void) { return getenv("AMB_USB") != 0; }
 
 /* -------------------------------------------------------------- app --- */
 #include "../firmware/src/app/app.h"

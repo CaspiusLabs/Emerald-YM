@@ -241,9 +241,10 @@ hold). Sixteen in four groups of four, the first of each group lit:
 - [x] The Drums knob follows the Kick and Hats keys (0 when both are out, 100 when one comes back)
 - [x] A muted layer (or one at level 0) leaves its lane at once
 - [x] The stabs' lane shows the echo's repeats as rings, flashing as the playhead reaches them
-- [ ] **Battery:** an icon on every page, the charge in % on Setup. The divider is read (PB1, ADC ch 3,
-      10 bit) and shown raw on Setup ("BATT n"); to calibrate: the readings full, low (before it shuts
-      down) and on USB
+- [x] **Battery:** an icon on every page (three bars), a rough % on Setup with the raw reading. The
+      thresholds are dxsloop's (591 / 561 / 531 on the divider's raw reading, PB1, ADC ch 3); on USB the
+      bars fill in turn (no charger line). The % (521..601) is an estimate: to check against the
+      FM-1's real readings, full and low
 - [ ] **Editing the chords** (asked): see the proposal in the conversation; to decide
 
 ## Ideas for later

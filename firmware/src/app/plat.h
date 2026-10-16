@@ -49,3 +49,4 @@ uint32_t plat_cpu_pct(void);
 uint32_t plat_xruns(void);
 uint32_t plat_cpu_peak(void);            /* the heaviest block of the last ~2 s, % of its time */
 int32_t plat_battery(void);              /* the battery divider's reading, raw (0..1023, smoothed); -1: none */
+int plat_usb_power(void);                /* a USB host is there (it powers, and charges, the FM-1) */

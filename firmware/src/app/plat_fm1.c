@@ -92,4 +92,5 @@ uint32_t plat_cpu_pct(void) { return audio_cpu_pct; }
 uint32_t plat_cpu_peak(void) { return audio_cpu_peak; }
 static int32_t batt_raw = -1;
 int32_t plat_battery(void) { return batt_raw; }
+int plat_usb_power(void) { return usb.config && !usb.suspended; }
 uint32_t plat_xruns(void) { return audio_xruns; }
