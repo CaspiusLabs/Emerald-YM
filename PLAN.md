@@ -275,8 +275,9 @@ hold). Sixteen in four groups of four, the first of each group lit:
       (`tests/scenarios/pattern.amb`)
 - [x] Found on the way: with 103 parameters, the UI's own knob codes (from 100) collided with real ones
       (Play was "no knob"; Lights would have set the rim's chance): moved to 200, with a compile-time check
-- [x] A fifth drum lane, the **clap** (three bursts and a tail, into the plate): rare: Auto ~6% on two and four
-      (more with Evolve, in Full and Groove); on the Pattern page its Chance starts at 12%. Hits that only
+- [x] A fifth drum lane, the **clap** (three bursts and a tail, into the plate): rare: Auto ~5% on two and four
+      (3% + 5% x Evolve, in Full and Groove); on the Pattern page its Chance starts at 5% (was 12%:
+      "too conspicuous"). Hits that only
       sometimes come are rings on the screen, filled when they play. Format 8
 - [x] The effects grid takes the whole screen while REC is held; the knobs rest
 - [ ] **Later: pattern styles** (the user's idea 2): a short list of classic dub techno grooves (steady,

@@ -224,7 +224,7 @@ DUB-1 plays four layers from one scale and one chord, on a grid of sixteenths.
   shaker on the sixteenths, an open hat off the beat, and a **rim** (two short tones and a click,
   mostly sent into the echo, so it echoes away: the dub snare), on two and four once Hits is 70 or
   more; and a **clap** (three quick bursts of noise and a tail, into the plate), rarely: on two or
-  four now and then, about one chance in sixteen (more with Evolve), in Full and Groove phrases. The
+  four now and then, about one chance in twenty (a little more with Evolve), in Full and Groove phrases. The
   kick ducks everything else (**Duck**), and stays out of the echo; the hats send a little to it.
 
 Then the space: a short Echoplex that smears what goes in, the tape echo (up to 5.6 seconds,
@@ -446,7 +446,7 @@ sixteen steps each, to write yourself.
 | White keys 1–16 | the lane's sixteen steps: a key turns its step on or off (lit when on) |
 | A black key held + a white key | that step accented (on, and drawn taller) |
 | KNOB 2 · Accent | how much quieter the unaccented steps are, 0 to 100 |
-| KNOB 3 · Chance | how likely the lane's steps are to play, 0 to 100%: loose, breathing hats (the clap starts at 12%: rare, as it shines) |
+| KNOB 3 · Chance | how likely the lane's steps are to play, 0 to 100%: loose, breathing hats (the clap starts at 5%: rare, as it shines) |
 | KNOB 4 · Play | Auto (the patterns generated from Hits, as ever) or Pattern (yours) |
 
 The first step you change takes the pattern over from what Auto was playing, and switches Play to
