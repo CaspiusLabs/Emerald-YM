@@ -14,7 +14,8 @@ REMOTE="$(git remote get-url origin)"
 SHA="$(git rev-parse --short HEAD)"
 cd build/pages
 rm -rf .git
-git init -q -b gh-pages
+git init -q
+git checkout -q -b gh-pages               # (not init -b: older gits lack it)
 git add -A
 git commit -q -m "Site for DUB-1 $V (from $SHA)"
 git push -q -f "$REMOTE" gh-pages
