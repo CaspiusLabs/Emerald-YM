@@ -77,5 +77,19 @@ Kuroshita (Hügelton Instruments), by way of [X0X](https://github.com/charlesves
 FoMni-1 and AMB-1. The idea of running FM-1 firmware in the browser comes from
 [Groove OS](https://www.groove-os.com/). GPL-3.0-only; see [LICENSING.md](LICENSING.md).
 
+**The random chords.** When no chord slots are set, the chords come from a weighted random walk over
+the degrees of the piece's scale, taken from AMB-1's `chord_change` (Charles Vestal) and re-weighted
+for dub. Each chord is stacked in thirds from the scale, so it always fits the piece. When Drift
+says it's time, the walk moves to another degree. In a seven-note scale the weights are iv 3.0, VII
+2.0, v and VI 1.5, III 1.0 and ii 0.4. Away from home it goes back to i 65% of the time, so the
+music keeps returning to its tonic. A degree whose fifth is diminished (the half-diminished chord)
+is never chosen; in a shorter scale every degree weighs the same. The voicing comes from dub
+techno's chord-memory stab (Basic Channel, Maurizio), where one chord shape is played from every
+key. The shape is kept and moved whole, either an open seventh (root, 5th, 7th, 10th) or a ninth
+without its fifth. Its root lands nearest the one before, within a tritone and between F#2 and F3,
+so the stabs slide in parallel instead of jumping. Evolve now and then swaps one shape for the
+other. AMB-1's own walk weights the degrees differently (home and the near, strong moves first).
+The code is `chord_change` and `voice_chord` in `firmware/src/dsp/amb.c`.
+
 M-VAVE and FM-1 are trademarks of their owners. DUB-1 is not affiliated with M-VAVE or Hügelton
 Instruments.

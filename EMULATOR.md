@@ -87,7 +87,7 @@ One command per line, `#` starts a comment (the full list is at the top of `host
 | `peakreset` | restart the output peak measurement |
 | `shot FILE.png` | save the screen |
 | `leds` | print the lit buttons and keys |
-| `expect WHAT VALUE` | check state; VALUE may be `<N` or `>N`. WHAT: `playing frozen view piece pool dirty store_writes clocks_out sixteenths ext midi_out pad_level bass_level chordroot loopnotes peak_db_max peak_db_min` |
+| `expect WHAT VALUE` | check state; VALUE may be `<N` or `>N`. WHAT: `playing frozen view piece screen pool dirty store_writes clocks_out sixteenths ext midi_out pad_level bass_level chordroot loopnotes peak_db_max peak_db_min` |
 | `reboot` | boot again from the simulated flash |
 
 Screen-reader commands (`listen`, `where`, `said`, `said_none`, `speakdump`) are also there; see the file.

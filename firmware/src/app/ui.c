@@ -83,25 +83,25 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
  * the scale in teal, the pings in a paler blue, the bass in brass, the drums in amber; dub hold in red.
  * Each layer has a dark tint for the shapes at rest. */
 #define K_BG RGB(16, 20, 26)
-#define K_PANEL RGB(30, 37, 47)
-#define K_LINE RGB(46, 56, 70)
-#define K_DIM RGB(112, 126, 142)
+#define K_PANEL RGB(36, 44, 56)
+#define K_LINE RGB(64, 76, 94)
+#define K_DIM RGB(146, 160, 176)
 #define K_TEXT RGB(222, 228, 232)
 #define K_ACC RGB(92, 196, 204)          /* the accent: the page, the knob being turned, a message's word */
 #define K_BELL RGB(128, 170, 224)
-#define K_BELL_T RGB(40, 56, 82)
+#define K_BELL_T RGB(54, 76, 112)
 #define K_PAD RGB(84, 200, 186)
-#define K_PAD_T RGB(30, 70, 72)
+#define K_PAD_T RGB(40, 96, 98)
 #define K_PULSE RGB(236, 150, 84)
-#define K_PULSE_T RGB(78, 54, 38)
+#define K_PULSE_T RGB(106, 72, 50)
 #define K_BASS RGB(204, 180, 112)
-#define K_BASS_T RGB(72, 64, 44)
+#define K_BASS_T RGB(98, 86, 58)
 #define K_FROST RGB(232, 92, 84)         /* dub hold */
-#define K_FROST_T RGB(96, 42, 40)
+#define K_FROST_T RGB(128, 56, 52)
 #define K_RIM RGB(214, 124, 176)         /* the rim */
-#define K_RIM_T RGB(80, 44, 64)
+#define K_RIM_T RGB(108, 58, 86)
 #define K_CLAP RGB(232, 206, 98)         /* the clap */
-#define K_CLAP_T RGB(80, 72, 36)
+#define K_CLAP_T RGB(108, 98, 48)
 
 static struct {
     uint8_t view;
@@ -613,6 +613,13 @@ static void button(int b)
             set_view(V_PAT);                     /* the drums: their pattern */
         else
             set_view(pv);
+        return;
+    }
+    if (b == B_HOME && ui.view == V_DUB) {       /* HOME again: the middle of the screen, the next way */
+        static const char *const SCREEN_NAME[3] = {"RIPPLES", "SCOPE", "VU"};
+        proj.screen = (uint8_t)((proj.screen + 1u) % 3u);
+        mark_dirty();
+        say("SCREEN", SCREEN_NAME[proj.screen]);
         return;
     }
     for (v = 0; v < NPAGES; v++)                 /* a page's button: its page */
@@ -1168,10 +1175,11 @@ static int draw_ripples(uint32_t now)           /* 1: something still moves */
             if (r >= (float)RIP_R || a < 0.05f)
                 continue;
             seen = 1;
-            c = mix(K_BG, en_frozen ? K_FROST : rip[i].thr ? K_ACC : K_PAD, q16(a * 1.4f));
-            circle(CX, CY, (int32_t)r, c);
+            c = mix(K_BG, en_frozen ? K_FROST : rip[i].thr ? K_ACC : K_PAD, q16(a * 2.0f));
+            circle(CX, CY, (int32_t)r, c);       /* two pixels wide (a throw: three) */
+            circle(CX, CY, (int32_t)r + 1, c);
             if (rip[i].thr)
-                circle(CX, CY, (int32_t)r + 1, c);
+                circle(CX, CY, (int32_t)r + 2, c);
         }
         if (!seen && (en_frozen ? 0 : a0 < 0.05f || g <= 0.0f) && age > 200.0f)
             rip[i].on = 0;                       /* its last repeat has faded */
@@ -1179,6 +1187,117 @@ static int draw_ripples(uint32_t now)           /* 1: something still moves */
             live = 1;
     }
     return live;
+}
+
+static void line(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t c);
+
+static void draw_orbits(void)                    /* the ping loops, around the ripples: a dot each, going round */
+{
+    int i;
+    for (i = 0; i < EN_NLOOP; i++) {             /* (a loop a step a turn's step; the loops of unequal length) */
+        float a = 6.2831853f * (float)en_loop_pos[i] / (float)EN_LOOP_LEN[i] - 1.5707963f + (float)i * 1.9f,
+              rr = 24.0f + 6.0f * (float)i, g = en_loop_glow[i];
+        int32_t x = CX + (int32_t)(rr * fm_cosf(a) + 0.5f), y = CY + (int32_t)(rr * fm_sinf(a) + 0.5f);
+        if (!en_playing)
+            g = 0.0f;
+        cv_disc(x, y, g > 0.5f ? 3 : 2, mix(mix(K_BELL_T, K_BELL, 5), K_BELL, q16(g * 1.3f)));
+    }
+}
+
+/* the middle as a scope: the output (mono), from a rising zero crossing so it stands, a thick line with a
+ * glow over the two traces before it, fading; its height following the level shown (the gain rises for a
+ * quiet moment) */
+#define SC_X 56
+#define SC_W 128
+#define SC_Y 58
+#define SC_H 26
+static void draw_scope(void)
+{
+    static int16_t s[EN_SCOPE_N];
+    static int8_t was[2][SC_W];                  /* the last two traces, fading (a phosphor's) */
+    static float gain = 4.0f;
+    const uint16_t c = en_frozen ? K_FROST : K_PAD, gl = mix(K_BG, c, 5), ph[2] = {mix(K_BG, c, 6), mix(K_BG, c, 3)};
+    uint32_t w = en_scope_w;
+    int i, t0 = 0, m = 1;
+    int32_t x;
+    for (i = 0; i < EN_SCOPE_N; i++)             /* (the oldest first) */
+        s[i] = en_scope[(w + (uint32_t)i) & (EN_SCOPE_N - 1u)];
+    for (i = 2; i < EN_SCOPE_N - SC_W; i++)
+        if (s[i - 1] < 0 && s[i] >= 0 && s[i + 1] - s[i - 2] > 200) {
+            t0 = i;
+            break;
+        }
+    for (x = 0; x < SC_W; x++)
+        m = s[t0 + x] > m ? s[t0 + x] : -s[t0 + x] > m ? -s[t0 + x] : m;
+    gain += (fm_minf(0.85f * 32000.0f / (float)(m > 600 ? m : 600), 30.0f) - gain) * 0.25f;
+    for (x = 0; x <= SC_W; x += 4)               /* the graticule: the middle dotted, ticks along the edges */
+        cv_rect(SC_X + x, SC_Y, 1, 1, K_LINE);
+    for (x = 0; x <= SC_W; x += SC_W / 8) {
+        cv_rect(SC_X + x, SC_Y - SC_H - 2, 1, 3, K_LINE);
+        cv_rect(SC_X + x, SC_Y + SC_H, 1, 3, K_LINE);
+    }
+    for (i = 1; i >= 0; i--)                     /* the traces before, older dimmer */
+        for (x = 1; x < SC_W; x++)
+            line(SC_X + x - 1, SC_Y - was[i][x - 1], SC_X + x, SC_Y - was[i][x], ph[i]);
+    for (x = 0; x < SC_W; x++) {
+        float v = (float)s[t0 + x] * (1.0f / 32000.0f) * gain;
+        was[1][x] = was[0][x];
+        was[0][x] = (int8_t)(fm_clampf(v, -1.0f, 1.0f) * (float)SC_H + (v < 0.0f ? -0.5f : 0.5f));
+    }
+    for (x = 1; x < SC_W; x++) {                 /* the trace: a glow, then two pixels bright */
+        int32_t y0 = SC_Y - was[0][x - 1], y1 = SC_Y - was[0][x];
+        line(SC_X + x - 1, y0 - 1, SC_X + x, y1 - 1, gl);
+        line(SC_X + x - 1, y0 + 2, SC_X + x, y1 + 2, gl);
+    }
+    for (x = 1; x < SC_W; x++) {
+        int32_t y0 = SC_Y - was[0][x - 1], y1 = SC_Y - was[0][x];
+        line(SC_X + x - 1, y0, SC_X + x, y1, c);
+        line(SC_X + x - 1, y0 + 1, SC_X + x, y1 + 1, c);
+    }
+}
+
+/* the middle as two VU meters, left and right: a needle each, -20 to +3 (0 VU = -24 dBFS, RMS: the pieces sit
+ * near it), the red past 0; a peak light past -5 dBFS */
+static void draw_vu(void)
+{
+    static const int8_t DB[11] = {-20, -10, -7, -5, -3, -2, -1, 0, 1, 2, 3};
+    static const float AMP[11] = {0.1f, 0.3162f, 0.4467f, 0.5623f, 0.7079f, 0.7943f, 0.8913f, 1.0f, 1.1220f, 1.2589f, 1.4125f};
+    const float SPAN = 1.3264f, HALF = 0.6632f;  /* +-38 degrees */
+    int k, i;
+    for (k = 0; k < 2; k++) {
+        const int32_t cx = 88 + 68 * k, py = 92;
+        float f, a, sn, cs;
+        cv_round(cx - 32, 32, 64, 52, 4, K_PANEL);
+        for (i = 0; i <= 38; i++) {              /* the scale's arc, red past 0 */
+            float fa = (float)i / 38.0f;
+            a = fa * SPAN - HALF;
+            sn = fm_sinf(a), cs = fm_cosf(a);
+            cv_rect(cx + (int32_t)(46.0f * sn + 0.5f), py - (int32_t)(46.0f * cs + 0.5f), 1, fa > 0.6855f ? 2 : 1,
+                    fa > 0.6855f ? K_FROST : K_DIM);
+        }
+        for (i = 0; i < 11; i++) {               /* its marks */
+            int32_t r0 = (DB[i] == -20 || DB[i] == 0 || DB[i] == 3) ? 39 : 42;
+            a = (AMP[i] - 0.1f) * (1.0f / 1.3125f) * SPAN - HALF;
+            sn = fm_sinf(a), cs = fm_cosf(a);
+            line(cx + (int32_t)((float)r0 * sn + 0.5f), py - (int32_t)((float)r0 * cs + 0.5f),
+                 cx + (int32_t)(45.0f * sn + 0.5f), py - (int32_t)(45.0f * cs + 0.5f), DB[i] > 0 ? K_FROST : K_DIM);
+        }
+        cv_text(cx - 28, 66, &FONT_XS, k ? "R" : "L", K_DIM);
+        text_c(cx, 50, &FONT_XS, "VU", K_DIM);
+        f = fm_clampf((en_vu[k] * (1.0f / 0.0631f) - 0.1f) * (1.0f / 1.3125f), -0.03f, 1.06f);
+        if (!en_playing && en_vu[k] < 0.001f)
+            f = -0.03f;
+        a = f * SPAN - HALF;
+        sn = fm_sinf(a), cs = fm_cosf(a);
+        {
+            int32_t x0 = cx + (int32_t)(18.0f * sn + 0.5f), y0 = py - (int32_t)(18.0f * cs + 0.5f),
+                    x1 = cx + (int32_t)(47.0f * sn + 0.5f), y1 = py - (int32_t)(47.0f * cs + 0.5f);
+            line(x0, y0, x1, y1, K_TEXT);
+            line(x0 + 1, y0, x1 + 1, y1, K_TEXT);
+        }
+        cv_round(cx - 12, 77, 24, 7, 3, K_LINE);  /* the needle's cap */
+        cv_disc(cx + 25, 39, 2, en_pk[k] > 0.56f ? K_FROST : K_FROST_T);   /* the peak light */
+    }
 }
 
 /* a sound page: its layer's envelope (its level; the chord's filter envelope, the pings' bend, the kick's
@@ -1303,20 +1422,20 @@ static void draw_meters(void)                    /* left: the four layers */
     lv[2] = en_bass_level * (float)proj.par[P_BASS] * 0.01f;
     lv[3] = dm * (float)proj.par[P_DRUMS] * 0.01f;
     for (i = 0; i < 4; i++) {
-        int32_t x = 10 + i * 10, h = (int32_t)(fm_clampf(lv[i], 0.0f, 1.0f) * 52.0f + 0.5f);
-        cv_round(x, 32, 6, 56, 3, T[i]);
+        int32_t x = 8 + i * 11, h = (int32_t)(fm_clampf(lv[i], 0.0f, 1.0f) * 52.0f + 0.5f);
+        cv_round(x, 32, 8, 56, 3, T[i]);
         if (h > 0)
-            cv_round(x, 32 + 56 - h - 2, 6, h + 2, 3, C[i]);
+            cv_round(x, 32 + 56 - h - 2, 8, h + 2, 3, C[i]);
     }
 }
 
 static void draw_duck(void)                      /* right: the kick's ducking, falling from the top */
 {
     int32_t h = (int32_t)(fm_clampf(en_duck * (float)proj.par[P_DUCK] * 0.01f, 0.0f, 1.0f) * 52.0f + 0.5f);
-    cv_round(222, 32, 6, 56, 3, K_PULSE_T);
+    cv_round(220, 32, 8, 56, 3, K_PULSE_T);
     if (h > 0)
-        cv_round(222, 32, 6, h + 2, 3, K_PULSE);
-    cv_text(218 - text_w(&FONT_XS, "DUCK"), 76, &FONT_XS, "DUCK", K_DIM);
+        cv_round(220, 32, 8, h + 2, 3, K_PULSE);
+    cv_text(216 - text_w(&FONT_XS, "DUCK"), 76, &FONT_XS, "DUCK", K_DIM);
 }
 
 static void draw_lanes(void)                     /* below: the bar, a lane a layer */
@@ -1327,7 +1446,7 @@ static void draw_lanes(void)                     /* below: the bar, a lane a lay
     int l, i, k, pos = en_drum_pos[0];
     float ghost[16];
     if (en_playing)                              /* the step playing: a column */
-        cv_round(38 + pos * 11, 94, 9, 49, 2, K_PANEL);
+        cv_round(38 + pos * 11, 94, 10, 50, 2, K_PANEL);
     for (i = 0; i < 16; i++)
         ghost[i] = 0.0f;
     if (!en_ext && proj.par[P_TEMPO] > 0) {      /* the stabs' echoes: where each repeat lands, as faint as it is */
@@ -1349,29 +1468,31 @@ static void draw_lanes(void)                     /* below: the bar, a lane a lay
         uint32_t p = en_lane[l];
         int32_t y = 96 + l * 8;
         int maybe = DR[l] >= 0 && (proj.par[P_DMODE] ? proj.par[P_DCH0 + DR[l]] < 50 : DR[l] == 4);
-        cv_round(30, y + 1, 4, 3, 1, C[l]);
+        cv_round(29, y + 1, 5, 4, 1, C[l]);
         for (i = 0; i < 16; i++) {
             int32_t x = 40 + i * 11;
             if (p >> i & 1u && maybe) {          /* a hit that only sometimes comes: a ring; filled when it does */
                 uint16_t c = en_playing && i == pos && en_drum_glow[DR[l]] > 0.5f ? K_TEXT : mix(T[l], C[l], 10);
                 if (en_playing && i == pos && en_drum_glow[DR[l]] > 0.5f) {
-                    cv_round(x - 1, y - 1, 7, 7, 3, c);
+                    cv_round(x - 1, y - 1, 8, 8, 3, c);
                 } else {
-                    cv_rect(x + 1, y, 3, 1, c), cv_rect(x + 1, y + 4, 3, 1, c);
-                    cv_rect(x, y + 1, 1, 3, c), cv_rect(x + 4, y + 1, 1, 3, c);
+                    cv_rect(x + 1, y, 4, 1, c), cv_rect(x + 1, y + 5, 4, 1, c);
+                    cv_rect(x, y + 1, 1, 4, c), cv_rect(x + 5, y + 1, 1, 4, c);
                 }
             } else if (p >> i & 1u) {
-                cv_round(x, y, 5, 5, 2, en_playing && i == pos ? C[l] : mix(T[l], C[l], 9));
+                cv_round(x, y, 6, 6, 2, en_playing && i == pos ? C[l] : mix(T[l], C[l], 10));
             } else if (l == 0 && ghost[i] > 0.0f) {   /* an echo's repeat: a ring; as the playhead hits it, a flash */
                 if (en_playing && i == pos) {
-                    cv_round(x - 1, y - 1, 7, 7, 3, K_TEXT);
+                    cv_round(x - 1, y - 1, 8, 8, 3, K_TEXT);
                 } else {
-                    uint16_t c = mix(K_BG, K_PAD, 8 + q16(ghost[i]) / 2);
-                    cv_rect(x + 1, y, 3, 1, c), cv_rect(x + 1, y + 4, 3, 1, c);
-                    cv_rect(x, y + 1, 1, 3, c), cv_rect(x + 4, y + 1, 1, 3, c);
+                    uint16_t c = mix(K_BG, K_PAD, 9 + q16(ghost[i]) * 7 / 16);
+                    cv_rect(x + 1, y, 4, 1, c), cv_rect(x + 1, y + 5, 4, 1, c);
+                    cv_rect(x, y + 1, 1, 4, c), cv_rect(x + 5, y + 1, 1, 4, c);
                 }
+            } else if (i & 3) {
+                cv_rect(x + 2, y + 2, 2, 2, K_LINE);
             } else {
-                cv_rect(x + 2, y + 2, 1, 1, (i & 3) ? K_LINE : K_DIM);
+                cv_rect(x + 2, y + 2, 2, 2, K_DIM);
             }
         }
     }
@@ -1387,7 +1508,7 @@ static int help_lines(int b, const char *l[HELP_LINES])
     int n = 0;
 #define L(t) (l[n++] = (t))
     switch (b) {
-    case B_HOME: L("DUB"); L("TEMPO, EVOLVE, MOTION, DRIFT"); L("+ SELECT: TEMPO"); break;
+    case B_HOME: L("DUB"); L("TEMPO, EVOLVE, MOTION, DRIFT"); L("+ SELECT: TEMPO"); L("AGAIN: RIPPLES, SCOPE, VU"); break;
     case B_ENV: L("THE CHORD: LEVEL, STABS,"); L(" DECAY, CUTOFF"); L("ALGORITHM: ITS VOICE"); L("AGAIN: SOUND; AGAIN: FM"); break;
     case B_ARP: L("TEXTURE: PINGS, DENSITY,"); L(" CLOUD, CRACKLE"); L("ALGORITHM: THE PINGS' VOICE"); L("AGAIN: SOUND; AGAIN: FM"); break;
     case B_LFO: L("THE BASS"); L("LEVEL, OCTAVE, GROOVE, FIFTH"); L("ALGORITHM: ITS VOICE"); L("AGAIN: SOUND; AGAIN: FM"); break;
@@ -1588,7 +1709,7 @@ static void draw_main(void)
     h = hash(h, (uint32_t)(ui.view == V_SETUP ? plat_battery() + 1 : 0) | (uint32_t)(en_prog_pos + 1) << 12);
     h = hash(h, (uint32_t)(en_drift * 40.0f) | en_section << 8 | (uint32_t)en_phrase_bar << 12 | (uint32_t)ui.perf << 16);
     for (i = 0; i < EN_NLOOP; i++)
-        h = hash(h, (uint32_t)q16(en_loop_glow[i]));
+        h = hash(h, (uint32_t)q16(en_loop_glow[i]) | (uint32_t)en_loop_pos[i] << 8);
     for (i = 0; i < EN_NDRUM; i++)
         h = hash(h, (uint32_t)q16(en_drum_glow[i]));
     h = hash(h, ui.view);
@@ -1607,10 +1728,21 @@ static void draw_main(void)
     } else if (parent_of(ui.view) >= 0) {        /* a sound page: the layer's envelope instead of the ripples */
         draw_env(parent_of(ui.view));
         moving = 1;
+    } else if (proj.screen % 3u == 1u) {         /* (HOME again: a scope, VU meters, or the ripples) */
+        draw_scope();
+        moving = 1;
+    } else if (proj.screen % 3u == 2u) {
+        draw_vu();
+        moving = 1;
     } else {
         moving = (uint8_t)draw_ripples(now);
+        draw_orbits();
     }
-    if (parent_of(ui.view) < 0) {                /* the chord, in the middle */
+    if (parent_of(ui.view) < 0 && proj.screen % 3u) {   /* the chord: over the scope or the meters, small */
+        char nm[16];
+        chord_now(nm);
+        text_c(CX, 1, &FONT_S, nm, en_frozen ? K_FROST : K_TEXT);
+    } else if (parent_of(ui.view) < 0) {         /* the chord, in the middle */
         char nm[16];
         chord_now(nm);
         if (text_w(&FONT_B, nm) <= 44)

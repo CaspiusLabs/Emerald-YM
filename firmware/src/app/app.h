@@ -24,7 +24,8 @@ typedef struct {
     uint16_t pool;                       /* its scale, relative to the root (bit 0 = the root) */
     uint8_t leds;                        /* lights: 0 off, 1 keys and the buttons' glow, 2 keys only */
     uint8_t piece;                       /* which piece */
-    uint8_t rsv0[2];
+    uint8_t screen;                      /* the Dub page's middle: 0 ripples, 1 scope, 2 VU (HOME again) */
+    uint8_t rsv0;
     slot_t slot[NPIECES];                /* every piece as it was left (Tune and MIDI out are global) */
     uint8_t rsv[16];                     /* room to grow */
 } project_t;

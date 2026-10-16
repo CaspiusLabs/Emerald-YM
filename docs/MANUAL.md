@@ -95,7 +95,7 @@ The drawing at the top shows them all; here they are in more detail.
 | REC | A tap: **dub hold**: the echo stops listening and repeats what it holds, sample for sample, for ever; the reverb stops listening too and rings on; the chord doesn't move. The stabs, pings and drums go on, dry, above it. Tap again to let go. Lit while held. Held: the **effects grid** (below). |
 | EDIT | A tap: the **Chords page** (below): eight slots to write the chords. Held (half a second): the next chord, at the start of the next bar (at once while resting; in dub hold, once you let go). |
 | SEL | **PERFORM**: the knobs become a mixer and the keys stop being the scale and play the layers (see below). Press again to go back; lit while on. |
-| HOME | The Dub page: tempo and the machine's movement. |
+| HOME | The Dub page: tempo and the machine's movement. Again, on the Dub page: the middle of the screen as ripples, a scope or VU meters. |
 | ENV · ARP · LFO · SEQ | The layers' pages: Chord, Texture (the pings and the crackle), Bass, Drums. |
 | FX · GLO | The Space and Setup pages. The lit button shows the page. |
 | SELECT | The previous or next page. Hold HOME and turn it for the tempo, from any page. |
@@ -168,7 +168,7 @@ another button puts the card away; letting go after it does nothing else.
 
 ## 4. The screen
 
-![The main screen on the Dub page: Basic, F Dorian, tempo 122; FULL and the phrase's bars top left, the bar to the next chord top right; the ripples with the chord's name in the middle, the four level bars on the left, the duck meter on the right, the four lanes below; TEMPO 122, EVOLVE 40, MOTION 50, DRIFT 32 bars](img/screen-main.png "The Dub page (HOME)")
+![The main screen on the Dub page: Basic, F Dorian, tempo 122; FULL and the phrase's bars top left, the bar to the next chord top right; the ripples with the chord's name in the middle, the four level bars on the left, the duck meter on the right, the six lanes below; TEMPO 122, EVOLVE 40, MOTION 50, DRIFT 32 bars](img/screen-main.png "The Dub page (HOME)")
 ![A Groove phrase: GROOVE lit top left, fewer stabs in the top lane](img/screen-groove.png "A Groove")
 
 - **Top line:** the piece in a tag, its root and mode. On the right, a beat light (a play triangle
@@ -184,7 +184,18 @@ another button puts the card away; letting go after it does nothing else.
   repeats follow it, a ring each echo time, each as faint as the echo keeps it: a long Feedback
   makes long trains of rings, a short one a single ring. A stab thrown into the echo makes a
   double, brighter ring. In dub hold the rings turn red and keep coming, as the echo repeats what it
-  holds. The chord's name is in the middle (red in dub hold).
+  holds. The chord's name is in the middle (red in dub hold). Around it the four ping loops each
+  circle as a blue dot, one step at a time, and light up as they play. The loops have different
+  lengths, so the dots drift apart and meet again.
+- **HOME again** (on the Dub page) changes what the middle shows: the ripples, a **scope** or two
+  **VU meters**, and then the ripples again. The choice is saved with the pieces (SAVE). With the
+  scope or the meters showing, the chord's name moves to the top.
+  - The **scope** draws the output (left and right mixed) as a thick line. Each trace starts on a
+    rising zero crossing so the picture stands still, and the two traces before it fade behind.
+    Its height follows the level, so a quiet passage still fills it.
+  - The **VU meters** are left and right, scaled from -20 to +3 with the red past 0. 0 VU is
+    -24 dBFS RMS, about where the pieces sit, so a kick pushes the needle into the red. The light
+    at the top right of each meter flashes on peaks above -5 dBFS.
 - **Left:** the four layers' levels as they sound: chord (teal), pings (blue), bass (brass),
   drums (amber).
 - **Right:** DUCK, how far the kick is ducking the rest, falling from the top with each kick.
@@ -198,6 +209,8 @@ another button puts the card away; letting go after it does nothing else.
   a dial (or, for a switch, its positions) and the value. The one you're turning lights up.
 
 ![The Space page with FEEDBACK lit as it turns, set to 63; ECHO 55, ECHO TIME 1/8., REVERB 35](img/screen-turning.png "Turning Feedback on the Space page")
+![The scope: the output as a thick teal line over a dotted centre line, the two traces before it fading behind; Fm7 at the top](img/screen-scope.png "HOME again: the scope")
+![Two VU meters, L and R, their needles near 0, the red past 0; Fm7 at the top](img/screen-vu.png "HOME again: the VU meters")
 ![Dub hold: red rings, the chord's name and "hold" in red](img/screen-hold.png "Dub hold")
 ![PERFORM with THROW held: PERFORM top right, every stab a double ring](img/screen-perform.png "PERFORM, throwing")
 
@@ -374,6 +387,8 @@ voice's length times its own: an Organ or a Pad rings longer than Saws at the sa
 
 ![The Dub page: TEMPO 122, EVOLVE 40, MOTION 50, DRIFT 32 bars](img/screen-main.png "The Dub page")
 
+- **HOME** again, on this page: the middle of the screen as ripples, scope or VU meters (see
+  [The screen](#4-the-screen)).
 - **Tempo:** 90 to 140 (also HOME + SELECT, from any page).
 - **Evolve:** how restless it is: the stab pattern turning and gaining or losing stabs, stabs
   dropping out, the shaker's pattern, the pings' notes, loops sitting out, octave jumps in the
@@ -659,6 +674,9 @@ firmware, you must also share its source code.
 - The granular cloud follows the design of CLOUD in [JIANT](https://github.com/juanjiant-bit/JIANT)
   (GPL-3.0), another FM-1 firmware.
 - The Euclidean rhythms are Godfried Toussaint's reading of Bjorklund's algorithm.
+- The random chords are a weighted random walk over the scale's degrees, adapted from AMB-1's
+  (see [The layers](#5-the-layers)). They are voiced as dub techno's chord-memory stabs
+  (Basic Channel, Maurizio): one shape, moved whole to each new root.
 - The platform (hardware layer, USB, update loader, installer and storage) is from
   **Felucca** by Leo Kuroshita, Hügelton Instruments, by way of
   [X0X](https://github.com/charlesvestal/fm1-x0x), FoMni-1 and AMB-1.

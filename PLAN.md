@@ -295,6 +295,52 @@ hold). Sixteen in four groups of four, the first of each group lit:
 - [ ] The phone/desktop web app (`web/app`) is still AMB-1's: not on the site; to port later
 - [ ] Announce (later): Elektronauts, MatrixSynth, the FM-1 groups
 
+## Done: a bolder screen, and the middle three ways (2026-10-16, after 1.0)
+
+The user found the screen dim and its lines and features too small. They also felt the chord and
+the ripples took too much of the middle.
+- [x] Brighter greys and tints, ripples two pixels wide (a throw three), lane dots 6 px with
+      rings to match, level and duck bars 8 px
+- [x] The ping loops orbit the ripples: a dot each, a step at a time, lit as they play
+- [x] HOME again on the Dub page: ripples, scope, VU meters (`proj.screen`, saved; said "SCREEN ...").
+      The engine exports `en_scope` (256 samples, each the mean of 8), `en_vu` (smoothed RMS) and
+      `en_pk` (held peaks). The scope triggers on a rising zero crossing, shows a phosphor of two
+      traces and sets its own gain. The VUs put 0 VU at -24 dBFS RMS, with a peak light past -5 dBFS.
+- [x] Test: `tests/scenarios/screen.amb`; screenshots from `tests/listen/shots.amb`
+
+## Study: a sixth lane, one sample a piece (not started)
+
+The user's idea: each piece has one sample of 1-4 seconds. It is thrown very sparsely by the
+arrangement, or played only by hand (from PERFORM, a key). For now this is a study of where it
+would fit.
+
+- **RAM can't hold it.** RAM is 74.7 of 96 KB used and the pool 332 of 344 KB, which leaves about
+  20 + 12 KB. One second of 16-bit audio at 44.1 kHz is 88 KB. The sample has to play straight
+  from the SPI flash, which is memory-mapped (XIP at 0x02000000). Reading 2 bytes per output
+  sample is little bandwidth; the cost is cache misses, to measure on the device.
+- **Flash** is 1 MB. The app region (`app.ld` XIP) runs to about 0x8E000, and the image uses about
+  170 KB of it. The calibration sits at 0xDC000, the update loader's staging area at
+  0xE0000-0xFBFFF and the project at 0xFC000. That leaves roughly 0x2C000-0xDBFFF, about 700 KB.
+  Some of it is the app's room to grow, so take about 300 KB for samples: from 0x90000 up to the
+  calibration. All of this must be checked against the loader (what an update erases, and where
+  it stages) before anything is written there.
+- **Sizes, for 4 s mono:**
+  - 16-bit at 22.05 kHz: 176 KB. Too big for eight.
+  - 8-bit mu-law at 16 kHz: 64 KB.
+  - 4-bit IMA ADPCM at 22.05 kHz: 44 KB. Eight pieces fit in about 350 KB; at 3 s each, 265 KB.
+  - So: one shared bank of about 300 KB, with each piece pointing at a sample, or eight slots of
+    about 36 KB (about 3 s of ADPCM each).
+- **The engine side is small.** A voice with a position, a pitch (the key, or the root), a
+  gain and a band-pass costs a few hundred bytes of RAM. ADPCM decoding is a few operations per
+  sample, so about 1% CPU. The sample would go into the echo like a throw.
+- **Getting a sample in:** built into the image (a fixed bank, the simplest), or uploaded from the
+  web page over USB MIDI SysEx. The loader-style A/B scheme isn't needed: a torn sample only
+  sounds wrong, but it needs a CRC check before it plays.
+- **First steps:**
+  - read the loader's flash use;
+  - time XIP reads in the audio callback;
+  - try one built-in ADPCM sample on a key in PERFORM.
+
 ## Ideas for later
 
 - **Korg NTS-3 kaoss pad integration** (a future project) (the user's own setup; a Kaoss pad is great for dub techno).

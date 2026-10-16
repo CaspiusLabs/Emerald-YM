@@ -1,13 +1,43 @@
-# the manual's screenshots of the main screen
+# the manual's screenshots (docs/img/, but the launch screen): build/host/amb_host tests/listen/shots.amb build/shots
 wait 9000
 shot screen-main.png
-turn K3 50
-wait 70000
-shot screen-break-a.png
-wait 16000
-shot screen-break-b.png
-wait 16000
-shot screen-break-c.png
+press SAVE
+wait 1500
+shot screen-help.png
+release SAVE
+wait 300
+tap HOME
+wait 2000
+shot screen-scope.png
+tap HOME
+wait 2000
+shot screen-vu.png
+tap HOME
+wait 300
+tap ENV
+wait 1500
+shot screen-chord.png
+tap ARP
+wait 1500
+shot screen-texture.png
+tap LFO
+wait 1500
+shot screen-bass.png
+tap SEQ
+wait 1500
+shot screen-drums.png
+tap GLO
+wait 1500
+shot screen-setup.png
+tap FX
+wait 1500
+shot screen-space.png
+turn K3 3
+wait 300
+shot screen-turning.png
+turn K3 -3
+tap HOME
+wait 1500
 tap REC
 wait 2500
 shot screen-hold.png
@@ -17,3 +47,7 @@ key w5 down
 wait 2000
 shot screen-perform.png
 key w5 up
+tap SEL
+turn K3 50
+wait 52000
+shot screen-groove.png
