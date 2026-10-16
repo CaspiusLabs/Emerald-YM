@@ -176,8 +176,9 @@ Each layer gets a second page, its **sound page**, to shape its voice beyond the
 - [x] **CPU on the device** (2026-10-16, DUB-1 installed on the user's FM-1, over the stock V15 put back
       first): Night Drive shows 20..50% (smoothed). The host's 0.42% of real time is ~80x faster than the
       device. Setup now shows the peak too (now/peak over 2 s) and any dropouts (!n)
-- [ ] The peak and dropouts with the heaviest settings (Keys, Cloud 100, Density 100, a 4-op algorithm
-      on the pings), before the effects grid adds its load
+- [x] Readings (2026-10-16, now/peak, no dropouts anywhere; "sounds good"): Basic 20/50, Night Drive
+      30/67, Night Drive stressed (Cloud 100, Density 100, the pings on algorithm 1) 50/72. About a
+      quarter of the time is left at the worst moment: what's added must be light
 - [x] Found on the way: the command queue (64) dropped commands once a piece had 62 parameters (PLAY
       among them): now 256, with a compile-time check and a test
 
@@ -221,7 +222,7 @@ hold). Sixteen in four groups of four, the first of each group lit:
 
 | Group | 1 | 2 | 3 | 4 |
 |---|---|---|---|---|
-| Echo | Throw | Time x2 / /2 | Tape stop (the echo slowing, pitch diving) | Reverse |
+| Echo | Throw | Time x2 / /2 | Tape stop (the echo slowing, pitch diving) | Swell (all in, feeding back; was Reverse: the tape can't run backwards without much more memory) |
 | Filter | Low-pass sweep | High-pass ("radio") | Wah (resonant sweep) | Telephone (narrow band, lo-fi) |
 | Space | Reverb throw | Spring crash | Cloud freeze | Wash (echo and reverb flooding) |
 | Rhythm / FX | Stutter (1/8 or 1/16 repeat) | Gate (the chord in 16ths) | Siren | Noise riser |
