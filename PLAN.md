@@ -137,28 +137,45 @@ For DUB-1:
 
 ## Ideas for later
 
-- **Korg Kaoss Pad integration** (the user's own setup; the Kaoss Pad is great for dub techno).
-  Send one voice to the Kaoss Pad and, ideally, bring it back and mix it with the rest.
-  - **What the FM-1 has:** a stereo audio out (I2S to the codec; the firmware drives it as an output
-    only), MIDI in over USB and the TRS jack, MIDI out over USB only, and USB audio *to* the
-    computer (UAC1, `FELUCCA_UAC`). No audio input is known.
-  - **Sending one voice out (doable): a "send" mode.** A setting (Off / Chord / Pings / Chord + Pings
-    / Drums) puts that layer dry (after its filter, before DUB-1's echo, so the Kaoss Pad does the
-    dub effects) alone on the left channel, and the rest, with DUB-1's own echo and reverb, in mono
-    on the right. Cable: a TRS Y-splitter; left into the Kaoss Pad, its output and the FM-1's right
-    into a mixer. The cost: the mix happens outside, and DUB-1 loses its stereo while sending.
-  - **Getting it back into the FM-1 (hard):** with no audio input, only through something in between.
-    - Research: does the board's codec have an ADC, and is there an input (a mic pad, a test
-      point)? If so, a line in would be a hardware mod.
-    - Or the FM-1 as a two-way USB audio interface (UAC out *from* a computer or phone, mixed into
-      the render), with the Kaoss Pad on that machine's interface. This makes it no longer standalone.
-  - **Sync and control over MIDI**, depending on the model:
-    - A KP3 / KP3+ takes MIDI clock and CCs (the X/Y pad, touch, effect program) on 5-pin DIN.
-      DUB-1 sends clock over USB, so it needs a USB-MIDI host to DIN. DUB-1 could then play the pad
-      itself: an X/Y sweep through a Break, the effect changing on a phrase.
-    - A mini Kaoss Pad 2S has no MIDI: its BPM detection follows the audio, so a little of the kick
-      on the send channel helps it lock.
-  - Need to know first: **which Kaoss Pad model**, and how it's cabled (mixer or not).
+- **Korg NTS-3 kaoss pad integration** (the user's own setup; a Kaoss pad is great for dub techno).
+  Send one voice to the NTS-3 and, ideally, bring it back and mix it with the rest.
+  - **The NTS-3** (Korg Nu:Tekt kaoss pad kit):
+    - stereo AUDIO IN and OUT (3.5 mm), SYNC IN and OUT (3.5 mm TRS), USB-C (power; MIDI over USB
+      not confirmed);
+    - up to four effects at once, 200 programs;
+    - custom effects through Korg's logue SDK (`platform/nts-3_kaoss/`, SDK v2, Cortex-M7).
+    - One retailer says an internal switch makes the sync jacks MIDI in and out (to check).
+  - **The FM-1:** a stereo audio out, MIDI in over USB and the TRS jack, MIDI out over USB only, USB
+    audio *to* a computer. No audio input is known.
+  - **Sending one voice (doable): a "send" mode in DUB-1.** A setting (Off / Chord / Pings /
+    Chord + Pings / Drums) puts that layer dry (after its filter, before DUB-1's echo) alone on the
+    left channel, and the rest, with DUB-1's own echo and reverb, in mono on the right.
+  - **The return, two ways:**
+    1. *A mixer.* A TRS Y-splitter: left into the NTS-3; its output and the FM-1's right into a mixer.
+       Works with the NTS-3's own effects; the mix happens outside.
+    2. *The NTS-3 as the mixer (the elegant one).* The FM-1's whole output into the NTS-3, with a
+       custom logue SDK effect that treats the left channel as the send (into the effect) and passes
+       the right dry, summing both to stereo. No mixer, one cable each way, and the NTS-3's pad
+       plays the send voice only.
+       - To check: whether a custom unit can sit before the built-in effects in the chain (so
+         Korg's own effects process only the send), or whether the custom unit has to be the dub
+         effect itself, e.g. a tape echo with a band-pass in the feedback, written for the NTS-3.
+    3. *Back into the FM-1:* only with an input it doesn't have: research whether the board's codec
+       has an ADC and an input point (a hardware mod), or USB audio both ways through a computer
+       (no longer standalone).
+  - **Sync:** the NTS-3 has SYNC IN (Korg's analog sync pulses) and Tap BPM. The FM-1 has no sync
+    out and sends MIDI clock over USB only. Ways to try:
+    - MIDI clock over USB to the NTS-3, if its USB-C carries MIDI;
+    - through a USB-MIDI host into the sync jack in its MIDI mode, if that switch exists;
+    - a sync pulse on the audio (a click on the send channel's first sixteenth, which a custom
+      unit could read as a clock);
+    - else tap.
+  - **Control from DUB-1:** if MIDI reaches the NTS-3, its X/Y and depth by CC, so the arrangement
+    plays the pad: a sweep through a Break, the effect changing on a phrase.
+  - First steps:
+    - read `platform/nts-3_kaoss/` in the logue SDK (unit types, the chain, the I/O it gets);
+    - check what the NTS-3's USB-C carries;
+    - try the split mode with a Y-cable and the NTS-3's own effects.
 - A rim or clap on 2 and 4 (a fourth drum voice; the screen has room for three rings now)
 - A spring reverb next to the plate
 - MIDI CC out for the filter and the echo send, to drive other gear
