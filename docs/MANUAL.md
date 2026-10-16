@@ -420,7 +420,9 @@ How long the plate rings comes with the piece.
 - **Lights:** On: the keys light the scale, and the unlit buttons glow dimly so they can be read
   on the black FM-1. Keys: the key lights only. Off.
 
-The top right of this page shows how much of the FM-1's time the sound takes (CPU).
+The top right of this page shows how much of the FM-1's time the sound takes: **CPU 35/61** is
+35% now (smoothed) and 61% at the heaviest moment of the last two seconds. Under 100% the sound
+never breaks up; if it ever did, a **!** and a count of the dropouts would follow.
 
 ---
 

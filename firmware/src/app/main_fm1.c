@@ -44,6 +44,17 @@ static void render_block(int32_t *o)                /* ALNK0: one half, measured
     us = (fm1_ticks() - t0) / FM1_TICKS_PER_US;
     en_dbg.cpu_q8 = (en_dbg.cpu_q8 * 15u + (us * 256u) / budget) / 16u;
     audio_cpu_pct = (en_dbg.cpu_q8 * 100u) >> 8;
+    {   /* the peak: the heaviest block of each ~2 s (344 halves) */
+        static uint32_t win_max, win_n;
+        uint32_t pct = us * 100u / budget;
+        if (pct > win_max)
+            win_max = pct;
+        if (++win_n >= 344u) {
+            audio_cpu_peak = win_max;
+            win_max = 0;
+            win_n = 0;
+        }
+    }
     en_dbg.halves++;
     en_dbg.last_us = us;
     if (us > en_dbg.max_us)

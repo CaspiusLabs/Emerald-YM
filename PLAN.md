@@ -173,8 +173,11 @@ Each layer gets a second page, its **sound page**, to shape its voice beyond the
       (Round and Pulse gone), Growl
 - [x] The FM page (Algo, Ratio of ops 3 and 4, Feedback, Mod dec), a third press on an FM voice; the
       algorithm drawn; project format 4; `tests/scenarios/fm.amb`
-- [ ] **CPU on the device**: on the host the heaviest piece (Night Drive: Keys, Drop, Growl) is now
-      0.42% of real time against AMB-1's 0.29%; needs the Setup page's CPU on the FM-1
+- [x] **CPU on the device** (2026-10-16, DUB-1 installed on the user's FM-1, over the stock V15 put back
+      first): Night Drive shows 20..50% (smoothed). The host's 0.42% of real time is ~80x faster than the
+      device. Setup now shows the peak too (now/peak over 2 s) and any dropouts (!n)
+- [ ] The peak and dropouts with the heaviest settings (Keys, Cloud 100, Density 100, a 4-op algorithm
+      on the pings), before the effects grid adds its load
 - [x] Found on the way: the command queue (64) dropped commands once a piece had 62 parameters (PLAY
       among them): now 256, with a compile-time check and a test
 

@@ -87,6 +87,7 @@ void en_midi_out(uint32_t st, uint32_t d1, uint32_t d2) { plat_midi_out(st >> 4 
 int plat_store_load(uint32_t obj, void *dst, uint32_t max) { return flash_ok ? st_load(obj, dst, max) : -1; }
 int plat_store_save(uint32_t obj, const void *src, uint32_t len) { return flash_ok ? st_save(obj, src, len) : -9; }
 
-static volatile uint32_t audio_cpu_pct, audio_xruns;
+static volatile uint32_t audio_cpu_pct, audio_xruns, audio_cpu_peak;
 uint32_t plat_cpu_pct(void) { return audio_cpu_pct; }
+uint32_t plat_cpu_peak(void) { return audio_cpu_peak; }
 uint32_t plat_xruns(void) { return audio_xruns; }

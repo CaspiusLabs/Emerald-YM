@@ -47,3 +47,4 @@ enum { OBJ_PROJ, OBJ_PANEL, OBJ_NOBJ };
 /* audio load in % of the render budget, and xruns since boot (device: from the ISR) */
 uint32_t plat_cpu_pct(void);
 uint32_t plat_xruns(void);
+uint32_t plat_cpu_peak(void);            /* the heaviest block of the last ~2 s, % of its time */

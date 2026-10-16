@@ -774,7 +774,8 @@ static void draw_header(void)
     int msg = plat_ms() < ui.msg_until;
     uint32_t h = hash(hash(hash(2166136261u, proj.piece | (uint32_t)proj.par[P_ROOT] << 8 | (uint32_t)proj.pool << 12),
                            en_playing | ui.dirty << 4 | (uint32_t)msg << 5 | (uint32_t)en_ext << 6 | (uint32_t)proj.par[P_MODE] << 8),
-                      (uint32_t)proj.par[P_TEMPO] | (ui.view == V_SETUP ? plat_cpu_pct() << 8 : 0u));
+                      (uint32_t)proj.par[P_TEMPO] | (ui.view == V_SETUP ? plat_cpu_pct() << 8 | plat_cpu_peak() << 15 |
+                                                                           (plat_xruns() & 0x1FFu) << 22 : 0u));
     if (msg)
         h = hash(hash(h, (uint32_t)ui.msg[0][0] << 8 | ui.msg[0][1]), ui.msg_until);
     if (en_playing)
@@ -800,9 +801,20 @@ static void draw_header(void)
         } else {
             itoa_u((uint32_t)proj.par[P_TEMPO], t);
         }
-        if (ui.view == V_SETUP) {                 /* Setup: the audio load too */
-            char c[12] = "CPU ";
+        if (ui.view == V_SETUP) {                 /* Setup: the audio load (now/peak), and any dropouts ("!n") */
+            char c[24] = "CPU ";
+            uint32_t k;
             itoa_u(plat_cpu_pct(), c + 4);
+            for (k = 0; c[k]; k++)
+                ;
+            c[k++] = '/';
+            itoa_u(plat_cpu_peak(), c + k);
+            if (plat_xruns()) {
+                for (; c[k]; k++)
+                    ;
+                c[k++] = ' ', c[k++] = '!';
+                itoa_u(plat_xruns() > 999u ? 999u : plat_xruns(), c + k);
+            }
             x -= text_w(&FONT_XS, c);
             cv_text(x, 8, &FONT_XS, c, K_DIM);
             x -= 10;
@@ -821,8 +833,10 @@ static void draw_header(void)
         w = text_w(&FONT_B, piece_name(proj.piece)) + 12;   /* the piece, in a coral tag */
         cv_round(4, 4, w, 20, 6, K_TEXT);
         cv_text(10, 6, &FONT_B, piece_name(proj.piece), K_BG);
-        w = cv_text(w + 10, 8, &FONT_XS, EN_NOTE_NAME[proj.par[P_ROOT]], K_TEXT);
-        cv_text(w + 3, 8, &FONT_XS, mode_name(), K_DIM);
+        if (ui.view != V_SETUP) {                /* (Setup: the room is the CPU's; the root is its first knob) */
+            w = cv_text(w + 10, 8, &FONT_XS, EN_NOTE_NAME[proj.par[P_ROOT]], K_TEXT);
+            cv_text(w + 3, 8, &FONT_XS, mode_name(), K_DIM);
+        }
     }
     cv_blit(0, 0);
 }
@@ -1423,7 +1437,14 @@ static void sp_page(int all)
     if (ui.view == V_SETUP) {
         sp_cat(". CPU ");
         sp_int(plat_cpu_pct());
+        sp_cat("%, peak ");
+        sp_int(plat_cpu_peak());
         sp_cat("%");
+        if (plat_xruns()) {
+            sp_cat(", ");
+            sp_int(plat_xruns());
+            sp_cat(" dropouts");
+        }
     }
 }
 
