@@ -113,9 +113,11 @@ Mix page, back to the page you started from). The white keys from the lowest up:
 |---|---|---|---|---|---|---|---|---|---|---|
 | | Chord | Pings | Bass | Kick | Hats | Throw | Open | Shut | Kick drop | Echo |
 
-- **1–5, mutes:** a press mutes the layer, another brings it back; the key is lit while the
-  layer plays. The mutes stay when you leave PERFORM. The music goes on underneath: a muted layer
-  comes back where it would have been.
+- **1–3, the chord, pings and bass:** a press turns the layer's level (its Mix knob) to 0, the
+  next to 100; the knob shows it. The key is lit while the level is up.
+- **4–5, the kick and the hats** (one Drums knob for both): a press mutes, another brings back;
+  lit while playing. The mutes stay when you leave PERFORM. The music goes on underneath: a muted
+  layer comes back where it would have been.
 - **6–10, moves, held:** as long as the key is down, every stab is thrown into the echo (Throw);
   the filter, and the echo's band-pass with it, pushed open (Open) or shut (Shut); the kick dropped
   (Kick drop); the echo pushed: everything into it, feeding back more (Echo). Letting go eases back.

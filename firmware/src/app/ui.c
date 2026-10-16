@@ -312,7 +312,21 @@ static void perf_key(uint32_t key, int down)
         ;
     if (i >= 10)
         return;
-    if (i < 5) {                                 /* a mute: on the press */
+    if (i < 3) {                                 /* the chord, pings, bass: their Mix knob to 0 or 100 */
+        static const uint8_t LEVEL[3] = {P_CHORD, P_PINGS, P_BASS};
+        int v;
+        if (!down)
+            return;
+        v = proj.par[LEVEL[i]] > 0 ? 0 : 100;
+        knob_set(LEVEL[i], v);
+        if (ui.view == V_MIX) {                  /* the knob lit, as if turned */
+            ui.touched = (int8_t)i;
+            ui.touch_until = plat_ms() + 1200u;
+        }
+        say(PERF_NAME[i], v ? "ON" : "OFF");
+        return;
+    }
+    if (i < 5) {                                 /* the kick, the hats (one Drums knob for both): a mute */
         if (!down)
             return;
         ui.mutes ^= 1u << i;
@@ -1072,7 +1086,11 @@ static void leds(void)
         b |= 1u << B_REC;
     if (ui.perf) {                               /* PERFORM: the layers playing, the moves held */
         b |= 1u << B_SEL;
-        for (i = 0; i < 5; i++)
+        static const uint8_t LEVEL[3] = {P_CHORD, P_PINGS, P_BASS};
+        for (i = 0; i < 3; i++)
+            if (proj.par[LEVEL[i]] > 0)
+                k |= 1u << PERF_KEY[i];
+        for (i = 3; i < 5; i++)
             if (!(ui.mutes >> i & 1u))
                 k |= 1u << PERF_KEY[i];
         for (i = 0; i < 5; i++)

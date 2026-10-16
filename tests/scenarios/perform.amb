@@ -43,7 +43,20 @@ wait 200
 expect view 7
 spin K2 -100
 wait 200
-expect par1 == 0
+expect par1 0
 tap SEL
 wait 200
 expect view 0
+# keys 1-3 set their Mix knob: off 0, on 100
+tap SEL
+wait 200
+# (the mixer above left Pings at 0)
+tapkey w1
+wait 200
+expect par1 100
+said PINGS ON
+tapkey w1
+wait 200
+expect par1 0
+said PINGS OFF
+tap SEL
