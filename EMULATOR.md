@@ -133,18 +133,26 @@ The same code compiled to WebAssembly, with the FM-1's panel in a web page: clic
 turn the knobs, hear it live. It needs Emscripten. Homebrew's would likely hit the same Tier 3
 problem, so install emsdk:
 
+emsdk needs Python 3.10 or newer; this Mac's `python3` is 3.6. A private Python 3.12 comes from
+`uv` (a single binary in `~/.local/bin`, from github.com/astral-sh/uv releases), and `EMSDK_PYTHON`
+tells emsdk to use it:
+
 ```
+~/.local/bin/uv python install 3.12
+export EMSDK_PYTHON=$(~/.local/bin/uv python find 3.12)
 git clone https://github.com/emscripten-core/emsdk ~/emsdk
 cd ~/emsdk && ./emsdk install latest && ./emsdk activate latest
 ```
 
-Then, in each new terminal:
+(Installed this way on 2026-10-16: emcc 6.0.12, its own node 24.) Then, in each new terminal:
 
 ```
+export EMSDK_PYTHON=$(~/.local/bin/uv python find 3.12)
 source ~/emsdk/emsdk_env.sh
 cd ~/Documents/GitHub/fm1-amb
 PATH=$PWD/.venv/bin:$PATH web/emu/build.sh        # -> build/emu/
-python3 -m http.server -d build/emu 8000         # open http://localhost:8000
+node tests/host/emu_test.mjs build/emu/amb.wasm   # its test
+.venv/bin/python3 -m http.server -d build/emu 8000 --bind 127.0.0.1   # open http://localhost:8000
 ```
 
 `web/emu/build.sh` needs `build/gen/felucca_font.h` from the one-time setup above. It looks for a

@@ -1,6 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-3.0-only
-# AMB-1 in the browser: the host simulator compiled to WebAssembly (Emscripten), plus its page.
+# DUB-1 in the browser: the host simulator compiled to WebAssembly (Emscripten), plus its page.
 #   [EN_VERSION=0.1] web/emu/build.sh  ->  build/emu/{index.html, worklet.js, amb.wasm, reader/}
 # reader/: the screen reader's words and voice (words.js, tts.js, tts_worker.js, espeak/), copied from
 # fm1-reader (github.com/charlesvestal/fm1-reader, GPL-3.0; a sibling checkout, or FM1_READER=its web/ folder).

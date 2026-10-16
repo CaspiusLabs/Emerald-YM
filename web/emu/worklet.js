@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// AMB-1 in an AudioWorklet: amb.wasm is the whole FM-1 app (web/emu/amb_web.c). Each render
+// DUB-1 in an AudioWorklet: amb.wasm is the whole FM-1 app (web/emu/amb_web.c). Each render
 // quantum asks it for 128 frames, which runs the device's clock forward; between quanta the page's
 // input goes in and, about 30 times a second, the screen, the lights, any saved objects and what the
 // screen reader was told (fm1-reader's SysEx frames, from announce.c) go out. While the page's reader is

@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Emulator · AMB-1</title>
-<meta name="description" content="AMB-1, a generative ambient firmware for the M-VAVE FM-1, in your browser: the same code the FM-1 runs.">
+<title>Emulator · DUB-1</title>
+<meta name="description" content="DUB-1, a generative dub techno firmware for the M-VAVE FM-1, in your browser: the same code the FM-1 runs.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600&family=Barlow+Semi+Condensed:wght@600;700&display=swap">
 <style>
-/* the colours of Ambient 1: Music for Airports (1978), as the site; the FM-1 itself stays black.
-   --river-2 and --muted are a shade darker than the cover's, so text in them reads (4.5:1 on the paper) */
-:root { --ground: #fdf9e4; --ink: #1d1b02; --muted: #49451f; --rule: #1d1b02; --accent: #1d1b02; --river: #85c3c1; --river-2: #3b7470;
-        --green-1: #d0dc92; --card: #f6eeb5; --focus: #1d1b02; color-scheme: light; }
+/* the screen's colours: a dark room, a cold teal (ui.c's K_*); the FM-1 itself stays as it is.
+   --muted and --river-2 read at 4.5:1 or more on the ground and on the cards */
+:root { --ground: #10141a; --ink: #dee4e8; --muted: #9aa8b6; --rule: #2e3846; --accent: #5cc4cc; --river: #2b6e72; --river-2: #5cc4cc;
+        --green-1: #1e4648; --card: #1e252f; --focus: #5cc4cc; color-scheme: dark; }
 body { background: var(--ground); color: var(--ink); margin: 0; padding-inline: 16px; padding-block: 28px 48px;
        font: 400 16px/1.55 "Helvetica Neue", Helvetica, Arial, sans-serif; }
 main { max-width: 1040px; margin: 0 auto; }
@@ -89,9 +89,8 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
 <body>
 <main>
 <header>
-  <h1><a href="../" style="color:inherit;text-decoration:none">AMB-1</a></h1>
-  <p>an ambient garden for the FM-1, in the browser: the same code the FM-1 runs</p>
-  <nav aria-label="AMB-1"><a href="../emu/" aria-current="page">Emulator</a><a href="../install/">Install</a><a href="../manual/">Manual</a><a href="https://github.com/charlesvestal/fm1-amb">Source</a></nav>
+  <h1>DUB-1</h1>
+  <p>dub techno for the FM-1, in the browser: the same code the FM-1 runs</p>
 </header>
 
 <h2 class="sr" id="h-device">The FM-1</h2>
@@ -127,7 +126,7 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
     <button id="where" type="button" disabled>Read the whole screen</button>
     <button id="again" type="button" disabled>Say it again</button>
   </div>
-  <p class="note">What the screen shows, in words: the page and its knobs, a value as you turn it, the piece, the chord as the garden moves on,
+  <p class="note">What the screen shows, in words: the page and its knobs, a value as you turn it, the piece, the chord as it moves,
     every message. The same words as the <a href="https://charlesvestal.github.io/fm1-reader/">FM-1 Screen Reader</a> says for the FM-1 itself.
     This page's voice is <a href="https://github.com/espeak-ng/espeak-ng">eSpeak NG</a> (GPL-3.0), running in the page.</p>
 </section>
@@ -141,39 +140,39 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
     <p>One page a layer, each on its own button; a layer's level is always KNOB 1. <b>SELECT</b> steps through the pages. Each piece remembers its own settings.</p>
     <div class="pages">
       <div>
-        <h3>Garden <span>HOME</span></h3>
+        <h3>Dub <span>HOME</span></h3>
         <dl>
-          <dt>Tempo</dt><dd>30 to 120 (also HOME + SELECT, from any page).</dd><dt>Evolve</dt><dd>How restless the garden is: at 0 the loops repeat exactly; turned up, bell notes change, the pulse patterns turn, and the layers take rests.</dd><dt>Motion</dt><dd>How far the slow tide swings between sparse and full, and how much pitch, pan and the echo wander.</dd><dt>Drift</dt><dd>How long a chord lasts, 20 s to 5 min. The thin bar top right fills on the way to the next. EDIT moves on now.</dd>
+          <dt>Tempo</dt><dd>90 to 140 (also HOME + SELECT, from any page).</dd><dt>Evolve</dt><dd>How restless it is: the stab and shaker patterns turn, ping notes change, stabs drop out or are thrown into the echo.</dd><dt>Motion</dt><dd>How often the eight-bar phrases leave Full for a Break, a Groove or Thin, how far the filter sweeps, how much the echo wanders.</dd><dt>Drift</dt><dd>How long a chord lasts, 2 to 64 bars, or Hold. The thin bar top right fills on the way to the next. EDIT moves on at the next bar.</dd>
         </dl>
       </div>
       <div>
-        <h3>Pad <span>ENV</span></h3>
+        <h3>Chord <span>ENV</span></h3>
         <dl>
-          <dt>Level, Swell</dt><dd>How loud; how long the voices breathe.</dd><dt>Bright</dt><dd>Opens the filter (and moves the Voices' vowel).</dd><dt>Colour</dt><dd>Rhodes or Voices.</dd>
+          <dt>Level, Stabs</dt><dd>How loud; one to six stabs a bar, off the beat.</dd><dt>Decay, Cutoff</dt><dd>How long a stab rings (60 ms to 1.5 s); where the resonant low-pass sits.</dd>
         </dl>
       </div>
       <div>
-        <h3>Bells <span>ARP</span></h3>
+        <h3>Texture <span>ARP</span></h3>
         <dl>
-          <dt>Level, Density</dt><dd>How loud; how many notes each of the four loops (13, 17, 23, 29 beats) holds.</dd><dt>Tone, Octave</dt><dd>Round to metallic; two octaves down to two up.</dd>
+          <dt>Pings, Density</dt><dd>The pings' level; how many notes each of the four loops (13, 17, 23, 29 eighths) holds.</dd><dt>Cloud, Crackle</dt><dd>How much of the reverb goes through the granular cloud; the vinyl.</dd>
         </dl>
       </div>
       <div>
         <h3>Bass <span>LFO</span></h3>
         <dl>
-          <dt>Level, Octave</dt><dd>How loud; an octave down or up.</dd><dt>Glide, Fifth</dt><dd>How slowly it slides to its note; how often it leans on the fifth.</dd>
+          <dt>Level, Octave</dt><dd>How loud; an octave down or up.</dd><dt>Groove, Fifth</dt><dd>Drone, Offbeat, Dotted, Roller or Sync; how often it leans on the fifth.</dd>
         </dl>
       </div>
       <div>
-        <h3>Pulse <span>SEQ</span></h3>
+        <h3>Drums <span>SEQ</span></h3>
         <dl>
-          <dt>Level, Hits</dt><dd>How loud; how many beats the three rings play (16, 12 and 7 steps).</dd><dt>Swing, Hats</dt><dd>The off sixteenths late (50% to 75%); the hats dark to bright.</dd>
+          <dt>Level, Hits</dt><dd>How loud; how many shaker sixteenths, and the open hat off the beat.</dd><dt>Swing, Duck</dt><dd>The off sixteenths late (50% to 70%); how far the kick ducks the rest.</dd>
         </dl>
       </div>
       <div>
         <h3>Space <span>FX</span></h3>
         <dl>
-          <dt>Echo, Echo time</dt><dd>The tape echo's send; its loop, a dotted quarter to 4 bars.</dd><dt>Reverb, Size</dt><dd>The plate's send; how long it rings, and how often the echo returns.</dd>
+          <dt>Echo, Echo time</dt><dd>The tape echo's send; its time, an eighth to a bar (dotted eighth the classic).</dd><dt>Feedback, Reverb</dt><dd>How long the echo repeats (past 100% it swells on itself); the plate's send.</dd>
         </dl>
       </div>
       <div>
@@ -188,9 +187,9 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
     <h2>Buttons</h2>
     <ul>
       <li><b>Keys</b> are the scale: each one adds or removes its note. The root stays. A lit key (a pressed one, to a screen reader) is in the scale.</li>
-      <li><b>PLAY</b> grows / rests. <b>REC</b> freezes. <b>EDIT</b> the next chord.</li>
+      <li><b>PLAY</b> plays / rests. <b>REC</b> dub hold: the echo and the cloud repeat what they hold. <b>EDIT</b> the next chord, on the next bar.</li>
       <li><b>SELECT</b> the previous or next page; with <b>HOME</b> held, the tempo. <b>ALGORITHM</b> the mode, <b>PRESETS</b> the piece (each remembers how you left it).</li>
-      <li><b>OCT−</b> / <b>OCT+</b> move the bells an octave. <b>SAVE</b> saves; hold it to reset the piece.</li>
+      <li><b>OCT−</b> / <b>OCT+</b> move the pings an octave. <b>SAVE</b> saves; hold it to reset the piece.</li>
       <li>Hold a button for a second and a card says what it does (with a mouse: <kbd>Shift</kbd>-click to hold it, click again to let go).</li>
     </ul>
   </div>
@@ -212,14 +211,14 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
     <p>Shortcuts, while the FM-1 has the focus (switch them off above if they get in the way of your screen reader's own):</p>
     <ul>
       <li>White keys 1–8: <kbd>Q</kbd>–<kbd>I</kbd>, 9–16: <kbd>A</kbd>–<kbd>K</kbd>. Black keys 1–11: <kbd>1</kbd>–<kbd>0</kbd>, <kbd>-</kbd>.</li>
-      <li><kbd>Space</kbd> PLAY, <kbd>Enter</kbd> REC (freeze), <kbd>V</kbd> ENV (the Pad page), <kbd>Esc</kbd> HOME, <kbd>Z</kbd> / <kbd>X</kbd> OCT− / OCT+ (when no button or key has the focus).</li>
+      <li><kbd>Space</kbd> PLAY, <kbd>Enter</kbd> REC (dub hold), <kbd>V</kbd> ENV (the Chord page), <kbd>Esc</kbd> HOME, <kbd>Z</kbd> / <kbd>X</kbd> OCT− / OCT+ (when no button or key has the focus).</li>
       <li><kbd>↑</kbd> <kbd>↓</kbd> turn SELECT (when no knob has the focus).</li>
     </ul>
   </div>
   <div>
     <h2>Saving</h2>
     <p>SAVE keeps your scale and sound in this browser, as the FM-1 keeps them in its memory. Factory reset forgets them.
-      It is the firmware, not a recording: what you hear is AMB-1 running, at the FM-1's 44.1 kHz.
+      It is the firmware, not a recording: what you hear is DUB-1 running, at the FM-1's 44.1 kHz.
       The idea of running FM-1 firmware in the browser comes from <a href="https://www.groove-os.com/">Groove OS</a>'s emulator.</p>
   </div>
 </section>
@@ -234,7 +233,7 @@ const WHITE_K = [0, 2, 4, 6, 7, 9, 11, 12, 14, 16, 18, 19, 21, 23, 24, 26];
 const BLACK_K = [1, 3, 5, 8, 10, 13, 15, 17, 20, 22, 25];
 const BLACK_AFTER = [0, 1, 2, 4, 5, 7, 8, 9, 11, 12, 14];
 const BODY = "#3a3d42", TRAY = "#26282c", KEY_W = "#d9dadc", KEY_B = "#c9cacd", KNOB = "#1f2124", BTNC = "#2e3135", LABEL = "#e8e8ea";
-const STORE_KEY = "amb-emu-store", PREFS_KEY = "amb-emu-prefs";
+const STORE_KEY = "dub-emu-store", PREFS_KEY = "dub-emu-prefs";
 // the keys' notes: key i is the pitch class (5 + i) % 12 (ui.c leds()), the firmware's spelling, said in words
 const NOTE = ["C", "C sharp", "D", "E flat", "E", "F", "F sharp", "G", "A flat", "A", "B flat", "B"];
 const $ = (id) => document.getElementById(id);
@@ -324,11 +323,11 @@ function hit(c, cls, attrs, parent = controls) {
   c.hit = d;
 }
 // what each control does (the Buttons list below says the same); a page button's light is its page, PLAY's
-// growing, REC's frozen: those are toggle buttons (aria-pressed), the others plain ones
-const TIP = { FX: "The Space page.", SEL: "Not used.", ENV: "The Pad page.", LFO: "The Bass page.", EDIT: "The next chord, on the next bar.",
-  GLO: "The Setup page.", HOME: "The Garden page. Hold it and turn SELECT for the tempo.", SAVE: "Saves all eight pieces. Hold it to put the piece back to its recipe.",
-  ARP: "The Bells page.", SEQ: "The Pulse page.", PLAY: "Grow or rest.", REC: "Freeze: the chord holds and the reverb rings on.",
-  "OCT-": "The bells an octave down.", "OCT+": "The bells an octave up.", SELECT: "The previous or next page; with HOME held, the tempo.",
+// playing, REC's dub hold: those are toggle buttons (aria-pressed), the others plain ones
+const TIP = { FX: "The Space page.", SEL: "Not used.", ENV: "The Chord page.", LFO: "The Bass page.", EDIT: "The next chord, on the next bar.",
+  GLO: "The Setup page.", HOME: "The Dub page. Hold it and turn SELECT for the tempo.", SAVE: "Saves all eight pieces. Hold it to put the piece back to its recipe.",
+  ARP: "The Texture page.", SEQ: "The Drums page.", PLAY: "Play or rest.", REC: "Dub hold: the echo and the cloud repeat what they hold; the chord holds.",
+  "OCT-": "The pings an octave down.", "OCT+": "The pings an octave up.", SELECT: "The previous or next page; with HOME held, the tempo.",
   ALGORITHM: "The mode.", PRESETS: "The piece.", KNOB1: "The first value on the screen.", KNOB2: "The second value on the screen.",
   KNOB3: "The third value on the screen.", KNOB4: "The fourth value on the screen." };
 const LIGHTS = new Set(["FX", "ENV", "LFO", "GLO", "HOME", "ARP", "SEQ", "PLAY", "REC"]);
@@ -702,7 +701,7 @@ async function switchOn() {
           drawLights(m.buttons, m.keys);
           window.ambLast = m;
           if (m.said) heard(m.said);
-          if (m.load !== undefined) cpu.textContent = `AMB-1 uses ${m.load}% of this computer's time`;
+          if (m.load !== undefined) cpu.textContent = `DUB-1 uses ${m.load}% of this computer's time`;
           if (m.store) saveStore(m.store);
         }
       };
@@ -730,7 +729,7 @@ $("mute").addEventListener("click", () => {
   const on = $("mute").getAttribute("aria-pressed") !== "true";
   $("mute").setAttribute("aria-pressed", on ? "true" : "false");
   if (out) out.gain.setTargetAtTime(on ? 0 : 1, out.context.currentTime, 0.01);
-  status.textContent = on ? "Muted: AMB-1 goes on growing, silently." : "Sound on.";
+  status.textContent = on ? "Muted: DUB-1 goes on playing, silently." : "Sound on.";
 });
 $("reset").addEventListener("click", () => {
   if ($("reset").dataset.armed) {
