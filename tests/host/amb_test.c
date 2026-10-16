@@ -21,7 +21,7 @@ static int fails;
 
 /* MIDI out: counted; the kick's note-ons (36 on channel 10) by the bar they fall in, and each bar's
  * section (as a note-on from the grid sees it; 0xFF: no note that bar) */
-static uint32_t midi_count, kicks, kick_off_beat;
+static uint32_t midi_count, kicks, kick_off_beat, drum_notes37;
 static int bass_lo = 999, bass_hi = -1, bass_pcs;  /* the bass's note-ons (channel 3): its range, its pitch classes */
 #define KBARS 512
 static uint8_t kick_bar[KBARS], bar_sec[KBARS];
@@ -36,6 +36,8 @@ void en_midi_out(uint32_t st, uint32_t d1, uint32_t d2)
         bass_hi = (int)d1 > bass_hi ? (int)d1 : bass_hi;
         bass_pcs |= 1 << (d1 % 12u);
     }
+    if (st == 0x99u && d1 == 37u && d2 > 0u)
+        drum_notes37++;
     if (st == 0x99u && d1 == 36u && d2 > 0u) {
         kicks++;
         kick_off_beat += (en_bars & 3u) != 0u;
@@ -455,6 +457,38 @@ int main(void)
             ok = iv[0] == 0 && iv[1] > iv[0] && iv[2] > iv[1] && iv[3] > iv[2] && iv[3] <= 24;
             CHECK(ok, "voicing %d/%d: %d %d %d %d", k / EN_NCX, k % EN_NCX, iv[0], iv[1], iv[2], iv[3]);
         }
+    }
+
+    /* the drums' pattern: Play on Pattern plays the written steps only (the kick on 1 and 11 here), Chance 0 a
+     * lane silent, the rim heard; Auto's kick is four on the floor */
+    {
+        int k, bars = 0, off = 0, ok_rim;
+        fresh();
+        en_set(P_MOTION, 0);
+        en_set(P_DPAT0, (int)(int16_t)(uint16_t)0x0401u);   /* steps 1 and 11 */
+        en_set(P_DPAT3, (int)(int16_t)(uint16_t)0x1010u);   /* the rim on 5 and 13 */
+        en_set(P_DMODE, 1);
+        en_regrow();
+        en_play(1);
+        kicks = kick_off_beat = 0;
+        memset(kick_bar, 0, sizeof kick_bar);
+        run(20.0f);
+        for (k = 1; k < 9; k++)
+            bars += kick_bar[k] == 2;
+        CHECK(bars >= 7, "Pattern: two kicks a bar, %d of 8 bars", bars);
+        (void)off;
+        CHECK(en_lane[1] == 0x0401u && en_lane[3] == 0x1010u, "the lanes: kick %04x, rim %04x", en_lane[1], en_lane[3]);
+        ok_rim = drum_notes37 > 10u;
+        CHECK(ok_rim, "the rim: %u hits", drum_notes37);
+        en_set(P_DCH0, 0);
+        kicks = 0;
+        run(10.0f);
+        CHECK(kicks == 0u, "Chance 0: still %u kicks", kicks);
+        en_set(P_DMODE, 0);
+        kicks = 0;
+        memset(kick_bar, 0, sizeof kick_bar);
+        run(10.0f);
+        CHECK(kicks >= 16u, "Auto again: %u kicks", kicks);
     }
 
     /* the effects grid: each effect alone, then all sixteen at once, then let go: no NaN, under full scale,

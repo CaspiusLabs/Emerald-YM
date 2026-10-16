@@ -19,7 +19,7 @@ const uint16_t EN_MODE_POOL[EN_NMODES] = {
     B(0, 2, 4, 5, 7, 9, 10), B(0, 2, 3, 5, 7, 8, 10), B(0, 2, 4, 7, 9, 9, 9),  B(0, 3, 5, 7, 10, 10, 10)};
 #undef B
 const uint8_t EN_LOOP_LEN[EN_NLOOP] = {13, 17, 23, 29};
-const uint8_t EN_DRUM_N[EN_NDRUM] = {16, 16, 16};
+const uint8_t EN_DRUM_N[EN_NDRUM] = {16, 16, 16, 16};
 const char *const EN_SEC_NAME[EN_NSEC] = {"Full", "Break", "Groove", "Thin"};
 
 static const en_param_t PARAMS[P_NPARAMS] = {
@@ -48,6 +48,11 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     {"Type 1", 0, EN_NCX - 1, 0}, {"Type 2", 0, EN_NCX - 1, 0}, {"Type 3", 0, EN_NCX - 1, 0}, {"Type 4", 0, EN_NCX - 1, 0},
     {"Type 5", 0, EN_NCX - 1, 0}, {"Type 6", 0, EN_NCX - 1, 0}, {"Type 7", 0, EN_NCX - 1, 0}, {"Type 8", 0, EN_NCX - 1, 0},
     {"Play", 0, 1, 0},
+    {"Kick steps", -32768, 32767, 0}, {"Shaker steps", -32768, 32767, 0}, {"Open steps", -32768, 32767, 0},
+    {"Rim steps", -32768, 32767, 0},  {"Kick acc", -32768, 32767, 0},     {"Shaker acc", -32768, 32767, 0},
+    {"Open acc", -32768, 32767, 0},   {"Rim acc", -32768, 32767, 0},
+    {"Kick chance", 0, 100, 100}, {"Shaker chance", 0, 100, 100}, {"Open chance", 0, 100, 100}, {"Rim chance", 0, 100, 100},
+    {"Accent", 0, 100, 50}, {"Drum play", 0, 1, 0},
 };
 const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PARAMS[i] : &PARAMS[0]; }
 
@@ -66,42 +71,50 @@ static const struct {
                     0, 0, 1, 20, 10, 50, 30, 35, 50, 55, 30, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 50, 0}},
     {"Chamber",    {75, 20, 55, 55, 20, 45, 6, 40, 70, 1, 45, 75, 35, 55, 30, 60, 0, 1, 118, 9, 5, 0,
                     2, 0, 0, 10, 0, 40, 15, 45, 45, 70, 45, 2, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 50, 0}},
     {"Steppers",   {60, 35, 70, 70, 35, 40, 3, 60, 50, 3, 30, 55, 55, 25, 50, 45, 0, 1, 126, 2, 1, 0,
                     0, 0, 2, 35, 15, 60, 45, 25, 60, 50, 20, 1, 1, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 50, 0}},
     {"Fog",        {70, 40, 50, 45, 40, 55, 5, 30, 75, 2, 55, 80, 30, 70, 25, 70, 0, 1, 112, 7, 5, 0,
                     1, -1, 0, 15, 0, 30, 20, 60, 35, 80, 60, 0, 0, 3,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 50, 0}},
     {"Concrete",   {65, 25, 65, 75, 25, 35, 4, 75, 50, 1, 25, 60, 60, 20, 60, 40, 0, 1, 130, 0, 7, 0,
                     6, 0, 3, 30, 20, 75, 50, 20, 65, 45, 15, 3, 3, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 50, 0}},
     {"Night Drive", {65, 45, 60, 65, 45, 50, 3, 55, 60, 4, 35, 65, 50, 40, 45, 55, 0, 1, 124, 10, 1, 0,
                     1, 0, 4, 25, 25, 55, 35, 30, 50, 60, 35, 4, 4, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 50, 0}},
     {"Pressure",   {70, 20, 75, 80, 20, 30, 6, 65, 45, 1, 20, 55, 40, 30, 35, 35, 0, 1, 128, 4, 2, 0,
                     5, 0, 1, 10, 5, 65, 25, 15, 70, 40, 20, 3, 4, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 50, 0}},
     {"Haze",       {62, 50, 45, 40, 50, 60, 4, 35, 80, 3, 60, 85, 35, 80, 30, 80, 0, 1, 116, 3, 0, 1,
                     3, 0, 0, 20, 10, 35, 30, 70, 30, 85, 70, 2, 0, 4,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 50, 0}},
 };
 
 const char *en_piece_name(int i) { return PIECES[(unsigned)i < EN_NPIECES ? i : 0].name; }
@@ -173,6 +186,8 @@ void en_param_text(int i, int v, char *b)
         s = EN_CX_NAME[(unsigned)v < EN_NCX ? v : 0];
     else if (i == P_PMODE)
         s = v ? "Prog" : "Random";
+    else if (i == P_DMODE)
+        s = v ? "Pattern" : "Auto";
     else if (i == P_GROOVE)
         s = GROOVE_NAME[(unsigned)v < 5u ? v : 0];
     else if (i == P_MODE)
@@ -404,7 +419,7 @@ volatile uint8_t en_section, en_phrase_bar;
 volatile uint32_t en_stab_pat, en_throws, en_stabs;
 volatile float en_stab_vel, en_echo_ms, en_echo_g, en_echo_in, en_duck;
 volatile uint8_t en_stab_thrown;
-volatile uint16_t en_lane[4];
+volatile uint16_t en_lane[5];
 static uint32_t mutes, perf, fxm, fxm_was;      /* performance: the layers muted, the moves held; the effects held */
 static float perf_sw, perf_echo;                /* the filter pushed open (+) or shut (-), the echo pushed */
 
@@ -701,7 +716,7 @@ static uint32_t drum_pat[EN_NDRUM];             /* 0 the kick's (four on the flo
 static float pulse_vol, swing, hat_f = 0.9f, hat_open = 0.25f;
 static float step_len, pulse_left;               /* a sixteenth, in samples; to the next MIDI clock pulse */
 static uint32_t noise = 22222u, cnoise = 4321u;
-static const uint8_t DRUM_GM[EN_NDRUM] = {36, 42, 46};          /* kick, closed hat, open hat */
+static const uint8_t DRUM_GM[EN_NDRUM] = {36, 42, 46, 37};      /* kick, closed hat, open hat, side stick */
 static const float HAT_INC[4] = {304.4f / EN_SR, 369.6f / EN_SR, 522.7f / EN_SR, 800.0f / EN_SR};
 /* the shaker's steps, the most wanted first (the off sixteenths before the downbeats; never the open
  * hat's off beats) */
@@ -1185,9 +1200,11 @@ static void hats_publish(void)
     drum_pat[1] = c;
     drum_pat[2] = o;
     drum_pat[0] = 0x1111u;
+    drum_pat[3] = k >= 70 ? 0x1010u : 0u;       /* the rim, with many hits: on two and four */
     en_drum_pat[0] = drum_pat[0];
     en_drum_pat[1] = c;
     en_drum_pat[2] = o;
+    en_drum_pat[3] = drum_pat[3];
 }
 
 static void hats_home(void)                     /* Hits: the shaker's count, its steps home */
@@ -1244,9 +1261,14 @@ static void drum_fire(int d, float vel)
         v->adec = fm_expf(-6.9f / (0.045f * KIT[kit].hat_t * EN_SR));
         drum[2].adec = fm_expf(-6.9f / (0.03f * EN_SR));
         break;
-    default:                                    /* open hat: the "tss" off the beat */
+    case 2:                                     /* open hat: the "tss" off the beat */
         v->note = DRUM_GM[2];
         v->adec = fm_expf(-6.9f / (hat_open * KIT[kit].hat_t * EN_SR));
+        break;
+    default:                                    /* the rim: a short wooden tok, thrown into the echo */
+        v->note = DRUM_GM[3];
+        v->adec = fm_expf(-6.9f / (0.06f * EN_SR));
+        v->clk = 1.0f;
         break;
     }
     en_drum_glow[d] = 1.0f;
@@ -1383,15 +1405,31 @@ static void bar_start(void)
     bar++;
 }
 
+/* a lane's steps as they play: the pattern page's (Play: Pattern), or the generated ones */
+static uint32_t dpat(int d) { return par[P_DMODE] ? (uint32_t)(uint16_t)par[P_DPAT0 + d] : drum_pat[d]; }
+
 /* the screen's lanes, the bar as it plays: what is muted or at level 0, gone at once */
 static void lanes(void)
 {
     const int kick = lay_kick && !(mutes & EN_M_KICK) && !(perf & EN_PF_KICKDROP) && par[P_DRUMS] > 0,
               hats = !(mutes & EN_M_HATS) && par[P_DRUMS] > 0;
     en_lane[0] = (uint16_t)(mutes & EN_M_CHORD || !par[P_CHORD] ? 0u : en_stab_pat);
-    en_lane[1] = (uint16_t)(kick ? (fill ? 0x0011u : 0x1111u) : 0u);
-    en_lane[2] = (uint16_t)(hats ? (lay_hats ? drum_pat[1] : 0u) | (lay_open || fill ? drum_pat[2] : 0u) : 0u);
-    en_lane[3] = (uint16_t)(lay_bass && !(mutes & EN_M_BASS) && par[P_BASS] > 0 ? en_groove(par[P_GROOVE]) : 0u);
+    en_lane[1] = (uint16_t)(kick ? dpat(0) & (fill ? 0x00FFu : 0xFFFFu) : 0u);
+    en_lane[2] = (uint16_t)(hats ? (lay_hats ? dpat(1) : 0u) | (lay_open || fill ? dpat(2) : 0u) : 0u);
+    en_lane[3] = (uint16_t)(hats && lay_hats ? dpat(3) : 0u);
+    en_lane[4] = (uint16_t)(lay_bass && !(mutes & EN_M_BASS) && par[P_BASS] > 0 ? en_groove(par[P_GROOVE]) : 0u);
+}
+
+/* a pattern's hit: its chance (Play: Pattern only, so Auto's music stays as it was), its accent */
+static int dhit(int d, int st, float *vel)
+{
+    if (!par[P_DMODE])
+        return 1;
+    if (par[P_DCH0 + d] < 100 && frand() * 100.0f >= (float)par[P_DCH0 + d])
+        return 0;
+    if (!((uint32_t)(uint16_t)par[P_DACC0 + d] >> st & 1u))
+        *vel *= 1.0f - 0.006f * (float)par[P_DACCENT];   /* (the unaccented, quieter as Accent turns up) */
+    return 1;
 }
 
 /* the grid: one call a sixteenth (MIDI clock: 6 ticks) */
@@ -1404,12 +1442,17 @@ static void tick(void)
         bar_start();
     const int kick = lay_kick && !(mutes & EN_M_KICK) && !(perf & EN_PF_KICKDROP), hats = !(mutes & EN_M_HATS);
     lanes();
-    if (kick && (st & 3) == 0 && !(fill && st >= 8))
-        drum_hit(0, st ? 0.88f : 1.0f, 0);
-    if (hats && lay_hats && drum_pat[1] >> st & 1u)
-        drum_hit(1, 0.35f + 0.3f * r + (st & 1 ? 0.0f : 0.15f), st & 1);
-    if (hats && (lay_open || fill) && drum_pat[2] >> st & 1u)
-        drum_hit(2, 0.7f + 0.2f * r, 0);
+    {
+        float v0 = st ? 0.88f : 1.0f, v1 = 0.35f + 0.3f * r + (st & 1 ? 0.0f : 0.15f), v2 = 0.7f + 0.2f * r, v3 = 0.75f + 0.15f * r;
+        if (kick && dpat(0) >> st & 1u && !(fill && st >= 8) && dhit(0, st, &v0))
+            drum_hit(0, v0, 0);
+        if (hats && lay_hats && dpat(1) >> st & 1u && dhit(1, st, &v1))
+            drum_hit(1, v1, st & 1);
+        if (hats && (lay_open || fill) && dpat(2) >> st & 1u && dhit(2, st, &v2))
+            drum_hit(2, v2, 0);
+        if (hats && lay_hats && dpat(3) >> st & 1u && dhit(3, st, &v3))
+            drum_hit(3, v3, st & 1);
+    }
     if (lay_bass && !(mutes & EN_M_BASS) && en_groove(par[P_GROOVE]) >> st & 1u)
         bass_hit(st == 0);
     if (en_stab_pat >> st & 1u) {               /* (the random draws made muted or not: the music goes on the same) */
@@ -1877,6 +1920,7 @@ static void apply(int p, int v)
     case P_BASS: bass_vol = (float)(v * v) * 0.0001f; lanes(); break;
     case P_DRUMS: pulse_vol = (float)(v * v) * 0.0001f; lanes(); break;
     case P_HITS: hats_home(); break;
+    case P_DMODE: case P_DPAT0: case P_DPAT1: case P_DPAT2: case P_DPAT3: lanes(); break;
     case P_STABS: stabs_home(); break;
     case P_SWING: swing = (float)v * 0.004f; break;      /* the off sixteenths up to 0.4 of a step late */
     case P_HATS: case P_HTONE: {                 /* the piece's colour, moved by the sound page's Hats */
@@ -2455,6 +2499,33 @@ static void render_drums(uint32_t n)
     }
     render_hat(&drum[1], n, g * 0.16f, 0.6f, 1.0f, 0.03f);   /* shaker: a little right */
     render_hat(&drum[2], n, g * 0.15f, 1.0f, 0.7f, 0.12f);   /* open: a little left, a little echo */
+    v = &drum[3];                                /* the rim: two tones (~520 Hz, ~1.7 kHz) and a click of noise */
+    if (v->on) {
+        float amp = v->amp, att = v->att, clk = v->clk;
+        for (j = 0; j < n; j++) {
+            float x;
+            v->ph += 520.0f / EN_SR;
+            if (v->ph >= 1.0f)
+                v->ph -= 1.0f;
+            v->mph[0] += 1710.0f / EN_SR;
+            if (v->mph[0] >= 1.0f)
+                v->mph[0] -= 1.0f;
+            noise = noise * 1664525u + 1013904223u;
+            x = (sine(v->ph) * 0.55f + sine(v->mph[0]) * 0.45f + (float)(int32_t)noise * (1.0f / 2147483648.0f) * clk) *
+                amp * att * g * 0.3f;
+            mixl[j] += x * 0.85f;
+            mixr[j] += x;
+            esend[j] += x * 1.2f;                /* (mostly into the echo: a dub rim) */
+            rsend[j] += x * 0.5f;
+            amp *= v->adec;
+            att += (1.0f - att) * 0.4f;
+            clk *= 0.9f;
+        }
+        v->amp = amp;
+        v->att = att;
+        v->clk = clk;
+        v->on = amp > 0.0005f;
+    }
 }
 
 /* the vinyl: a hiss (noise, band-passed ~1..7 kHz) and crackle (clicks at random, mostly small, now

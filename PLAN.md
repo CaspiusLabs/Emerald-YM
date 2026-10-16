@@ -265,6 +265,19 @@ hold). Sixteen in four groups of four, the first of each group lit:
 - [ ] **Idea: the chord's type** (option 3): per piece (or per chord of a progression), the chord
       built as an open minor 7 (now), a 9 without its fifth (now), a sus4, a minor 11, a major 7
 
+## Done: the drums' pattern page and a rim (2026-10-16)
+
+- [x] A fourth drum voice, the **rim** (two tones, ~520 Hz and ~1.7 kHz, a click of noise, mostly into the
+      echo): Auto plays it on two and four once Hits is 70 or more; its own lane on the main screen (pink)
+- [x] The **Pattern page** (SEQ a third time): KNOB 1 the lane (Kick, Shaker, Open, Rim), the white keys
+      its sixteen steps, a black key held + a white one an accent, KNOB 2 Accent, KNOB 3 the lane's Chance,
+      KNOB 4 Play (Auto / Pattern); the first edit takes Auto's pattern over. Project format 7
+      (`tests/scenarios/pattern.amb`)
+- [x] Found on the way: with 103 parameters, the UI's own knob codes (from 100) collided with real ones
+      (Play was "no knob"; Lights would have set the rim's chance): moved to 200, with a compile-time check
+- [ ] **Later: pattern styles** (the user's idea 2): a short list of classic dub techno grooves (steady,
+      Steppers, Half-time, Broken, Shuffle with rim) to load into the Pattern page as a start
+
 ## Ideas for later
 
 - **Korg NTS-3 kaoss pad integration** (a future project) (the user's own setup; a Kaoss pad is great for dub techno).
@@ -306,7 +319,6 @@ hold). Sixteen in four groups of four, the first of each group lit:
     - read `platform/nts-3_kaoss/` in the logue SDK (unit types, the chain, the I/O it gets);
     - check what the NTS-3's USB-C carries;
     - try the split mode with a Y-cable and the NTS-3's own effects.
-- A rim or clap on 2 and 4 (a fourth drum voice; the screen has room for three rings now)
 - A spring reverb next to the plate
 - MIDI CC out for the filter and the echo send, to drive other gear
 - Keys as live mutes, or a held key as a manual throw

@@ -19,25 +19,28 @@
 /* (past NPAGES, off SELECT's round and on no button of their own: V_MIX, PERFORM's knobs, the four layers'
  * levels; the layers' sound pages, the layer's button pressed again) */
 enum { V_DUB, V_CHORD, V_TEXTURE, V_BASS, V_DRUMS, V_SPACE, V_SETUP, NPAGES, V_MIX = NPAGES, V_CSND, V_PSND, V_BSND,
-       V_DSND, V_CFM, V_PFM, V_BFM, V_CHORDS, NVIEWS };
+       V_DSND, V_CFM, V_PFM, V_BFM, V_CHORDS, V_PAT, NVIEWS };
 static const char *const VIEW_NAME[NVIEWS] = {"Dub", "Chord", "Texture", "Bass", "Drums", "Space", "Setup", "Mix",
                                               "Chord sound", "Ping sound", "Bass sound", "Drum sound",
-                                              "Chord FM", "Ping FM", "Bass FM", "Chords"};
+                                              "Chord FM", "Ping FM", "Bass FM", "Chords", "Pattern"};
 #define B_NONE 0xFFu
 static const uint8_t VIEW_BTN[NVIEWS] = {B_HOME, B_ENV, B_ARP, B_LFO, B_SEQ, B_FX, B_GLO, B_NONE, B_NONE, B_NONE, B_NONE,
-                                         B_NONE, B_NONE, B_NONE, B_NONE, B_NONE};
+                                         B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE};
 static int sound_of(int v) { return v == V_CHORD ? V_CSND : v == V_TEXTURE ? V_PSND : v == V_BASS ? V_BSND : v == V_DRUMS ? V_DSND : -1; }
 static int fm_of(int v) { return v == V_CHORD ? V_CFM : v == V_TEXTURE ? V_PFM : v == V_BASS ? V_BFM : -1; }
 static int parent_of(int v)
 {
     return v == V_CSND || v == V_CFM ? V_CHORD : v == V_PSND || v == V_PFM ? V_TEXTURE : v == V_BSND || v == V_BFM ? V_BASS
-         : v == V_DSND ? V_DRUMS : -1;
+         : v == V_DSND || v == V_PAT ? V_DRUMS : -1;
 }
 static int layer_of(int v) { v = parent_of(v) >= 0 ? parent_of(v) : v; return v == V_CHORD ? 0 : v == V_TEXTURE ? 1 : v == V_BASS ? 2 : 3; }
 static int page_of(int v) { return parent_of(v) >= 0 ? parent_of(v) : v; }   /* a sound page: its layer's */
 /* the four knobs of each page: a parameter, or one of these; and what the knob is called there */
-enum { K_LEDS = 100, K_CPU, K_NONE, K_SLOT, K_CQ, K_CX };   /* (the Chords page: the slot, and its kind and type) */
-static const uint8_t VIEW_KNOB[NVIEWS][4] = {
+enum { K_LEDS = 200, K_CPU, K_NONE, K_SLOT, K_CQ, K_CX,    /* (the Chords page: the slot, and its kind and type) */
+       K_LANE, K_LCH };                                      /* (the Pattern page: the lane, and its chance) */
+static const char *const LANE_NAME[EN_NDRUM] = {"Kick", "Shaker", "Open", "Rim"};
+_Static_assert(P_NPARAMS <= K_LEDS, "the knobs' own codes must come after the parameters");
+static const uint16_t VIEW_KNOB[NVIEWS][4] = {
     {P_TEMPO, P_EVOLVE, P_MOTION, P_DRIFT},
     {P_CHORD, P_STABS, P_DECAY, P_CUTOFF},
     {P_PINGS, P_DENSITY, P_CLOUD, P_CRACKLE},
@@ -54,6 +57,7 @@ static const uint8_t VIEW_KNOB[NVIEWS][4] = {
     {P_PALG, P_PFRAT, P_PFB, P_PFDEC},
     {P_BALG, P_BFRAT, P_BFB, P_BFDEC},
     {K_SLOT, K_CQ, K_CX, P_PMODE},
+    {K_LANE, P_DACCENT, K_LCH, P_DMODE},
 };
 static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Tempo", "Evolve", "Motion", "Drift"},
@@ -72,6 +76,7 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Algo", "Ratio", "Feedback", "Mod dec"},
     {"Algo", "Ratio", "Feedback", "Mod dec"},
     {"Slot", "Chord", "Type", "Play"},
+    {"Lane", "Accent", "Chance", "Play"},
 };
 
 /* the screen's colours: a dark room, as a dub techno sleeve (grey on black, a cold blue). The chord and
@@ -93,6 +98,8 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
 #define K_BASS_T RGB(72, 64, 44)
 #define K_FROST RGB(232, 92, 84)         /* dub hold */
 #define K_FROST_T RGB(96, 42, 40)
+#define K_RIM RGB(214, 124, 176)         /* the rim */
+#define K_RIM_T RGB(80, 44, 64)
 
 static struct {
     uint8_t view;
@@ -101,6 +108,7 @@ static struct {
     uint32_t mutes, moves;             /* the layers muted (EN_M_*), the moves held (EN_PF_*) */
     uint32_t fx;                       /* the effects held (EN_FX_*), REC's grid */
     uint8_t slot, chords_from;         /* the Chords page: the slot edited; the page it was opened from */
+    uint8_t lane;                      /* the Pattern page: the lane edited */
     uint8_t grid_said;
     uint32_t btn, keys, btn_used;
     uint32_t enc_t[NE];
@@ -212,6 +220,10 @@ static int knob_get(int k)
         return ui.slot;
     if (k == K_CQ || k == K_CX)
         return proj.par[(k == K_CQ ? P_CQ0 : P_CX0) + ui.slot];
+    if (k == K_LANE)
+        return ui.lane;
+    if (k == K_LCH)
+        return proj.par[P_DCH0 + ui.lane];
     return 0;
 }
 static void knob_range(int k, int *lo, int *hi)
@@ -221,14 +233,16 @@ static void knob_range(int k, int *lo, int *hi)
         *hi = en_param_info(k)->hi;
     } else {
         *lo = 0;
-        *hi = k == K_LEDS ? 2 : k == K_CPU ? 100 : k == K_SLOT ? EN_NPROG - 1 : k == K_CQ ? EN_NCQ - 1 : k == K_CX ? EN_NCX - 1 : 0;
+        *hi = k == K_LEDS ? 2 : k == K_CPU ? 100 : k == K_SLOT ? EN_NPROG - 1 : k == K_CQ ? EN_NCQ - 1 : k == K_CX ? EN_NCX - 1
+            : k == K_LANE ? EN_NDRUM - 1 : k == K_LCH ? 100 : 0;
     }
 }
 static const char *knob_name(int k)
 {
     if (k < P_NPARAMS)
         return en_param_info(k)->name;
-    return k == K_LEDS ? "Lights" : k == K_CPU ? "CPU" : k == K_SLOT ? "Slot" : k == K_CQ ? "Chord" : k == K_CX ? "Type" : "";
+    return k == K_LEDS ? "Lights" : k == K_CPU ? "CPU" : k == K_SLOT ? "Slot" : k == K_CQ ? "Chord" : k == K_CX ? "Type"
+         : k == K_LANE ? "Lane" : k == K_LCH ? "Chance" : "";
 }
 static void knob_text(int k, char *b)
 {
@@ -249,6 +263,16 @@ static void knob_text(int k, char *b)
         itoa_u((uint32_t)v + 1u, b);
     } else if (k == K_CQ || k == K_CX) {
         en_param_text((k == K_CQ ? P_CQ0 : P_CX0) + ui.slot, v, b);
+    } else if (k == K_LANE) {
+        const char *n = LANE_NAME[(unsigned)v < EN_NDRUM ? v : 0];
+        while ((*b++ = *n++))
+            ;
+    } else if (k == K_LCH) {
+        itoa_u((uint32_t)v, b);
+        while (*b)
+            b++;
+        *b++ = '%';
+        *b = 0;
     } else {
         b[0] = 0;
     }
@@ -275,6 +299,12 @@ static void knob_set(int k, int v)
         knob_set((k == K_CQ ? P_CQ0 : P_CX0) + ui.slot, v);
         if (k == K_CQ && v && !proj.par[P_PMODE])
             knob_set(P_PMODE, 1);                /* a chord written: the slots play */
+        return;
+    } else if (k == K_LANE) {
+        ui.lane = (uint8_t)v;
+        return;
+    } else if (k == K_LCH) {
+        knob_set(P_DCH0 + ui.lane, v);
         return;
     }
     mark_dirty();
@@ -511,6 +541,54 @@ static void edit_released(uint32_t held)
     }
 }
 
+/* ---------------------------------------------------------- the pattern --- */
+/* the Drums button a third time: the Pattern page. KNOB 1 the lane (kick, shaker, open hat, rim), the white keys
+ * its sixteen steps (a key, a step: on or off), a black key held with a white one: that step accented; KNOB 2
+ * the accents' strength, KNOB 3 the lane's chance, KNOB 4 Play: Auto (generated, as ever) or Pattern. The first
+ * edit takes the pattern over from what Auto plays. The arrangement still takes lanes out (a Break, a fill) */
+static const uint8_t STEP_KEY[16] = {0, 2, 4, 6, 7, 9, 11, 12, 14, 16, 18, 19, 21, 23, 24, 26};   /* the white keys */
+static uint32_t lane_steps(int d) { return proj.par[P_DMODE] ? (uint32_t)(uint16_t)proj.par[P_DPAT0 + d] : en_drum_pat[d]; }
+static void pattern_key(uint32_t key, uint32_t keys)
+{
+    int st, d = ui.lane, acc;
+    uint32_t m, black = 0;
+    char t[24];
+    for (st = 0; st < 16 && STEP_KEY[st] != key; st++)
+        ;
+    if (st >= 16)
+        return;                                  /* (a black key: an accent's, with a white one) */
+    for (m = 0; m < 16; m++)
+        keys &= ~(1u << STEP_KEY[m]);
+    black = keys;
+    if (!proj.par[P_DMODE]) {                    /* the first edit: Auto's pattern, taken over */
+        int k;
+        for (k = 0; k < EN_NDRUM; k++)
+            knob_set(P_DPAT0 + k, (int)(int16_t)(uint16_t)en_drum_pat[k]);
+        knob_set(P_DMODE, 1);
+    }
+    m = (uint32_t)(uint16_t)proj.par[P_DPAT0 + d];
+    acc = (int)((uint32_t)(uint16_t)proj.par[P_DACC0 + d] >> st & 1u);
+    if (black) {                                 /* accent it (on, too), or not */
+        knob_set(P_DACC0 + d, (int)(int16_t)(uint16_t)((uint32_t)(uint16_t)proj.par[P_DACC0 + d] ^ (1u << st)));
+        knob_set(P_DPAT0 + d, (int)(int16_t)(uint16_t)(m | 1u << st));
+        acc = !acc;
+    } else {
+        knob_set(P_DPAT0 + d, (int)(int16_t)(uint16_t)(m ^ 1u << st));
+    }
+    t[0] = 0;
+    itoa_u((uint32_t)st + 1u, t);
+    say_as(LANE_NAME[d], 0, 0);
+    if (ann_on()) {
+        sp_n = 0;
+        sp_buf[0] = 0;
+        sp_cat("Step ");
+        sp_cat(t);
+        sp_cat(black ? (acc ? " accented" : " not accented") : (proj.par[P_DPAT0 + d] >> st & 1 ? " on" : " off"));
+        ann_say(sp_buf, 0, ANN_NOW);
+        sp_said = 1;
+    }
+}
+
 /* ------------------------------------------------------------ buttons --- */
 static void set_view(int v)
 {
@@ -529,6 +607,8 @@ static void button(int b)
         int pv = parent_of(ui.view);
         if (ui.view == sound_of(pv) && fm_of(pv) >= 0)   /* (on a voice that isn't FM, the page says so) */
             set_view(fm_of(pv));
+        else if (ui.view == sound_of(pv) && pv == V_DRUMS)
+            set_view(V_PAT);                     /* the drums: their pattern */
         else
             set_view(pv);
         return;
@@ -654,6 +734,11 @@ static void input(void)
                     continue;                    /* REC held: the effects (and their keys let go) */
             if (btn >> B_REC & 1u)
                 continue;                        /* (REC held: the other keys do nothing) */
+            if (ui.view == V_PAT && !ui.perf) {  /* the Pattern page: the white keys, the lane's steps */
+                if (down)
+                    pattern_key(i, keys);
+                continue;
+            }
             if (ui.view == V_CHORDS && !ui.perf) {   /* the Chords page: the keys, the slot's root */
                 if (down)
                     slot_key(i);
@@ -1232,11 +1317,11 @@ static void draw_duck(void)                      /* right: the kick's ducking, f
 
 static void draw_lanes(void)                     /* below: the bar, a lane a layer */
 {
-    static const uint16_t C[4] = {K_PAD, K_PULSE, K_TEXT, K_BASS}, T[4] = {K_PAD_T, K_PULSE_T, K_LINE, K_BASS_T};
+    static const uint16_t C[5] = {K_PAD, K_PULSE, K_TEXT, K_RIM, K_BASS}, T[5] = {K_PAD_T, K_PULSE_T, K_LINE, K_RIM_T, K_BASS_T};
     int l, i, k, pos = en_drum_pos[0];
     float ghost[16];
     if (en_playing)                              /* the step playing: a column */
-        cv_round(38 + pos * 11, 95, 9, 47, 2, K_PANEL);
+        cv_round(38 + pos * 11, 95, 9, 48, 2, K_PANEL);
     for (i = 0; i < 16; i++)
         ghost[i] = 0.0f;
     if (!en_ext && proj.par[P_TEMPO] > 0) {      /* the stabs' echoes: where each repeat lands, as faint as it is */
@@ -1254,9 +1339,9 @@ static void draw_lanes(void)                     /* below: the bar, a lane a lay
                 }
             }
     }
-    for (l = 0; l < 4; l++) {                    /* (in the layers' colours: stabs, kick, hats, bass) */
+    for (l = 0; l < 5; l++) {                    /* (in the layers' colours: stabs, kick, hats, rim, bass) */
         uint32_t p = en_lane[l];
-        int32_t y = 98 + l * 11;
+        int32_t y = 97 + l * 9;
         cv_round(30, y + 1, 4, 3, 1, C[l]);
         for (i = 0; i < 16; i++) {
             int32_t x = 40 + i * 11;
@@ -1291,7 +1376,7 @@ static int help_lines(int b, const char *l[HELP_LINES])
     case B_ENV: L("THE CHORD: LEVEL, STABS,"); L(" DECAY, CUTOFF"); L("ALGORITHM: ITS VOICE"); L("AGAIN: SOUND; AGAIN: FM"); break;
     case B_ARP: L("TEXTURE: PINGS, DENSITY,"); L(" CLOUD, CRACKLE"); L("ALGORITHM: THE PINGS' VOICE"); L("AGAIN: SOUND; AGAIN: FM"); break;
     case B_LFO: L("THE BASS"); L("LEVEL, OCTAVE, GROOVE, FIFTH"); L("ALGORITHM: ITS VOICE"); L("AGAIN: SOUND; AGAIN: FM"); break;
-    case B_SEQ: L("THE DRUMS"); L("LEVEL, HITS, SWING, DUCK"); L("ALGORITHM: THE KIT"); L("AGAIN: ITS SOUND"); break;
+    case B_SEQ: L("THE DRUMS"); L("LEVEL, HITS, SWING, DUCK"); L("ALGORITHM: THE KIT"); L("AGAIN: SOUND; AGAIN: PATTERN"); break;
     case B_FX: L("THE SPACE"); L("ECHO, ECHO TIME, FEEDBACK,"); L("REVERB"); break;
     case B_GLO: L("SETUP"); L("ROOT, TUNE, MIDI OUT, LIGHTS"); break;
     case B_EDIT: L("TAP: THE CHORDS (8 SLOTS:"); L(" THE KEYS, THE SLOT'S ROOT)"); L("HOLD: THE NEXT CHORD"); break;
@@ -1342,6 +1427,36 @@ static void draw_grid(void)
     }
 }
 
+/* the Pattern page: the four lanes, sixteen steps each, the lane edited lit, the accents taller, the step
+ * playing a column */
+static void draw_pattern(void)
+{
+    static const uint16_t C[EN_NDRUM] = {K_PULSE, K_TEXT, K_DIM, K_RIM};
+    static const char *const SH[EN_NDRUM] = {"KICK", "SHKR", "OPEN", "RIM"};
+    int l, i, pos = en_drum_pos[0];
+    text_c(120, -1, &FONT_XS, proj.par[P_DMODE] ? "PLAY: THE PATTERN" : "PLAY: AUTO (A KEY TAKES IT OVER)",
+           proj.par[P_DMODE] ? K_ACC : K_DIM);
+    if (en_playing)
+        cv_round(37 + pos * 12, 15, 11, 86, 2, K_PANEL);
+    for (l = 0; l < EN_NDRUM; l++) {
+        uint32_t p = lane_steps(l), a = proj.par[P_DMODE] ? (uint32_t)(uint16_t)proj.par[P_DACC0 + l] : 0u;
+        int32_t y = 18 + l * 21, sel = l == ui.lane;
+        if (sel)
+            cv_round(2, y - 2, 236, 19, 4, mix(K_BG, K_PANEL, 10));
+        cv_text(5, y + 1, &FONT_XS, SH[l], sel ? K_TEXT : K_DIM);
+        for (i = 0; i < 16; i++) {
+            int32_t x = 38 + i * 12;
+            if (p >> i & 1u) {
+                int ac = (int)(a >> i & 1u);
+                cv_round(x, ac ? y : y + 3, 9, ac ? 15 : 9, 2, en_playing && i == pos ? K_TEXT : sel ? C[l] : mix(K_BG, C[l], 9));
+            } else {
+                cv_rect(x + 4, y + 7, 2, 2, (i & 3) ? K_LINE : K_DIM);
+            }
+        }
+    }
+    text_c(120, 104, &FONT_XS, "WHITE: STEPS   BLACK + WHITE: ACCENT", K_DIM);
+}
+
 /* the Chords page: the eight slots, the one edited outlined, the one playing lit; an empty slot inside the
  * progression shows that the chord before it goes on */
 static void draw_slots(void)
@@ -1376,6 +1491,18 @@ static void draw_main(void)
     static uint8_t moving;
     if (ui.frame % 3u)                           /* 20 frames a second is plenty */
         return;
+    if (ui.view == V_PAT) {                      /* the Pattern page: the steps */
+        h = hash(hash(0x50415454u, ui.lane | (uint32_t)proj.par[P_DMODE] << 4 | (uint32_t)en_drum_pos[0] << 8), en_playing);
+        for (i = 0; i < EN_NDRUM; i++)
+            h = hash(hash(h, lane_steps((int)i)), (uint32_t)(uint16_t)proj.par[P_DACC0 + i]);
+        if (h != ui.sig[1]) {
+            ui.sig[1] = h;
+            cv_begin(240, MAIN_H, K_BG);
+            draw_pattern();
+            cv_blit(0, MAIN_Y);
+        }
+        return;
+    }
     if (ui.view == V_CHORDS) {                   /* the Chords page: the slots */
         h = hash(hash(0x43484F52u, ui.slot | (uint32_t)proj.par[P_PMODE] << 4), (uint32_t)en_prog_pos + 1u);
         for (i = 0; i < EN_NPROG; i++)
@@ -1424,8 +1551,8 @@ static void draw_main(void)
     ripples_take(now);
     for (i = 0; i < EN_NPAD; i++)
         h = hash(h, en_chord[i]);
-    for (i = 0; i < 4; i++)
-        h = hash(h, en_lane[i] | (uint32_t)proj.par[i] << 16);
+    for (i = 0; i < 5; i++)
+        h = hash(h, en_lane[i] | (uint32_t)proj.par[i < 4 ? i : 0] << 16);
     h = hash(h, en_drum_pos[0] | (uint32_t)q16(en_duck) << 4 | (uint32_t)q16(en_pad_level) << 9 | (uint32_t)q16(en_bass_level) << 14);
     h = hash(h, (uint32_t)(ui.view == V_SETUP ? plat_battery() + 1 : 0) | (uint32_t)(en_prog_pos + 1) << 12);
     h = hash(h, (uint32_t)(en_drift * 40.0f) | en_section << 8 | (uint32_t)en_phrase_bar << 12 | (uint32_t)ui.perf << 16);
@@ -1579,7 +1706,12 @@ static void leds(void)
         b |= 1u << B_PLAY;
     if (en_frozen)
         b |= 1u << B_REC;
-    if (ui.view == V_CHORDS && !ui.perf && !grid_up()) {   /* the Chords page: the slot's root (if it has one) */
+    if (ui.view == V_PAT && !ui.perf && !grid_up()) {   /* the Pattern page: the lane's steps on the white keys */
+        uint32_t p = lane_steps(ui.lane);
+        for (i = 0; i < 16; i++)
+            if (p >> i & 1u)
+                k |= 1u << STEP_KEY[i];
+    } else if (ui.view == V_CHORDS && !ui.perf && !grid_up()) {   /* the Chords page: the slot's root (if it has one) */
         if (proj.par[P_CQ0 + ui.slot])
             for (i = 0; i < NKEYS; i++)
                 if ((5u + i) % 12u == (uint32_t)proj.par[P_CR0 + ui.slot])
@@ -1970,6 +2102,10 @@ static void speak_dump(void)
                     ui.slot = (uint8_t)x;
                 else if (k == K_CQ || k == K_CX)
                     proj.par[(k == K_CQ ? P_CQ0 : P_CX0) + ui.slot] = (int16_t)x;
+                else if (k == K_LANE)
+                    ui.lane = (uint8_t)x;
+                else if (k == K_LCH)
+                    proj.par[P_DCH0 + ui.lane] = (int16_t)x;
                 else
                     proj.leds = (uint8_t)x;
                 sp_n = 0;
