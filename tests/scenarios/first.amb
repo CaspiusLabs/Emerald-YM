@@ -1,36 +1,39 @@
-# a first look and listen: it grows from power-on; the pages; a minute of the garden
+# a first look and listen: it plays from power-on; the pages; half a minute of the first piece
 wav first.wav
 wait 200
 expect playing 1
+expect piece 0
 expect pool 0x6AD
 wait 6000
-shot garden.png
-expect pad_level >40
+shot dub.png
+# the grid runs (122 BPM is about 8 sixteenths a second; any tempo of 90..140 is over 6)
+expect sixteenths >36
 wait 30000
-shot garden30.png
-expect sixteenths >40
+shot dub30.png
+expect sixteenths >216
 expect loopnotes >0
 wavstop
 expect peak_db_max -0.5
 expect peak_db_min -30
 tap ENV
 wait 100
-shot pad.png
+shot chord.png
 tap ARP
 wait 100
-shot bells.png
+shot texture.png
 tap LFO
 wait 100
 shot bass.png
 tap SEQ
 wait 100
-shot pulse.png
+shot drums.png
 tap FX
 wait 100
 shot space.png
 tap GLO
 wait 100
 shot setup.png
+expect view 6
 # SELECT steps through the pages, from the last back to the first
 turn SELECT -6 100
 expect view 0

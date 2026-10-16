@@ -1,42 +1,50 @@
 # the keys are the scale: toggles, the root stays, three notes at least; modes and the root
 wait 300
-# D Dorian: D E F G A B C. F#3 is key 1: add F# (relative 4)
-tapkey 1
-expect pool 0x6BD
-tapkey 1
+# the first piece is in Dorian; its root to C (Setup page, KNOB 1, down to its lowest)
+expect par20 1
+tap GLO
+spin K1 -12
+expect par19 0
+tap HOME
+# C Dorian: C D Eb F G A Bb. E4 is key 11: add E (relative 4)
 expect pool 0x6AD
-# key 9 is D4: the root stays
-tapkey 9
+tapkey 11
+expect pool 0x6BD
+tapkey 11
+expect pool 0x6AD
+# key 7 is C4: the root stays
+tapkey 7
 expect pool 0x6AD
 # the next mode: Phrygian
 turn ALGO 1
 expect par20 2
 expect pool 0x5AB
 turn ALGO -1
+expect par20 1
 expect pool 0x6AD
-# the root up a tone (Setup page, KNOB 1): E Dorian
+# the root up a tone: D Dorian (the pool is relative to the root: the same)
 tap GLO
 spin K1 2
-expect par19 4
+expect par19 2
 tap HOME
 expect pool 0x6AD
 wait 300
-shot e_dorian.png
+shot d_dorian.png
 # pentatonic minor, then strip it down to three notes and try a fourth removal
 turn ALGO 6
 expect par20 7
 expect pool 0x4A9
-# E pent min: E G A B D. Remove G (key 2 = G3) and A (key 4 = A3)
+# D pent min: D F G A C. Remove F (key 0 = F3) and G (key 2 = G3)
+tapkey 0
 tapkey 2
-tapkey 4
 expect pool 0x481
-# B (key 6): would leave two
-tapkey 6
+# A (key 4 = A3): would leave two
+tapkey 4
 expect pool 0x481
 wait 300
 shot three.png
-# MIDI in, channel 1: A (note 57) back in
-midi 90 39 64
+# MIDI in, channel 1: G (note 55) back in
+midi 90 37 64
 wait 20
 expect pool 0x4A1
 expect dirty 1

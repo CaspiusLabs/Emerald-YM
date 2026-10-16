@@ -1,52 +1,55 @@
 # the pieces: PRESETS picks one, each remembers its settings, SAVE held resets one, all saved
 wait 500
 expect piece 0
-# Garden's pad down (the Pad page: ENV)
+# Basic's chord down to nothing and its cutoff wide open (the Chord page: ENV)
 tap ENV
-spin K1 -10
-expect par0 50
-# the next piece: Departures, its recipe (tempo 60, no pulse, C# Ionian)
+spin K1 -100
+expect par0 0
+spin K4 100
+expect par12 100
+# the next piece: Chamber, its recipe (A Aeolian, its own chord level)
 turn PRESET 1
 expect piece 1
-expect par18 60
-expect par3 0
-expect par19 1
-expect pool 0xAB5
+expect par19 9
+expect par20 5
+expect pool 0x5AD
+expect par0 >0
+expect par12 <100
 wait 8000
-shot departures.png
-# and Voices
+shot chamber.png
+# and Steppers: a groove of its own, the grid running at its tempo
 turn PRESET 1
 expect piece 2
-expect par1 0
+expect par24 2
 wait 20000
-shot voices.png
-expect pad_level >10
-# the pad's colour (the Pad page's fourth knob), kept with the piece (Voices starts as Voices)
-expect par22 1
-spin K4 -1
-expect par22 0
+shot steppers.png
+expect sixteenths >150
+# the cutoff (the Chord page's fourth knob), kept with the piece
+spin K4 -100
+expect par12 0
 wait 3000
-# back to Garden: as it was left
+# back to Basic: as it was left
 turn PRESET -2
-expect par22 0
 expect piece 0
-expect par0 50
-spin K4 1
-expect par22 1
+expect par0 0
+expect par12 100
+spin K4 -1
+expect par12 99
 turn PRESET 2
-expect par22 0
+expect par12 0
 turn PRESET -2
-expect par22 1
-# SAVE held: Garden's recipe again
+expect par12 99
+# SAVE held: Basic's recipe again (not saved by that)
 press SAVE
 wait 1700
 release SAVE
-expect par0 60
-expect par22 0
+expect par0 >0
+expect par12 <99
 expect store_writes 0
-# a tweak, saved, survives a reboot, on the piece it was made on (the Bells page: ARP)
+# a tweak, saved, survives a reboot, on the piece it was made on (the Texture page: ARP)
 tap ARP
-spin K1 5
+spin K1 -100
+spin K1 70
 expect par1 70
 turn PRESET 6
 expect piece 6
@@ -55,6 +58,7 @@ expect store_writes 1
 reboot
 wait 300
 expect piece 6
+# PRESETS goes round: 6, 7, then 0
 turn PRESET 2
 expect piece 0
 expect par1 70

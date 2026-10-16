@@ -1,9 +1,9 @@
-# freeze, next chord, stop and rest, save and reboot
+# dub hold, next chord, stop and rest, save and reboot
 wait 2000
 tap REC
 wait 50
 expect frozen 1
-shot frozen.png
+shot dub_hold.png
 wait 3000
 tap REC
 wait 50
@@ -11,10 +11,12 @@ expect frozen 0
 # the next chord comes on the bar
 tap EDIT
 wait 4000
+# the pings an octave up (and back within the range)
 tap OCT+
 expect par21 1
 tap ENV
-spin K1 -20
+spin K1 -100
+spin K1 40
 expect par0 40
 tap PLAY
 wait 50
