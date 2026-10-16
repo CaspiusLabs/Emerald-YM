@@ -82,7 +82,8 @@ measurement (renders analysed for level, timing and spectrum).
       emulator page is done)
 - [ ] **On the device**: install (`python3 tools/fm1_install.py build/amb.fwsc`), check the Setup
       page's CPU and the sound on the FM-1's speaker and on headphones
-- [ ] The product's name; where the words file and a hosted build are published (the `# url:` in
+- [x] The name: DUB-1 (decided 2026-10-16)
+- [ ] Where the words file and a hosted build are published (the `# url:` in
       `firmware/words.tsv` still points at AMB-1's site)
 - [ ] With everything at maximum the mix drives the output limiter (peak 0.98): fine as a limit, but
       the levels could leave more room
@@ -93,7 +94,8 @@ measurement (renders analysed for level, timing and spectrum).
   - Fifth does nothing with the Drone groove (its only note is the bar's first, always the root)
   - In a Break all three drum rings fade, though the open hat may still play (Motion under 50)
   - At Evolve 0 a stab still drops out ~6% of the time, and a phrase can end in a fill at Motion 0
-  - The kick is a fixed ~49 Hz (it follows Tune, not the key)
+  - The kick is a fixed ~49 Hz (it follows Tune, not the key). Proposed: tune it to the piece's
+    root (or its fifth) within ~44–62 Hz, so the kick and the sub agree; awaiting a decision
   - Pentatonic pieces (Concrete) have three-note chords in fourths (7sus4 sounds), not 7ths
 
 ## Done: DUB-1's own interface
