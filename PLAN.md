@@ -52,24 +52,35 @@ measurement (renders analysed for level, timing and spectrum).
 
 - [x] Local simulator set up (`EMULATOR.md`, `.venv`, `tools/gen_font_noraqm.py`)
 - [x] `dub` branch
-- [x] Engine rewrite, first pass: chord stabs, pings, bass grooves, drums with ducking, arrangement,
+- [x] Engine rewrite (steps 1–4): chord stabs, pings, bass grooves, drums with ducking, arrangement,
       dub echo (band-pass + soft-clipped feedback, throws, hold), crackle (`amb.c`, `amb.h`)
-- [x] `host/en_render.c`: the engine alone to a WAV, with parameter overrides and a bar-by-bar log
+- [x] `host/en_render.c`: the engine alone to a WAV (parameter overrides, timed changes `NAME=V@T`,
+      `freeze=T0-T1`, a bar-by-bar log); `tools/analyze_wav.py`: levels, bands, kick timing, spectrogram
+- [x] First tuning by measurement: layer balance (the chord +12 dB, the pings +9 dB), longer echo tails,
+      no half-diminished chords, fewer throws, keys as loud as the saws, crackle only while playing,
+      feedback eased under 90% while stopped (tails always die); feedback at 100% stays bounded
+- [x] CPU: on the host the new engine costs the same as AMB-1's or less (0.20–0.30% of real time vs
+      0.27–0.31%)
+- [x] Eight pieces, first draft: Basic, Chamber, Steppers, Fog, Concrete, Night Drive, Pressure, Haze
+- [x] UI: pages, labels, help cards, messages, a dark palette, the section and phrase on the main
+      screen, "hold"; screen reader texts
+- [x] Storage: project magic "DUB1", format 1 (AMB-1's saved projects give the recipes)
+- [x] Engine unit tests rewritten (`tests/host/amb_test.c`)
+- [x] A listening pack: `build/listen/pack/` (each piece, dub hold, feedback swell, the arrangement)
 
 ## TODO
 
-- [ ] Engine tuning: the arrangement leaves Full too rarely; keep the chord off half-diminished
-      degrees; fewer throws; level balance between layers; check for clipping and runaway feedback
-- [ ] An analysis script: levels per layer and band over time, kick timing, a spectrogram picture
-- [ ] CPU: compare the render's cost with AMB-1's (host); check the Setup page's CPU on the device
-- [ ] The eight pieces, each its own character
-- [ ] UI: new pages and labels, help cards, the main screen (sections, stab pattern), colours
-- [ ] Storage: a new project magic and format (AMB-1's saved projects aren't read as DUB-1's)
-- [ ] Tests: `tests/host/amb_test.c` and the scenarios rewritten for the new engine
-- [ ] Screen reader words for the new names (`firmware/words.tsv`)
-- [ ] Web emulator and web app builds (need emsdk)
-- [ ] Manual, README, site texts; the product's name
-- [ ] On the device: install, listen on the FM-1's speaker and on headphones
+- [ ] **Your ears**: listen to the pack; what to change in the sound and the pieces
+- [ ] Simulator scenarios (`tests/scenarios/*.amb`) and screen reader words (`firmware/words.tsv`) for DUB-1
+- [ ] Manual and README for DUB-1; new screenshots
+- [ ] The web app's own page (`web/app/index.html`) and the emulator page (`web/emu/index.html`):
+      pages, names, colours (needs emsdk to build and check)
+- [ ] The device build (`./build.sh`: Docker + the JieLi toolchain + the AC79 SDK, see `BUILDING.md`),
+      then install and check the Setup page's CPU and the sound on the FM-1's speaker and on headphones
+- [ ] The product's name; where the words file and a hosted build are published (the `# url:` in
+      `firmware/words.tsv` still points at AMB-1's site)
+- [ ] With everything at maximum the mix drives the output limiter (peak 0.98): fine as a limit, but
+      the levels could leave more room
 
 ## Ideas for later
 

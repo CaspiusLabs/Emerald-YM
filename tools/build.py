@@ -128,7 +128,9 @@ def generate():
     """generated headers: the font (Felucca's), the screen reader's words link (fm1-reader)"""
     GEN.mkdir(parents=True, exist_ok=True)
     tools = SRC / "tools"
-    for c in [[tools / "gen_font.py", GEN / "felucca_font.h"],
+    # EN_FONT_NORAQM=1: a Pillow without libraqm (the digits lose their tabular widths; EMULATOR.md)
+    font = [tools / "gen_font_noraqm.py"] if os.environ.get("EN_FONT_NORAQM") else []
+    for c in [[*font, tools / "gen_font.py", GEN / "felucca_font.h"],
               [tools / "gen_words.py", SRC / "firmware" / "words.tsv", SRC / "web" / "words", GEN / "ann_words.h"]]:
         r = subprocess.run([sys.executable, *map(str, c)], capture_output=True, text=True)
         sys.stdout.write(r.stdout)
