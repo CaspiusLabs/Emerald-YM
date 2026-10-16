@@ -205,6 +205,22 @@ and `amb.c`):
   - CPU within ~3% of AMB-1's (host);
   - RAM 69.2 of 96 KB.
 
+## Next after the FM core: an effects grid on REC (the user's idea)
+
+Holding REC shows a grid of effects; the white keys play them while held (a tap on REC stays dub
+hold). Sixteen in four groups of four, the first of each group lit:
+
+| Group | 1 | 2 | 3 | 4 |
+|---|---|---|---|---|
+| Echo | Throw | Time x2 / /2 | Tape stop (the echo slowing, pitch diving) | Reverse |
+| Filter | Low-pass sweep | High-pass ("radio") | Wah (resonant sweep) | Telephone (narrow band, lo-fi) |
+| Space | Reverb throw | Spring crash | Cloud freeze | Wash (echo and reverb flooding) |
+| Rhythm / FX | Stutter (1/8 or 1/16 repeat) | Gate (the chord in 16ths) | Siren | Noise riser |
+
+- [ ] The grid on screen while REC is held; the keys lit by group
+- [ ] Each effect, eased in and out; a stutter needs a short buffer of the mix (memory: RAM ~28 KB free)
+- [ ] PERFORM keeps the mix and mutes; the grid is the effects
+
 ## Ideas for later
 
 - **Korg NTS-3 kaoss pad integration** (a future project) (the user's own setup; a Kaoss pad is great for dub techno).
