@@ -177,7 +177,7 @@ DUB-1 plays four layers from one scale and one chord, on a grid of sixteenths.
 - **Bass:** a sub on the chord's root, sometimes its fifth, in the sub's band (E1 to Eb2 at home),
   on one of five grooves: Drone (one long note a bar), Offbeat (the four off-beat eighths), Dotted,
   Roller and Sync. It slides briefly from note to note. It stays dry, out of the echo.
-- **Drums:** a four-on-the-floor kick (a sine falling fast onto about 49 Hz, with a click), a
+- **Drums:** a four-on-the-floor kick (a sine falling fast onto the key's root, F1 to B1, 44 to 62 Hz; below F its fifth; with a click), a
   shaker on the sixteenths and an open hat off the beat. The kick ducks everything else (**Duck**),
   and stays out of the echo; the hats send a little to it.
 

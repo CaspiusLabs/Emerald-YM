@@ -133,6 +133,7 @@ void en_voicing(uint32_t pool, int deg, int shape, int *iv);
 const char *en_chord_name(const int *pcs, int n, char *buf);   /* "Em7", "Dsus4", "C" ... */
 uint32_t en_groove(int g);                     /* the bass's pattern g: bit i, a note on step i */
 int en_drift_bars(int v);                      /* Drift's value in bars; 0: the chord holds */
+int en_kick_note(int root);                    /* the kick's note (MIDI) for the key's root: F1..B1 */
 
 /* the pieces: recipes for every parameter (Tune and MIDI out included, but they are the player's) */
 #define EN_NPIECES 8

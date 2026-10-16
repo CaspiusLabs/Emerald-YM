@@ -833,6 +833,15 @@ static void hats_evolve(void)                   /* a shaker step trades places, 
     hats_publish();
 }
 
+/* the kick's note: the key's root in F1..B1 (44..62 Hz); below F, its fifth (G1..B1), so the kick and the
+ * sub agree. One note a piece: it doesn't follow the chords */
+int en_kick_note(int root)
+{
+    int pc = (root % 12 + 12) % 12;
+    return pc >= 5 ? 24 + pc : 24 + pc + 7;
+}
+#define kick_note en_kick_note
+
 static void drum_fire(int d, float vel)
 {
     drum_t *v = &drum[d];
@@ -841,7 +850,7 @@ static void drum_fire(int d, float vel)
     v->att = 0.0f;
     switch (d) {
     case 0: {                                   /* kick: a sine falling fast from ~5x to its note */
-        float f = 49.0f * tunefac;
+        float f = mtof((float)kick_note(par[P_ROOT]));
         v->note = DRUM_GM[0];
         v->inc = f * 5.0f * (1.0f / EN_SR);
         v->inc_end = f * (1.0f / EN_SR);

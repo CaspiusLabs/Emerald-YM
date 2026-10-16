@@ -94,7 +94,7 @@ measurement (renders analysed for level, timing and spectrum).
   - Fifth does nothing with the Drone groove (its only note is the bar's first, always the root)
   - In a Break all three drum rings fade, though the open hat may still play (Motion under 50)
   - At Evolve 0 a stab still drops out ~6% of the time, and a phrase can end in a fill at Motion 0
-  - The kick is a fixed ~49 Hz (it follows Tune, not the key). Proposed: tune it to the piece's
+  - [x] The kick follows the key (decided 2026-10-16): the root in F1..B1, below F its fifth, 44..62 Hz. Was: tune it to the piece's
     root (or its fifth) within ~44–62 Hz, so the kick and the sub agree; awaiting a decision
   - Pentatonic pieces (Concrete) have three-note chords in fourths (7sus4 sounds), not 7ths
 
