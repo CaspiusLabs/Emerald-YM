@@ -67,20 +67,33 @@ measurement (renders analysed for level, timing and spectrum).
 - [x] Storage: project magic "DUB1", format 1 (AMB-1's saved projects give the recipes)
 - [x] Engine unit tests rewritten (`tests/host/amb_test.c`)
 - [x] A listening pack: `build/listen/pack/` (each piece, dub hold, feedback swell, the arrangement)
+- [x] Simulator scenarios and the screen reader's words for DUB-1; the whole suite passes
+- [x] README, manual, licensing note and screenshots for DUB-1
+- [x] The device build works here (`EN_FONT_NORAQM=1 ./build.sh` -> `build/amb.fwsc`): RAM 52.6 of
+      96 KB, pool 332 of 344 KB, no soft doubles
+- [x] DUB-1 by name on the device: splash, crash and safe-mode screens, USB strings; MIDI out off
+      silences every channel
 
 ## TODO
 
 - [ ] **Your ears**: listen to the pack; what to change in the sound and the pieces
-- [ ] Simulator scenarios (`tests/scenarios/*.amb`) and screen reader words (`firmware/words.tsv`) for DUB-1
-- [ ] Manual and README for DUB-1; new screenshots
 - [ ] The web app's own page (`web/app/index.html`) and the emulator page (`web/emu/index.html`):
       pages, names, colours (needs emsdk to build and check)
-- [ ] The device build (`./build.sh`: Docker + the JieLi toolchain + the AC79 SDK, see `BUILDING.md`),
-      then install and check the Setup page's CPU and the sound on the FM-1's speaker and on headphones
+- [ ] **On the device**: install (`python3 tools/fm1_install.py build/amb.fwsc`), check the Setup
+      page's CPU and the sound on the FM-1's speaker and on headphones
 - [ ] The product's name; where the words file and a hosted build are published (the `# url:` in
       `firmware/words.tsv` still points at AMB-1's site)
 - [ ] With everything at maximum the mix drives the output limiter (peak 0.98): fine as a limit, but
       the levels could leave more room
+
+- [ ] `tools/gen_manual_figures.py` and `tools/make_pages.py` still make AMB-1's panel figure and site
+- [ ] Decisions on behaviour (each works as the manual says now):
+  - Bass Octave -1 is C1..B1, not the E1 band an octave down (too low for most speakers)
+  - Fifth does nothing with the Drone groove (its only note is the bar's first, always the root)
+  - In a Break all three drum rings fade, though the open hat may still play (Motion under 50)
+  - At Evolve 0 a stab still drops out ~6% of the time, and a phrase can end in a fill at Motion 0
+  - The kick is a fixed ~49 Hz (it follows Tune, not the key)
+  - Pentatonic pieces (Concrete) have three-note chords in fourths (7sus4 sounds), not 7ths
 
 ## Ideas for later
 
