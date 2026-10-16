@@ -156,12 +156,12 @@ extern volatile uint8_t en_stab_thrown;        /* the last one was thrown */
 extern volatile float en_echo_ms, en_echo_g;   /* the echo's time; the level a repeat keeps of the last (1: held) */
 extern volatile float en_echo_in;              /* how much of the stab goes into the echo, 0..1 */
 extern volatile float en_duck;                 /* the ducking now, 0 .. 1 (full depth) */
-/* the output, for the screen's scope and meters: the last 256 samples (mono, a mean of each eight), where the next goes;
- * each side's level (RMS, smoothed) and peak (held, falling), 0..1 of full scale */
+/* the output, for the screen's scope and spectrum: the last 256 samples (mono, a mean of each eight), and the
+ * last 512 (mono, a mean of each two: 22 kHz), each with where the next goes */
 #define EN_SCOPE_N 256
-extern volatile int16_t en_scope[EN_SCOPE_N];
-extern volatile uint32_t en_scope_w;
-extern volatile float en_vu[2], en_pk[2];
+#define EN_SPEC_N 512
+extern volatile int16_t en_scope[EN_SCOPE_N], en_spec[EN_SPEC_N];
+extern volatile uint32_t en_scope_w, en_spec_w;
 extern volatile uint16_t en_lane[6];           /* this bar as it plays: the stabs, the kick, the hats, the rim, the clap, the bass */
 
 /* the pure parts, for the tests and the screen */

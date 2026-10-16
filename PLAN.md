@@ -302,10 +302,12 @@ the ripples took too much of the middle.
 - [x] Brighter greys and tints, ripples two pixels wide (a throw three), lane dots 6 px with
       rings to match, level and duck bars 8 px
 - [x] The ping loops orbit the ripples: a dot each, a step at a time, lit as they play
-- [x] HOME again on the Dub page: ripples, scope, VU meters (`proj.screen`, saved; said "SCREEN ...").
-      The engine exports `en_scope` (256 samples, each the mean of 8), `en_vu` (smoothed RMS) and
-      `en_pk` (held peaks). The scope triggers on a rising zero crossing, shows a phosphor of two
-      traces and sets its own gain. The VUs put 0 VU at -24 dBFS RMS, with a peak light past -5 dBFS.
+- [x] HOME again on the Dub page: ripples, scope, spectrum (`proj.screen`, saved; said "SCREEN ...").
+      The engine exports `en_scope` (256 samples, each the mean of 8) and `en_spec` (512 at 22 kHz).
+      The scope triggers on a rising zero crossing, shows a phosphor of two traces and sets its own
+      gain. The spectrum is Winamp-style: a 512-point FFT in the UI, 18 log bands (43 Hz-11 kHz),
+      segment columns falling slowly, with peak caps. VU needle meters were tried first and
+      dropped: they looked too realistic for a flat, schematic screen.
 - [x] Test: `tests/scenarios/screen.amb`; screenshots from `tests/listen/shots.amb`
 
 ## Study: a sixth lane, one sample a piece (not started)

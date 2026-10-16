@@ -424,10 +424,10 @@ volatile uint8_t en_stab_thrown;
 volatile uint16_t en_lane[6];
 volatile int16_t en_scope[EN_SCOPE_N];
 volatile uint32_t en_scope_w;
-volatile float en_vu[2], en_pk[2];
-static float vu_acc[2];
-static float scope_acc;
-static uint32_t vu_n, scope_ph;
+volatile int16_t en_spec[EN_SPEC_N];
+volatile uint32_t en_spec_w;
+static float scope_acc, spec_acc;
+static uint32_t scope_ph;
 static uint32_t mutes, perf, fxm, fxm_was;      /* performance: the layers muted, the moves held; the effects held */
 static float perf_sw, perf_echo;                /* the filter pushed open (+) or shut (-), the echo pushed */
 
@@ -2816,33 +2816,19 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
         r = fm_tanhf(r);
         out[2 * j] = (int32_t)(l * 8300000.0f);
         out[2 * j + 1] = (int32_t)(r * 8300000.0f);
-        vu_acc[0] += l * l;                      /* (the screen's meters and scope) */
-        vu_acc[1] += r * r;
-        scope_acc += l + r;
+        scope_acc += l + r;                      /* (the screen's scope and spectrum) */
+        spec_acc += l + r;
+        if (scope_ph & 1u) {
+            en_spec[en_spec_w & (EN_SPEC_N - 1u)] = (int16_t)(fm_clampf(spec_acc, -4.0f, 4.0f) * 8000.0f);
+            en_spec_w++;
+            spec_acc = 0.0f;
+        }
         if (++scope_ph >= 8u) {                  /* (an eighth of the rate, each the mean of its eight) */
             scope_ph = 0;
             en_scope[en_scope_w & (EN_SCOPE_N - 1u)] = (int16_t)(fm_clampf(scope_acc, -16.0f, 16.0f) * 2000.0f);
             scope_acc = 0.0f;
             en_scope_w++;
         }
-        {
-            float al = fm_fabsf(l), ar = fm_fabsf(r);
-            if (al > en_pk[0])
-                en_pk[0] = al;
-            if (ar > en_pk[1])
-                en_pk[1] = ar;
-        }
-    }
-    vu_n += n;
-    if (vu_n >= 512u) {                          /* the meters: ~86 times a second, a VU's ~300 ms */
-        int k;
-        for (k = 0; k < 2; k++) {
-            float rms = fm_sqrtf(vu_acc[k] / (float)vu_n);
-            en_vu[k] += (rms - en_vu[k]) * 0.04f;
-            en_pk[k] *= 0.93f;
-            vu_acc[k] = 0.0f;
-        }
-        vu_n = 0;
     }
     duck_x = fm_flush(duck_x);
     duck_d = fm_flush(duck_d);

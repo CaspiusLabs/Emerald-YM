@@ -95,7 +95,7 @@ The drawing at the top shows them all; here they are in more detail.
 | REC | A tap: **dub hold**: the echo stops listening and repeats what it holds, sample for sample, for ever; the reverb stops listening too and rings on; the chord doesn't move. The stabs, pings and drums go on, dry, above it. Tap again to let go. Lit while held. Held: the **effects grid** (below). |
 | EDIT | A tap: the **Chords page** (below): eight slots to write the chords. Held (half a second): the next chord, at the start of the next bar (at once while resting; in dub hold, once you let go). |
 | SEL | **PERFORM**: the knobs become a mixer and the keys stop being the scale and play the layers (see below). Press again to go back; lit while on. |
-| HOME | The Dub page: tempo and the machine's movement. Again, on the Dub page: the middle of the screen as ripples, a scope or VU meters. |
+| HOME | The Dub page: tempo and the machine's movement. Again, on the Dub page: the middle of the screen as ripples, a scope or a spectrum. |
 | ENV · ARP · LFO · SEQ | The layers' pages: Chord, Texture (the pings and the crackle), Bass, Drums. |
 | FX · GLO | The Space and Setup pages. The lit button shows the page. |
 | SELECT | The previous or next page. Hold HOME and turn it for the tempo, from any page. |
@@ -187,15 +187,16 @@ another button puts the card away; letting go after it does nothing else.
   holds. The chord's name is in the middle (red in dub hold). Around it the four ping loops each
   circle as a blue dot, one step at a time, and light up as they play. The loops have different
   lengths, so the dots drift apart and meet again.
-- **HOME again** (on the Dub page) changes what the middle shows: the ripples, a **scope** or two
-  **VU meters**, and then the ripples again. The choice is saved with the pieces (SAVE). With the
-  scope or the meters showing, the chord's name moves to the top.
+- **HOME again** (on the Dub page) changes what the middle shows: the ripples, a **scope** or a
+  **spectrum**, and then the ripples again. The choice is saved with the pieces (SAVE). With the
+  scope or the spectrum showing, the chord's name moves to the top.
   - The **scope** draws the output (left and right mixed) as a thick line. Each trace starts on a
     rising zero crossing so the picture stands still, and the two traces before it fade behind.
     Its height follows the level, so a quiet passage still fills it.
-  - The **VU meters** are left and right, scaled from -20 to +3 with the red past 0. 0 VU is
-    -24 dBFS RMS, about where the pieces sit, so a kick pushes the needle into the red. The light
-    at the top right of each meter flashes on peaks above -5 dBFS.
+  - The **spectrum** splits the output into 18 bands, from the sub bass (43 Hz, left) to the hats
+    (11 kHz, right). Each band is a column of segments: teal, then brass, amber and red at the
+    top. The columns jump up with the sound and fall back slowly. A white cap stays at each
+    column's peak for a moment before it drops.
 - **Left:** the four layers' levels as they sound: chord (teal), pings (blue), bass (brass),
   drums (amber).
 - **Right:** DUCK, how far the kick is ducking the rest, falling from the top with each kick.
@@ -210,7 +211,7 @@ another button puts the card away; letting go after it does nothing else.
 
 ![The Space page with FEEDBACK lit as it turns, set to 63; ECHO 55, ECHO TIME 1/8., REVERB 35](img/screen-turning.png "Turning Feedback on the Space page")
 ![The scope: the output as a thick teal line over a dotted centre line, the two traces before it fading behind; Fm7 at the top](img/screen-scope.png "HOME again: the scope")
-![Two VU meters, L and R, their needles near 0, the red past 0; Fm7 at the top](img/screen-vu.png "HOME again: the VU meters")
+![The spectrum: eighteen columns of teal and brass segments, a white cap over each; Fm7 at the top](img/screen-spectrum.png "HOME again: the spectrum")
 ![Dub hold: red rings, the chord's name and "hold" in red](img/screen-hold.png "Dub hold")
 ![PERFORM with THROW held: PERFORM top right, every stab a double ring](img/screen-perform.png "PERFORM, throwing")
 
@@ -387,7 +388,7 @@ voice's length times its own: an Organ or a Pad rings longer than Saws at the sa
 
 ![The Dub page: TEMPO 122, EVOLVE 40, MOTION 50, DRIFT 32 bars](img/screen-main.png "The Dub page")
 
-- **HOME** again, on this page: the middle of the screen as ripples, scope or VU meters (see
+- **HOME** again, on this page: the middle of the screen as ripples, scope or spectrum (see
   [The screen](#4-the-screen)).
 - **Tempo:** 90 to 140 (also HOME + SELECT, from any page).
 - **Evolve:** how restless it is: the stab pattern turning and gaining or losing stabs, stabs

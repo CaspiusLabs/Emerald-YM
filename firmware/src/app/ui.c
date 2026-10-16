@@ -616,7 +616,7 @@ static void button(int b)
         return;
     }
     if (b == B_HOME && ui.view == V_DUB) {       /* HOME again: the middle of the screen, the next way */
-        static const char *const SCREEN_NAME[3] = {"RIPPLES", "SCOPE", "VU"};
+        static const char *const SCREEN_NAME[3] = {"RIPPLES", "SCOPE", "SPECTRUM"};
         proj.screen = (uint8_t)((proj.screen + 1u) % 3u);
         mark_dirty();
         say("SCREEN", SCREEN_NAME[proj.screen]);
@@ -1256,47 +1256,85 @@ static void draw_scope(void)
     }
 }
 
-/* the middle as two VU meters, left and right: a needle each, -20 to +3 (0 VU = -24 dBFS, RMS: the pieces sit
- * near it), the red past 0; a peak light past -5 dBFS */
-static void draw_vu(void)
+/* the middle as a spectrum (a Winamp's): the output's last 512 samples at 22 kHz, windowed and transformed,
+ * in 18 bands a third of an octave or more wide, 43 Hz to 11 kHz; each a column of segments, teal low, brass,
+ * amber, red at the top, rising at once and falling slowly, a cap held at its peak a moment */
+#define SP_NB 18
+#define SP_X 58
+#define SP_BOT 86
+#define SP_SEG 18                                /* segments a column, 3 px each */
+static void fft512(float *re, float *im)         /* in place, radix 2 */
 {
-    static const int8_t DB[11] = {-20, -10, -7, -5, -3, -2, -1, 0, 1, 2, 3};
-    static const float AMP[11] = {0.1f, 0.3162f, 0.4467f, 0.5623f, 0.7079f, 0.7943f, 0.8913f, 1.0f, 1.1220f, 1.2589f, 1.4125f};
-    const float SPAN = 1.3264f, HALF = 0.6632f;  /* +-38 degrees */
-    int k, i;
-    for (k = 0; k < 2; k++) {
-        const int32_t cx = 88 + 68 * k, py = 92;
-        float f, a, sn, cs;
-        cv_round(cx - 32, 32, 64, 52, 4, K_PANEL);
-        for (i = 0; i <= 38; i++) {              /* the scale's arc, red past 0 */
-            float fa = (float)i / 38.0f;
-            a = fa * SPAN - HALF;
-            sn = fm_sinf(a), cs = fm_cosf(a);
-            cv_rect(cx + (int32_t)(46.0f * sn + 0.5f), py - (int32_t)(46.0f * cs + 0.5f), 1, fa > 0.6855f ? 2 : 1,
-                    fa > 0.6855f ? K_FROST : K_DIM);
+    int n = EN_SPEC_N, i, j = 0, len, k;
+    for (i = 1; i < n; i++) {                    /* the bit-reversed order */
+        int b = n >> 1;
+        for (; j & b; b >>= 1)
+            j ^= b;
+        j ^= b;
+        if (i < j) {
+            float t = re[i];
+            re[i] = re[j], re[j] = t;
+            t = im[i];
+            im[i] = im[j], im[j] = t;
         }
-        for (i = 0; i < 11; i++) {               /* its marks */
-            int32_t r0 = (DB[i] == -20 || DB[i] == 0 || DB[i] == 3) ? 39 : 42;
-            a = (AMP[i] - 0.1f) * (1.0f / 1.3125f) * SPAN - HALF;
-            sn = fm_sinf(a), cs = fm_cosf(a);
-            line(cx + (int32_t)((float)r0 * sn + 0.5f), py - (int32_t)((float)r0 * cs + 0.5f),
-                 cx + (int32_t)(45.0f * sn + 0.5f), py - (int32_t)(45.0f * cs + 0.5f), DB[i] > 0 ? K_FROST : K_DIM);
+    }
+    for (len = 2; len <= n; len <<= 1) {
+        float a = -6.2831853f / (float)len, wr = fm_cosf(a), wi = fm_sinf(a);
+        for (i = 0; i < n; i += len) {
+            float cr = 1.0f, ci = 0.0f;
+            for (k = 0; k < len / 2; k++) {
+                int p = i + k, q = p + len / 2;
+                float tr = re[q] * cr - im[q] * ci, ti = re[q] * ci + im[q] * cr, nr;
+                re[q] = re[p] - tr, im[q] = im[p] - ti;
+                re[p] += tr, im[p] += ti;
+                nr = cr * wr - ci * wi;
+                ci = cr * wi + ci * wr;
+                cr = nr;
+            }
         }
-        cv_text(cx - 28, 66, &FONT_XS, k ? "R" : "L", K_DIM);
-        text_c(cx, 50, &FONT_XS, "VU", K_DIM);
-        f = fm_clampf((en_vu[k] * (1.0f / 0.0631f) - 0.1f) * (1.0f / 1.3125f), -0.03f, 1.06f);
-        if (!en_playing && en_vu[k] < 0.001f)
-            f = -0.03f;
-        a = f * SPAN - HALF;
-        sn = fm_sinf(a), cs = fm_cosf(a);
-        {
-            int32_t x0 = cx + (int32_t)(18.0f * sn + 0.5f), y0 = py - (int32_t)(18.0f * cs + 0.5f),
-                    x1 = cx + (int32_t)(47.0f * sn + 0.5f), y1 = py - (int32_t)(47.0f * cs + 0.5f);
-            line(x0, y0, x1, y1, K_TEXT);
-            line(x0 + 1, y0, x1 + 1, y1, K_TEXT);
+    }
+}
+
+static void draw_spec(void)
+{
+    static const uint16_t EDGE[SP_NB + 1] = {1, 2, 3, 4, 5, 6, 7, 9, 12, 16, 22, 30, 40, 55, 75, 102, 138, 188, 256};
+    static float re[EN_SPEC_N], im[EN_SPEC_N], lv[SP_NB], cap[SP_NB];
+    static uint8_t hold[SP_NB];
+    uint32_t w = en_spec_w;
+    int i, b, g;
+    for (i = 0; i < EN_SPEC_N; i++) {            /* (the oldest first, a Hann window) */
+        float h = 0.5f - 0.5f * fm_cosf(6.2831853f * (float)i * (1.0f / (float)(EN_SPEC_N - 1)));
+        re[i] = (float)en_spec[(w + (uint32_t)i) & (EN_SPEC_N - 1u)] * (1.0f / 32000.0f) * h;
+        im[i] = 0.0f;
+    }
+    fft512(re, im);
+    for (b = 0; b < SP_NB; b++) {
+        float pw = 1e-9f, db, f;
+        int32_t x = SP_X + b * 7, n;
+        for (i = EDGE[b]; i < EDGE[b + 1]; i++)
+            pw += re[i] * re[i] + im[i] * im[i];
+        db = 3.0103f * fm_log2f(pw) - 42.1f + 1.5f * (float)b;   /* dB of full scale, tilted up 1.5 dB a band */
+        f = fm_clampf((db + 56.0f) * (1.0f / 48.0f), 0.0f, 1.0f);
+        if (!en_playing)
+            f = 0.0f;
+        lv[b] = f > lv[b] ? f : lv[b] - 0.04f;   /* up at once, down slowly */
+        if (lv[b] >= cap[b]) {
+            cap[b] = lv[b];
+            hold[b] = 12;                        /* (frames: ~0.6 s) */
+        } else if (hold[b]) {
+            hold[b]--;
+        } else {
+            cap[b] -= 0.025f;
         }
-        cv_round(cx - 12, 77, 24, 7, 3, K_LINE);  /* the needle's cap */
-        cv_disc(cx + 25, 39, 2, en_pk[k] > 0.56f ? K_FROST : K_FROST_T);   /* the peak light */
+        n = (int32_t)(lv[b] * (float)SP_SEG + 0.5f);
+        for (g = 0; g < SP_SEG; g++) {
+            uint16_t c = g >= SP_SEG - 3 ? K_FROST : g >= SP_SEG * 2 / 3 ? K_PULSE : g >= SP_SEG / 3 ? K_BASS : K_PAD;
+            if (en_frozen)
+                c = K_FROST;
+            cv_rect(x, SP_BOT - 3 * g - 2, 6, 2, g < n ? c : g == 0 ? K_LINE : K_BG);
+        }
+        if (cap[b] > 0.03f)
+            cv_rect(x, SP_BOT - 3 * (int32_t)(cap[b] * (float)SP_SEG + 0.5f) - 1, 6, 1, K_TEXT);
     }
 }
 
@@ -1508,7 +1546,7 @@ static int help_lines(int b, const char *l[HELP_LINES])
     int n = 0;
 #define L(t) (l[n++] = (t))
     switch (b) {
-    case B_HOME: L("DUB"); L("TEMPO, EVOLVE, MOTION, DRIFT"); L("+ SELECT: TEMPO"); L("AGAIN: RIPPLES, SCOPE, VU"); break;
+    case B_HOME: L("DUB"); L("TEMPO, EVOLVE, MOTION, DRIFT"); L("+ SELECT: TEMPO"); L("AGAIN: RIPPLES, SCOPE, SPECTRUM"); break;
     case B_ENV: L("THE CHORD: LEVEL, STABS,"); L(" DECAY, CUTOFF"); L("ALGORITHM: ITS VOICE"); L("AGAIN: SOUND; AGAIN: FM"); break;
     case B_ARP: L("TEXTURE: PINGS, DENSITY,"); L(" CLOUD, CRACKLE"); L("ALGORITHM: THE PINGS' VOICE"); L("AGAIN: SOUND; AGAIN: FM"); break;
     case B_LFO: L("THE BASS"); L("LEVEL, OCTAVE, GROOVE, FIFTH"); L("ALGORITHM: ITS VOICE"); L("AGAIN: SOUND; AGAIN: FM"); break;
@@ -1728,17 +1766,17 @@ static void draw_main(void)
     } else if (parent_of(ui.view) >= 0) {        /* a sound page: the layer's envelope instead of the ripples */
         draw_env(parent_of(ui.view));
         moving = 1;
-    } else if (proj.screen % 3u == 1u) {         /* (HOME again: a scope, VU meters, or the ripples) */
+    } else if (proj.screen % 3u == 1u) {         /* (HOME again: a scope, a spectrum, or the ripples) */
         draw_scope();
         moving = 1;
     } else if (proj.screen % 3u == 2u) {
-        draw_vu();
+        draw_spec();
         moving = 1;
     } else {
         moving = (uint8_t)draw_ripples(now);
         draw_orbits();
     }
-    if (parent_of(ui.view) < 0 && proj.screen % 3u) {   /* the chord: over the scope or the meters, small */
+    if (parent_of(ui.view) < 0 && proj.screen % 3u) {   /* the chord: over the scope or the spectrum, small */
         char nm[16];
         chord_now(nm);
         text_c(CX, 1, &FONT_S, nm, en_frozen ? K_FROST : K_TEXT);

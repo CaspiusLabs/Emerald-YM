@@ -11,7 +11,7 @@ wait 2000
 shot screen-scope.png
 tap HOME
 wait 2000
-shot screen-vu.png
+shot screen-spectrum.png
 tap HOME
 wait 300
 tap ENV
