@@ -11,7 +11,7 @@ notes out, open the filter, push the feedback, hold the echo.
 DUB-1 is a fork of [AMB-1](https://github.com/charlesvestal/fm1-amb), Charles Vestal's generative
 ambient firmware for the FM-1, and keeps its platform, its panel and much of its sound engine.
 
-![DUB-1's main screen: the piece Basic, F Dorian, 122; the section FULL top left, the chord Fm7 in the ring](docs/img/screen-main.png) ![A Break: the drum rings faded, the kick and bass out](docs/img/screen-break.png) ![Dub hold: the chord name and "hold" in red](docs/img/screen-hold.png)
+![DUB-1's main screen: the piece Basic, F Dorian, 122; FULL top left, the stabs' ripples round the chord Fm7, the lanes below](docs/img/screen-main.png) ![PERFORM, THROW held: every stab a double ring](docs/img/screen-perform.png) ![Dub hold: the rings and "hold" in red](docs/img/screen-hold.png)
 
 - **Read the manual**: [docs/MANUAL.md](docs/MANUAL.md)
 - **Try it, install it:** a hosted emulator, web installer and firmware download aren't published
@@ -28,6 +28,7 @@ installer can reach.
 |---|---|
 | Keys | The scale: each key adds its note or takes it out |
 | PLAY · REC · EDIT | Play / rest · dub hold · the next chord, on the next bar |
+| SEL | PERFORM: the keys mute the layers and, held, throw, open, shut, drop the kick, push the echo |
 | HOME · ENV · ARP · LFO · SEQ · FX · GLO | The pages: Dub, Chord, Texture, Bass, Drums, Space, Setup; KNOB 1–4 set their four values |
 | SELECT | The previous or next page; with HOME held, the tempo |
 | ALGORITHM · PRESETS | The mode · the piece (eight of them) |

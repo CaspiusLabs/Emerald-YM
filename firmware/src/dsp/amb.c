@@ -286,7 +286,7 @@ const char *en_chord_name(const int *pcs, int n, char *buf)
 }
 
 /* ------------------------------------------------------------ commands --- */
-enum { C_SET, C_POOL, C_PLAY, C_NEXT, C_FREEZE, C_SEED, C_PANIC, C_CLOCK, C_REGROW };
+enum { C_SET, C_POOL, C_PLAY, C_NEXT, C_FREEZE, C_SEED, C_PANIC, C_CLOCK, C_REGROW, C_MUTE, C_PERF };
 #define QN 64u
 static uint32_t q[QN];
 static volatile uint32_t q_w, q_r;
@@ -308,6 +308,8 @@ void en_seed(uint32_t s) { post(C_SEED, 0, (int)(s & 0xFFFFu)); }
 void en_panic(void) { post(C_PANIC, 0, 0); }
 void en_clock(int msg) { post(C_CLOCK, msg, 0); }
 void en_regrow(void) { post(C_REGROW, 0, 0); }
+void en_mute(uint32_t m) { post(C_MUTE, (int)(m & 0xFFu), 0); }
+void en_perf(uint32_t f) { post(C_PERF, (int)(f & 0xFFu), 0); }
 
 /* -------------------------------------------------------------- state --- */
 volatile uint8_t en_playing, en_frozen, en_ext;
@@ -325,7 +327,12 @@ volatile uint8_t en_pulse_rest;
 volatile uint8_t en_pad_note[EN_NPAD];
 volatile float en_pad_amp[EN_NPAD];
 volatile uint8_t en_section, en_phrase_bar;
-volatile uint32_t en_stab_pat, en_throws;
+volatile uint32_t en_stab_pat, en_throws, en_stabs;
+volatile float en_stab_vel, en_echo_ms, en_echo_g, en_echo_in, en_duck;
+volatile uint8_t en_stab_thrown;
+volatile uint16_t en_lane[4];
+static uint32_t mutes, perf;                    /* performance: the layers muted, the moves held */
+static float perf_sw, perf_echo;                /* the filter pushed open (+) or shut (-), the echo pushed */
 
 static int16_t par[P_NPARAMS];
 static uint32_t pool = 0xAADu;                  /* Ionian until told */
@@ -774,6 +781,9 @@ static void stab_fire(float vel, int throw_it)
     }
     st_env = vel;
     st_fenv = 1.0f;
+    en_stab_vel = vel;
+    en_stab_thrown = (uint8_t)(throw_it != 0);
+    en_stabs++;
     st_midi_left = (int32_t)(fm_maxf(st_t60 * 0.5f, 0.06f) * EN_SR);
     if (throw_it) {
         st_throw = 1.0f;
@@ -985,25 +995,34 @@ static void tick(void)
     float r = frand();
     if (st == 0)
         bar_start();
-    if (lay_kick && (st & 3) == 0 && !(fill && st >= 8))
+    const int kick = lay_kick && !(mutes & EN_M_KICK) && !(perf & EN_PF_KICKDROP), hats = !(mutes & EN_M_HATS);
+    if (st == 0) {                              /* the bar's lanes, for the screen */
+        en_lane[0] = (uint16_t)(mutes & EN_M_CHORD ? 0u : en_stab_pat);
+        en_lane[2] = (uint16_t)(hats ? (lay_hats ? drum_pat[1] : 0u) | (lay_open || fill ? drum_pat[2] : 0u) : 0u);
+        en_lane[3] = (uint16_t)(lay_bass && !(mutes & EN_M_BASS) ? en_groove(par[P_GROOVE]) : 0u);
+    }
+    en_lane[1] = (uint16_t)(kick ? (fill ? 0x0011u : 0x1111u) : 0u);
+    if (kick && (st & 3) == 0 && !(fill && st >= 8))
         drum_hit(0, st ? 0.88f : 1.0f, 0);
-    if (lay_hats && drum_pat[1] >> st & 1u)
+    if (hats && lay_hats && drum_pat[1] >> st & 1u)
         drum_hit(1, 0.35f + 0.3f * r + (st & 1 ? 0.0f : 0.15f), st & 1);
-    if ((lay_open || fill) && drum_pat[2] >> st & 1u)
+    if (hats && (lay_open || fill) && drum_pat[2] >> st & 1u)
         drum_hit(2, 0.7f + 0.2f * r, 0);
-    if (lay_bass && en_groove(par[P_GROOVE]) >> st & 1u)
+    if (lay_bass && !(mutes & EN_M_BASS) && en_groove(par[P_GROOVE]) >> st & 1u)
         bass_hit(st == 0);
-    if (en_stab_pat >> st & 1u) {
+    if (en_stab_pat >> st & 1u) {               /* (the random draws made muted or not: the music goes on the same) */
         uint32_t later = en_stab_pat >> (st + 1);
         int last = !later, thr = (fill && last) || frand() < (0.015f + 0.06f * evolve) * (sec == SEC_BREAK ? 2.5f : 1.0f);
-        stab_fire(st == (int)__builtin_ctz(en_stab_pat) ? 0.9f + 0.1f * frand() : 0.65f + 0.25f * frand(), thr);
+        float vel = st == (int)__builtin_ctz(en_stab_pat) ? 0.9f + 0.1f * frand() : 0.65f + 0.25f * frand();
+        if (!(mutes & EN_M_CHORD))
+            stab_fire(vel, thr || (perf & EN_PF_THROW));
     }
     for (d = 0; d < EN_NDRUM; d++)
         en_drum_pos[d] = (uint8_t)st;
     if ((sixteenth & 1u) == 0u) {               /* the loops step in eighths */
         for (l = 0; l < EN_NLOOP; l++) {
             int s = loop_pos[l];
-            if (loop_note[l][s] >= 0 && !loop_rest[l])
+            if (loop_note[l][s] >= 0 && !loop_rest[l] && !(mutes & EN_M_PINGS))
                 bell_ring(l, s);
             en_loop_pos[l] = (uint8_t)s;
             if (++loop_pos[l] >= EN_LOOP_LEN[l]) {
@@ -1197,7 +1216,7 @@ static void heads_step(uint32_t n)
     want = fm_clampf((head2_t - head2) * (1.0f / (2.0f * TAPE_SR)), -vmax, vmax);
     head2_v += (want - head2_v) * fm_minf((float)n * (1.0f / EN_SR), 1.0f);
     /* the band-pass: ~60..500 Hz below, ~1.1..2.6 kHz above, moving up together */
-    sw = fm_clampf(0.45f + 0.35f * arcm + 0.35f * motion * mod[5].v, 0.0f, 1.0f);
+    sw = fm_clampf(0.45f + 0.35f * arcm + 0.25f * perf_sw + 0.35f * motion * mod[5].v, 0.0f, 1.0f);
     tape_hpc = 0.035f + 0.24f * sw * sw;
     tape_lpc = 0.58f + 0.3f * sw;
 }
@@ -1232,7 +1251,7 @@ static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
                 tape_w = 0;
             tape[tape_w] = s;
         } else {
-            float g = fm_minf(echo_fb + 0.15f * st_throw, fb_cap);
+            float g = fm_minf(echo_fb + 0.15f * st_throw + 0.12f * perf_echo, fb_cap);
             tape_lp += tape_lpc * (h1 + fb_lean * (h2 - h1) - tape_lp);   /* each time round: thinner, darker */
             tape_hp += tape_hpc * (tape_lp - tape_hp);
             fb = tape_lp - tape_hp;
@@ -1616,6 +1635,8 @@ static void drain(void)
             break;
         case C_PANIC: quiet(); break;
         case C_REGROW: regrow(); break;
+        case C_MUTE: mutes = (uint32_t)a; break;
+        case C_PERF: perf = (uint32_t)a; break;
         }
     }
 }
@@ -1644,7 +1665,7 @@ static void render_stabs(uint32_t n)
     for (j = 0; j < n; j++) {
         float l = 0.0f, r = 0.0f, v1, v2, v3, yl, yr, e;
         if (!(j & 31u)) {                        /* the filter: its base, its envelope, the sweep */
-            float fc = cut_base * fm_exp2f(1.7f * st_fenv + 1.0f * arcm + 0.3f * motion * mod[0].v);
+            float fc = cut_base * fm_exp2f(1.7f * st_fenv + 1.0f * arcm + perf_sw + 0.3f * motion * mod[0].v);
             svf_coefs(st_c, fm_minf(fc, 12000.0f), k);
             st_fenv *= st_fdec;
         }
@@ -1902,7 +1923,7 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
 {
     uint32_t j;
     const float rg = rev_send * rev_in_gain * (1.0f - 0.2f * arcm);
-    float eg = echo_send * ein_gain, ca = cloud_amt * (sec == SEC_BREAK ? 1.4f : 1.0f);   /* more in a Break */
+    float eg = (echo_send + (1.0f - echo_send) * perf_echo) * ein_gain, ca = cloud_amt * (sec == SEC_BREAK ? 1.4f : 1.0f);   /* more in a Break */
     for (j = 0; j < n; j++)
         mixl[j] = mixr[j] = rsend[j] = esend[j] = kickb[j] = 0.0f;
     render_stabs(n);
@@ -1944,6 +1965,16 @@ static void control(uint32_t n)                 /* once a chunk: the slow things
     rev_in_gain += ((en_frozen ? 0.0f : 1.0f) - rev_in_gain) * 0.01f;
     ein_gain += ((en_frozen ? 0.0f : 1.0f) - ein_gain) * 0.05f;
     fb_cap += ((en_playing ? 2.0f : 0.9f) - fb_cap) * fm_minf((float)n / (2.0f * EN_SR), 1.0f);
+    {   /* the performance's pushes, eased in and out (~150 ms, ~40 ms for the echo) */
+        float t = (perf & EN_PF_OPEN ? 2.0f : 0.0f) - (perf & EN_PF_CLOSE ? 2.5f : 0.0f);
+        perf_sw += (t - perf_sw) * fm_minf((float)n / (0.15f * EN_SR), 1.0f);
+        perf_echo += ((perf & EN_PF_ECHO ? 1.0f : 0.0f) - perf_echo) * fm_minf((float)n / (0.04f * EN_SR), 1.0f);
+    }
+    if (echo_len > 0.0f)                        /* for the screen's ripples */
+        en_echo_ms = echo_len * (1000.0f / TAPE_SR);
+    en_echo_g = en_frozen ? 1.0f : fm_minf(echo_fb + 0.12f * perf_echo, fb_cap) * 0.82f;
+    en_echo_in = echo_send + (1.0f - echo_send) * perf_echo;
+    en_duck = duck_d * (duck_depth > 0.0f ? 1.0f : 0.0f);
     cl_dens = cloud_amt > 0.0f ? fm_clampf(0.25f + 0.5f * cloud_amt + 0.3f * arcm, 0.05f, 1.0f) : 0.0f;
     for (i = 0; i < EN_NLOOP; i++)
         en_loop_glow[i] *= 0.985f;

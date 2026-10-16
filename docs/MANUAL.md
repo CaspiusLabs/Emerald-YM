@@ -92,6 +92,7 @@ The drawing at the top shows them all; here they are in more detail.
 | PLAY | Play / rest. DUB-1 starts playing by itself when it's switched on. At rest, the echo's feedback eases under 90% so its tails die away, the reverb rings out and the crackle fades. Playing again starts from the first bar of a phrase. Lit while playing. |
 | REC | **Dub hold**: the echo stops listening and repeats what it holds, sample for sample, for ever; the reverb stops listening too and rings on; the chord doesn't move. The stabs, pings and drums go on, dry, above it. Press again to let go. Lit while held. |
 | EDIT | The next chord, at the start of the next bar (at once while resting). While playing in dub hold, it waits until you let go. |
+| SEL | **PERFORM**: the keys stop being the scale and play the mix (see below). Press again to go back; lit while on. |
 | HOME | The Dub page: tempo and the machine's movement. |
 | ENV · ARP · LFO · SEQ | The layers' pages: Chord, Texture (the pings and the crackle), Bass, Drums. |
 | FX · GLO | The Space and Setup pages. The lit button shows the page. |
@@ -103,7 +104,21 @@ The drawing at the top shows them all; here they are in more detail.
 | MASTER | Volume. |
 | SAVE | Saves all eight pieces. Held for 1.5 s: puts the piece back to its recipe. |
 
-**Help:** hold any button but PLAY (or SEL) for a second and a card says what it does. A key, a knob or
+**PERFORM** (SEL). The white keys from the lowest up:
+
+| Key (white) | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| | Chord | Pings | Bass | Kick | Hats | Throw | Open | Shut | Kick drop | Echo |
+
+- **1–5, mutes:** a press mutes the layer, another brings it back; the key is lit while the
+  layer plays. The mutes stay when you leave PERFORM. The music goes on underneath: a muted layer
+  comes back where it would have been.
+- **6–10, moves, held:** as long as the key is down, every stab is thrown into the echo (Throw);
+  the filter, and the echo's band-pass with it, pushed open (Open) or shut (Shut); the kick dropped
+  (Kick drop); the echo pushed: everything into it, feeding back more (Echo). Letting go eases back.
+- The black keys do nothing in PERFORM; MIDI notes in still change the scale.
+
+**Help:** hold any button but PLAY for a second and a card says what it does. A key, a knob or
 another button puts the card away; letting go after it does nothing else.
 
 ![SAVE's card over the main screen: SAVES ALL EIGHT PIECES. KEEP HOLDING: THE PIECE BACK TO ITS RECIPE](img/screen-help.png "SAVE's card")
@@ -112,30 +127,34 @@ another button puts the card away; letting go after it does nothing else.
 
 ## 4. The screen
 
-![The main screen on the Dub page: Basic, F Dorian, tempo 122; FULL and the phrase's bars top left, the bar to the next chord top right; the ring with the chord Fm7 in the middle and the four ping loops around it, the four level bars on the left, the drum rings on the right; TEMPO 122, EVOLVE 40, MOTION 50, DRIFT 32 bars](img/screen-main.png "The Dub page (HOME)")
-![A Break in the piece Haze: BREAK top left, the drum rings faded, only the pings' meter moving](img/screen-break.png "Haze, in a Break")
+![The main screen on the Dub page: Basic, F Dorian, tempo 122; FULL and the phrase's bars top left, the bar to the next chord top right; the ripples with the chord's name in the middle, the four level bars on the left, the duck meter on the right, the four lanes below; TEMPO 122, EVOLVE 40, MOTION 50, DRIFT 32 bars](img/screen-main.png "The Dub page (HOME)")
+![A Groove phrase: GROOVE lit top left, fewer stabs in the top lane](img/screen-groove.png "A Groove")
 
 - **Top line:** the piece in a tag, its root and mode. On the right, a beat light (a play triangle
   while resting), the tempo (EXT when it follows MIDI clock) and a dot when there are unsaved
-  changes. Messages ("ADDED F#", "NEXT CHORD ON THE BAR", "DUB HOLD ON") show here for a moment.
+  changes. Messages ("ADDED F#", "NEXT CHORD ON THE BAR", "DUB HOLD ON", "KICK OFF") show here for
+  a moment.
 - **Top left:** the section playing (FULL in grey; BREAK, GROOVE and THIN lit up) and eight dots,
   the phrase's bars, lit up to the bar playing.
 - **Top right:** a thin bar fills up on the way to the next chord (none when Drift is Hold); in
-  dub hold it says "hold" in red instead.
-- **The ring:** the twelve notes, C at the top. Notes in the scale are teal, the chord's notes
-  larger, brightening with each stab; the root is ringed in white. The chord's name is in the
-  middle (red in dub hold).
-- **Around it:** the four ping loops, 13, 17, 23 and 29 eighths, from the inside out. Each dot is
-  a step; the blue ones hold a note. A playhead goes round each loop and glows when it pings.
+  dub hold it says "hold" in red instead. PERFORM, when SEL's mode is on.
+- **The ripples:** each stab drops a ring in the middle that spreads and fades, and the echo's
+  repeats follow it, a ring each echo time, each as faint as the echo keeps it: a long Feedback
+  makes long trains of rings, a short one a single ring. A stab thrown into the echo makes a
+  double, brighter ring. In dub hold the rings turn red and keep coming, as the echo repeats what it
+  holds. The chord's name is in the middle (red in dub hold).
 - **Left:** the four layers' levels as they sound: chord (teal), pings (blue), bass (brass),
   drums (amber).
-- **Right:** the three drum rings, 16 sixteenths each: the kick, the shaker, the open hat. Their
-  hits fade in a Break.
+- **Right:** DUCK, how far the kick is ducking the rest, falling from the top with each kick.
+- **The lanes:** the bar as it plays, sixteen steps, a lane a layer, each marked in its colour on
+  the left: the stabs (teal), the kick (amber), the hats (white), the bass (brass). The step playing
+  is lit. A layer that's out (in a Break, or muted in PERFORM) has an empty lane.
 - **Bottom:** the page's name and seven dots, one a page, then its four values, one for each knob:
   a dial (or, for a switch, its positions) and the value. The one you're turning lights up.
 
 ![The Space page with FEEDBACK lit as it turns, set to 63; ECHO 55, ECHO TIME 1/8., REVERB 35](img/screen-turning.png "Turning Feedback on the Space page")
-![Dub hold: the chord's name and "hold" in red](img/screen-hold.png "Dub hold")
+![Dub hold: red rings, the chord's name and "hold" in red](img/screen-hold.png "Dub hold")
+![PERFORM with THROW held: PERFORM top right, every stab a double ring](img/screen-perform.png "PERFORM, throwing")
 
 ---
 

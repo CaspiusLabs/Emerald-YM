@@ -1,0 +1,19 @@
+# the manual's screenshots of the main screen
+wait 9000
+shot screen-main.png
+turn K3 50
+wait 70000
+shot screen-break-a.png
+wait 16000
+shot screen-break-b.png
+wait 16000
+shot screen-break-c.png
+tap REC
+wait 2500
+shot screen-hold.png
+tap REC
+tap SEL
+key w5 down
+wait 2000
+shot screen-perform.png
+key w5 up

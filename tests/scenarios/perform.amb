@@ -1,0 +1,38 @@
+# PERFORM (SEL): the keys mute the layers and, held, make the dub moves; SEL again gives the scale back
+listen
+wait 3000
+expect pool 0x6AD
+tap SEL
+wait 200
+said PERFORM ON
+tapkey w3
+wait 200
+said KICK OFF
+tapkey w0
+wait 200
+said CHORD OFF
+key w5 down
+wait 200
+said THROW
+wait 1500
+key w5 up
+key w9 down
+wait 200
+said ECHO
+wait 1000
+key w9 up
+# a scale key does not change the scale while performing
+tapkey b0
+wait 200
+expect pool 0x6AD
+tapkey w3
+wait 200
+said KICK ON
+tap SEL
+wait 200
+said PERFORM OFF
+# the keys are the scale again (key b0 is F#: added)
+tapkey b0
+wait 200
+said ADDED F#
+expect dirty 1

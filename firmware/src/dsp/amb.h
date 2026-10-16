@@ -72,6 +72,11 @@ void en_freeze(int on);
 void en_seed(uint32_t s);                      /* stir some entropy into the generators */
 void en_panic(void);                           /* everything quiet, now */
 void en_regrow(void);                          /* a new piece: fresh loops and patterns, the home chord */
+/* performance (SEL's mode): layers muted (EN_M_*, a mask: set = muted), and the moves held now (EN_PF_*) */
+enum { EN_M_CHORD = 1, EN_M_PINGS = 2, EN_M_BASS = 4, EN_M_KICK = 8, EN_M_HATS = 16 };
+enum { EN_PF_THROW = 1, EN_PF_OPEN = 2, EN_PF_CLOSE = 4, EN_PF_KICKDROP = 8, EN_PF_ECHO = 16 };
+void en_mute(uint32_t mask);
+void en_perf(uint32_t flags);
 /* MIDI clock in (as FoMni): ticks drive the 1/16 grid (6 a step) while they keep coming */
 enum { EN_CLK_TICK, EN_CLK_START, EN_CLK_CONTINUE, EN_CLK_STOP };
 void en_clock(int msg);
@@ -108,6 +113,14 @@ extern volatile uint8_t en_section;            /* SEC_*: the phrase playing */
 extern volatile uint8_t en_phrase_bar;         /* 0..7: its bar */
 extern volatile uint32_t en_stab_pat;          /* the stabs' pattern this bar (bit i: step i) */
 extern volatile uint32_t en_throws;            /* stabs thrown into the echo so far (for tests) */
+/* for the screen's ripples and lanes */
+extern volatile uint32_t en_stabs;             /* stabs struck so far */
+extern volatile float en_stab_vel;             /* the last one's strength, 0..1 */
+extern volatile uint8_t en_stab_thrown;        /* the last one was thrown */
+extern volatile float en_echo_ms, en_echo_g;   /* the echo's time; the level a repeat keeps of the last (1: held) */
+extern volatile float en_echo_in;              /* how much of the stab goes into the echo, 0..1 */
+extern volatile float en_duck;                 /* the ducking now, 0 .. 1 (full depth) */
+extern volatile uint16_t en_lane[4];           /* this bar as it plays: the stabs, the kick, the hats, the bass (bit i: step i) */
 
 /* the pure parts, for the tests and the screen */
 uint32_t en_euclid(int k, int n, int rot);     /* Bjorklund's pattern, as a bitmask (bit 0 = step 0) */

@@ -78,8 +78,8 @@ measurement (renders analysed for level, timing and spectrum).
 
 - [ ] **Your ears**: listen to the pack (`build/listen/pack/`, rendered again with the cloud); what to
       change in the sound and the pieces
-- [ ] The web app's own page (`web/app/index.html`) and the emulator page (`web/emu/index.html`):
-      pages, names, colours (needs emsdk to build and check)
+- [ ] The web app's own page (`web/app/index.html`, the phone/desktop app): still AMB-1's UI (the
+      emulator page is done)
 - [ ] **On the device**: install (`python3 tools/fm1_install.py build/amb.fwsc`), check the Setup
       page's CPU and the sound on the FM-1's speaker and on headphones
 - [ ] The product's name; where the words file and a hosted build are published (the `# url:` in
@@ -95,6 +95,22 @@ measurement (renders analysed for level, timing and spectrum).
   - At Evolve 0 a stab still drops out ~6% of the time, and a phrase can end in a fill at Motion 0
   - The kick is a fixed ~49 Hz (it follows Tune, not the key)
   - Pentatonic pieces (Concrete) have three-note chords in fourths (7sus4 sounds), not 7ths
+
+## Done: DUB-1's own interface
+
+- **Main screen, echo ripples:** each stab drops a ring that spreads and fades; the echo's repeats
+  follow it at the echo's own time and feedback. Throws are double rings; dub hold is red and
+  doesn't fade. Also the chord's name, the section and phrase, the layers' levels, a duck meter,
+  and four lanes (stabs, kick, hats, bass) showing the bar as it plays. The scale ring, ping loops
+  and drum rings are gone (the keys still light the scale).
+- **PERFORM (SEL):** white keys 1–5 mute the chord, pings, bass, kick and hats; 6–10, held, throw
+  every stab, push the filter open or shut, drop the kick, push the echo. The keys light up for
+  the layers playing and the moves held. Mutes keep the music's random choices, so a layer comes
+  back where it would have been. The engine API is `en_mute`, `en_perf`.
+- Scenario `tests/scenarios/perform.amb`; the manual, the README, the emulator page and the
+  screenshots are updated.
+- The web emulator (`web/emu`) is ported and builds with emsdk (`EMULATOR.md`); its test and the
+  web app's engine test pass.
 
 ## Done: a granular reverb (CLOUD), after JIANT
 
