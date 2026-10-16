@@ -44,3 +44,5 @@ void ui_frame(void);
 void ui_input_only(void);
 int ui_dirty(void);
 void ui_say(const char *a, const char *b);
+#define UI_SPLASH_N 20                   /* the launch screen's frames (~1 s at 55 ms) */
+void ui_splash(int f);                   /* frame f of the launch screen (the last: as it stays) */

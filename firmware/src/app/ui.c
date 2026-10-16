@@ -2094,3 +2094,46 @@ void ui_frame(void)
 }
 
 void ui_input_only(void) { input(); }
+
+/* the launch screen, while the FM-1 starts: the name, then its echoes along the line, each smaller and
+ * fainter and a few frames later (a delay dying away), the ripples spreading from it; then the line under it
+ * and the version. Frame f of UI_SPLASH_N, drawn whole (two bands of 240 x 120) */
+static void splash_band(int f, int32_t oy)
+{
+    static const felucca_font_t *const F[4] = {&FONT_L, &FONT_M, &FONT_B, &FONT_S};
+    static const int32_t FH[4] = {32, 24, 16, 16};
+    int32_t w[4], x[4], tot = 0, cx, k;
+    for (k = 0; k < 4; k++) {
+        w[k] = text_w(F[k], "DUB-1");
+        tot += w[k] + (k ? 7 : 0);
+    }
+    x[0] = (240 - tot) / 2;
+    for (k = 1; k < 4; k++)
+        x[k] = x[k - 1] + w[k - 1] + 7;
+    cx = x[0] + w[0] / 2;
+    cv_begin(240, 120, K_BG);
+    for (k = 0; k < 4; k++) {                    /* the ripples, from the name */
+        int age = f - k * 5;
+        int32_t r = 10 + age * 7;
+        float a = 1.0f - (float)r / 130.0f;
+        if (age < 0 || a <= 0.0f)
+            continue;
+        circle(cx, 94 - oy, r, mix(K_BG, K_PAD, q16(a * 0.7f)));
+    }
+    for (k = 1; k < 4; k++)                      /* its echoes */
+        if (f >= 2 + k * 3)
+            cv_text(x[k], 94 - FH[k] / 2 - oy, F[k], "DUB-1", mix(K_BG, K_ACC, 14 - 4 * k));
+    if (f >= 1)
+        cv_text(x[0], 94 - FH[0] / 2 - oy, F[0], "DUB-1", mix(K_BG, K_TEXT, f >= 3 ? 16 : 6 * f));
+    if (f >= 12)
+        text_c(120, 132 - oy, &FONT_S, "Dub techno for the FM-1", mix(K_BG, K_ACC, f >= 15 ? 16 : (f - 11) * 4));
+    if (f >= 14)
+        text_c(120, 214 - oy, &FONT_XS, "DUB-1 " EN_VERSION, K_DIM);
+    cv_blit(0, (uint32_t)oy);
+}
+
+void ui_splash(int f)
+{
+    splash_band(f, 0);
+    splash_band(f, 120);
+}

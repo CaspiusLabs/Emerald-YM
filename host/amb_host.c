@@ -19,6 +19,7 @@
  *   leds                         print the lit buttons and keys
  *   expect WHAT VALUE            check state: exit 1 on mismatch; VALUE "<N" / ">N" is a bound
  *   reboot                       re-run boot from the simulated flash (persistence test)
+ *   splash N                     draw the launch screen's frame N (0..UI_SPLASH_N-1) on the screen
  *   listen                       a screen reader starts listening (HELLO, again every 2 s): each SAY is printed
  *                                ("said: ..."; "said!:" cuts off what was being said)
  *   where                        the reader asks for everything on the screen
@@ -589,6 +590,8 @@ int main(int argc, char **argv)
             printf("\n");
         } else if (!strcmp(cmd, "expect"))
             fails += expect(a, b);
+        else if (!strcmp(cmd, "splash"))           /* splash N: the launch screen's frame N (shot it after) */
+            ui_splash(atoi(a));
         else if (!strcmp(cmd, "reboot")) {
             memset(&proj, 0, sizeof proj);
             boot();

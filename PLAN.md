@@ -241,6 +241,9 @@ hold). Sixteen in four groups of four, the first of each group lit:
 - [x] The Drums knob follows the Kick and Hats keys (0 when both are out, 100 when one comes back)
 - [x] A muted layer (or one at level 0) leaves its lane at once
 - [x] The stabs' lane shows the echo's repeats as rings, flashing as the playhead reaches them
+- [x] **A launch screen** (asked: "fancier"): ~1 s while the FM-1 starts: the name and its echoes along
+      the line, smaller and fainter (a delay dying away), the ripples spreading, the line under it, the
+      version (`ui_splash`; the simulator's `splash N` draws a frame)
 - [x] **Battery:** an icon on every page (three bars), a rough % on Setup with the raw reading. The
       thresholds are dxsloop's (591 / 561 / 531 on the divider's raw reading, PB1, ADC ch 3); on USB the
       bars fill in turn (no charger line). The % (521..601) is an estimate: to check against the

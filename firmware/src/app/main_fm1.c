@@ -239,17 +239,9 @@ static void safe_main(void)
     }
 }
 
-static void splash(void)
+static void splash(void)                         /* the launch screen's first frame (ui.c's ui_splash) */
 {
-    lcd_fill(0, 0, 240, 240, RGB(16, 20, 26));       /* the UI's dark room */
-    cv_begin(240, 64, RGB(16, 20, 26));
-    {
-        int32_t w = text_w(&FONT_L, "DUB-1");
-        cv_text((240 - w) / 2, 0, &FONT_L, "DUB-1", RGB(222, 228, 232));
-        w = text_w(&FONT_S, "Dub techno for the FM-1");
-        cv_text((240 - w) / 2, 42, &FONT_S, "Dub techno for the FM-1", RGB(92, 196, 204));
-    }
-    cv_blit(0, 92);
+    ui_splash(0);
     lcd_sync();
 }
 
@@ -308,7 +300,15 @@ static void fm1_main(void)
     fm1_delay_ms(30);
     if ((fm1_in.buttons & 3u) == 3u)
         panel_setup();                              /* OCT- + OCT+ held at power-on */
-    fm1_delay_ms(400);
+    {   /* the launch screen, played out while the rest settles (it was a still, 400 ms) */
+        int f;
+        for (f = 1; f < UI_SPLASH_N; f++) {
+            ui_splash(f);
+            fm1_wdt_feed();
+            fm1_delay_ms(55);
+        }
+        lcd_sync();
+    }
     ui_init();
 
     for (;;) {
