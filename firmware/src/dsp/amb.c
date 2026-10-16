@@ -1316,9 +1316,13 @@ static void apply(int p, int v)
         if (nsteps)
             voice_chord();
         break;
-    case P_MIDI:
-        if (!v)
-            en_midi_out(0xB0, 123, 0);
+    case P_MIDI:                                 /* off: every channel's notes off (the chord, pings, bass, drums) */
+        if (!v) {
+            int c;
+            for (c = 0; c < 4; c++)
+                en_midi_out(0xB0 | (uint32_t)c, 123, 0);
+            en_midi_out(0xB9, 123, 0);
+        }
         break;
     default: break;
     }

@@ -1,12 +1,16 @@
-# AMB-1
+# DUB-1
 
-AMB-1 turns the M-VAVE FM-1 into a generative ambient machine, inspired by Brian Eno's
-*Music for Airports*. It plays itself from the moment it's switched on: breathing voices, soft
-bells on tape loops of unequal length, a gliding bass and quiet Euclidean percussion, all through
-a short echo, a long tape loop and a plate reverb. You don't perform it, you tend it: pick a piece
-and a scale, take notes out, put them back, and let it grow.
+DUB-1 (a working name) turns the M-VAVE FM-1 into a generative dub techno machine. It plays itself
+from the moment it's switched on: chord stabs through a resonant low-pass into a tape echo, short
+FM pings on loops of unequal length, a sub bass on one of five grooves, a four-on-the-floor kick
+that ducks the rest, a shaker and an open hat, and a bed of vinyl crackle. An eight-bar arrangement
+takes the kick out for a break, thins the layers and brings them back with a fill, and now and then
+a stab is thrown into the echo. You don't play it, you steer it: pick a piece and a scale, take
+notes out, open the filter, push the feedback, hold the echo.
 
-![A drawing of the FM-1 running AMB-1, each control labelled with what it does: the Controls section below says the same in words](img/fm1-panel.svg "The FM-1 (a drawing), running AMB-1, each control labelled")
+DUB-1 is a fork of AMB-1, Charles Vestal's generative ambient firmware for the FM-1.
+
+![A drawing of the FM-1 running DUB-1, each control labelled with what it does: the Controls section below says the same in words](img/fm1-panel.svg "The FM-1 (a drawing), running DUB-1, each control labelled")
 
 ---
 
@@ -16,67 +20,63 @@ and a scale, take notes out, put them back, and let it grow.
 2. Getting started
 3. Controls
 4. The screen
-5. The garden
-6. The pieces
-7. The pages
-8. MIDI
-9. Saving
-10. Troubleshooting
-11. Parameters
-12. Credits
+5. The layers
+6. The arrangement
+7. The pieces
+8. The pages
+9. MIDI
+10. Saving
+11. Troubleshooting
+12. Parameters
+13. Credits
 
 ---
 
 ## 1. Install
 
-**Try it first:** the [AMB-1 emulator](https://charlesvestal.github.io/fm1-amb/emu/) runs the same
-code in the browser, with sound, played with the mouse, a touch screen or the keyboard.
+A hosted emulator, web installer and firmware download aren't published for DUB-1 yet.
 
-**Install:** open the [web installer](https://charlesvestal.github.io/fm1-amb/install/) in Chrome or
-Edge, connect the FM-1 with a USB data cable and press Install. Don't unplug it while it's
-writing; when it finishes, the FM-1 restarts into AMB-1.
+**Try it first:** the host simulator runs the same code on a Mac, from a script, with audio and
+screenshots coming out; `EMULATOR.md` in the source says how to set it up, and how to build the
+browser emulator locally.
 
-**Go back:** "Back to the stock firmware", at the bottom of the same page, puts M-VAVE's firmware
-back (download the FM-1 V15 file from the link there, choose it, press the button). M-VAVE's own
-updater, M-UPGRADE, works too.
+**Install:** build the firmware from the source (`./build.sh`, see `BUILDING.md`), install Python 3
+with `pip3 install mido python-rtmidi`, connect the FM-1 with a USB data cable and run:
+
+```
+python3 tools/fm1_install.py build/amb.fwsc
+```
+
+Don't unplug it while it's writing; when it finishes, the FM-1 restarts into DUB-1.
+
+**Go back:** M-VAVE's own updater, M-UPGRADE, puts the stock firmware back.
 
 > Installing other firmware is at your own risk. If the FM-1 ever won't start, see
 > [Recovering an FM-1 that won't start](#recovering-an-fm-1-that-won-t-start).
-
-<details><summary>Install from the command line</summary>
-
-Download the firmware file (for example `amb-0.9.fwsc`) from the
-[releases page](https://github.com/charlesvestal/fm1-amb/releases), get the AMB-1 source from GitHub,
-install Python 3 with `pip3 install mido python-rtmidi`, and run:
-
-```
-python3 tools/fm1_install.py amb-0.9.fwsc
-```
-
-</details>
 
 ---
 
 ## 2. Getting started
 
-AMB-1 starts playing as soon as it's on. A few minutes with it:
+DUB-1 starts playing as soon as it's on. A few minutes with it:
 
-1. **Listen.** The first piece, Garden, is playing: D Dorian, pad, bells, bass and a soft pulse.
-   Turn MASTER for the volume.
-2. **Try another piece.** Turn PRESETS. Each of the eight pieces has its own key, tempo, sounds
-   and amount of movement.
-3. **Change the scale.** Press a key whose note is lit: it leaves the scale, and nothing plays
-   it any more. Press it again to bring it back. Any key that isn't lit adds its note.
-4. **Move on.** Press EDIT: the pad moves to the next chord at the start of the next bar.
-5. **Freeze.** Press REC: the chord holds and the reverb rings on forever, while the bells and
-   pulse go on above it. Press REC again to let it go.
-6. **Shape a layer.** Each layer has a button: ENV the pad, ARP the bells, LFO the bass, SEQ the
-   pulse, FX the space, HOME the garden as a whole, GLO the setup. KNOB 1–4 set the four values
-   at the bottom of the screen, a layer's level always on KNOB 1. SELECT steps through the pages.
-7. **Rest.** Press PLAY: the garden stops growing and its sounds fade out slowly. PLAY again and
-   it grows back.
+1. **Listen.** The first piece, Basic, is playing: F Dorian at 122, saw stabs into a dotted-eighth
+   echo, an offbeat sub, the kick, the shaker and the open hat. Turn MASTER for the volume.
+2. **Try another piece.** Turn PRESETS. Each of the eight pieces has its own key, tempo, sounds,
+   groove and amount of movement.
+3. **Change the scale.** Press a key whose note is lit: it leaves the scale, and nothing plays it
+   any more. Press it again to bring it back. Any key that isn't lit adds its note.
+4. **Move on.** Press EDIT: the chord moves to the next one at the start of the next bar.
+5. **Hold the echo.** Press REC: dub hold. The echo stops listening and repeats what it holds,
+   over and over, while the stabs, pings and drums go on dry above it. Press REC again to let it go.
+6. **Shape a layer.** Each layer has a button: ENV the chord, ARP the pings and the crackle (the
+   Texture page), LFO the bass, SEQ the drums, FX the space, HOME the whole (the Dub page), GLO the
+   setup. KNOB 1–4 set the four values at the bottom of the screen. SELECT steps through the pages.
+   Try Cutoff on the Chord page, or Feedback on the Space page.
+7. **Rest.** Press PLAY: the music stops and the echo and reverb ring away. PLAY again and it
+   starts from the top of a phrase.
 
-What you change is kept with the piece. AMB-1 saves it by itself while resting, or press SAVE.
+What you change is kept with the piece. DUB-1 saves it by itself while resting, or press SAVE.
 
 Not sure what a button does? Hold it for a second: a card says. Let go and nothing happens.
 
@@ -88,181 +88,242 @@ The drawing at the top shows them all; here they are in more detail.
 
 | Control | What it does |
 |---|---|
-| Keys | The scale. Each key adds its note to the scale or takes it out; the keys light up for the notes in it. Every octave of a note is the same key. The root stays, and the scale keeps at least three notes. |
-| PLAY | Grow / rest. AMB-1 starts growing by itself when it's switched on. At rest, the sounds fade out slowly and the reverb rings away. Lit green while growing. |
-| REC | **Freeze**: the chord holds and the reverb rings on forever, while the bells and pulse go on dry above it. Press again to thaw. Lit while frozen. |
-| EDIT | The next chord, at the start of the next bar (at once while resting). |
-| HOME | The Garden page: the whole garden. |
-| ENV · ARP · LFO · SEQ | The layers' pages: Pad, Bells, Bass, Pulse. |
+| Keys | The scale. Each key adds its note to the scale or takes it out; the keys light up for the notes in it. Every octave of a note is the same key. The root stays ("THE ROOT STAYS"), and the scale keeps at least three notes ("3 NOTES AT LEAST"). |
+| PLAY | Play / rest. DUB-1 starts playing by itself when it's switched on. At rest, the echo's feedback eases under 90% so its tails die away, the reverb rings out and the crackle fades. Playing again starts from the first bar of a phrase. Lit while playing. |
+| REC | **Dub hold**: the echo stops listening and repeats what it holds, sample for sample, for ever; the reverb stops listening too and rings on; the chord doesn't move. The stabs, pings and drums go on, dry, above it. Press again to let go. Lit while held. |
+| EDIT | The next chord, at the start of the next bar (at once while resting). While playing in dub hold, it waits until you let go. |
+| HOME | The Dub page: tempo and the machine's movement. |
+| ENV · ARP · LFO · SEQ | The layers' pages: Chord, Texture (the pings and the crackle), Bass, Drums. |
 | FX · GLO | The Space and Setup pages. The lit button shows the page. |
 | SELECT | The previous or next page. Hold HOME and turn it for the tempo, from any page. |
 | ALGORITHM | Mode: Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, pentatonic major and minor. Loads the mode's scale; editing it with the keys makes it Custom. |
-| PRESETS | The piece (see [The pieces](#s6)). |
+| PRESETS | The piece (see [The pieces](#7-the-pieces)). |
 | KNOB 1–4 | The four values on the screen. A few clicks are always single steps; a quick turn speeds up, so half a turn sweeps the range. |
-| OCT− / OCT+ | The bells' octave, two down to two up, from any page. |
+| OCT− / OCT+ | The pings' octave, two down to two up, from any page. While playing, a ping sounds at once in the new octave. |
 | MASTER | Volume. |
 | SAVE | Saves all eight pieces. Held for 1.5 s: puts the piece back to its recipe. |
 
-**Help:** hold any button but PLAY for a second and a card says what it does. A key, a knob or
+**Help:** hold any button but PLAY (or SEL) for a second and a card says what it does. A key, a knob or
 another button puts the card away; letting go after it does nothing else.
 
-![SAVE's card over the Pad page: SAVES ALL EIGHT PIECES. KEEP HOLDING: THE PIECE BACK TO ITS RECIPE](img/screen-help.png "SAVE's card")
+![SAVE's card over the main screen: SAVES ALL EIGHT PIECES. KEEP HOLDING: THE PIECE BACK TO ITS RECIPE](img/screen-help.png "SAVE's card")
 
 ---
 
 ## 4. The screen
 
-![The screen on the Garden page: Garden, D Dorian, tempo 72; the ring with the chord Dm7 in the middle, the four level bars on the left, the pulse rings on the right; TEMPO 72, EVOLVE 35, MOTION 50, DRIFT 39s](img/screen-garden.png "The Garden page (HOME)")
-![The screen on the Pad page of the piece Voices: F Aeolian, tempo 56, the chord Fm7; LEVEL 85, SWELL 70, BRIGHT 67, COLOUR Voices](img/screen-voices.png "Voices, a piece with only the sung pad and a bass")
+![The main screen on the Dub page: Basic, F Dorian, tempo 122; FULL and the phrase's bars top left, the bar to the next chord top right; the ring with the chord Fm7 in the middle and the four ping loops around it, the four level bars on the left, the drum rings on the right; TEMPO 122, EVOLVE 40, MOTION 50, DRIFT 32 bars](img/screen-main.png "The Dub page (HOME)")
+![A Break in the piece Haze: BREAK top left, the drum rings faded, only the pings' meter moving](img/screen-break.png "Haze, in a Break")
 
-- **Top line:** the piece, its root and mode. On the right, a slow beat light (a play triangle while
-  resting), the tempo (EXT when it follows MIDI clock) and a dot when there are unsaved changes.
-  Messages ("ADDED F#", "NEXT CHORD") show here for a moment.
-- **Top right of the garden:** a thin bar fills up on the way to the next chord; while frozen it
-  says "held".
-- **The ring:** the twelve notes, C at the top. Notes in the scale are green, the chord's notes
-  a deeper green, the root is ringed in ink. The chord's name is in the middle.
-- **Around it:** the four bell loops, 13, 17, 23 and 29 beats, from the inside out. Each dot is a
-  beat; the blue ones hold a note. A playhead goes round each loop and glows when it rings a bell.
-- **Left:** the four layers' levels as they sound: pad (green), bells (blue), bass (olive),
-  pulse (dark).
-- **Right:** the three pulse rings: thump (16 steps), closed hat (12) and open hat (7). Hits
-  fade while the pulse sits a few bars out.
+- **Top line:** the piece in a tag, its root and mode. On the right, a beat light (a play triangle
+  while resting), the tempo (EXT when it follows MIDI clock) and a dot when there are unsaved
+  changes. Messages ("ADDED F#", "NEXT CHORD ON THE BAR", "DUB HOLD ON") show here for a moment.
+- **Top left:** the section playing (FULL in grey; BREAK, GROOVE and THIN lit up) and eight dots,
+  the phrase's bars, lit up to the bar playing.
+- **Top right:** a thin bar fills up on the way to the next chord (none when Drift is Hold); in
+  dub hold it says "hold" in red instead.
+- **The ring:** the twelve notes, C at the top. Notes in the scale are teal, the chord's notes
+  larger, brightening with each stab; the root is ringed in white. The chord's name is in the
+  middle (red in dub hold).
+- **Around it:** the four ping loops, 13, 17, 23 and 29 eighths, from the inside out. Each dot is
+  a step; the blue ones hold a note. A playhead goes round each loop and glows when it pings.
+- **Left:** the four layers' levels as they sound: chord (teal), pings (blue), bass (brass),
+  drums (amber).
+- **Right:** the three drum rings, 16 sixteenths each: the kick, the shaker, the open hat. Their
+  hits fade in a Break.
 - **Bottom:** the page's name and seven dots, one a page, then its four values, one for each knob:
   a dial (or, for a switch, its positions) and the value. The one you're turning lights up.
 
-![The Space page with ECHO TIME lit as it turns, set to 2 bars; ECHO 45, REVERB 65, SIZE 80](img/screen-turning.png "Turning Echo time on the Space page")
+![The Space page with FEEDBACK lit as it turns, set to 63; ECHO 55, ECHO TIME 1/8., REVERB 35](img/screen-turning.png "Turning Feedback on the Space page")
+![Dub hold: the chord's name and "hold" in red](img/screen-hold.png "Dub hold")
 
 ---
 
-## 5. The garden
+## 5. The layers
 
-AMB-1 grows four layers from one scale and one chord.
+DUB-1 plays four layers from one scale and one chord, on a grid of sixteenths.
 
-- **Pad:** four breathing voices. Each swells in, hangs and fades on its own cycle (unequal
-  lengths, around 11 to 19 seconds at first, as in the tape loops of "2/1"), taking its note of
-  the chord as it starts, so the chord forms and dissolves instead of sitting there. Two colours:
-  a filtered Rhodes that blooms brighter as it swells, or sung voices. Every so often (**Drift**)
-  the chord moves to another one in the scale. Voices on notes the new chord shares hold to the
-  end of their breath; the others fade out and breathe in again on their new notes.
-- **Bells:** FM bells, soft-struck like a piano slowed to half speed, played by four tape loops
-  13, 17, 23 and 29 beats long. Each loop holds a few notes, so the loops slide against each other
-  and the melody never quite repeats. Each loop is its own shade of bell, and now and then a
-  note rings with its octave.
-- **Bass:** the chord's root, low and soft, gliding; sometimes it leans on the fifth.
-- **Pulse:** a soft thump tuned to the chord's root, a closed hi-hat and an open one, each on its
-  own Euclidean pattern over 16, 12 and 7 sixteenths: polyrhythms. The patterns slowly turn and
-  gain or lose a hit.
+- **Chord:** the stab. Four voices struck together, each two saws a few cents apart, or an FM
+  electric piano (**Keys**), through a resonant low-pass that opens with each stab and closes
+  again, then a soft clip. The stabs fall on a Euclidean pattern over the bar, off the beat. One
+  voicing (an open minor 7th, root, fifth, seventh and tenth; or a ninth without its fifth) is
+  shifted whole to each new root, the way a chord memory does, its root kept between F#2 and F3. Most of the
+  stab goes to the echo. Every so often (**Drift**) the chord moves to another degree of the
+  scale: in a seven-note scale, most often the fourth, then the seventh, the fifth and the sixth; away from home, back
+  home about two times in three. It never moves to a half-diminished chord.
+- **Pings:** short FM blips played by four loops 13, 17, 23 and 29 eighths long. Each loop holds a
+  few notes of the chord (now and then a passing note, or a note an octave up), each in its own
+  register, place in the stereo field and shade of tone, so the loops slide against each other.
+  They go mostly into the echo.
+- **Bass:** a sub on the chord's root, sometimes its fifth, in the sub's band (E1 to Eb2 at home),
+  on one of five grooves: Drone (one long note a bar), Offbeat (the four off-beat eighths), Dotted,
+  Roller and Sync. It slides briefly from note to note. It stays dry, out of the echo.
+- **Drums:** a four-on-the-floor kick (a sine falling fast onto about 49 Hz, with a click), a
+  shaker on the sixteenths and an open hat off the beat. The kick ducks everything else (**Duck**),
+  and stays out of the echo; the hats send a little to it.
 
-Then the space, after Eno's chain for *Discreet Music*: a short tape echo, a long tape loop (up to
-5.6 seconds, with two heads, each repeat coming back darker and thinner) and a plate reverb.
-They're most of what you hear. The echo is stereo, and it evolves: with **Motion** up, its two
-heads wander across the field, the repeats fall in changing patterns, and now and then the second
-head slides to another part of the loop, bending the repeats a little as it goes.
+Then the space: a short Echoplex that smears what goes in, the tape echo (up to 5.6 seconds,
+synced to the tempo, with two heads, the second at three quarters of the loop) and Dattorro's
+plate reverb. In the echo's feedback, a band-pass makes each repeat thinner and darker, and moves
+with the arrangement; a soft clip lets the feedback pass 100%, so the echo swells on itself
+without running away. With **Motion** up, the heads wander across the stereo field, the feedback
+leans now on one head, now on the other, and every so often the second head slides to another
+part of the loop (two thirds, a half, three eighths, a quarter), bending the repeats in pitch on
+the way.
 
-Over it all:
+Under it all, **crackle**: vinyl hiss and clicks, now and then a pop. It plays only while the
+music plays, fading in and out over about a second.
 
-- **The arc:** a slow tide, a few minutes from end to end, between sparse (fewer bells, a darker
-  pad, a quieter pulse, more reverb) and full. **Motion** sets how far it swings, and how far the
-  smaller things wander: pitch, pan, the vowel, the echo's heads.
-- **Rests:** with **Evolve** up, the layers take breaths: the pulse sits out two to four bars,
-  the bass skips a chord, a bell loop goes quiet for a pass.
+**Dub throws:** now and then a stab is thrown hard into the echo, which pushes the feedback up
+for a moment: the repeats come back louder. **Evolve** sets how often (more in a Break), and the
+last stab of a fill is always thrown.
+
+**Evolve** also keeps the patterns moving: every four bars the stab pattern may turn a step or
+gain or lose a stab, a stab now and then drops out of a bar, the shaker's steps trade places or
+gain or lose one, a ping changes note or moves at the end of a pass, a ping loop sits a pass out,
+the bass jumps an octave up for a note, and when the chord moves it may change voicing. Even at 0,
+a stab now and then drops out or is thrown.
 
 ---
 
-## 6. The pieces
+## 6. The arrangement
 
-PRESETS chooses one of eight pieces. Each is a recipe for the whole garden: the layers, the
-sounds, tempo, key and mode, how busy it is and how far it moves. Each remembers how you left it.
-Hold SAVE for 1.5 s to put the piece you're on back to its recipe. Tune, MIDI out and Lights are
-the same for all.
+DUB-1 plays in phrases of eight bars. Each phrase is one of four sections:
+
+| Section | What plays |
+|---|---|
+| **Full** | Everything. The filter sweeps somewhere between a little dark and open. |
+| **Break** | The kick, the bass and the shaker out (the open hat stays only while Motion is under 50). The filter goes dark, then from the third bar opens up over two bars or so. Throws are more likely. |
+| **Groove** | Every other stab of the pattern; the filter in the middle. |
+| **Thin** | No bass, no shaker. The filter a little darker. |
+
+In the last bar of each phrase, the next one is chosen. **Motion** sets how often it leaves Full:
+at 0, never; at 50, about one phrase in three; at 100, more than half the time. When it leaves, a
+Break is the likeliest, then a Groove, then Thin. From any other section it goes back to Full
+three times in four (or else from a Break to Thin, from the others to a Break).
+
+**Fills:** the last bar before the kick comes back from a Break is always a fill, and other
+phrases end with one now and then (more often with Motion up), unless a Break follows. In a fill
+the kick (if it's playing) drops out for the second half of the bar, the open hat plays (if Hits
+gives it any steps), and the last stab is thrown into the echo.
+
+**The sweep:** the arrangement moves a slow filter sweep, from dark to open, and Motion sets how
+far it goes (at 0 it stays put). It opens the stabs' filter and its resonance, moves the echo's
+band-pass, thins the pings in the dark and takes a little off the reverb when it's open.
+
+---
+
+## 7. The pieces
+
+PRESETS chooses one of eight pieces. Each is a recipe for the whole machine: the layers, the
+sounds, tempo, key and mode, the groove, the space, how busy it is and how far it moves. Each
+remembers how you left it. Hold SAVE for 1.5 s to put the piece you're on back to its recipe.
+Tune, MIDI out and Lights are the same for all.
 
 | Piece | What it is |
 |---|---|
-| **Garden** | D Dorian, 72: everything, gently. Rhodes. |
-| **Departures** | C# Ionian, 60: soft, slowed-piano bells an octave down over a quiet Rhodes, as "1/1". |
-| **Voices** | F Aeolian, 56: only the sung voices on unequal loops and a low bass, as "2/1". |
-| **Afternoon** | G Lydian, 84: a bright Rhodes, busier bells, a light pulse. |
-| **Night Bus** | A Aeolian, 96: the pulse forward, metallic bells, short echoes. |
-| **Shoreline** | E pentatonic major, 64: dark, round bells lost in long echoes, as "2/2". |
-| **Glass** | Eb pentatonic minor, 76: clangy bells an octave up, dense. |
-| **Tides** | Bb Mixolydian, 70: sung voices, the most changeable (Evolve and Motion high). |
+| **Basic** | F Dorian, 122: the reference. Saw stabs into a dotted-eighth echo, an offbeat sub, a new chord every 32 bars. |
+| **Chamber** | A Aeolian, 118: one chord that never moves (Drift on Hold), longer and darker stabs, deep feedback and more echo, a drone bass, straight time, fewer hits. |
+| **Steppers** | D Dorian, 126: shorter, brighter, busier stabs, a dotted bass, a dotted-quarter echo, a new chord every 16 bars. |
+| **Fog** | G Aeolian, 112: FM keys, long dark stabs lost in a quarter-note echo and a big plate, a drone bass an octave down, soft drums, more crackle; the chord moves every 64 bars. |
+| **Concrete** | C pentatonic minor, 130: the fastest. Chords stacked in fourths, short bright stabs, a rolling bass, the drums forward with many shaker hits and bright hats, more swing. |
+| **Night Drive** | Bb Dorian, 124: FM keys, more pings, a half-note echo, a syncopated bass, the most swing; a new chord every 16 bars. |
+| **Pressure** | E Phrygian, 128: the kick and the bass forward and the heaviest ducking, one chord held (Drift on Hold), little reverb or crackle, the least movement. |
+| **Haze** | Eb Ionian, 116: FM keys with the longest stabs, the most echo and feedback, pings an octave up and the most of them, the most crackle, and the most Motion: it leaves Full most often. |
 
 ---
 
-## 7. The pages
+## 8. The pages
 
-One page a layer, each on its own button, with four values on KNOB 1–4. A layer's level is
-always KNOB 1. SELECT steps through them in this order.
+One page a part, each on its own button, with four values on KNOB 1–4. SELECT steps through them
+in this order.
 
-### HOME: Garden
+### HOME: Dub
 
-![The Garden page: TEMPO 72, EVOLVE 35, MOTION 50, DRIFT 39s](img/screen-garden.png "The Garden page")
+![The Dub page: TEMPO 122, EVOLVE 40, MOTION 50, DRIFT 32 bars](img/screen-main.png "The Dub page")
 
-- **Tempo:** 30 to 120 (also HOME + SELECT, from any page).
-- **Evolve:** how restless the garden is. At 0 the loops repeat exactly. Turned up, a bell note
-  now and then changes or moves at the end of a pass, the pulse patterns turn and gain or lose a
-  hit, and the layers take rests.
-- **Motion:** how far the arc swings, and how much pitch, pan, the vowel and the echo wander
-  (at 0 the echo stays put: one head left, one right).
-- **Drift:** how long a chord lasts before the pad moves on, 20 seconds to 5 minutes (each time a
-  little more or less). EDIT moves on now.
+- **Tempo:** 90 to 140 (also HOME + SELECT, from any page).
+- **Evolve:** how restless it is: the stab pattern turning and gaining or losing stabs, stabs
+  dropping out, the shaker's pattern, the pings' notes, loops sitting out, octave jumps in the
+  bass, and dub throws (see [The layers](#5-the-layers)).
+- **Motion:** how often the arrangement leaves Full, how far the filter sweeps, how likely a fill
+  is, and how much the echo's heads, the filter and the band-pass wander.
+- **Drift:** how many bars a chord lasts before it moves on: 2, 4, 8, 16, 32 or 64 bars, or Hold
+  (it moves only when you press EDIT). The chord moves at the start of a bar.
 
-### ENV: Pad
+### ENV: Chord
 
-![The Pad page: LEVEL 60, SWELL 60, BRIGHT 40, COLOUR Rhodes](img/screen-pad.png "The Pad page")
-
-- **Level.**
-- **Swell:** how long the voices breathe, from a few seconds to about half a minute.
-- **Bright:** opens the pad's filter and brightens the Rhodes; for the Voices it also moves the
-  vowel from "oo" to "eh".
-- **Colour:** Rhodes or Voices. Each piece keeps its own.
-
-### ARP: Bells
-
-![The Bells page: LEVEL 65, DENSITY 40, TONE 50, OCTAVE 0](img/screen-bells.png "The Bells page")
+![The Chord page: LEVEL 70, STABS 30, DECAY 35, CUTOFF 45](img/screen-chord.png "The Chord page")
 
 - **Level.**
-- **Density:** how many notes each loop holds, none at 0 to five at the top. A change shows up as
-  each loop comes round.
-- **Tone:** from round and soft-struck to a long metallic clang.
-- **Octave:** two down to two up (OCT− and OCT+ too).
+- **Stabs:** how many stabs a bar, from one (0 to 9) to six (90 and up), on a Euclidean pattern
+  off the beat. Evolve may add or take one now and then.
+- **Decay:** how long a stab rings, from 60 ms to 1.5 s. The filter's own envelope is quicker.
+- **Cutoff:** where the low-pass sits, from 110 Hz to 5.4 kHz. Each stab opens it further for a
+  moment, and the arrangement's sweep moves it (with Motion).
+
+The stab's sound, saws or FM keys, comes with the piece.
+
+### ARP: Texture
+
+![The Texture page: PINGS 30, DENSITY 30, TONE 40, CRACKLE 35](img/screen-texture.png "The Texture page")
+
+- **Pings:** the pings' level.
+- **Density:** how many notes each loop holds, none at 0 to five at the top, a little fewer while
+  the sweep is dark. A change shows up as each loop comes round.
+- **Tone:** from a round blip to a metallic clank.
+- **Crackle:** the vinyl's level, and how many clicks a second.
+
+OCT− and OCT+ set the pings' octave, two down to two up.
 
 ### LFO: Bass
 
-![The Bass page: LEVEL 45, OCTAVE 0, GLIDE 20, FIFTH 35](img/screen-bass.png "The Bass page")
+![The Bass page: LEVEL 60, OCTAVE 0, GROOVE Offbeat, FIFTH 20](img/screen-bass.png "The Bass page")
 
 - **Level.**
-- **Octave:** one down, home, or one up.
-- **Glide:** how slowly the bass slides to its next note, from a quick step to over a second.
-- **Fifth:** how often, halfway through a chord, the bass leans on the fifth.
+- **Octave:** −1, 0 or +1. At 0 the bass sits between E1 and Eb2; at +1 an octave higher; at −1,
+  between C1 and B1.
+- **Groove:** Drone (one note a bar, held almost to the next), Offbeat (the four off-beat
+  eighths), Dotted (two notes a dotted eighth apart, twice a bar), Roller (six notes a bar,
+  rolling) or Sync (three notes, syncopated).
+- **Fifth:** how often a note is the chord's fifth instead of its root. A note on the bar's first
+  sixteenth is always the root, so with Drone, whose one note sits there, the fifth never comes.
 
-### SEQ: Pulse
+### SEQ: Drums
 
-![The Pulse page: LEVEL 40, HITS 35, SWING 50%, HATS 50](img/screen-pulse.png "The Pulse page")
+![The Drums page: LEVEL 65, HITS 50, SWING 52%, DUCK 50](img/screen-drums.png "The Drums page")
 
-- **Level.**
-- **Hits:** how many beats the three rings play. 0: no pulse.
-- **Swing:** the off sixteenths later, from straight (50%) to a heavy lilt (75%).
-- **Hats:** from dark and long to bright and crisp.
+- **Level:** the kick, the shaker and the open hat together. The kick is always on the four beats,
+  except in a Break and the second half of a fill.
+- **Hits:** how busy the hats are. The shaker plays from none to all twelve sixteenths that aren't
+  the open hat's, the ones before the beats first. The open hat comes in at 15, on the off-beat of
+  beats 1 and 3, and plays all four off-beats from 40. At 0, kick only.
+- **Swing:** the shaker's off sixteenths later, from straight (50%) to a heavy lilt (70%).
+- **Duck:** how far the kick pushes the rest down, to −12 dB at 100, letting it back in over a
+  little more than a tenth of a second. The crackle isn't ducked.
+
+How dark or bright the hats are comes with the piece.
 
 ### FX: Space
 
-![The Space page: ECHO 45, ECHO TIME 1 bar, REVERB 65, SIZE 80](img/screen-space.png "The Space page")
+![The Space page: ECHO 55, ECHO TIME 1/8., FEEDBACK 60, REVERB 35](img/screen-space.png "The Space page")
 
-- **Echo:** how much goes to the echoes.
-- **Echo time:** the tape loop's length: a dotted quarter, a half, a dotted half, 1, 2 or 4 bars,
-  shortened to fit its 5.6 seconds at slow tempos. The second head repeats at three quarters of it,
-  or with Motion up, at two thirds, five eighths, a half or three eighths.
+- **Echo:** how much goes to the echo.
+- **Echo time:** the tape loop's length: an eighth, a dotted eighth, a quarter, a dotted quarter, a
+  half or one bar. The second head repeats at three quarters of it, or with Motion up, wherever it
+  has slid to.
+- **Feedback:** how much of each repeat goes round again, from 45% to past 100% at the top: there,
+  the soft clip holds it, and the echo swells and smears on itself instead of dying away. While
+  resting it's kept under 90%, so the tails always die out.
 - **Reverb:** how much goes to the plate.
-- **Size:** how long the plate rings, from a room to a long hall, and how many times the echo
-  comes back.
+
+How long the plate rings comes with the piece.
 
 ### GLO: Setup
 
-![The Setup page: ROOT D, TUNE 0, MIDI OUT On, LIGHTS On](img/screen-setup.png "The Setup page")
+![The Setup page: ROOT F, TUNE 0, MIDI OUT On, LIGHTS On](img/screen-setup.png "The Setup page")
 
-- **Root:** the key's root note. The scale moves with it.
+- **Root:** the key's root note. The scale moves with it, and the chord at once.
 - **Tune:** fine tuning, ±50 cents.
 - **MIDI out:** on or off.
 - **Lights:** On: the keys light the scale, and the unlit buttons glow dimly so they can be read
@@ -272,46 +333,52 @@ The top right of this page shows how much of the FM-1's time the sound takes (CP
 
 ---
 
-## 8. MIDI
+## 9. MIDI
 
 MIDI comes in over USB and the TRS jack, and goes out over USB.
 
 - **In, channel 1:** a note adds or removes its note from the scale, like a key.
-- **In, clock:** the beat follows MIDI clock, and start / stop start and stop the garden. The
-  screen shows EXT for the tempo.
-- **Out** (on by default): the pad on channel 1, the bells on 2, the bass on 3 and the pulse on 10,
-  and clock with start / stop when AMB-1 runs on its own tempo. Turning MIDI out off sends all
-  notes off.
+- **In, clock:** the grid follows MIDI clock (six clocks a sixteenth), and start, continue and stop
+  start, continue and stop the music. The screen shows EXT for the tempo. When the clock stops
+  coming, DUB-1 goes back to its own tempo.
+- **Out** (on by default): the chord on channel 1, the pings on 2, the bass on 3 and the drums on
+  10 (kick 36, shaker 42, open hat 46), and, while it plays on its own tempo, clock with
+  start / stop. Turning MIDI out off sends All Notes Off on channels 1, 2, 3 and 10.
 
 ### Screen reader
 
-AMB-1 can tell a screen reader what its screen shows. Connect the FM-1 by USB, open the
+DUB-1 can tell a screen reader what its screen shows. Connect the FM-1 by USB, open the
 [FM-1 Screen Reader](https://charlesvestal.github.io/fm1-reader/) in Chrome or Edge, and click
 Connect. It reads out the page you're on and its knobs, a knob's value as you turn it, the piece
-and its key, the notes you add or take out, help cards, every message, and the chord each time
-the garden moves on, in words: "E flat pentatonic minor", not "Eb Pent min".
+and its key, the notes you add or take out, help cards, every message, and the chord each time it
+moves. Press W to hear the whole screen again: the page, the piece, the chord, the section and its
+bar, and the scale. The FM-1 says nothing until the page connects, so a DAW on the same cable
+never sees it.
 
-The page can speak with its own voice or pass everything to your own screen reader (VoiceOver,
-NVDA, JAWS, TalkBack). Press W to hear the whole screen again: the page, the piece, the chord and
-the scale. The FM-1 says nothing until the page connects, so a DAW on the same cable never sees it.
+DUB-1's word list (how the reader says what's written on the screen) is in `firmware/words.tsv`;
+where it is published is still to be decided, so for now the device points the reader at AMB-1's
+site, and some of the new names may not yet be said as well as they could be.
 
 ---
 
-## 9. Saving
+## 10. Saving
 
-AMB-1 keeps all eight pieces in the FM-1's memory, each as you left it: the knobs, the scale,
-the tempo, the pad's colour and the bells' octave, plus Tune, MIDI out and Lights.
+DUB-1 keeps all eight pieces in the FM-1's memory, each as you left it: the knobs, the scale, the
+mode, the root, the tempo and the pings' octave, plus Tune, MIDI out and Lights.
 
-- **By itself:** a few seconds after a change, but only while resting. Writing to the memory
-  interrupts the sound for a moment, so it never happens while the garden grows. A dot at the top
-  of the screen means there are unsaved changes.
+- **By itself:** a few seconds after a change, but only while resting and once the stabs have
+  died away. Writing to the memory interrupts the sound for a moment, so it never happens while
+  the music plays. A dot at the top of the screen means there are unsaved changes.
 - **SAVE:** saves now, playing or not.
-- **Hold SAVE** for 1.5 s: the piece goes back to its recipe. That isn't saved until the next save,
-  so switching off before then brings your version back.
+- **Hold SAVE** for 1.5 s: the piece goes back to its recipe ("RESET"). That isn't saved until the
+  next save, so switching off before then brings your version back.
+
+Projects saved by AMB-1 aren't read by DUB-1: the first start after installing it begins with the
+eight recipes.
 
 ---
 
-## 10. Troubleshooting
+## 11. Troubleshooting
 
 **Update mode:** hold OCT- and OCT+ together for five seconds. A countdown appears; let go
 before it ends to cancel.
@@ -319,100 +386,117 @@ before it ends to cancel.
 **Calibration:** if a button or knob does the wrong thing, hold OCT- and OCT+ while you switch
 the FM-1 on. The screen then asks you to press each button and turn each knob in turn.
 
-**After a crash:** AMB-1 shows a red CRASH screen and restarts by itself a few seconds later. The
+**After a crash:** DUB-1 shows a red CRASH screen and restarts by itself a few seconds later. The
 next start shows RESTARTED AFTER A CRASH and an address (PC ...) for a moment. If you report the
 problem, include that address and what you were doing.
 
-**Safe mode:** if AMB-1 crashes twice in a row while starting, it starts in SAFE MODE instead.
-There's no sound, but USB works, so the web installer can reach it: reinstall AMB-1, or put the
-stock firmware back from the same page. Press PLAY to try starting AMB-1 normally again. If even
-safe mode fails twice, the FM-1 drops into the chip's own update mode, and only the rescue below
-can reach it.
+**Safe mode:** if DUB-1 crashes twice in a row while starting, it starts in SAFE MODE instead.
+There's no sound, but USB works, so the installer can reach it: reinstall with
+`tools/fm1_install.py`, or put the stock firmware back with M-UPGRADE. Press PLAY to try starting
+DUB-1 normally again. If even safe mode fails twice, the FM-1 drops into the chip's own update
+mode, and only the rescue below can reach it.
+
 
 ### Recovering an FM-1 that won't start
 
-An FM-1 in the chip's own update mode shows a blank screen, and neither the web installer nor
-M-VAVE's updater can see it. A script can put M-VAVE's firmware back, on a Mac, with the USB cable
-you already have.
+An FM-1 in the chip's own update mode shows a blank screen, and neither the installer nor M-VAVE's
+updater can see it. A script can put M-VAVE's firmware back, on a Mac, with the USB cable you
+already have.
 
-Open Terminal, paste this line and press Return:
+Open Terminal in a checkout of the DUB-1 source and run:
 
 ```
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/charlesvestal/fm1-amb/main/tools/fm1_rescue.sh)"
+bash tools/fm1_rescue.sh
 ```
 
 1. If a window asks to install the command line developer tools, click Install. When it has
-   finished, paste the line again.
+   finished, run the line again.
 2. If it asks for a password, type your Mac password (nothing shows as you type) and press Return.
 3. When it says it's waiting, plug the FM-1 in and switch it on. The script catches it, checks the
    chip, saves a backup of the FM-1's memory in the `fm1-rescue` folder in your home folder, and
    asks before it writes anything.
 4. Type **yes** and press Return. Don't unplug anything until it says it's restarting the FM-1.
-   The FM-1 then starts into its original firmware, and you can install AMB-1 again from there.
+   The FM-1 then starts into its original firmware, and you can install DUB-1 again from there.
 
-The script downloads M-VAVE's FM-1 V15 firmware and JieLi's flash loader, and checks both against
-known fingerprints. It writes only the firmware area of the memory, never the bootloader or the
-FM-1's own settings, and checks everything it writes. Running it again is always safe. If it fails,
-copy everything in the Terminal window and
-[open an issue](https://github.com/charlesvestal/fm1-amb/issues). If the FM-1 never shows up at
-all, Felucca's [FM-1-transporter](https://github.com/kurogedelic/FM-1-transporter) (a small
-RP2040 board wired to the USB lines) can still reach it.
+The script downloads its rescue tool from X0X's repository, M-VAVE's FM-1 V15 firmware and JieLi's
+flash loader, and checks the firmware against a known fingerprint. It writes only the firmware
+area of the memory, never the bootloader or the FM-1's own settings, and checks everything it
+writes. Running it again is always safe. If the FM-1 never shows up at all, Felucca's
+[FM-1-transporter](https://github.com/kurogedelic/FM-1-transporter) (a small RP2040 board wired
+to the USB lines) can still reach it.
 
 ---
 
-## 11. Parameters
+## 12. Parameters
 
-The defaults are Garden's; each piece has its own.
+The defaults are Basic's; each piece has its own.
 
-| Page | Value | Range | Garden |
+| Page | Value | Range | Basic |
 |---|---|---|---|
-| Garden | Tempo | 30–120 | 72 |
-| Garden | Evolve | 0–100 | 35 |
-| Garden | Motion | 0–100 | 50 |
-| Garden | Drift | 20 s – 5:00 | 25 (about 40 s) |
-| Pad | Level | 0–100 | 60 |
-| Pad | Swell | 0–100 | 60 |
-| Pad | Bright | 0–100 | 40 |
-| Pad | Colour | Rhodes, Voices | Rhodes |
-| Bells | Level | 0–100 | 65 |
-| Bells | Density | 0–100 (0 to 5 notes a loop) | 40 |
-| Bells | Tone | 0–100 | 50 |
-| Bells | Octave | −2 – +2 | 0 |
-| Bass | Level | 0–100 | 45 |
+| Dub | Tempo | 90–140 | 122 |
+| Dub | Evolve | 0–100 | 40 |
+| Dub | Motion | 0–100 | 50 |
+| Dub | Drift | 2, 4, 8, 16, 32, 64 bars, Hold | 32 bars |
+| Chord | Level | 0–100 | 70 |
+| Chord | Stabs | 0–100 (1 to 6 a bar) | 30 |
+| Chord | Decay | 0–100 (60 ms – 1.5 s) | 35 |
+| Chord | Cutoff | 0–100 (110 Hz – 5.4 kHz) | 45 |
+| Texture | Pings | 0–100 | 30 |
+| Texture | Density | 0–100 (0 to 5 notes a loop) | 30 |
+| Texture | Tone | 0–100 | 40 |
+| Texture | Crackle | 0–100 | 35 |
+| Bass | Level | 0–100 | 60 |
 | Bass | Octave | −1 – +1 | 0 |
-| Bass | Glide | 0–100 (20 ms – 1.2 s) | 20 |
-| Bass | Fifth | 0–100 | 35 |
-| Pulse | Level | 0–100 | 40 |
-| Pulse | Hits | 0–100 | 35 |
-| Pulse | Swing | 50%–75% | 50% |
-| Pulse | Hats | 0–100 | 50 |
-| Space | Echo | 0–100 | 45 |
-| Space | Echo time | 1/4., 1/2, 1/2., 1 bar, 2 bars, 4 bars | 1 bar |
-| Space | Reverb | 0–100 | 65 |
-| Space | Size | 0–100 | 80 |
-| Setup | Root | C – B | D |
+| Bass | Groove | Drone, Offbeat, Dotted, Roller, Sync | Offbeat |
+| Bass | Fifth | 0–100 | 20 |
+| Drums | Level | 0–100 | 65 |
+| Drums | Hits | 0–100 | 50 |
+| Drums | Swing | 50%–70% | 52% |
+| Drums | Duck | 0–100 (to −12 dB) | 50 |
+| Space | Echo | 0–100 | 55 |
+| Space | Echo time | 1/8, 1/8., 1/4, 1/4., 1/2, 1 bar | 1/8. |
+| Space | Feedback | 0–100 (45% – 112%) | 60 |
+| Space | Reverb | 0–100 | 35 |
+| Setup | Root | C – B | F |
 | Setup | Tune | −50 – +50 cents | 0 |
 | Setup | MIDI out | Off, On | On |
 | Setup | Lights | Off, On, Keys | On |
 | ALGORITHM | Mode | 8 modes, or Custom | Dorian |
+| OCT− / OCT+ | Ping octave | −2 – +2 | 0 |
+
+Set by the piece only (no knob): the chord's sound (Saws or Keys), the hats' colour, and the
+plate's size.
+
+| Piece | Sound | Hats | Size |
+|---|---|---|---|
+| Basic | Saws | 50 | 55 |
+| Chamber | Saws | 40 | 70 |
+| Steppers | Saws | 60 | 50 |
+| Fog | Keys | 30 | 80 |
+| Concrete | Saws | 75 | 45 |
+| Night Drive | Keys | 55 | 60 |
+| Pressure | Saws | 65 | 40 |
+| Haze | Keys | 35 | 85 |
 
 ---
 
-## 12. Credits
+## 13. Credits
 
-AMB-1 is free software under the GNU General Public License, version 3. If you share the
+DUB-1 is free software under the GNU General Public License, version 3. If you share the
 firmware, you must also share its source code.
 
-- The idea comes from Brian Eno's generative music: *Music for Airports*' tape loops of unequal
-  length, and the echo and tape-delay chain of *Discreet Music*.
+- DUB-1 is a fork of [AMB-1](https://github.com/charlesvestal/fm1-amb) by Charles Vestal
+  (GPL-3.0-only), whose loops, echo chain, pieces, UI and platform it keeps.
+- The idea comes from AMB-1 and from dub techno in general: chords dissolving in a tape echo over
+  a steady kick.
 - The reverb is Jon Dattorro's plate ("Effect Design, Part 1", JAES 1997), by way of
-  [FoMni-1](https://charlesvestal.github.io/fm1-fomni/).
+  [FoMni-1](https://github.com/charlesvestal/fm1-fomni).
 - The Euclidean rhythms are Godfried Toussaint's reading of Bjorklund's algorithm.
 - The platform (hardware layer, USB, update loader, installer and storage) is from
   **Felucca** by Leo Kuroshita, Hügelton Instruments, by way of
-  [X0X](https://charlesvestal.github.io/fm1-x0x/).
+  [X0X](https://github.com/charlesvestal/fm1-x0x), FoMni-1 and AMB-1.
 - The idea of running FM-1 firmware in the browser comes from [Groove OS](https://www.groove-os.com/).
 - The fonts are Barlow Semi Condensed and Terminus (SIL Open Font License).
 
-M-VAVE and FM-1 are trademarks of their owners. AMB-1 is not connected with M-VAVE, Brian Eno or
-Hügelton Instruments.
+M-VAVE and FM-1 are trademarks of their owners. DUB-1 is not connected with M-VAVE or Hügelton
+Instruments.

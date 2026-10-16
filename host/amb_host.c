@@ -140,7 +140,7 @@ uint32_t plat_xruns(void) { return 0; }
 
 /* -------------------------------------------------------------- app --- */
 #include "../firmware/src/app/app.h"
-#define ANN_NAME "AMB-1 " EN_VERSION
+#define ANN_NAME "DUB-1 " EN_VERSION
 #include "ann_words.h"                                  /* the words file's link (tools/gen_words.py) */
 #include "../firmware/src/announce.c"
 /* what the reader is told: every SAY to stdout with "said:" (listen), and kept for the "said" check */

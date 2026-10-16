@@ -145,7 +145,7 @@ static void fm1_fault(const fm1_crash_t *c)
     uint32_t t0;
     fm1_audio_stop();
     lcd_fill(0, 0, 240, 240, RGB(160, 0, 0));
-    draw_text_box(0, 8, 240, &FONT_S, "AMB-1 CRASH", C_WHITE, 1);
+    draw_text_box(0, 8, 240, &FONT_S, "DUB-1 CRASH", C_WHITE, 1);
     hexs(b, c->vec);
     draw_text_box(10, 40, 220, &FONT_S, b, C_WHITE, 0);
     hexs(b, c->pc);
@@ -174,15 +174,15 @@ static void enter_uboot(const char *why)
     fm1_enter_uboot();
 }
 
-/* SAFE MODE: AMB-1 crashed (or hung) twice while starting. Nothing that makes sound runs: no audio,
+/* SAFE MODE: DUB-1 crashed (or hung) twice while starting. Nothing that makes sound runs: no audio,
  * no engine, no UI; USB is on, so the web installer (AMB-1, or the stock firmware) and M-UPGRADE can
- * reach it. PLAY tries AMB-1 again. The chip's own update mode stays the last resort (fm1_cstart). */
+ * reach it. PLAY tries DUB-1 again. The chip's own update mode stays the last resort (fm1_cstart). */
 static void safe_main(void)
 {
     char b[24];
     uint32_t t0, play;
     lcd_fill(0, 0, 240, 240, C_BLACK);
-    draw_text_box(0, 18, 240, &FONT_B, "AMB-1 SAFE MODE", C_HI, 1);
+    draw_text_box(0, 18, 240, &FONT_B, "DUB-1 SAFE MODE", C_HI, 1);
     draw_text_box(0, 52, 240, &FONT_S, "IT CRASHED TWICE", C_WHITE, 1);
     draw_text_box(0, 72, 240, &FONT_S, "WHILE STARTING.", C_WHITE, 1);
     draw_text_box(0, 102, 240, &FONT_S, "NO SOUND. USB IS ON:", C_WHITE, 1);
@@ -210,9 +210,9 @@ static void safe_main(void)
         if (bootguard.pending && fm1_ms - t0 > 10000u)
             bootguard.pending = 0;                  /* safe mode itself is up: not another failed boot */
         if ((fm1_in.buttons & play) && fm1_ms - t0 > 500u) {
-            bootguard.failed = 0;                   /* try AMB-1 again, from scratch */
+            bootguard.failed = 0;                   /* try DUB-1 again, from scratch */
             bootguard.pending = 0;
-            draw_text_box(0, 172, 240, &FONT_S, "STARTING AMB-1...", C_HI, 1);
+            draw_text_box(0, 172, 240, &FONT_S, "STARTING DUB-1...", C_HI, 1);
             usb_detach();
             fm1_delay_ms(30);
             fm1_reboot();
@@ -230,13 +230,13 @@ static void safe_main(void)
 
 static void splash(void)
 {
-    lcd_fill(0, 0, 240, 240, RGB(246, 238, 181));    /* the paper of Music for Airports' cover */
-    cv_begin(240, 64, RGB(246, 238, 181));
+    lcd_fill(0, 0, 240, 240, RGB(16, 20, 26));       /* the UI's dark room */
+    cv_begin(240, 64, RGB(16, 20, 26));
     {
-        int32_t w = text_w(&FONT_L, "AMB-1");
-        cv_text((240 - w) / 2, 0, &FONT_L, "AMB-1", RGB(29, 27, 2));
-        w = text_w(&FONT_S, "An ambient garden for the FM-1");
-        cv_text((240 - w) / 2, 42, &FONT_S, "An ambient garden for the FM-1", RGB(112, 106, 58));
+        int32_t w = text_w(&FONT_L, "DUB-1");
+        cv_text((240 - w) / 2, 0, &FONT_L, "DUB-1", RGB(222, 228, 232));
+        w = text_w(&FONT_S, "Dub techno for the FM-1");
+        cv_text((240 - w) / 2, 42, &FONT_S, "Dub techno for the FM-1", RGB(92, 196, 204));
     }
     cv_blit(0, 92);
     lcd_sync();
