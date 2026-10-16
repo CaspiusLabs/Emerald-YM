@@ -137,6 +137,28 @@ For DUB-1:
 
 ## Ideas for later
 
+- **Korg Kaoss Pad integration** (the user's own setup; the Kaoss Pad is great for dub techno).
+  Send one voice to the Kaoss Pad and, ideally, bring it back and mix it with the rest.
+  - **What the FM-1 has:** a stereo audio out (I2S to the codec; the firmware drives it as an output
+    only), MIDI in over USB and the TRS jack, MIDI out over USB only, and USB audio *to* the
+    computer (UAC1, `FELUCCA_UAC`). No audio input is known.
+  - **Sending one voice out (doable): a "send" mode.** A setting (Off / Chord / Pings / Chord + Pings
+    / Drums) puts that layer dry (after its filter, before DUB-1's echo, so the Kaoss Pad does the
+    dub effects) alone on the left channel, and the rest, with DUB-1's own echo and reverb, in mono
+    on the right. Cable: a TRS Y-splitter; left into the Kaoss Pad, its output and the FM-1's right
+    into a mixer. The cost: the mix happens outside, and DUB-1 loses its stereo while sending.
+  - **Getting it back into the FM-1 (hard):** with no audio input, only through something in between.
+    - Research: does the board's codec have an ADC, and is there an input (a mic pad, a test
+      point)? If so, a line in would be a hardware mod.
+    - Or the FM-1 as a two-way USB audio interface (UAC out *from* a computer or phone, mixed into
+      the render), with the Kaoss Pad on that machine's interface. This makes it no longer standalone.
+  - **Sync and control over MIDI**, depending on the model:
+    - A KP3 / KP3+ takes MIDI clock and CCs (the X/Y pad, touch, effect program) on 5-pin DIN.
+      DUB-1 sends clock over USB, so it needs a USB-MIDI host to DIN. DUB-1 could then play the pad
+      itself: an X/Y sweep through a Break, the effect changing on a phrase.
+    - A mini Kaoss Pad 2S has no MIDI: its BPM detection follows the audio, so a little of the kick
+      on the send channel helps it lock.
+  - Need to know first: **which Kaoss Pad model**, and how it's cabled (mixer or not).
 - A rim or clap on 2 and 4 (a fourth drum voice; the screen has room for three rings now)
 - A spring reverb next to the plate
 - MIDI CC out for the filter and the echo send, to drive other gear
