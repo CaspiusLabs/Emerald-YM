@@ -279,10 +279,29 @@ Each piece keeps its own.
 |---|---|
 | Chord (ENV) | **Saws** (two detuned saws a voice), **Keys** (an FM electric piano), **Organ** (four drawbars, longer), **Pad** (the saws swelling in, long), **Bell** (FM at 3.5, the clang dying first), **Tonewheel** (a second organ: drawbars, a quick percussion and a key click at each strike, a rotary speaker turning left and right), **Noise** (noise through the resonant filter, a little saw under it) |
 | Texture (ARP), the pings | **Blip**, **Marimba** (a wooden bar), **Glass** (long and bright), **Wood** (a knock), **Drop** (the pitch falling from an octave up) |
-| Bass (LFO) | **Sub** (a sine and a little of its octave), **Round** (its third harmonic too), **Growl** (FM: a bite at each note), **Pulse** (towards a square) |
+| Bass (LFO) | **Sub** (a sine and a little of its octave), **Punch** (FM, four operators stacked: a thump in the first 90 ms), **Rubber** (FM, two pairs, one an octave under, op 4 feeding back), **Pluck** (FM at 3, gone in 50 ms), **Growl** (FM at 1: a bite at each note) |
 | Drums (SEQ), the kit | **Tight**, **Deep** (long, 808-ish), **Punch** (short and hard), **Soft** (a muffled thump, no click), **Dusty** (darker, noisier hats) |
 
 The voices are matched in level, so changing one keeps the mix.
+
+### The FM pages
+
+Keys and Bell (chord), every ping voice, and Punch, Rubber, Pluck and Growl (bass) are **FM
+voices**: sine operators modulating each other, as in the FM-1's own firmware and the 4-operator FM
+synths. On those, the layer's button pressed a third time (after the sound page) opens its **FM
+page**; on the other voices, the third press goes back to the layer's page.
+
+- **Algo:** which operators modulate which. *Voice* (the voice's own), or one of the classic eight
+  4-operator algorithms (1: a stack of four; 5: two pairs; 8: four sines side by side), or 2-op
+  (one modulator into one carrier). The screen draws it: the carriers (heard) on the line, each
+  modulator above the one it modulates, operator 4's feedback as a loop.
+- **Ratio:** operators 3 and 4's pitch against the note, from half to twice the voice's.
+- **Feedback:** operator 4 modulating itself: from pure to gritty, towards noise.
+- **Mod dec:** how long the modulators take to fade: the brightness of each note's start,
+  shorter or longer.
+
+As on the sound pages, each is relative to the voice (0, or Voice), stays when the voice changes,
+and is kept by the piece.
 
 ### The sound pages
 
@@ -541,6 +560,8 @@ The defaults are Basic's; each piece has its own.
 | Chord sound | Attack, Colour, Reso, Env | −50 – +50 | 0 |
 | Ping sound | Tone, Ratio, Length, Bend | −50 – +50 | 0 |
 | Bass sound | Bite, Shape, Length, Slide | −50 – +50 | 0 |
+| Chord, Ping, Bass FM | Algo | Voice, 1–8, 2-op | Voice |
+| Chord, Ping, Bass FM | Ratio, Feedback, Mod dec | −50 – +50 | 0 |
 | Drum sound | Kick tune | −12 – +12 semitones | 0 |
 | Drum sound | Kick len, Punch, Hats | −50 – +50 | 0 |
 | OCT− / OCT+ | Ping octave | −2 – +2 | 0 |
@@ -552,9 +573,9 @@ hats' colour, and the plate's size. Each piece also has its own voices and Cloud
 |---|---|---|---|---|---|---|---|---|
 | Basic | Saws | Blip | Sub | Tight | 40 | 50 | 55 | 30 |
 | Chamber | Organ | Glass | Sub | Deep | 30 | 40 | 70 | 45 |
-| Steppers | Saws | Marimba | Round | Punch | 50 | 60 | 50 | 20 |
+| Steppers | Saws | Marimba | Punch | Punch | 50 | 60 | 50 | 20 |
 | Fog | Keys | Blip | Sub | Soft | 25 | 30 | 80 | 60 |
-| Concrete | Noise | Wood | Pulse | Punch | 60 | 75 | 45 | 15 |
+| Concrete | Noise | Wood | Pluck | Punch | 60 | 75 | 45 | 15 |
 | Night Drive | Keys | Drop | Growl | Tight | 45 | 55 | 60 | 35 |
 | Pressure | Tonewheel | Wood | Growl | Deep | 35 | 65 | 40 | 20 |
 | Haze | Pad | Glass | Sub | Dusty | 30 | 35 | 85 | 70 |

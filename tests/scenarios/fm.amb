@@ -1,0 +1,41 @@
+# the FM pages: a third press on an FM voice; the algorithm overridden, kept by the piece; a non-FM voice: back
+listen
+wait 3000
+tap ENV
+wait 200
+turn ALGO 1
+wait 300
+said VOICE Keys
+tap ENV
+tap ENV
+wait 400
+said Chord FM page, voice Keys: Algo Voice, Ratio 0, Feedback 0, Mod dec 0
+expect view 12
+spin K1 1
+wait 300
+expect par52 1
+said Algo 1
+spin K3 40
+wait 300
+expect par54 40
+wait 4000
+expect peak_db_max -0.5
+tap ENV
+wait 300
+expect view 1
+turn ALGO -1
+wait 300
+said VOICE Saws
+tap ENV
+tap ENV
+wait 300
+expect view 1
+tap ARP
+tap ARP
+tap ARP
+wait 300
+expect view 13
+spin K1 9
+wait 3000
+expect par56 9
+expect peak_db_max -0.5

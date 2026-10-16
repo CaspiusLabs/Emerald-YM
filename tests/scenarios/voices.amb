@@ -21,7 +21,7 @@ tap LFO
 wait 400
 turn ALGO 2
 wait 300
-said VOICE Growl
+said VOICE Rubber
 tap SEQ
 wait 400
 turn ALGO 1

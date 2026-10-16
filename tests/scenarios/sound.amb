@@ -20,6 +20,9 @@ wait 200
 expect par38 -50
 tap ENV
 wait 300
+expect view 12
+tap ENV
+wait 300
 expect view 1
 tap SEQ
 wait 200

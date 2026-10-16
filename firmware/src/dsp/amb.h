@@ -59,6 +59,11 @@ enum {
     P_PTON, P_PRAT, P_PLEN, P_PBEND,                  /* the pings: tone, ratio, length, bend */
     P_BBITE, P_BSHAPE, P_BLEN, P_BSLIDE,              /* the bass: bite, shape, length, slide */
     P_KTUNE, P_KLEN, P_KPUNCH, P_HTONE,               /* the drums: the kick's tune, length, punch; the hats' tone */
+    /* the FM pages (an FM voice): the algorithm (0: the voice's; 1..9), the upper operators' ratio, op 4's
+     * feedback, the modulators' decay: relative, -50 .. +50 */
+    P_CALG, P_CFRAT, P_CFB, P_CFDEC,
+    P_PALG, P_PFRAT, P_PFB, P_PFDEC,
+    P_BALG, P_BFRAT, P_BFB, P_BFDEC,
     P_NPARAMS
 };
 typedef struct {
@@ -96,7 +101,7 @@ void en_midi_out(uint32_t st, uint32_t d1, uint32_t d2);
 /* the voices: each layer's sounds (ALGORITHM on the layer's page) */
 #define EN_NCV 7
 #define EN_NPV 5
-#define EN_NBV 4
+#define EN_NBV 5
 #define EN_NKIT 5
 extern const char *const EN_CV_NAME[EN_NCV], *const EN_PV_NAME[EN_NPV], *const EN_BV_NAME[EN_NBV],
     *const EN_KIT_NAME[EN_NKIT];
@@ -152,6 +157,10 @@ int en_kick_note(int root);                    /* the kick's note (MIDI) for the
  * of its level (0..1) over *secs seconds, and of a second curve (the chord's filter envelope, the kick's
  * pitch; else 0) */
 void en_env_shape(int layer, float *lvl, float *aux, int n, float *secs);
+/* the FM pages: is the layer's voice FM now (0 chord, 1 pings, 2 bass), and its algorithm as it plays (0..8) */
+int en_voice_fm(int layer);
+int en_fm_alg(int layer);
+#define EN_FM_NALG 9
 
 /* the pieces: recipes for every parameter (Tune and MIDI out included, but they are the player's) */
 #define EN_NPIECES 8

@@ -392,6 +392,22 @@ int main(void)
         CHECK(bass_pcs == 1 << ((chord_root_pc() + 7) % 12), "Drone at Fifth 100: only the fifth (%x)", bass_pcs);
     }
 
+    /* a piece's parameters all at once (a piece change, the boot): none of them, nor PLAY after them, dropped */
+    {
+        int16_t pp[P_NPARAMS];
+        uint16_t pl;
+        int k;
+        fresh();
+        en_piece(3, pp, &pl);
+        for (k = 0; k < P_NPARAMS; k++)
+            en_set(k, pp[k]);
+        en_pool(pl);
+        en_regrow();
+        en_play(1);
+        run(3.0f);
+        CHECK(en_playing && en_bars > 16u && peak > 0.02f, "a piece's parameters, then PLAY: not playing (%u)", en_bars);
+    }
+
     /* every voice of every layer: it sounds, without NaN, under full scale */
     {
         static const int VP[4] = {P_CVOICE, P_PVOICE, P_BVOICE, P_KIT};

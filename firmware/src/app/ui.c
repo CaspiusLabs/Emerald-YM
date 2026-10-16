@@ -17,14 +17,21 @@
 /* (past NPAGES, off SELECT's round and on no button of their own: V_MIX, PERFORM's knobs, the four layers'
  * levels; the layers' sound pages, the layer's button pressed again) */
 enum { V_DUB, V_CHORD, V_TEXTURE, V_BASS, V_DRUMS, V_SPACE, V_SETUP, NPAGES, V_MIX = NPAGES, V_CSND, V_PSND, V_BSND,
-       V_DSND, NVIEWS };
+       V_DSND, V_CFM, V_PFM, V_BFM, NVIEWS };
 static const char *const VIEW_NAME[NVIEWS] = {"Dub", "Chord", "Texture", "Bass", "Drums", "Space", "Setup", "Mix",
-                                              "Chord sound", "Ping sound", "Bass sound", "Drum sound"};
+                                              "Chord sound", "Ping sound", "Bass sound", "Drum sound",
+                                              "Chord FM", "Ping FM", "Bass FM"};
 #define B_NONE 0xFFu
 static const uint8_t VIEW_BTN[NVIEWS] = {B_HOME, B_ENV, B_ARP, B_LFO, B_SEQ, B_FX, B_GLO, B_NONE, B_NONE, B_NONE, B_NONE,
-                                         B_NONE};
+                                         B_NONE, B_NONE, B_NONE, B_NONE};
 static int sound_of(int v) { return v == V_CHORD ? V_CSND : v == V_TEXTURE ? V_PSND : v == V_BASS ? V_BSND : v == V_DRUMS ? V_DSND : -1; }
-static int parent_of(int v) { return v == V_CSND ? V_CHORD : v == V_PSND ? V_TEXTURE : v == V_BSND ? V_BASS : v == V_DSND ? V_DRUMS : -1; }
+static int fm_of(int v) { return v == V_CHORD ? V_CFM : v == V_TEXTURE ? V_PFM : v == V_BASS ? V_BFM : -1; }
+static int parent_of(int v)
+{
+    return v == V_CSND || v == V_CFM ? V_CHORD : v == V_PSND || v == V_PFM ? V_TEXTURE : v == V_BSND || v == V_BFM ? V_BASS
+         : v == V_DSND ? V_DRUMS : -1;
+}
+static int layer_of(int v) { v = parent_of(v) >= 0 ? parent_of(v) : v; return v == V_CHORD ? 0 : v == V_TEXTURE ? 1 : v == V_BASS ? 2 : 3; }
 static int page_of(int v) { return parent_of(v) >= 0 ? parent_of(v) : v; }   /* a sound page: its layer's */
 /* the four knobs of each page: a parameter, or one of these; and what the knob is called there */
 enum { K_LEDS = 100, K_CPU, K_NONE };
@@ -41,6 +48,9 @@ static const uint8_t VIEW_KNOB[NVIEWS][4] = {
     {P_PTON, P_PRAT, P_PLEN, P_PBEND},
     {P_BBITE, P_BSHAPE, P_BLEN, P_BSLIDE},
     {P_KTUNE, P_KLEN, P_KPUNCH, P_HTONE},
+    {P_CALG, P_CFRAT, P_CFB, P_CFDEC},
+    {P_PALG, P_PFRAT, P_PFB, P_PFDEC},
+    {P_BALG, P_BFRAT, P_BFB, P_BFDEC},
 };
 static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Tempo", "Evolve", "Motion", "Drift"},
@@ -55,6 +65,9 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Tone", "Ratio", "Length", "Bend"},
     {"Bite", "Shape", "Length", "Slide"},
     {"Kick tune", "Kick len", "Punch", "Hats"},
+    {"Algo", "Ratio", "Feedback", "Mod dec"},
+    {"Algo", "Ratio", "Feedback", "Mod dec"},
+    {"Algo", "Ratio", "Feedback", "Mod dec"},
 };
 
 /* the screen's colours: a dark room, as a dub techno sleeve (grey on black, a cold blue). The chord and
@@ -410,8 +423,12 @@ static void button(int b)
         set_view(sound_of(ui.view));
         return;
     }
-    if (parent_of(ui.view) >= 0 && b == VIEW_BTN[parent_of(ui.view)]) {   /* and again: back */
-        set_view(parent_of(ui.view));
+    if (parent_of(ui.view) >= 0 && b == VIEW_BTN[parent_of(ui.view)]) {   /* again: an FM voice's FM page; then back */
+        int pv = parent_of(ui.view);
+        if (ui.view == sound_of(pv) && fm_of(pv) >= 0 && en_voice_fm(layer_of(pv)))
+            set_view(fm_of(pv));
+        else
+            set_view(pv);
         return;
     }
     for (v = 0; v < NPAGES; v++)                 /* a page's button: its page */
@@ -940,6 +957,80 @@ static void draw_env(int layer_view)
     cv_text(x0 + w - text_w(&FONT_XS, t), y0 + h + 1, &FONT_XS, t, K_DIM);
 }
 
+/* an FM page: the voice's algorithm, as the FM synths draw it: the operators as boxes, each modulator above
+ * the one it modulates, the carriers on the bottom line (they're heard), op 4's feedback a loop */
+static const int8_t ALG_XY[EN_FM_NALG][4][2] = {   /* each op's place (x in half steps from the middle, y up) */
+    {{0, 0}, {0, 1}, {0, 2}, {0, 3}},   {{0, 0}, {0, 1}, {-1, 2}, {1, 2}}, {{0, 0}, {-1, 1}, {-1, 2}, {1, 1}},
+    {{0, 0}, {-1, 1}, {1, 1}, {1, 2}},  {{-1, 0}, {-1, 1}, {1, 0}, {1, 1}}, {{-2, 0}, {0, 0}, {2, 0}, {0, 1}},
+    {{-2, 0}, {0, 0}, {2, 0}, {2, 1}},  {{-3, 0}, {-1, 0}, {1, 0}, {3, 0}}, {{0, 0}, {0, 1}, {0, -9}, {0, -9}},
+};
+static const uint16_t ALG_EDGE[EN_FM_NALG] = {   /* bit 4 * from + to (ops 0..3): from modulates to */
+    1u << (4 * 1 + 0) | 1u << (4 * 2 + 1) | 1u << (4 * 3 + 2), 1u << (4 * 1 + 0) | 1u << (4 * 2 + 1) | 1u << (4 * 3 + 1),
+    1u << (4 * 1 + 0) | 1u << (4 * 2 + 1) | 1u << (4 * 3 + 0), 1u << (4 * 1 + 0) | 1u << (4 * 2 + 0) | 1u << (4 * 3 + 2),
+    1u << (4 * 1 + 0) | 1u << (4 * 3 + 2),                     1u << (4 * 3 + 0) | 1u << (4 * 3 + 1) | 1u << (4 * 3 + 2),
+    1u << (4 * 3 + 2),                                         0u,
+    1u << (4 * 1 + 0),
+};
+static void line(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t c)   /* Bresenham */
+{
+    int32_t dx = x1 > x0 ? x1 - x0 : x0 - x1, dy = y1 > y0 ? y0 - y1 : y1 - y0, sx = x0 < x1 ? 1 : -1,
+            sy = y0 < y1 ? 1 : -1, e = dx + dy;
+    for (;;) {
+        cv_pset(x0, y0, c);
+        if (x0 == x1 && y0 == y1)
+            break;
+        if (2 * e >= dy) {
+            e += dy;
+            x0 += sx;
+        }
+        if (2 * e <= dx) {
+            e += dx;
+            y0 += sy;
+        }
+    }
+}
+static void draw_alg(int layer)
+{
+    static const char *const D[4] = {"1", "2", "3", "4"};
+    int alg = en_fm_alg(layer), k, f, t;
+    int32_t px[4], py[4];
+    char tt[12];
+    if (!en_voice_fm(layer)) {
+        text_c(120, 40, &FONT_XS, "NOT AN FM VOICE", K_DIM);
+        return;
+    }
+    for (k = 0; k < 4; k++) {
+        px[k] = 120 + ALG_XY[alg][k][0] * 17;
+        py[k] = 80 - ALG_XY[alg][k][1] * 18;
+    }
+    for (f = 0; f < 4; f++)                      /* the connections, under the boxes */
+        for (t = 0; t < 4; t++)
+            if (ALG_EDGE[alg] >> (4 * f + t) & 1u)
+                line(px[f], py[f] + 7, px[t], py[t] - 7, K_DIM);
+    for (k = 0; k < 4; k++) {
+        int carrier = ALG_XY[alg][k][1] == 0;
+        if (ALG_XY[alg][k][1] < 0)
+            continue;                            /* (two operators: 3 and 4 unused) */
+        if (carrier)
+            line(px[k], py[k] + 7, px[k], 91, K_PAD);
+        cv_round(px[k] - 7, py[k] - 7, 15, 15, 3, carrier ? K_PAD : K_BELL);
+        text_c(px[k] + 1, py[k] - 7, &FONT_XS, D[k], K_BG);
+    }
+    if (alg != 8) {                              /* op 4's feedback */
+        line(px[3] + 7, py[3] - 3, px[3] + 11, py[3] - 3, K_DIM);
+        line(px[3] + 11, py[3] - 3, px[3] + 11, py[3] - 10, K_DIM);
+        line(px[3] + 11, py[3] - 10, px[3], py[3] - 10, K_DIM);
+        line(px[3], py[3] - 10, px[3], py[3] - 7, K_DIM);
+    }
+    cv_rect(62, 91, 117, 1, K_PAD);
+    tt[0] = 'A', tt[1] = 'L', tt[2] = 'G', tt[3] = 'O', tt[4] = ' ';
+    itoa_u((uint32_t)(alg + 1), tt + 5);
+    if (alg == 8) {
+        tt[5] = '2', tt[6] = '-', tt[7] = 'O', tt[8] = 'P', tt[9] = 0;
+    }
+    text_c(120, -1, &FONT_XS, tt, K_DIM);
+}
+
 static void draw_meters(void)                    /* left: the four layers */
 {
     static const uint16_t C[4] = {K_PAD, K_BELL, K_BASS, K_PULSE}, T[4] = {K_PAD_T, K_BELL_T, K_BASS_T, K_PULSE_T};
@@ -1001,9 +1092,9 @@ static int help_lines(int b, const char *l[HELP_LINES])
 #define L(t) (l[n++] = (t))
     switch (b) {
     case B_HOME: L("DUB"); L("TEMPO, EVOLVE, MOTION, DRIFT"); L("+ SELECT: TEMPO"); break;
-    case B_ENV: L("THE CHORD: LEVEL, STABS,"); L(" DECAY, CUTOFF"); L("ALGORITHM: ITS VOICE"); L("AGAIN: ITS SOUND"); break;
-    case B_ARP: L("TEXTURE: PINGS, DENSITY,"); L(" CLOUD, CRACKLE"); L("ALGORITHM: THE PINGS' VOICE"); L("AGAIN: THEIR SOUND"); break;
-    case B_LFO: L("THE BASS"); L("LEVEL, OCTAVE, GROOVE, FIFTH"); L("ALGORITHM: ITS VOICE"); L("AGAIN: ITS SOUND"); break;
+    case B_ENV: L("THE CHORD: LEVEL, STABS,"); L(" DECAY, CUTOFF"); L("ALGORITHM: ITS VOICE"); L("AGAIN: SOUND; AGAIN: FM"); break;
+    case B_ARP: L("TEXTURE: PINGS, DENSITY,"); L(" CLOUD, CRACKLE"); L("ALGORITHM: THE PINGS' VOICE"); L("AGAIN: SOUND; AGAIN: FM"); break;
+    case B_LFO: L("THE BASS"); L("LEVEL, OCTAVE, GROOVE, FIFTH"); L("ALGORITHM: ITS VOICE"); L("AGAIN: SOUND; AGAIN: FM"); break;
     case B_SEQ: L("THE DRUMS"); L("LEVEL, HITS, SWING, DUCK"); L("ALGORITHM: THE KIT"); L("AGAIN: ITS SOUND"); break;
     case B_FX: L("THE SPACE"); L("ECHO, ECHO TIME, FEEDBACK,"); L("REVERB"); break;
     case B_GLO: L("SETUP"); L("ROOT, TUNE, MIDI OUT, LIGHTS"); break;
@@ -1059,11 +1150,19 @@ static void draw_main(void)
     for (i = 0; i < EN_NDRUM; i++)
         h = hash(h, (uint32_t)q16(en_drum_glow[i]));
     h = hash(h, ui.view);
+    if (parent_of(ui.view) >= 0) {               /* a sound or FM page: redrawn as its values move */
+        for (i = 0; i < 4; i++)
+            h = hash(h, (uint32_t)(proj.par[VIEW_KNOB[ui.view][i]] + 64));
+        h = hash(h, (uint32_t)proj.par[view_voice(ui.view)] | (uint32_t)proj.par[P_DECAY] << 8 | (uint32_t)proj.par[P_GROOVE] << 16);
+    }
     if (h == ui.sig[1] && !moving)
         return;
     ui.sig[1] = h;
     cv_begin(240, MAIN_H, K_BG);
-    if (parent_of(ui.view) >= 0) {               /* a sound page: the layer's envelope instead of the ripples */
+    if (ui.view >= V_CFM) {                      /* an FM page: the algorithm */
+        draw_alg(layer_of(ui.view));
+        moving = 0;
+    } else if (parent_of(ui.view) >= 0) {        /* a sound page: the layer's envelope instead of the ripples */
         draw_env(parent_of(ui.view));
         moving = 1;
     } else {

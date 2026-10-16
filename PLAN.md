@@ -168,9 +168,15 @@ Each layer gets a second page, its **sound page**, to shape its voice beyond the
       parameters, project format 3, tests (`tests/scenarios/sound.amb`)
 - [x] Each voice's mapping of the four knobs (a first pass; to tune by ear)
 - [x] The envelope drawing on a sound page
-- [ ] The FM core, its algorithms, the FM voices moved onto it; the punchier basses
-- [ ] The FM page (Algorithm, Ratio, Feedback, Index env); the algorithm diagram
-- [ ] CPU on the device at each step
+- [x] The FM core (4 operators, the eight 4-op algorithms and a 2-op one, op 4's feedback, an envelope an
+      operator), the FM voices moved onto it (Keys, Bell, all the pings); new basses: Punch, Rubber, Pluck
+      (Round and Pulse gone), Growl
+- [x] The FM page (Algo, Ratio of ops 3 and 4, Feedback, Mod dec), a third press on an FM voice; the
+      algorithm drawn; project format 4; `tests/scenarios/fm.amb`
+- [ ] **CPU on the device**: on the host the heaviest piece (Night Drive: Keys, Drop, Growl) is now
+      0.42% of real time against AMB-1's 0.29%; needs the Setup page's CPU on the FM-1
+- [x] Found on the way: the command queue (64) dropped commands once a piece had 62 parameters (PLAY
+      among them): now 256, with a compile-time check and a test
 
 ## Done: DUB-1's own interface
 
