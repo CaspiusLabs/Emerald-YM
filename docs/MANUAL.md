@@ -142,7 +142,7 @@ shows the slot playing lit, and "2/4" under the chord's name on the other pages.
 page's button, leaves the page; **EDIT held** (half a second), anywhere, moves to the next chord.
 The slots are kept with the piece.
 
-**The effects grid** (REC held). After a moment the screen shows sixteen effects, four rows of four;
+**The effects grid** (REC held). After a moment the whole screen shows sixteen effects, four rows of four (the knobs do nothing while it's up);
 the white keys from the lowest play them, each as long as its key is held (even after you let go of
 REC). The first key of each row is lit, to find the rows by touch.
 
@@ -187,7 +187,8 @@ another button puts the card away; letting go after it does nothing else.
   drums (amber).
 - **Right:** DUCK, how far the kick is ducking the rest, falling from the top with each kick.
 - **The lanes:** the bar as it plays, sixteen steps, a lane a layer, each marked in its colour on
-  the left: the stabs (teal), the kick (amber), the hats (white), the rim (pink), the bass (brass). The step playing
+  the left: the stabs (teal), the kick (amber), the hats (white), the rim (pink), the clap (yellow), the bass (brass).
+  A hit that only sometimes comes (the clap in Auto, a lane's Chance under 50%) is a ring, filled when it plays. The step playing
   is lit. A layer that's out (in a Break, muted in PERFORM, or at level 0) has an empty lane at once.
   In the stabs' lane, rings show where the echo's repeats land, fainter for each, as the echo's
   time and Feedback have them; each flashes white as the playhead reaches it.
@@ -222,8 +223,9 @@ DUB-1 plays four layers from one scale and one chord, on a grid of sixteenths.
 - **Drums:** a four-on-the-floor kick (a sine falling fast onto the key's root, F1 to B1, 44 to 62 Hz; below F its fifth; with a click), a
   shaker on the sixteenths, an open hat off the beat, and a **rim** (two short tones and a click,
   mostly sent into the echo, so it echoes away: the dub snare), on two and four once Hits is 70 or
-  more. The kick ducks everything else (**Duck**), and stays out of the echo; the hats send a
-  little to it.
+  more; and a **clap** (three quick bursts of noise and a tail, into the plate), rarely: on two or
+  four now and then, about one chance in sixteen (more with Evolve), in Full and Groove phrases. The
+  kick ducks everything else (**Duck**), and stays out of the echo; the hats send a little to it.
 
 Then the space: a short Echoplex that smears what goes in, the tape echo (up to 5.6 seconds,
 synced to the tempo, with two heads, the second at three quarters of the loop), a granular
@@ -440,11 +442,11 @@ sixteen steps each, to write yourself.
 
 | | |
 |---|---|
-| KNOB 1 · Lane | Kick, Shaker, Open (hat), Rim |
+| KNOB 1 · Lane | Kick, Shaker, Open (hat), Rim, Clap |
 | White keys 1–16 | the lane's sixteen steps: a key turns its step on or off (lit when on) |
 | A black key held + a white key | that step accented (on, and drawn taller) |
 | KNOB 2 · Accent | how much quieter the unaccented steps are, 0 to 100 |
-| KNOB 3 · Chance | how likely the lane's steps are to play, 0 to 100%: loose, breathing hats |
+| KNOB 3 · Chance | how likely the lane's steps are to play, 0 to 100%: loose, breathing hats (the clap starts at 12%: rare, as it shines) |
 | KNOB 4 · Play | Auto (the patterns generated from Hits, as ever) or Pattern (yours) |
 
 The first step you change takes the pattern over from what Auto was playing, and switches Play to

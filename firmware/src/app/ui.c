@@ -38,7 +38,7 @@ static int page_of(int v) { return parent_of(v) >= 0 ? parent_of(v) : v; }   /* 
 /* the four knobs of each page: a parameter, or one of these; and what the knob is called there */
 enum { K_LEDS = 200, K_CPU, K_NONE, K_SLOT, K_CQ, K_CX,    /* (the Chords page: the slot, and its kind and type) */
        K_LANE, K_LCH };                                      /* (the Pattern page: the lane, and its chance) */
-static const char *const LANE_NAME[EN_NDRUM] = {"Kick", "Shaker", "Open", "Rim"};
+static const char *const LANE_NAME[EN_NDRUM] = {"Kick", "Shaker", "Open", "Rim", "Clap"};
 _Static_assert(P_NPARAMS <= K_LEDS, "the knobs' own codes must come after the parameters");
 static const uint16_t VIEW_KNOB[NVIEWS][4] = {
     {P_TEMPO, P_EVOLVE, P_MOTION, P_DRIFT},
@@ -100,6 +100,8 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
 #define K_FROST_T RGB(96, 42, 40)
 #define K_RIM RGB(214, 124, 176)         /* the rim */
 #define K_RIM_T RGB(80, 44, 64)
+#define K_CLAP RGB(232, 206, 98)         /* the clap */
+#define K_CLAP_T RGB(80, 72, 36)
 
 static struct {
     uint8_t view;
@@ -799,6 +801,8 @@ static void input(void)
     }
     for (i = 0; i < 4; i++)
         if ((e = plat_enc(EN_K1 + (int)i)) != 0) {
+            if (grid_up())
+                continue;                        /* (the grid on the screen: the knobs rest) */
             turn(EN_K1 + (int)i, VIEW_KNOB[ui.view][i], e);
             ui.touched = (int8_t)i;
             ui.touch_until = plat_ms() + 1200u;
@@ -1317,11 +1321,13 @@ static void draw_duck(void)                      /* right: the kick's ducking, f
 
 static void draw_lanes(void)                     /* below: the bar, a lane a layer */
 {
-    static const uint16_t C[5] = {K_PAD, K_PULSE, K_TEXT, K_RIM, K_BASS}, T[5] = {K_PAD_T, K_PULSE_T, K_LINE, K_RIM_T, K_BASS_T};
+    static const uint16_t C[6] = {K_PAD, K_PULSE, K_TEXT, K_RIM, K_CLAP, K_BASS},
+                          T[6] = {K_PAD_T, K_PULSE_T, K_LINE, K_RIM_T, K_CLAP_T, K_BASS_T};
+    static const int8_t DR[6] = {-1, 0, 1, 3, 4, -1};   /* each lane's drum (its chance) */
     int l, i, k, pos = en_drum_pos[0];
     float ghost[16];
     if (en_playing)                              /* the step playing: a column */
-        cv_round(38 + pos * 11, 95, 9, 48, 2, K_PANEL);
+        cv_round(38 + pos * 11, 94, 9, 49, 2, K_PANEL);
     for (i = 0; i < 16; i++)
         ghost[i] = 0.0f;
     if (!en_ext && proj.par[P_TEMPO] > 0) {      /* the stabs' echoes: where each repeat lands, as faint as it is */
@@ -1339,13 +1345,22 @@ static void draw_lanes(void)                     /* below: the bar, a lane a lay
                 }
             }
     }
-    for (l = 0; l < 5; l++) {                    /* (in the layers' colours: stabs, kick, hats, rim, bass) */
+    for (l = 0; l < 6; l++) {                    /* (in the layers' colours: stabs, kick, hats, rim, clap, bass) */
         uint32_t p = en_lane[l];
-        int32_t y = 97 + l * 9;
+        int32_t y = 96 + l * 8;
+        int maybe = DR[l] >= 0 && (proj.par[P_DMODE] ? proj.par[P_DCH0 + DR[l]] < 50 : DR[l] == 4);
         cv_round(30, y + 1, 4, 3, 1, C[l]);
         for (i = 0; i < 16; i++) {
             int32_t x = 40 + i * 11;
-            if (p >> i & 1u) {
+            if (p >> i & 1u && maybe) {          /* a hit that only sometimes comes: a ring; filled when it does */
+                uint16_t c = en_playing && i == pos && en_drum_glow[DR[l]] > 0.5f ? K_TEXT : mix(T[l], C[l], 10);
+                if (en_playing && i == pos && en_drum_glow[DR[l]] > 0.5f) {
+                    cv_round(x - 1, y - 1, 7, 7, 3, c);
+                } else {
+                    cv_rect(x + 1, y, 3, 1, c), cv_rect(x + 1, y + 4, 3, 1, c);
+                    cv_rect(x, y + 1, 1, 3, c), cv_rect(x + 4, y + 1, 1, 3, c);
+                }
+            } else if (p >> i & 1u) {
                 cv_round(x, y, 5, 5, 2, en_playing && i == pos ? C[l] : mix(T[l], C[l], 9));
             } else if (l == 0 && ghost[i] > 0.0f) {   /* an echo's repeat: a ring; as the playhead hits it, a flash */
                 if (en_playing && i == pos) {
@@ -1405,52 +1420,75 @@ static void draw_help(void)
 
 /* the effects grid, in the main screen's place while REC is held: four rows of four, the first of each lit
  * as the group's (its key lit too), the ones held filled */
-static void draw_grid(void)
+static void grid_band(int32_t oy)                 /* the whole screen, in two bands of 240 x 120 */
 {
     static const char *const GROUP[4] = {"ECHO", "FILTER", "SPACE", "RHYTHM"};
     static const char *const CELL[EN_NFX] = {"Throw", "Time x2", "Stop", "Swell", "Low", "High", "Wah", "Phone",
                                              "Verb", "Crash", "Freeze", "Wash", "Stutter", "Gate", "Siren", "Riser"};
     int r, c;
-    text_c(120, -1, &FONT_XS, "TAP: DUB HOLD    KEYS: EFFECTS", K_DIM);
+    cv_begin(240, 120, K_BG);
+    text_c(120, 2 - oy, &FONT_S, "EFFECTS", K_ACC);
+    text_c(120, 20 - oy, &FONT_XS, "HOLD A WHITE KEY    TAP REC: DUB HOLD", K_DIM);
     for (r = 0; r < 4; r++) {
-        cv_text(4, 18 + r * 31, &FONT_XS, GROUP[r], K_DIM);
+        int32_t yr = 38 + r * 50;
+        cv_text(6, yr - oy, &FONT_XS, GROUP[r], K_DIM);
         for (c = 0; c < 4; c++) {
             int e = r * 4 + c, on = (int)(ui.fx >> e & 1u);
-            int32_t x = 46 + c * 48, y = 14 + r * 31;
+            int32_t x = 4 + c * 59, y = yr + 13 - oy;
             char t[12];
-            cv_round(x, y, 45, 26, 4, on ? K_ACC : c == 0 ? K_PANEL : mix(K_BG, K_PANEL, 8));
-            if (c == 0 && !on)
-                cv_rect(x + 3, y + 23, 39, 1, K_ACC);
+            cv_round(x, y, 55, 33, 5, on ? K_ACC : c == 0 ? K_PANEL : mix(K_BG, K_PANEL, 8));
+            if (c == 0 && !on)                   /* (the first of a group: its key is lit) */
+                cv_rect(x + 4, y + 29, 47, 2, K_ACC);
             caps(t, CELL[e], sizeof t);
-            text_c(x + 23, y + 5, &FONT_XS, t, on ? K_BG : K_TEXT);
+            text_c(x + 28, y + 8, &FONT_S, t, on ? K_BG : K_TEXT);
         }
     }
+    cv_blit(0, (uint32_t)oy);
+}
+
+static void draw_grid(void)                      /* REC held: the effects, the whole screen */
+{
+    uint32_t h = hash(0x47524944u, ui.fx);
+    if (h == ui.sig[1] && ui.sig[0] == 0x47524944u)
+        return;
+    ui.sig[0] = ui.sig[2] = 0x47524944u;         /* (the header and the knobs drawn again after) */
+    ui.sig[1] = h;
+    grid_band(0);
+    grid_band(120);
 }
 
 /* the Pattern page: the four lanes, sixteen steps each, the lane edited lit, the accents taller, the step
  * playing a column */
 static void draw_pattern(void)
 {
-    static const uint16_t C[EN_NDRUM] = {K_PULSE, K_TEXT, K_DIM, K_RIM};
-    static const char *const SH[EN_NDRUM] = {"KICK", "SHKR", "OPEN", "RIM"};
+    static const uint16_t C[EN_NDRUM] = {K_PULSE, K_TEXT, K_DIM, K_RIM, K_CLAP};
+    static const char *const SH[EN_NDRUM] = {"KICK", "SHKR", "OPEN", "RIM", "CLAP"};
     int l, i, pos = en_drum_pos[0];
     text_c(120, -1, &FONT_XS, proj.par[P_DMODE] ? "PLAY: THE PATTERN" : "PLAY: AUTO (A KEY TAKES IT OVER)",
            proj.par[P_DMODE] ? K_ACC : K_DIM);
     if (en_playing)
-        cv_round(37 + pos * 12, 15, 11, 86, 2, K_PANEL);
+        cv_round(37 + pos * 12, 15, 11, 86, 2, K_PANEL);   /* (five lanes, 17 px apart) */
     for (l = 0; l < EN_NDRUM; l++) {
         uint32_t p = lane_steps(l), a = proj.par[P_DMODE] ? (uint32_t)(uint16_t)proj.par[P_DACC0 + l] : 0u;
-        int32_t y = 18 + l * 21, sel = l == ui.lane;
+        int32_t y = 17 + l * 17, sel = l == ui.lane;
+        int maybe = proj.par[P_DMODE] ? proj.par[P_DCH0 + l] < 50 : l == 4;   /* (a chance under half: rings) */
         if (sel)
-            cv_round(2, y - 2, 236, 19, 4, mix(K_BG, K_PANEL, 10));
+            cv_round(2, y - 2, 236, 17, 4, mix(K_BG, K_PANEL, 10));
         cv_text(5, y + 1, &FONT_XS, SH[l], sel ? K_TEXT : K_DIM);
         for (i = 0; i < 16; i++) {
             int32_t x = 38 + i * 12;
             if (p >> i & 1u) {
                 int ac = (int)(a >> i & 1u);
-                cv_round(x, ac ? y : y + 3, 9, ac ? 15 : 9, 2, en_playing && i == pos ? K_TEXT : sel ? C[l] : mix(K_BG, C[l], 9));
+                uint16_t c = en_playing && i == pos ? K_TEXT : sel ? C[l] : mix(K_BG, C[l], 9);
+                int32_t yy = ac ? y : y + 3, hh = ac ? 13 : 7;
+                if (maybe) {                     /* a step that only sometimes plays: a ring */
+                    cv_rect(x + 1, yy, 7, 1, c), cv_rect(x + 1, yy + hh - 1, 7, 1, c);
+                    cv_rect(x, yy + 1, 1, hh - 2, c), cv_rect(x + 8, yy + 1, 1, hh - 2, c);
+                } else {
+                    cv_round(x, yy, 9, hh, 2, c);
+                }
             } else {
-                cv_rect(x + 4, y + 7, 2, 2, (i & 3) ? K_LINE : K_DIM);
+                cv_rect(x + 4, y + 6, 2, 2, (i & 3) ? K_LINE : K_DIM);
             }
         }
     }
@@ -1515,14 +1553,7 @@ static void draw_main(void)
         }
         return;
     }
-    if (grid_up()) {                             /* REC held: the effects grid */
-        h = hash(0x47524944u, ui.fx);
-        if (h != ui.sig[1]) {
-            ui.sig[1] = h;
-            cv_begin(240, MAIN_H, K_BG);
-            draw_grid();
-            cv_blit(0, MAIN_Y);
-        }
+    if (grid_up()) {                             /* REC held: the effects grid (ui_frame draws it, whole) */
         if (!ui.grid_said && ann_on()) {         /* the grid in words: the white keys' effects, a group at a time */
             int e;
             sp_n = 0;
@@ -1551,7 +1582,7 @@ static void draw_main(void)
     ripples_take(now);
     for (i = 0; i < EN_NPAD; i++)
         h = hash(h, en_chord[i]);
-    for (i = 0; i < 5; i++)
+    for (i = 0; i < 6; i++)
         h = hash(h, en_lane[i] | (uint32_t)proj.par[i < 4 ? i : 0] << 16);
     h = hash(h, en_drum_pos[0] | (uint32_t)q16(en_duck) << 4 | (uint32_t)q16(en_pad_level) << 9 | (uint32_t)q16(en_bass_level) << 14);
     h = hash(h, (uint32_t)(ui.view == V_SETUP ? plat_battery() + 1 : 0) | (uint32_t)(en_prog_pos + 1) << 12);
@@ -2220,9 +2251,15 @@ void ui_frame(void)
 {
     input();
     autosave();
-    draw_header();
-    draw_main();
-    draw_knobs();
+    if (grid_up()) {                             /* REC held: the effects, the whole screen */
+        if (!(ui.frame % 3u))
+            draw_grid();
+        draw_main();                             /* (it says the grid to a screen reader) */
+    } else {
+        draw_header();
+        draw_main();
+        draw_knobs();
+    }
     leds();
     speak();
     ann_tick(plat_ms());

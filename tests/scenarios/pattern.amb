@@ -11,14 +11,14 @@ said Pattern page, kit Tight: Lane Kick, Accent 50, Chance 100%, Play Auto
 tapkey w3
 wait 200
 said Step 4 on
-expect par102 1
+expect par105 1
 expect par89 4377
 key b0 down
 tapkey w2
 key b0 up
 wait 200
 said Step 3 accented
-expect par93 4
+expect par94 4
 spin K1 3
 wait 200
 said Lane Rim
@@ -28,10 +28,10 @@ wait 200
 expect par92 4112
 spin K3 -50
 wait 200
-expect par100 50
+expect par102 50
 spin K4 -1
 wait 200
-expect par102 0
+expect par105 0
 said Play Auto
 spin K4 1
 tap SEQ
@@ -42,6 +42,6 @@ wait 6000
 expect store_writes >0
 reboot
 wait 1000
-expect par102 1
+expect par105 1
 expect par92 4112
-expect par93 4
+expect par94 4

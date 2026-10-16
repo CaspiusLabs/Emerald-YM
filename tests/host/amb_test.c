@@ -21,7 +21,7 @@ static int fails;
 
 /* MIDI out: counted; the kick's note-ons (36 on channel 10) by the bar they fall in, and each bar's
  * section (as a note-on from the grid sees it; 0xFF: no note that bar) */
-static uint32_t midi_count, kicks, kick_off_beat, drum_notes37;
+static uint32_t midi_count, kicks, kick_off_beat, drum_notes37, claps;
 static int bass_lo = 999, bass_hi = -1, bass_pcs;  /* the bass's note-ons (channel 3): its range, its pitch classes */
 #define KBARS 512
 static uint8_t kick_bar[KBARS], bar_sec[KBARS];
@@ -38,6 +38,8 @@ void en_midi_out(uint32_t st, uint32_t d1, uint32_t d2)
     }
     if (st == 0x99u && d1 == 37u && d2 > 0u)
         drum_notes37++;
+    if (st == 0x99u && d1 == 39u && d2 > 0u)
+        claps++;
     if (st == 0x99u && d1 == 36u && d2 > 0u) {
         kicks++;
         kick_off_beat += (en_bars & 3u) != 0u;
@@ -489,6 +491,15 @@ int main(void)
         memset(kick_bar, 0, sizeof kick_bar);
         run(10.0f);
         CHECK(kicks >= 16u, "Auto again: %u kicks", kicks);
+        claps = 0;                               /* the clap, in Auto: now and then, never every time */
+        run(120.0f);
+        CHECK(claps >= 2u && claps <= 40u, "Auto's claps in 2 min: %u (of ~120 chances)", claps);
+        en_set(P_DMODE, 1);
+        en_set(P_DPAT4, (int)(int16_t)(uint16_t)0x1010u);
+        en_set(P_DCH4, 100);
+        claps = 0;
+        run(10.0f);
+        CHECK(claps >= 8u, "the clap at Chance 100: %u in 10 s", claps);
     }
 
     /* the effects grid: each effect alone, then all sixteen at once, then let go: no NaN, under full scale,

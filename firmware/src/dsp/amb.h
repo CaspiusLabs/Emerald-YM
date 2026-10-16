@@ -29,7 +29,7 @@
 #define EN_SR 44100.0f
 #define EN_NLOOP 4                     /* ping loops */
 #define EN_LOOP_MAX 29
-#define EN_NDRUM 4                     /* kick, shaker, open hat, rim */
+#define EN_NDRUM 5                     /* kick, shaker, open hat, rim, clap */
 #define EN_NPAD 4                      /* chord voices */
 
 /* modes: pools relative to the root (bit i: root + i semitones) */
@@ -72,9 +72,9 @@ enum {
     P_PMODE,
     /* the drums' pattern page: each lane's sixteen steps (bit i: step i, as int16) and its accents, its chance (%);
      * the accents' strength; Play: Auto (generated, as ever) or Pattern (these) */
-    P_DPAT0, P_DPAT1, P_DPAT2, P_DPAT3,
-    P_DACC0, P_DACC1, P_DACC2, P_DACC3,
-    P_DCH0, P_DCH1, P_DCH2, P_DCH3,
+    P_DPAT0, P_DPAT1, P_DPAT2, P_DPAT3, P_DPAT4,
+    P_DACC0, P_DACC1, P_DACC2, P_DACC3, P_DACC4,
+    P_DCH0, P_DCH1, P_DCH2, P_DCH3, P_DCH4,
     P_DACCENT, P_DMODE,
     P_NPARAMS
 };
@@ -156,7 +156,7 @@ extern volatile uint8_t en_stab_thrown;        /* the last one was thrown */
 extern volatile float en_echo_ms, en_echo_g;   /* the echo's time; the level a repeat keeps of the last (1: held) */
 extern volatile float en_echo_in;              /* how much of the stab goes into the echo, 0..1 */
 extern volatile float en_duck;                 /* the ducking now, 0 .. 1 (full depth) */
-extern volatile uint16_t en_lane[5];           /* this bar as it plays: the stabs, the kick, the hats, the rim, the bass (bit i: step i) */
+extern volatile uint16_t en_lane[6];           /* this bar as it plays: the stabs, the kick, the hats, the rim, the clap, the bass */
 
 /* the pure parts, for the tests and the screen */
 uint32_t en_euclid(int k, int n, int rot);     /* Bjorklund's pattern, as a bitmask (bit 0 = step 0) */
