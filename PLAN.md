@@ -76,7 +76,8 @@ measurement (renders analysed for level, timing and spectrum).
 
 ## TODO
 
-- [ ] **Your ears**: listen to the pack; what to change in the sound and the pieces
+- [ ] **Your ears**: listen to the pack (`build/listen/pack/`, rendered again with the cloud); what to
+      change in the sound and the pieces
 - [ ] The web app's own page (`web/app/index.html`) and the emulator page (`web/emu/index.html`):
       pages, names, colours (needs emsdk to build and check)
 - [ ] **On the device**: install (`python3 tools/fm1_install.py build/amb.fwsc`), check the Setup
@@ -95,49 +96,26 @@ measurement (renders analysed for level, timing and spectrum).
   - The kick is a fixed ~49 Hz (it follows Tune, not the key)
   - Pentatonic pieces (Concrete) have three-note chords in fourths (7sus4 sounds), not 7ths
 
-## Next: a granular reverb (CLOUD), after JIANT
+## Done: a granular reverb (CLOUD), after JIANT
 
-JIANT (github.com/juanjiant-bit/JIANT, GPL-3.0, another Felucca-based FM-1 firmware) has a granular
-reverb, CLOUD (`firmware/src/fx.c`, `rev_cloud`). How it works:
-
-- The reverb send, plus a little of the cloud's own tail, is written at half rate (22 kHz, int16)
-  into a ~0.74 s line (16384 samples, 32 KB).
-- Up to 12 grains are born at random intervals (RATE sets the density). Each one is 45–140 ms long,
-  read through a triangle window from a random point behind the write head, panned at random (WIDE),
-  a few cents off, and with MOD's chance an octave up, an octave down or a fifth up.
-- The grains are computed every other sample (half the work) and fed into the room reverb network,
-  so they bloom into a tail rather than being heard dry. The tail goes back into the line (SIZE).
-- SIZE at full freezes it: the line stops being written and the cloud holds.
-- A load budget halves the grains when the CPU is tight, and a LITE mode swaps CLOUD for the plain room.
-
-For DUB-1:
-
-- [ ] **Memory first.** The pool is at 332 of 344 KB, so a 32 KB line won't fit there. RAM has
-      ~43 KB free (52.6 of 96 KB used). Options, in order:
-  - a quarter-rate line (11 kHz, like the tape): 8192 samples = 16 KB for the same 0.74 s, darker,
-    which suits dub;
-  - give the Echoplex's 14 KB to the cloud (the Echoplex adds little to dub);
-  - shorten the plate's buffers.
-- [ ] **Where it sits.** On the reverb send, fed by the stabs, the pings and the echo's returns, so
-      the echo's repeats turn into a granular wash. Its output goes into the plate (as JIANT feeds its
-      room), so the grains bloom rather than stutter.
-- [ ] **Dub hold freezes the cloud too:** the echo loop and the grain line both stop listening; the
-      grains keep scattering over what they hold.
-- [ ] **Controls.** The Space page is full (Echo, Echo time, Feedback, Reverb). Either:
-  - a "Cloud" knob replacing Crackle on the Texture page, with Crackle set by the piece; or
-  - a reverb type set by the piece (Plate / Cloud), with Reverb as its amount, and grain pitch and
-    density set by the piece.
-  Most dub-like default: grains mostly at pitch or an octave down, sparse, long, dark.
-- [ ] **The arrangement drives it:** more cloud in a Break, the grains denser as the filter opens.
-- [ ] **CPU.** Twelve grains at half rate is the heaviest part JIANT has (see its
-      `tests/cpu_baseline.txt`). Start with 6 grains at quarter rate, measure on the host against
-      today's 0.20–0.30%, then on the device (Setup page CPU). Halve the grains under load, as JIANT does.
-- [ ] Test it: bounded with everything at max, the freeze holds sample for sample, tails die after stop.
-- [ ] Credit JIANT (Juan Jiant) in the README and the code if any of its code is adapted (both GPL-3.0).
+After JIANT's CLOUD (github.com/juanjiant-bit/JIANT, GPL-3.0; credited in the README, the manual
+and `amb.c`):
+- A 0.74 s line at a quarter rate (11 kHz, 16 KB, in RAM: the pool is full), fed by the reverb send.
+- Up to 6 grains of 80–250 ms (triangle windows, random place and pan, a few cents off, sometimes
+  an octave down, rarely up), denser as Cloud turns up and as the filter opens.
+- The grains go into the plate, and the plate's tail back into the line, so the wash grows with
+  a bigger plate. More of it in a Break; dub hold freezes it.
+- It has its own random numbers, so turning Cloud doesn't change the music's choices.
+- **Cloud** is the Texture page's third knob; the pings' tone is now set by the piece.
+- Measured:
+  - in Haze the cloud is ~10 dB under the mix;
+  - at everything max it stays bounded and dies once the layers stop;
+  - CPU within ~3% of AMB-1's (host);
+  - RAM 69.2 of 96 KB.
 
 ## Ideas for later
 
-- **Korg NTS-3 kaoss pad integration** (the user's own setup; a Kaoss pad is great for dub techno).
+- **Korg NTS-3 kaoss pad integration** (a future project) (the user's own setup; a Kaoss pad is great for dub techno).
   Send one voice to the NTS-3 and, ideally, bring it back and mix it with the rest.
   - **The NTS-3** (Korg Nu:Tekt kaoss pad kit):
     - stereo AUDIO IN and OUT (3.5 mm), SYNC IN and OUT (3.5 mm TRS), USB-C (power; MIDI over USB

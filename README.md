@@ -65,7 +65,8 @@ DUB-1 is a fork of [AMB-1](https://github.com/charlesvestal/fm1-amb) by Charles 
 (GPL-3.0-only): the engine's loops, echo chain, plate and pieces system, the UI and the platform
 all come from there. The idea comes from AMB-1 and from dub techno in general: chords dissolving
 in a tape echo over a steady kick. The reverb is Jon Dattorro's plate ("Effect Design, Part 1",
-JAES 1997), as in [FoMni-1](https://github.com/charlesvestal/fm1-fomni); the Euclidean rhythms
+JAES 1997), as in [FoMni-1](https://github.com/charlesvestal/fm1-fomni); the granular cloud follows the
+design of CLOUD in [JIANT](https://github.com/juanjiant-bit/JIANT) (GPL-3.0); the Euclidean rhythms
 are Godfried Toussaint's reading of Bjorklund's algorithm. The platform (hardware layer, USB,
 update loader, storage, installer) is [Felucca](https://github.com/hugelton/Felucca)'s by Leo
 Kuroshita (Hügelton Instruments), by way of [X0X](https://github.com/charlesvestal/fm1-x0x),

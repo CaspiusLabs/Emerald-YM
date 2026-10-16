@@ -32,13 +32,14 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     {"Bass oct", -1, 1, 0},   {"Groove", 0, 4, 1},      {"Fifth", 0, 100, 20},
     {"Swing", 0, 100, 10},    {"Hats", 0, 100, 50},
     {"Stabs", 0, 100, 30},    {"Crackle", 0, 100, 35},  {"Duck", 0, 100, 50},     {"Size", 0, 100, 55},
+    {"Cloud", 0, 100, 30},
 };
 const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PARAMS[i] : &PARAMS[0]; }
 
 /* the pieces: eight recipes for the whole machine (the FM-1's PRESETS, the web app's cards). Tune and
  * MIDI out are taken from here by neither: they belong to the player, not the piece */
 /*                  Cho Pin Bas Dru  Den Evo Dri Hit  Ech ET Rev Fdb  Cut Dec PTo Mot  Tun MI Tem Rt Md Oc
- *                  CT BO Grv Fif Swi Hat  Stb Crk Dck Siz
+ *                  CT BO Grv Fif Swi Hat  Stb Crk Dck Siz  Clo
  * (Dri: Drift, 2 4 8 16 32 64 bars or Hold; ET: Echo time, 1/8 1/8. 1/4 1/4. 1/2 1 bar; CT: Saws, Keys;
  *  Grv: Drone, Offbeat, Dotted, Roller, Sync) */
 static const struct {
@@ -46,21 +47,21 @@ static const struct {
     int16_t v[P_NPARAMS];
 } PIECES[EN_NPIECES] = {
     {"Basic",      {70, 30, 60, 65, 30, 40, 4, 50, 55, 1, 35, 60, 45, 35, 40, 50, 0, 1, 122, 5, 1, 0,
-                    0, 0, 1, 20, 10, 50, 30, 35, 50, 55}},
+                    0, 0, 1, 20, 10, 50, 30, 35, 50, 55, 30}},
     {"Chamber",    {75, 20, 55, 55, 20, 45, 6, 40, 70, 1, 45, 75, 35, 55, 30, 60, 0, 1, 118, 9, 5, 0,
-                    0, 0, 0, 10, 0, 40, 15, 45, 45, 70}},
+                    0, 0, 0, 10, 0, 40, 15, 45, 45, 70, 45}},
     {"Steppers",   {60, 35, 70, 70, 35, 40, 3, 60, 50, 3, 30, 55, 55, 25, 50, 45, 0, 1, 126, 2, 1, 0,
-                    0, 0, 2, 35, 15, 60, 45, 25, 60, 50}},
+                    0, 0, 2, 35, 15, 60, 45, 25, 60, 50, 20}},
     {"Fog",        {70, 40, 50, 45, 40, 55, 5, 30, 75, 2, 55, 80, 30, 70, 25, 70, 0, 1, 112, 7, 5, 0,
-                    1, -1, 0, 15, 0, 30, 20, 60, 35, 80}},
+                    1, -1, 0, 15, 0, 30, 20, 60, 35, 80, 60}},
     {"Concrete",   {65, 25, 65, 75, 25, 35, 4, 75, 50, 1, 25, 60, 60, 20, 60, 40, 0, 1, 130, 0, 7, 0,
-                    0, 0, 3, 30, 20, 75, 50, 20, 65, 45}},
+                    0, 0, 3, 30, 20, 75, 50, 20, 65, 45, 15}},
     {"Night Drive",{65, 45, 60, 65, 45, 50, 3, 55, 60, 4, 35, 65, 50, 40, 45, 55, 0, 1, 124, 10, 1, 0,
-                    1, 0, 4, 25, 25, 55, 35, 30, 50, 60}},
+                    1, 0, 4, 25, 25, 55, 35, 30, 50, 60, 35}},
     {"Pressure",   {70, 20, 75, 80, 20, 30, 6, 65, 45, 1, 20, 55, 40, 30, 35, 35, 0, 1, 128, 4, 2, 0,
-                    0, 0, 1, 10, 5, 65, 25, 15, 70, 40}},
+                    0, 0, 1, 10, 5, 65, 25, 15, 70, 40, 20}},
     {"Haze",       {62, 50, 45, 40, 50, 60, 4, 35, 80, 3, 60, 85, 35, 80, 30, 80, 0, 1, 116, 3, 0, 1,
-                    1, 0, 0, 20, 10, 35, 30, 70, 30, 85}},
+                    1, 0, 0, 20, 10, 35, 30, 70, 30, 85, 70}},
 };
 
 const char *en_piece_name(int i) { return PIECES[(unsigned)i < EN_NPIECES ? i : 0].name; }
@@ -485,7 +486,7 @@ static float echo_send, rev_send, echo_len, echo_len_t, echo_fb = 0.6f, ein_gain
 static float fb_cap = 2.0f;                     /* stopped, the feedback eases under 90%: the tails die */
 static float rev_in_gain = 1.0f;                /* falls to 0 while frozen */
 static float tape_lpc = 0.55f, tape_hpc = 0.08f; /* the echo's feedback band-pass */
-static float crackle_vol;
+static float crackle_vol, cloud_amt;
 
 /* ------------------------------------------------------- the arrangement --- */
 static uint32_t sixteenth, bar, chord_bars;    /* bars since the start, since the chord moved */
@@ -1254,6 +1255,110 @@ static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
     }
 }
 
+/* ------------------------------------------------- cloud: a granular reverb --- */
+/* After JIANT's CLOUD (github.com/juanjiant-bit/JIANT, GPL-3.0): what goes to the reverb, written at a
+ * quarter rate (11 kHz, 16-bit) into a 0.74 s line, read by up to six grains born at random (denser as Cloud
+ * turns up and as the filter opens), each 80..250 ms through a triangle window, from anywhere behind the
+ * write, panned at random, a few cents off; now and then an octave down (rarely up). The grains go into the
+ * plate, so they bloom into its tail, and a little of them back into the line: the wash builds on itself.
+ * Dub hold stops the line too: the grains keep scattering over what it holds. */
+#define CL_LEN 8192
+#define CL_NG 6
+static int16_t cl_buf[CL_LEN];                  /* (RAM, not the pool: the pool is nearly full) */
+static int cl_w, cl_ph, cl_live;
+static int32_t cl_next;
+static float cl_acc, cl_fb, cl_pl, cl_pr, cl_cl, cl_cr, cl_dens, pl_back;
+static struct {
+    float pos, inc, gl, gr;
+    int32_t age, len;
+} cl_g[CL_NG];
+
+static uint32_t cl_rng = 0x2545F491u;          /* its own: the Cloud knob leaves the music's choices be */
+static float cl_frand(void)
+{
+    cl_rng = cl_rng * 1664525u + 1013904223u;
+    return (float)(cl_rng >> 8) * (1.0f / 16777216.0f);
+}
+static int cl_irand(int n) { return (int)(cl_frand() * (float)n); }
+
+static void cloud_birth(void)                   /* a grain, in the first voice free */
+{
+    int k, back;
+    float r = cl_frand(), pk, p;
+    for (k = 0; k < CL_NG && cl_g[k].len; k++)
+        ;
+    if (k >= CL_NG)
+        return;
+    pk = r < 0.2f ? 0.5f : r < 0.24f ? 2.0f : 1.0f;
+    cl_g[k].len = 880 + cl_irand(1900);
+    cl_g[k].inc = pk * (0.997f + 0.006f * cl_frand());
+    back = 300 + (pk > 1.0f ? cl_g[k].len : 0) + cl_irand(CL_LEN - 3200 - (pk > 1.0f ? cl_g[k].len : 0));
+    cl_g[k].pos = (float)((cl_w - back + CL_LEN) % CL_LEN);
+    cl_g[k].age = 0;
+    p = (cl_frand() * 1.6f - 0.8f + 1.0f) * (FM_PI / 4.0f);
+    cl_g[k].gl = fm_cosf(p);
+    cl_g[k].gr = fm_sinf(p);
+    cl_live++;
+}
+
+/* one sample: the input (mono) in, the grains out (l, r) */
+static inline void cloud(float in, float *ol, float *or_)
+{
+    cl_acc += in;
+    if (++cl_ph >= 4) {                         /* the line and the grains, a quarter of the time */
+        float l = 0.0f, r = 0.0f;
+        int k;
+        cl_ph = 0;
+        if (!en_frozen) {
+            if (++cl_w >= CL_LEN)
+                cl_w = 0;
+            cl_buf[cl_w] = s16(cl_acc * 0.25f + (0.25f + 0.3f * cloud_amt) * cl_fb);
+        }
+        cl_acc = 0.0f;
+        if (--cl_next <= 0) {
+            int gap = 1500 - (int)(1100.0f * cl_dens);   /* 136 .. 36 ms apart, on average */
+            cl_next = gap / 2 + cl_irand(gap);
+            if (cl_dens > 0.0f)
+                cloud_birth();
+        }
+        if (cl_live) {
+            for (k = 0; k < CL_NG; k++) {
+                int32_t a = cl_g[k].age, L = cl_g[k].len;
+                int i0;
+                float f, x, w;
+                if (!L)
+                    continue;
+                i0 = (int)cl_g[k].pos;
+                f = cl_g[k].pos - (float)i0;
+                x = (float)cl_buf[i0] + ((float)cl_buf[i0 + 1 < CL_LEN ? i0 + 1 : 0] - (float)cl_buf[i0]) * f;
+                w = (float)(a < L - a ? a : L - a) * (2.0f / (float)L);
+                x *= w * (1.0f / 12000.0f);
+                l += x * cl_g[k].gl;
+                r += x * cl_g[k].gr;
+                cl_g[k].pos += cl_g[k].inc;
+                if (cl_g[k].pos >= (float)CL_LEN)
+                    cl_g[k].pos -= (float)CL_LEN;
+                if (++cl_g[k].age >= L) {
+                    cl_g[k].len = 0;
+                    cl_live--;
+                }
+            }
+        }
+        l *= 0.55f;
+        r *= 0.55f;
+        cl_fb = 0.5f * (l + r);
+        cl_pl = cl_cl;
+        cl_pr = cl_cr;
+        cl_cl = l;
+        cl_cr = r;
+    }
+    {   /* between the quarter-rate samples: a line from the last to the next */
+        float f = (float)cl_ph * 0.25f;
+        *ol = cl_pl + (cl_cl - cl_pl) * f;
+        *or_ = cl_pr + (cl_cr - cl_pr) * f;
+    }
+}
+
 /* ------------------------------------------------------------ parameters --- */
 static int pulse;
 static uint32_t ext_age;
@@ -1296,6 +1401,7 @@ static void apply(int p, int v)
     case P_EVOLVE: evolve = (float)v * 0.01f; break;
     case P_CRACKLE: crackle_vol = (float)(v * v) * 0.0001f; break;
     case P_DUCK: duck_depth = (float)v * 0.0075f; break;   /* to -12 dB */
+    case P_CLOUD: cloud_amt = (float)v * 0.01f; break;
     case P_POCT:                                 /* let it be heard now: a ping from the first loop */
         if (en_playing && nsteps) {
             int l, k;
@@ -1386,6 +1492,11 @@ void en_init(void)
         tape[i] = 0;
     for (i = 0; i < PLEX_N; i++)
         plex[i] = 0;
+    for (i = 0; i < CL_LEN; i++)
+        cl_buf[i] = 0;
+    for (i = 0; i < CL_NG; i++)
+        cl_g[i].len = 0;
+    cl_live = 0;
     tape_w = plex_w = tape_ph = 0;
     head2 = head2_t = 0.75f;
     head2_v = 0.0f;
@@ -1791,7 +1902,7 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
 {
     uint32_t j;
     const float rg = rev_send * rev_in_gain * (1.0f - 0.2f * arcm);
-    float eg = echo_send * ein_gain;
+    float eg = echo_send * ein_gain, ca = cloud_amt * (sec == SEC_BREAK ? 1.4f : 1.0f);   /* more in a Break */
     for (j = 0; j < n; j++)
         mixl[j] = mixr[j] = rsend[j] = esend[j] = kickb[j] = 0.0f;
     render_stabs(n);
@@ -1800,14 +1911,18 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
     render_drums(n);
     render_crackle(n);
     for (j = 0; j < n; j++) {
-        float wl, wr, l, r, el, er, xl, xr, dg;
+        float wl, wr, l, r, el, er, xl, xr, dg, rin, cl, cr;
         duck_d += (duck_x - duck_d) * 0.08f;
         duck_x *= duck_rel;
         dg = 1.0f - duck_depth * duck_d;
         echoes(esend[j] * eg, &el, &er, &xl, &xr);
-        reverb((rsend[j] * rg + (el + er) * 0.25f * rev_send) * 0.8f, &wl, &wr);
-        l = ((mixl[j] + 1.2f * el + 0.25f * xl + 1.1f * wl) * dg + kickb[j] + crl[j]) * 0.5f * gain;
-        r = ((mixr[j] + 1.2f * er + 0.25f * xr + 1.1f * wr) * dg + kickb[j] + crr[j]) * 0.5f * gain;
+        rin = (rsend[j] * rg + (el + er) * 0.25f * rev_send) * 0.8f;
+        cloud(rin * ca * 2.5f + pl_back * cloud_amt * 0.22f, &cl, &cr);   /* the grains, into the plate: they bloom;
+                                                 * the plate's tail back into the line: the wash grows on itself */
+        reverb(rin * (1.0f - 0.5f * cloud_amt) + (cl + cr) * 0.8f, &wl, &wr);
+        pl_back = 0.5f * (wl + wr);
+        l = ((mixl[j] + 1.2f * el + 0.25f * xl + 1.1f * wl + 1.4f * cl) * dg + kickb[j] + crl[j]) * 0.5f * gain;
+        r = ((mixr[j] + 1.2f * er + 0.25f * xr + 1.1f * wr + 1.4f * cr) * dg + kickb[j] + crr[j]) * 0.5f * gain;
         out[2 * j] = (int32_t)(fm_tanhf(l) * 8300000.0f);
         out[2 * j + 1] = (int32_t)(fm_tanhf(r) * 8300000.0f);
     }
@@ -1829,6 +1944,7 @@ static void control(uint32_t n)                 /* once a chunk: the slow things
     rev_in_gain += ((en_frozen ? 0.0f : 1.0f) - rev_in_gain) * 0.01f;
     ein_gain += ((en_frozen ? 0.0f : 1.0f) - ein_gain) * 0.05f;
     fb_cap += ((en_playing ? 2.0f : 0.9f) - fb_cap) * fm_minf((float)n / (2.0f * EN_SR), 1.0f);
+    cl_dens = cloud_amt > 0.0f ? fm_clampf(0.25f + 0.5f * cloud_amt + 0.3f * arcm, 0.05f, 1.0f) : 0.0f;
     for (i = 0; i < EN_NLOOP; i++)
         en_loop_glow[i] *= 0.985f;
     for (i = 0; i < EN_NDRUM; i++)

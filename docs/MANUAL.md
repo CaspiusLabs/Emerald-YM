@@ -163,8 +163,14 @@ DUB-1 plays four layers from one scale and one chord, on a grid of sixteenths.
   and stays out of the echo; the hats send a little to it.
 
 Then the space: a short Echoplex that smears what goes in, the tape echo (up to 5.6 seconds,
-synced to the tempo, with two heads, the second at three quarters of the loop) and Dattorro's
-plate reverb. In the echo's feedback, a band-pass makes each repeat thinner and darker, and moves
+synced to the tempo, with two heads, the second at three quarters of the loop), a granular
+**cloud** and Dattorro's plate reverb. The cloud records what goes to the reverb (the last 0.74
+seconds, at a quarter of the sample rate) and plays it back in grains: up to six at a time, each
+80 to 250 ms from anywhere in what it holds, at a random place in the stereo field, now and then
+an octave down (rarely up). The grains go into the plate, so they bloom into its tail, and the
+plate's tail goes back into the cloud: with **Cloud** up the reverb turns into a moving wash, longer
+with a bigger plate. The grains come thicker as the filter opens, and in a Break there is more of
+the cloud. Dub hold freezes the cloud as it does the echo. In the echo's feedback, a band-pass makes each repeat thinner and darker, and moves
 with the arrangement; a soft clip lets the feedback pass 100%, so the echo swells on itself
 without running away. With **Motion** up, the heads wander across the stereo field, the feedback
 leans now on one head, now on the other, and every so often the second head slides to another
@@ -266,12 +272,13 @@ The stab's sound, saws or FM keys, comes with the piece.
 
 ### ARP: Texture
 
-![The Texture page: PINGS 30, DENSITY 30, TONE 40, CRACKLE 35](img/screen-texture.png "The Texture page")
+![The Texture page: PINGS 30, DENSITY 30, CLOUD 30, CRACKLE 35](img/screen-texture.png "The Texture page")
 
 - **Pings:** the pings' level.
 - **Density:** how many notes each loop holds, none at 0 to five at the top, a little fewer while
   the sweep is dark. A change shows up as each loop comes round.
-- **Tone:** from a round blip to a metallic clank.
+- **Cloud:** how much of the reverb goes through the granular cloud: at 0 the plate alone, at the
+  top a thick wash of grains.
 - **Crackle:** the vinyl's level, and how many clicks a second.
 
 OCT− and OCT+ set the pings' octave, two down to two up.
@@ -443,7 +450,7 @@ The defaults are Basic's; each piece has its own.
 | Chord | Cutoff | 0–100 (110 Hz – 5.4 kHz) | 45 |
 | Texture | Pings | 0–100 | 30 |
 | Texture | Density | 0–100 (0 to 5 notes a loop) | 30 |
-| Texture | Tone | 0–100 | 40 |
+| Texture | Cloud | 0–100 | 30 |
 | Texture | Crackle | 0–100 | 35 |
 | Bass | Level | 0–100 | 60 |
 | Bass | Octave | −1 – +1 | 0 |
@@ -464,19 +471,20 @@ The defaults are Basic's; each piece has its own.
 | ALGORITHM | Mode | 8 modes, or Custom | Dorian |
 | OCT− / OCT+ | Ping octave | −2 – +2 | 0 |
 
-Set by the piece only (no knob): the chord's sound (Saws or Keys), the hats' colour, and the
-plate's size.
+Set by the piece only (no knob): the chord's sound (Saws or Keys), the pings' tone (from a round
+blip to a metallic clank), the hats' colour, and the plate's size. Each piece also has its own
+Cloud.
 
-| Piece | Sound | Hats | Size |
-|---|---|---|---|
-| Basic | Saws | 50 | 55 |
-| Chamber | Saws | 40 | 70 |
-| Steppers | Saws | 60 | 50 |
-| Fog | Keys | 30 | 80 |
-| Concrete | Saws | 75 | 45 |
-| Night Drive | Keys | 55 | 60 |
-| Pressure | Saws | 65 | 40 |
-| Haze | Keys | 35 | 85 |
+| Piece | Sound | Ping tone | Hats | Size | Cloud |
+|---|---|---|---|---|---|
+| Basic | Saws | 40 | 50 | 55 | 30 |
+| Chamber | Saws | 30 | 40 | 70 | 45 |
+| Steppers | Saws | 50 | 60 | 50 | 20 |
+| Fog | Keys | 25 | 30 | 80 | 60 |
+| Concrete | Saws | 60 | 75 | 45 | 15 |
+| Night Drive | Keys | 45 | 55 | 60 | 35 |
+| Pressure | Saws | 35 | 65 | 40 | 20 |
+| Haze | Keys | 30 | 35 | 85 | 70 |
 
 ---
 
@@ -491,6 +499,8 @@ firmware, you must also share its source code.
   a steady kick.
 - The reverb is Jon Dattorro's plate ("Effect Design, Part 1", JAES 1997), by way of
   [FoMni-1](https://github.com/charlesvestal/fm1-fomni).
+- The granular cloud follows the design of CLOUD in [JIANT](https://github.com/juanjiant-bit/JIANT)
+  (GPL-3.0), another FM-1 firmware.
 - The Euclidean rhythms are Godfried Toussaint's reading of Bjorklund's algorithm.
 - The platform (hardware layer, USB, update loader, installer and storage) is from
   **Felucca** by Leo Kuroshita, Hügelton Instruments, by way of

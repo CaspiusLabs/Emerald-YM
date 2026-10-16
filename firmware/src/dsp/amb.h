@@ -16,8 +16,9 @@
  * building), a Groove (fewer stabs) or Thin (no bass, no shaker); MOTION sets how often it leaves Full. Before
  * the kick comes back, a fill. EVOLVE turns the patterns and throws a stab into the echo now and then.
  * Then a tape echo (to ~5.6 s, two heads, a band-pass in its feedback that the arrangement sweeps, a
- * saturating feedback that may pass 100%), a short Echoplex, Dattorro's plate, and a bed of vinyl crackle.
- * FREEZE (dub hold): the echo stops listening and repeats what it holds for ever; the chord holds.
+ * saturating feedback that may pass 100%), a short Echoplex, a granular CLOUD (after JIANT's) blooming into
+ * Dattorro's plate, and a bed of vinyl crackle.
+ * FREEZE (dub hold): the echo and the cloud stop listening and play what they hold for ever; the chord holds.
  *
  * Threads: en_render() runs in the audio interrupt. Everything else posts commands, which the render
  * drains at the start of a block; the state below marked (UI) is written by the render and only read
@@ -51,6 +52,7 @@ enum {
     P_BASSOCT, P_GROOVE, P_FIFTH,                     /* bass: its octave, its pattern, how often the fifth */
     P_SWING, P_HATS,                                  /* drums: swing, the hats' colour */
     P_STABS, P_CRACKLE, P_DUCK, P_SIZE,               /* stabs a bar, the vinyl, the kick's ducking, the plate */
+    P_CLOUD,                                          /* the granular reverb */
     P_NPARAMS
 };
 typedef struct {

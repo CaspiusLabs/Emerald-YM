@@ -21,7 +21,7 @@ enum { K_LEDS = 100, K_CPU, K_NONE };
 static const uint8_t VIEW_KNOB[NVIEWS][4] = {
     {P_TEMPO, P_EVOLVE, P_MOTION, P_DRIFT},
     {P_CHORD, P_STABS, P_DECAY, P_CUTOFF},
-    {P_PINGS, P_DENSITY, P_PTONE, P_CRACKLE},
+    {P_PINGS, P_DENSITY, P_CLOUD, P_CRACKLE},
     {P_BASS, P_BASSOCT, P_GROOVE, P_FIFTH},
     {P_DRUMS, P_HITS, P_SWING, P_DUCK},
     {P_ECHO, P_ETIME, P_FEEDBACK, P_REVERB},
@@ -30,7 +30,7 @@ static const uint8_t VIEW_KNOB[NVIEWS][4] = {
 static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Tempo", "Evolve", "Motion", "Drift"},
     {"Level", "Stabs", "Decay", "Cutoff"},
-    {"Pings", "Density", "Tone", "Crackle"},
+    {"Pings", "Density", "Cloud", "Crackle"},
     {"Level", "Octave", "Groove", "Fifth"},
     {"Level", "Hits", "Swing", "Duck"},
     {"Echo", "Echo time", "Feedback", "Reverb"},
@@ -809,7 +809,7 @@ static int help_lines(int b, const char *l[HELP_LINES])
     switch (b) {
     case B_HOME: L("DUB"); L("TEMPO, EVOLVE, MOTION, DRIFT"); L("+ SELECT: TEMPO"); break;
     case B_ENV: L("THE CHORD"); L("LEVEL, STABS, DECAY,"); L("CUTOFF"); break;
-    case B_ARP: L("TEXTURE"); L("PINGS, DENSITY, TONE,"); L("CRACKLE"); break;
+    case B_ARP: L("TEXTURE"); L("PINGS, DENSITY, CLOUD,"); L("CRACKLE"); break;
     case B_LFO: L("THE BASS"); L("LEVEL, OCTAVE, GROOVE, FIFTH"); break;
     case B_SEQ: L("THE DRUMS"); L("LEVEL, HITS, SWING, DUCK"); break;
     case B_FX: L("THE SPACE"); L("ECHO, ECHO TIME, FEEDBACK,"); L("REVERB"); break;
