@@ -64,6 +64,9 @@ enum {
     P_CALG, P_CFRAT, P_CFB, P_CFDEC,
     P_PALG, P_PFRAT, P_PFB, P_PFDEC,
     P_BALG, P_BFRAT, P_BFB, P_BFDEC,
+    /* the progression (EDIT held, the keys): up to eight chords, each a note of the scale above the root, as
+     * 1 + semitones (1..12); 0 ends it. None: the chords chosen as they always were */
+    P_PROG0, P_PROG1, P_PROG2, P_PROG3, P_PROG4, P_PROG5, P_PROG6, P_PROG7,
     P_NPARAMS
 };
 typedef struct {
@@ -164,6 +167,9 @@ int en_kick_note(int root);                    /* the kick's note (MIDI) for the
 void en_env_shape(int layer, float *lvl, float *aux, int n, float *secs);
 /* the FM pages: is the layer's voice FM now (0 chord, 1 pings, 2 bass), and its algorithm as it plays (0..8) */
 int en_voice_fm(int layer);
+#define EN_NPROG 8
+extern volatile int8_t en_prog_pos;            /* the progression's chord playing (0..), -1: none */
+int en_deg_of(uint32_t pool, int rel);         /* the scale degree for a note above the root (nearest in the pool) */
 int en_fm_alg(int layer);
 #define EN_FM_NALG 9
 

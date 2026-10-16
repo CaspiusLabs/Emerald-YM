@@ -245,7 +245,12 @@ hold). Sixteen in four groups of four, the first of each group lit:
       thresholds are dxsloop's (591 / 561 / 531 on the divider's raw reading, PB1, ADC ch 3); on USB the
       bars fill in turn (no charger line). The % (521..601) is an estimate: to check against the
       FM-1's real readings, full and low
-- [ ] **Editing the chords** (asked): see the proposal in the conversation; to decide
+- [x] **Editing the chords** (option 2): EDIT held + keys, a progression of up to eight chords (the keys'
+      notes in the scale), played in order every Drift bars (with Hold, on EDIT's tap); held 1.5 s
+      alone, random again; "1/4" under the chord; kept by the piece (project format 5;
+      `tests/scenarios/chords.amb`)
+- [ ] **Idea: the chord's type** (option 3): per piece (or per chord of a progression), the chord
+      built as an open minor 7 (now), a 9 without its fifth (now), a sus4, a minor 11, a major 7
 
 ## Ideas for later
 

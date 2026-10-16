@@ -41,6 +41,8 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     {"Chord alg", 0, 9, 0},   {"Chord ratio", -50, 50, 0}, {"Chord fb", -50, 50, 0}, {"Chord mod", -50, 50, 0},
     {"Ping alg", 0, 9, 0},    {"Ping ratio", -50, 50, 0}, {"Ping fb", -50, 50, 0}, {"Ping mod", -50, 50, 0},
     {"Bass alg", 0, 9, 0},    {"Bass ratio", -50, 50, 0}, {"Bass fb", -50, 50, 0}, {"Bass mod", -50, 50, 0},
+    {"Chord 1", 0, 12, 0}, {"Chord 2", 0, 12, 0}, {"Chord 3", 0, 12, 0}, {"Chord 4", 0, 12, 0},
+    {"Chord 5", 0, 12, 0}, {"Chord 6", 0, 12, 0}, {"Chord 7", 0, 12, 0}, {"Chord 8", 0, 12, 0},
 };
 const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PARAMS[i] : &PARAMS[0]; }
 
@@ -58,35 +60,43 @@ static const struct {
     {"Basic",      {70, 30, 60, 65, 30, 40, 4, 50, 55, 1, 35, 60, 45, 35, 40, 50, 0, 1, 122, 5, 1, 0,
                     0, 0, 1, 20, 10, 50, 30, 35, 50, 55, 30, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0}},
     {"Chamber",    {75, 20, 55, 55, 20, 45, 6, 40, 70, 1, 45, 75, 35, 55, 30, 60, 0, 1, 118, 9, 5, 0,
                     2, 0, 0, 10, 0, 40, 15, 45, 45, 70, 45, 2, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0}},
     {"Steppers",   {60, 35, 70, 70, 35, 40, 3, 60, 50, 3, 30, 55, 55, 25, 50, 45, 0, 1, 126, 2, 1, 0,
                     0, 0, 2, 35, 15, 60, 45, 25, 60, 50, 20, 1, 1, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0}},
     {"Fog",        {70, 40, 50, 45, 40, 55, 5, 30, 75, 2, 55, 80, 30, 70, 25, 70, 0, 1, 112, 7, 5, 0,
                     1, -1, 0, 15, 0, 30, 20, 60, 35, 80, 60, 0, 0, 3,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0}},
     {"Concrete",   {65, 25, 65, 75, 25, 35, 4, 75, 50, 1, 25, 60, 60, 20, 60, 40, 0, 1, 130, 0, 7, 0,
                     6, 0, 3, 30, 20, 75, 50, 20, 65, 45, 15, 3, 3, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0}},
     {"Night Drive", {65, 45, 60, 65, 45, 50, 3, 55, 60, 4, 35, 65, 50, 40, 45, 55, 0, 1, 124, 10, 1, 0,
                     1, 0, 4, 25, 25, 55, 35, 30, 50, 60, 35, 4, 4, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0}},
     {"Pressure",   {70, 20, 75, 80, 20, 30, 6, 65, 45, 1, 20, 55, 40, 30, 35, 35, 0, 1, 128, 4, 2, 0,
                     5, 0, 1, 10, 5, 65, 25, 15, 70, 40, 20, 3, 4, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0}},
     {"Haze",       {62, 50, 45, 40, 50, 60, 4, 35, 80, 3, 60, 85, 35, 80, 30, 80, 0, 1, 116, 3, 0, 1,
                     3, 0, 0, 20, 10, 35, 30, 70, 30, 85, 70, 2, 0, 4,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0}},
 };
 
 const char *en_piece_name(int i) { return PIECES[(unsigned)i < EN_NPIECES ? i : 0].name; }
@@ -759,13 +769,46 @@ static int bass_note(int pc)                    /* E1..Eb2, an octave up or down
     return 28 + ((pc - 4) % 12 + 12) % 12 + 12 * par[P_BASSOCT];
 }
 
+/* the progression: its length, a degree for a note above the root (nearest in the pool, the lower on a tie) */
+volatile int8_t en_prog_pos = -1;
+static int prog_len(void)
+{
+    int i;
+    for (i = 0; i < EN_NPROG && par[P_PROG0 + i]; i++)
+        ;
+    return i;
+}
+int en_deg_of(uint32_t pl, int rel)
+{
+    int st[12], m = en_scale(pl, st), i, best = 0, bd = 99;
+    rel = ((rel % 12) + 12) % 12;
+    for (i = 0; i < m; i++) {
+        int d = (st[i] - rel + 12) % 12, e = d > 6 ? 12 - d : d;
+        if (e < bd) {
+            bd = e;
+            best = i;
+        }
+    }
+    return best;
+}
+static int prog_pos = -1;
+
 /* to another degree: home most of all, then the subdominant, the seventh, the dominant; away from home,
  * home again more often than not. Never a diminished fifth (a half-diminished chord is no dub chord) */
 static void chord_change(void)
 {
     static const float W7[7] = {0.0f, 0.4f, 1.0f, 3.0f, 1.5f, 1.5f, 2.0f};
     float w[12], sum = 0.0f, r;
-    int i;
+    int i, n = prog_len();
+    if (n) {                                    /* a progression: its next chord, as written */
+        prog_pos = (prog_pos + 1) % n;
+        en_prog_pos = (int8_t)prog_pos;
+        deg = en_deg_of(pool, par[P_PROG0 + prog_pos] - 1);
+        voice_chord();
+        chord_bars = 0;
+        return;
+    }
+    en_prog_pos = -1;
     if (deg != 0 && frand() < 0.65f) {
         i = 0;
     } else {
@@ -1761,6 +1804,10 @@ static void apply(int p, int v)
     case P_CRACKLE: crackle_vol = (float)(v * v) * 0.0001f; break;
     case P_DUCK: duck_depth = (float)v * 0.0075f; break;   /* to -12 dB */
     case P_CLOUD: cloud_amt = (float)v * 0.01f; break;
+    case P_PROG0:                                /* a new progression (written from its first): from the top, next */
+        prog_pos = -1;
+        en_prog_pos = prog_len() ? 0 : -1;
+        break;
     case P_KIT: kit = (unsigned)v < EN_NKIT ? v : 0; break;
     case P_POCT:                                 /* let it be heard now: a ping from the first loop */
         if (en_playing && nsteps) {
@@ -1810,7 +1857,9 @@ static void regrow(void)                        /* a new piece: fresh loops, hom
         loop_regrow(l);
         loop_rest[l] = 0;
     }
-    deg = 0;
+    prog_pos = prog_len() ? 0 : -1;             /* a progression starts on its first chord */
+    en_prog_pos = (int8_t)prog_pos;
+    deg = prog_pos >= 0 ? en_deg_of(pool, par[P_PROG0] - 1) : 0;
     shape = cvoice == CV_KEYS || cvoice == CV_PAD || cvoice == CV_BELL;   /* these like the 9th; the rest the open 7th */
     voice_chord();
     stabs_home();

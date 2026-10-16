@@ -91,7 +91,7 @@ The drawing at the top shows them all; here they are in more detail.
 | Keys | The scale. Each key adds its note to the scale or takes it out; the keys light up for the notes in it. Every octave of a note is the same key. The root stays ("THE ROOT STAYS"), and the scale keeps at least three notes ("3 NOTES AT LEAST"). |
 | PLAY | Play / rest. DUB-1 starts playing by itself when it's switched on. At rest, the echo's feedback eases under 90% so its tails die away, the reverb rings out and the crackle fades. Playing again starts from the first bar of a phrase. Lit while playing. |
 | REC | A tap: **dub hold**: the echo stops listening and repeats what it holds, sample for sample, for ever; the reverb stops listening too and rings on; the chord doesn't move. The stabs, pings and drums go on, dry, above it. Tap again to let go. Lit while held. Held: the **effects grid** (below). |
-| EDIT | The next chord, at the start of the next bar (at once while resting). While playing in dub hold, it waits until you let go. |
+| EDIT | A tap: the next chord, at the start of the next bar (at once while resting; in dub hold, once you let go). Held: the **chords** (below): with keys, a progression; held 1.5 s alone, random chords again. |
 | SEL | **PERFORM**: the knobs become a mixer and the keys stop being the scale and play the layers (see below). Press again to go back; lit while on. |
 | HOME | The Dub page: tempo and the machine's movement. |
 | ENV · ARP · LFO · SEQ | The layers' pages: Chord, Texture (the pings and the crackle), Bass, Drums. |
@@ -123,6 +123,15 @@ Mix page, back to the page you started from). The white keys from the lowest up:
   the filter, and the echo's band-pass with it, pushed open (Open) or shut (Shut); the kick dropped
   (Kick drop); the echo pushed: everything into it, feeding back more (Echo). Letting go eases back.
 - The black keys do nothing in PERFORM; MIDI notes in still change the scale.
+
+**The chords** (EDIT held). Hold EDIT and press keys, up to eight: each key's note becomes a chord of
+the scale (Fm7 on F in F Dorian, and so on), in the order pressed; a key outside the scale is refused
+("NOT IN THE SCALE"). Let go of EDIT and the **progression** plays from its first chord, at the next
+bar, moving on every Drift bars (with Drift on Hold, only when you tap EDIT). The screen shows
+"1/4" under the chord's name, where it is. Hold EDIT for a look: the eight boxes, the chord playing
+lit; keep holding it 1.5 seconds with no key and let go: the chords are chosen at random again, as
+before. A progression is kept with the piece; with none, the chords move as described in
+[The arrangement](#6-the-arrangement).
 
 **The effects grid** (REC held). After a moment the screen shows sixteen effects, four rows of four;
 the white keys from the lowest play them, each as long as its key is held (even after you let go of

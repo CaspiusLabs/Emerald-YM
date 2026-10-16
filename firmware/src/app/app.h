@@ -10,7 +10,7 @@
 #define EN_VERSION "DEV"
 #endif
 #define PROJ_MAGIC 0x31425544u           /* "DUB1": AMB-1's projects ("ENO1") give the recipes */
-#define PROJ_FORMAT 4u                   /* 4: the FM pages (older projects give the recipes) */
+#define PROJ_FORMAT 5u                   /* 5: the progressions (older projects give the recipes) */
 #define NPIECES EN_NPIECES
 
 typedef struct {

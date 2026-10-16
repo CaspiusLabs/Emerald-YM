@@ -408,6 +408,36 @@ int main(void)
         CHECK(en_playing && en_bars > 16u && peak > 0.02f, "a piece's parameters, then PLAY: not playing (%u)", en_bars);
     }
 
+    /* a progression: the chords in the order written (F Dorian: F, Bb, C, Eb), a change every two bars,
+     * round again; written over, from its first; cleared, random again */
+    {
+        static const int WANT[4] = {5, 10, 0, 3};   /* the roots: F, Bb, C, Eb */
+        int k, seen[16], ns = 0, ok = 1, last = -1;
+        fresh();
+        en_set(P_ROOT, 5);
+        en_pool(EN_MODE_POOL[MODE_DORIAN]);
+        en_set(P_DRIFT, 0);
+        en_set(P_PROG0, 1), en_set(P_PROG1, 6), en_set(P_PROG2, 8), en_set(P_PROG3, 11);
+        en_regrow();
+        en_play(1);
+        for (k = 0; k < 600 && ns < 16; k++) {
+            run(0.1f);
+            if (en_chord_root != last) {
+                last = en_chord_root;
+                seen[ns++] = last;
+            }
+        }
+        for (k = 0; k < ns && k < 9; k++)
+            ok &= seen[k] == WANT[k % 4];
+        CHECK(ns >= 9 && ok, "the progression's roots: %d %d %d %d %d (%d changes)", seen[0], seen[1], seen[2], seen[3],
+              seen[4], ns);
+        CHECK(en_prog_pos >= 0, "the progression's place: %d", en_prog_pos);
+        for (k = 0; k < EN_NPROG; k++)
+            en_set(P_PROG0 + k, 0);
+        run(10.0f);
+        CHECK(en_prog_pos == -1, "cleared, still a progression (%d)", en_prog_pos);
+    }
+
     /* the effects grid: each effect alone, then all sixteen at once, then let go: no NaN, under full scale,
      * and back to the music after */
     {
