@@ -18,16 +18,14 @@ import sys
 from pathlib import Path
 
 SRC = Path(__file__).resolve().parents[1]
-PART_COLOURS = {}                                     # (X0X marks its parts with a swatch; AMB-1 has none)
+PART_COLOURS = {}                                     # (X0X marks its parts with a swatch; DUB-1 has none)
 
 CSS = """
-/* the colours of Ambient 1: Music for Airports (1978), as the web app: the map's paper, its greens,
-   its rivers, the ink. Light only, as the cover is. The page a shade lighter than the cover's paper, so
-   the screenshots (on that paper) stand out from it; the cover's paper for code and callouts. */
+/* DUB-1's colours, as its screen and the emulator: a dark room, a cold teal (the names kept from AMB-1's) */
 :root {
-  --paper: #fdf9e4; --sheet: #f6eeb5; --green-1: #d0dc92; --green-3: #9cb16f;
-  --river: #85c3c1; --river-2: #3b7470; --ink: #1d1b02; --muted: #49451f; --rule: #c2ce7f;
-  color-scheme: light;
+  --paper: #10141a; --sheet: #1e252f; --green-1: #1e4648; --green-3: #2b6e72;
+  --river: #2b6e72; --river-2: #5cc4cc; --ink: #dee4e8; --muted: #9aa8b6; --rule: #2e3846;
+  color-scheme: dark;
   /* --river-2 and --muted a shade darker than the cover's, so text in them reads (4.5:1 on the paper and
      the cards) */
 }
@@ -114,7 +112,7 @@ def slug(title):
     return f"s{m.group(1)}" if m else re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
 
 
-NAME = "AMB-1"
+NAME = "DUB-1"
 IMG_BASE = SRC / "docs"
 EMBED = False                                         # --fragment: images as data URIs
 
@@ -176,10 +174,10 @@ def convert(md):
                 i += 1
             out.append(f'<div class="callout"><p>{inline(" ".join(para))}</p></div>')
             continue
-        if ln.startswith("# "):                         # the title; AMB-1's own a way home (the site's root)
+        if ln.startswith("# "):                         # the title; DUB-1's own a way home (the site's root)
             t = ln[2:].strip()
             if t == NAME:                               # the site's header (home, the other pages), then the title
-                out.append('<header class="site"><a class="home" href="../">AMB-1</a><nav aria-label="AMB-1"><a href="../emu/">Emulator</a><a href="../install/">Install</a><a href="../manual/" aria-current="page">Manual</a><a href="https://github.com/charlesvestal/fm1-amb">Source</a></nav></header>')
+                out.append('<header class="site"><a class="home" href="../">DUB-1</a><nav aria-label="DUB-1"><a href="../emu/">Emulator</a><a href="../install/">Install</a><a href="../manual/" aria-current="page">Manual</a><a href="https://github.com/sbegueria/fm1-dub">Source</a></nav></header>')
                 out.append('<h1>Manual</h1>')
             else:
                 out.append(f'<a class="home" href="../">{NAME}</a>\n<h1>{inline(t)}</h1>')

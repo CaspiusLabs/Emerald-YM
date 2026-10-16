@@ -283,6 +283,18 @@ hold). Sixteen in four groups of four, the first of each group lit:
 - [ ] **Later: pattern styles** (the user's idea 2): a short list of classic dub techno grooves (steady,
       Steppers, Half-time, Broken, Shuffle with rim) to load into the Pattern page as a start
 
+## Release 1.0 (2026-10-16)
+
+- [x] Repository: github.com/sbegueria/fm1-dub (`origin`; AMB-1 kept as `upstream`)
+- [x] Release identity FM-1_8XXYYZZ (AMB-1 is 7..., X0X 9...): 1.0 is FM-1_8010000; packages `dub-X.Y.fwsc`
+- [x] The site (`tools/make_pages.py`, `tools/publish_pages.sh`): landing, emulator, web installer, manual, the
+      words files, the firmware; at https://sbegueria.github.io/fm1-dub/
+- [x] The screen reader's words link: https://sbegueria.github.io/fm1-dub/words/
+- [ ] GitHub Pages enabled on the gh-pages branch (repository Settings -> Pages), a GitHub Release v1.0 with
+      dub-1.0.fwsc attached
+- [ ] The phone/desktop web app (`web/app`) is still AMB-1's: not on the site; to port later
+- [ ] Announce (later): Elektronauts, MatrixSynth, the FM-1 groups
+
 ## Ideas for later
 
 - **Korg NTS-3 kaoss pad integration** (a future project) (the user's own setup; a Kaoss pad is great for dub techno).

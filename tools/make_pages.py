@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-"""Make the AMB-1 site for GitHub Pages (https://charlesvestal.github.io/fm1-amb/):
+"""Make the DUB-1 site for GitHub Pages (https://sbegueria.github.io/fm1-dub/):
 
-  index.html                  what AMB-1 is, and the ways in: try, install, manual, download, source
+  index.html                  what DUB-1 is, and the ways in: try, install, manual, download, source
   img/                        screenshots (docs/img)
-  emu/                        AMB-1 in the browser (build/emu, from web/emu/build.sh)
+  emu/                        DUB-1 in the browser (build/emu, from web/emu/build.sh)
   words/                      the screen reader's words files (web/words, from firmware/words.tsv)
   install/index.html          the web installer (web/amb_installer.html, with fm1pkg.js, fm1ota.js and
                               the package's metadata inlined; Chrome or Edge, Web MIDI)
   manual/index.html, img/     the manual (tools/manual_html.py, from docs/MANUAL.md)
-  firmware/amb-VERSION.fwsc   the package the installer writes; also the download
+  firmware/dub-VERSION.fwsc   the package the installer writes; also the download
 
-  tools/make_pages.py build/amb-0.9.fwsc 0.9 OUT_DIR
+  tools/make_pages.py build/dub-1.0.fwsc 1.0 OUT_DIR
 
-The package must be a release build (./build.sh --release X.Y): its identity, FM-1_7XXYYZZ, is what
+The package must be a release build (./build.sh --release X.Y): its identity, FM-1_8XXYYZZ, is what
 the installer checks the download against and what the FM-1 reports after the install."""
 import html
 import json
@@ -27,81 +27,91 @@ SRC = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SRC / "web"))
 from make_site import product_of, strip_module  # noqa: E402  (Felucca's: the package format)
 
-REPO = "https://github.com/charlesvestal/fm1-amb"
+REPO = "https://github.com/sbegueria/fm1-dub"
 
 LANDING = """<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AMB-1 · An ambient garden for the FM-1</title>
-<meta name="description" content="A generative ambient machine for the M-VAVE FM-1, inspired by Brian Eno's Music for Airports: breathing voices, bells on tape loops of unequal length, a slow tide.">
-<meta name="theme-color" content="#fdf9e4">
+<title>DUB-1 · Dub techno for the FM-1</title>
+<meta name="description" content="A generative dub techno machine for the M-VAVE FM-1: chord stabs thrown into a tape echo, a sub bass, a steady kick, vinyl crackle, playing itself, and played live.">
+<meta name="theme-color" content="#10141a">
 <style>
-/* the colours of Ambient 1: Music for Airports (1978), as the manual: the page a shade lighter than the
-   cover's paper, so the screenshots (on that paper) stand out; the cover's paper for the cards */
-:root { --paper: #fdf9e4; --sheet: #f6eeb5; --green-1: #d0dc92; --green-3: #9cb16f; --river: #85c3c1; --river-2: #3b7470;
-        --ink: #1d1b02; --muted: #49451f; --rule: #c2ce7f; color-scheme: light; }
-/* --river-2 and --muted a shade darker than the cover's, so text in them reads (4.5:1 on the paper and the cards) */
-body { background: var(--paper); color: var(--ink); margin: 0; padding-inline: 16px; padding-block: 48px 64px;
+/* DUB-1's colours, as its screen: a dark room, a cold teal; the layers' four colours for the list */
+:root { --ground: #10141a; --card: #1e252f; --ink: #dee4e8; --muted: #9aa8b6; --rule: #2e3846; --teal: #5cc4cc;
+        --teal-2: #2b6e72; --chord: #54c8ba; --pings: #80aae0; --bass: #ccb470; --drums: #ec9654; color-scheme: dark; }
+body { background: var(--ground); color: var(--ink); margin: 0; padding-inline: 16px; padding-block: 48px 64px;
        font: 400 17px/1.6 "Helvetica Neue", Helvetica, Arial, sans-serif; }
 main { max-width: 42rem; margin: 0 auto; }
-h1 { font-size: 3rem; font-weight: 300; line-height: 1; letter-spacing: .06em; margin: 0 0 .3rem; }
-.sub { text-transform: uppercase; letter-spacing: .08em; font-size: .9rem; margin: 0 0 1.2rem; padding-bottom: .8rem; border-bottom: 1px solid var(--ink); }
+h1 { font-size: 3.2rem; font-weight: 300; line-height: 1; letter-spacing: .08em; margin: 0 0 .3rem; }
+h1 .e1 { color: var(--chord); } h1 .e2 { color: var(--pings); } h1 .e3 { color: var(--bass); } h1 .e4 { color: var(--drums); }
+h1 span { font-size: .55em; opacity: .75; margin-left: .25em; }
+h1 span + span { font-size: .45em; opacity: .55; } h1 span + span + span { font-size: .38em; opacity: .4; }
+h1 span + span + span + span { font-size: .32em; opacity: .28; }
+.sub { text-transform: uppercase; letter-spacing: .08em; font-size: .9rem; color: var(--teal); margin: 0 0 1.2rem;
+       padding-bottom: .8rem; border-bottom: 1px solid var(--rule); }
 h2 { font-size: 1.1rem; font-weight: 400; text-transform: uppercase; letter-spacing: .06em; margin: 2.4rem 0 .6rem;
-     padding-top: .6rem; border-top: 1px solid var(--ink); }
+     padding-top: .6rem; border-top: 1px solid var(--rule); color: var(--teal); }
 .lede { font-size: 1.15rem; margin: 0 0 1.6rem; max-width: 36rem; }
 .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 0 0 1.8rem; }
-.shots img { width: 100%; height: auto; image-rendering: pixelated; border: 1px solid var(--ink); }
+.shots img { width: 100%; height: auto; image-rendering: pixelated; border: 1px solid var(--rule); border-radius: 6px; }
 .ways { display: grid; gap: 10px; margin: 0 0 1rem; }
-.ways a { display: block; text-decoration: none; color: var(--ink); background: var(--sheet); border: 1px solid var(--ink); padding: 12px 16px; }
-.ways a:first-child { background: var(--river); }
-.ways a:hover, .ways a:focus-visible { background: var(--green-1); }
-.ways a:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
-a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.ways a { display: block; text-decoration: none; color: var(--ink); background: var(--card); border: 1px solid var(--rule);
+          border-radius: 6px; padding: 12px 16px; }
+.ways a:first-child { background: var(--teal-2); border-color: var(--teal); }
+.ways a:hover, .ways a:focus-visible { border-color: var(--teal); }
+a:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
 .ways strong { font-weight: 400; font-size: 1.15rem; text-transform: uppercase; letter-spacing: .05em; display: block; }
 .ways span { color: var(--muted); font-size: .95rem; }
 .ways em.v { font-style: normal; text-transform: none; letter-spacing: 0; }
-ul.garden { padding-left: 1.2rem; margin: 0 0 1rem; }
-ul.garden li { margin: 0 0 .4rem; }
-ul.garden li::marker { color: var(--river-2); }
+ul.layers { padding-left: 1.2rem; margin: 0 0 1rem; }
+ul.layers li { margin: 0 0 .45rem; }
+ul.layers li.c::marker { color: var(--chord); } ul.layers li.p::marker { color: var(--pings); }
+ul.layers li.b::marker { color: var(--bass); } ul.layers li.d::marker { color: var(--drums); }
+ul.layers li.s::marker { color: var(--teal); }
 p.small { color: var(--muted); font-size: .9rem; }
-a { color: var(--ink); text-decoration-color: var(--river-2); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+a { color: var(--ink); text-decoration-color: var(--teal); text-decoration-thickness: 2px; text-underline-offset: 3px; }
 code { font-size: .9em; }
 </style>
 </head>
 <body>
 <main>
-<h1>AMB-1</h1>
-<p class="sub">An ambient garden for the M-VAVE FM-1</p>
-<p class="lede">A generative ambient machine, inspired by Brian Eno's <i>Music for Airports</i>. It plays itself from the moment it's switched on. You don't perform it, you tend it: pick a
-piece and a scale, take notes out, put them back, and let it grow.</p>
+<h1 aria-label="DUB-1">DUB-1<span class="e1" aria-hidden="true">DUB-1</span><span class="e2" aria-hidden="true">DUB-1</span><span class="e3" aria-hidden="true">DUB-1</span><span class="e4" aria-hidden="true">DUB-1</span></h1>
+<p class="sub">Dub techno for the M-VAVE FM-1</p>
+<p class="lede">A generative dub techno machine. It plays itself from the moment it's switched on: chord stabs thrown
+into a tape echo, a sub bass, a steady kick, vinyl crackle, eight-bar phrases that drop the kick for a break and bring
+it back with a fill. Leave it running for hours, or play it: the mix and dub moves on the keys, sixteen effects on REC,
+your own chords and drum patterns.</p>
 <div class="shots">
-  <img src="img/screen-garden.png" width="240" height="240" alt="AMB-1's screen: the scale as a ring with the chord Dm7, the four bell loops around it, the pulse rings on the right">
-  <img src="img/screen-voices.png" width="240" height="240" alt="AMB-1's screen: the piece Voices, F Aeolian, the chord Fm7">
-  <img src="img/screen-frozen.png" width="240" height="240" alt="AMB-1's screen: frozen, the chord held">
+  <img src="img/screen-launch.png" width="240" height="240" alt="DUB-1's launch screen: the name and its echoes in the layers' colours">
+  <img src="img/screen-main.png" width="240" height="240" alt="DUB-1's main screen: the stabs' ripples round the chord Fm7, the layers' meters, the lanes of the bar">
+  <img src="img/screen-perform.png" width="240" height="240" alt="PERFORM, throwing every stab into the echo: double rings">
 </div>
-<nav class="ways" aria-label="Get AMB-1">
+<nav class="ways" aria-label="Get DUB-1">
   <a href="emu/"><strong>Try it in the browser</strong><span>The same code the FM-1 runs, with sound. Mouse, touch or keyboard; no FM-1 needed.</span></a>
   <a href="install/"><strong>Install <em class="v">v__VERSION__</em></strong><span>From Chrome or Edge, with the FM-1 connected by USB. Nothing to install on the computer.</span></a>
   <a href="manual/"><strong>Manual</strong><span>Getting started in a few minutes, then everything else.</span></a>
   <a href="firmware/__PKG__"><strong>Download <em class="v">__PKG__</em></strong><span>For the command-line installer: <code>python3 tools/fm1_install.py __PKG__</code></span></a>
-  <a href="__REPO__"><strong>Source</strong><span>GitHub, GPL-3.0. Built on Felucca by Hügelton Instruments.</span></a>
+  <a href="__REPO__"><strong>Source</strong><span>GitHub, GPL-3.0. A fork of AMB-1 by Charles Vestal, built on Felucca by Hügelton Instruments.</span></a>
 </nav>
 
-<h2>The garden</h2>
-<ul class="garden">
-  <li><b>Pad.</b> Four breathing voices, a Rhodes or sung voices, each swelling and fading on its own cycle, so the chord forms and dissolves. Now and then it drifts to another chord in the scale.</li>
-  <li><b>Bells.</b> Soft FM bells on four tape loops 13, 17, 23 and 29 beats long, sliding against each other so the melody never quite repeats.</li>
-  <li><b>Bass.</b> The chord's root, low and gliding.</li>
-  <li><b>Pulse.</b> A thump and two hats on Euclidean patterns of 16, 12 and 7 steps.</li>
-  <li><b>Space.</b> A tape echo, a long tape loop and a plate reverb: most of what you hear. REC freezes the chord and lets the reverb ring on forever.</li>
+<h2>What it plays</h2>
+<ul class="layers">
+  <li class="c"><b>Chord.</b> Off-beat stabs through a resonant filter, mostly into the echo: saws, keys, two organs, a pad, a bell, noise. Its own progression if you write one, or chords moving by themselves.</li>
+  <li class="p"><b>Pings.</b> Short FM blips on four loops of unequal length, sliding against each other.</li>
+  <li class="b"><b>Bass.</b> A sub on five grooves, from a drone to a roller; FM basses with bite.</li>
+  <li class="d"><b>Drums.</b> A kick tuned to the key ducking everything else, a shaker, an off-beat hat, a rim and a rare clap thrown into the echo and the plate; your own patterns if you like.</li>
+  <li class="s"><b>Space.</b> A tape echo that can feed back past 100%, a granular cloud, a plate reverb, vinyl crackle. REC tapped holds the echo; held, sixteen effects on the keys.</li>
 </ul>
-<p>Eight pieces, each remembering how you left it. The keys are the scale: press one to take its note out or
-put it back. A slow tide between sparse and full, and rests now and then, keep it moving for hours.</p>
+<p>Eight pieces, each remembering how you left it; a voice for each layer on ALGORITHM, two more pages of
+sound under each layer's button, an FM page with the algorithm drawn. The screen shows the echo: each stab
+a ring, its repeats following.</p>
 <p class="small">To go back to the official firmware, use the installer's "Back to the stock firmware", or
 M-VAVE's updater, M-UPGRADE, from <a href="https://www.m-vave.com/download">m-vave.com/download</a>.
-M-VAVE and FM-1 are trademarks of their owners. AMB-1 is not affiliated with M-VAVE or Brian Eno.</p>
+DUB-1 is a fork of <a href="https://github.com/charlesvestal/fm1-amb">AMB-1</a> by Charles Vestal; its granular
+cloud follows JIANT's; the platform is Felucca by Leo Kuroshita (Hügelton Instruments). GPL-3.0.
+M-VAVE and FM-1 are trademarks of their owners. DUB-1 is not affiliated with M-VAVE or Hügelton Instruments.</p>
 </main>
 </body>
 </html>
@@ -112,11 +122,11 @@ def main(pkg, version, out):
     pkg, out = Path(pkg), Path(out)
     raw = pkg.read_bytes()
     product = product_of(raw)
-    if not re.fullmatch(r"FM-1_7\d{6}", product):
+    if not re.fullmatch(r"FM-1_8\d{6}", product):
         raise SystemExit(f"{pkg}: identity {product!r}: make a release build (./build.sh --release X.Y)")
     if b"FELUCCA-LOADER-1" not in raw:
         raise SystemExit(f"{pkg}: no update loader in it")
-    name = f"amb-{re.sub(r'[^A-Za-z0-9.-]', '-', version)}.fwsc"
+    name = f"dub-{re.sub(r'[^A-Za-z0-9.-]', '-', version)}.fwsc"
     if out.exists():
         shutil.rmtree(out)
     for d in ("install", "manual", "firmware"):

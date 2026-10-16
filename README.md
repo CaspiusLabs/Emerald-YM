@@ -1,6 +1,6 @@
 # DUB-1 for the M-VAVE FM-1
 
-DUB-1 (a working name) turns the M-VAVE FM-1 into a generative dub techno machine. It plays itself
+DUB-1 turns the M-VAVE FM-1 into a generative dub techno machine. It plays itself
 from the moment it's switched on: chord stabs through a resonant low-pass into a tape echo, short
 FM pings on loops of unequal length, a sub bass on one of five grooves, a four-on-the-floor kick
 that ducks the rest, a shaker and an open hat, and a bed of vinyl crackle. An eight-bar arrangement
@@ -13,13 +13,14 @@ ambient firmware for the FM-1, and keeps its platform, its panel and much of its
 
 ![DUB-1's main screen: the piece Basic, F Dorian, 122; FULL top left, the stabs' ripples round the chord Fm7, the lanes below](docs/img/screen-main.png) ![PERFORM, THROW held: every stab a double ring](docs/img/screen-perform.png) ![Dub hold: the rings and "hold" in red](docs/img/screen-hold.png)
 
-- **Read the manual**: [docs/MANUAL.md](docs/MANUAL.md)
-- **Try it, install it:** a hosted emulator, web installer and firmware download aren't published
-  for DUB-1 yet. For now, build it from this source and install it from the command line (below).
-  To hear and see it on a computer without an FM-1, see [EMULATOR.md](EMULATOR.md).
+- **Try it in your browser** (no FM-1 needed): <https://sbegueria.github.io/fm1-dub/emu/>
+- **Install it** (Chrome or Edge, with the FM-1 plugged in): <https://sbegueria.github.io/fm1-dub/install/>
+- **Read the manual**: <https://sbegueria.github.io/fm1-dub/manual/> (source: [docs/MANUAL.md](docs/MANUAL.md))
+- **Download the firmware file**: [releases](https://github.com/sbegueria/fm1-dub/releases)
+- To build it and listen to changes on a computer, see [EMULATOR.md](EMULATOR.md).
 
-Installing it is at your own risk, though it's hard to get stuck: M-VAVE's own updater can put the
-stock firmware back, and an FM-1 that fails to start twice comes up in a safe mode that the
+Installing it is at your own risk, though it's hard to get stuck: the web installer and M-VAVE's own
+updater can put the stock firmware back, and an FM-1 that fails to start twice comes up in a safe mode that the
 installer can reach.
 
 ## In short

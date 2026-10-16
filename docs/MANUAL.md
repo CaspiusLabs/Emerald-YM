@@ -34,22 +34,24 @@ DUB-1 is a fork of AMB-1, Charles Vestal's generative ambient firmware for the F
 
 ## 1. Install
 
-A hosted emulator, web installer and firmware download aren't published for DUB-1 yet.
+**Try it first** in the browser, with no FM-1: <https://sbegueria.github.io/fm1-dub/emu/>. It's the
+same code the FM-1 runs, with sound.
 
-**Try it first:** the host simulator runs the same code on a Mac, from a script, with audio and
-screenshots coming out; `EMULATOR.md` in the source says how to set it up, and how to build the
-browser emulator locally.
+**Install from the browser:** open <https://sbegueria.github.io/fm1-dub/install/> in Chrome or Edge
+(they have Web MIDI), connect the FM-1 with a USB data cable, switch it on and press Install. Nothing
+to install on the computer. Don't unplug it while it's writing; when it finishes, the FM-1 restarts
+into DUB-1.
 
-**Install:** build the firmware from the source (`./build.sh`, see `BUILDING.md`), install Python 3
-with `pip3 install mido python-rtmidi`, connect the FM-1 with a USB data cable and run:
+**Or from the command line:** download `dub-1.0.fwsc` from the
+[releases](https://github.com/sbegueria/fm1-dub/releases), install Python 3 with
+`pip3 install mido python-rtmidi`, and run, in a checkout of the source:
 
 ```
-python3 tools/fm1_install.py build/amb.fwsc
+python3 tools/fm1_install.py dub-1.0.fwsc
 ```
 
-Don't unplug it while it's writing; when it finishes, the FM-1 restarts into DUB-1.
-
-**Go back:** M-VAVE's own updater, M-UPGRADE, puts the stock firmware back.
+**Go back:** the installer page's "Back to the stock firmware", or M-VAVE's own updater, M-UPGRADE,
+puts the stock firmware back.
 
 > Installing other firmware is at your own risk. If the FM-1 ever won't start, see
 > [Recovering an FM-1 that won't start](#recovering-an-fm-1-that-won-t-start).
@@ -508,9 +510,8 @@ moves. Press W to hear the whole screen again: the page, the piece, the chord, t
 bar, and the scale. The FM-1 says nothing until the page connects, so a DAW on the same cable
 never sees it.
 
-DUB-1's word list (how the reader says what's written on the screen) is in `firmware/words.tsv`;
-where it is published is still to be decided, so for now the device points the reader at AMB-1's
-site, and some of the new names may not yet be said as well as they could be.
+DUB-1's word list (how the reader says what's written on the screen) is published with DUB-1's
+site, and the FM-1 tells the reader where to find it.
 
 ---
 
