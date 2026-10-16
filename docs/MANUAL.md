@@ -92,7 +92,7 @@ The drawing at the top shows them all; here they are in more detail.
 | PLAY | Play / rest. DUB-1 starts playing by itself when it's switched on. At rest, the echo's feedback eases under 90% so its tails die away, the reverb rings out and the crackle fades. Playing again starts from the first bar of a phrase. Lit while playing. |
 | REC | **Dub hold**: the echo stops listening and repeats what it holds, sample for sample, for ever; the reverb stops listening too and rings on; the chord doesn't move. The stabs, pings and drums go on, dry, above it. Press again to let go. Lit while held. |
 | EDIT | The next chord, at the start of the next bar (at once while resting). While playing in dub hold, it waits until you let go. |
-| SEL | **PERFORM**: the keys stop being the scale and play the mix (see below). Press again to go back; lit while on. |
+| SEL | **PERFORM**: the knobs become a mixer and the keys stop being the scale and play the layers (see below). Press again to go back; lit while on. |
 | HOME | The Dub page: tempo and the machine's movement. |
 | ENV · ARP · LFO · SEQ | The layers' pages: Chord, Texture (the pings and the crackle), Bass, Drums. |
 | FX · GLO | The Space and Setup pages. The lit button shows the page. |
@@ -104,7 +104,10 @@ The drawing at the top shows them all; here they are in more detail.
 | MASTER | Volume. |
 | SAVE | Saves all eight pieces. Held for 1.5 s: puts the piece back to its recipe. |
 
-**PERFORM** (SEL). The white keys from the lowest up:
+**PERFORM** (SEL). The knobs become the **Mix** page: KNOB 1–4 the levels of the chord, the pings,
+the bass and the drums (the same values as each layer's page). SELECT or a page's button still
+takes you to the other pages while you perform, and SEL again leaves PERFORM where you are (from the
+Mix page, back to the page you started from). The white keys from the lowest up:
 
 | Key (white) | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
 |---|---|---|---|---|---|---|---|---|---|---|

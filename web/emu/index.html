@@ -189,7 +189,7 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
       <li><b>Keys</b> are the scale: each one adds or removes its note. The root stays. A lit key (a pressed one, to a screen reader) is in the scale.</li>
       <li><b>PLAY</b> plays / rests. <b>REC</b> dub hold: the echo and the cloud repeat what they hold. <b>EDIT</b> the next chord, on the next bar.</li>
       <li><b>SELECT</b> the previous or next page; with <b>HOME</b> held, the tempo. <b>ALGORITHM</b> the mode, <b>PRESETS</b> the piece (each remembers how you left it).</li>
-      <li><b>SEL</b> PERFORM: the white keys 1–5 mute and bring back the chord, pings, bass, kick and hats; 6–10, held, throw every stab into the echo, push the filter open, shut it, drop the kick, push the echo. SEL again: the keys are the scale again (the mutes stay).</li>
+      <li><b>SEL</b> PERFORM: the knobs are a mixer (chord, pings, bass, drums); the white keys 1–5 mute and bring back the chord, pings, bass, kick and hats; 6–10, held, throw every stab into the echo, push the filter open, shut it, drop the kick, push the echo. SEL again: the keys are the scale again (the mutes stay).</li>
       <li><b>OCT−</b> / <b>OCT+</b> move the pings an octave. <b>SAVE</b> saves; hold it to reset the piece.</li>
       <li>Hold a button for a second and a card says what it does (with a mouse: <kbd>Shift</kbd>-click to hold it, click again to let go).</li>
     </ul>
@@ -325,7 +325,7 @@ function hit(c, cls, attrs, parent = controls) {
 }
 // what each control does (the Buttons list below says the same); a page button's light is its page, PLAY's
 // playing, REC's dub hold: those are toggle buttons (aria-pressed), the others plain ones
-const TIP = { FX: "The Space page.", SEL: "PERFORM: the keys mute the layers (white 1 to 5) and, held, make the dub moves (white 6 to 10).", ENV: "The Chord page.", LFO: "The Bass page.", EDIT: "The next chord, on the next bar.",
+const TIP = { FX: "The Space page.", SEL: "PERFORM: the knobs are a mixer; the keys mute the layers (white 1 to 5) and, held, make the dub moves (white 6 to 10).", ENV: "The Chord page.", LFO: "The Bass page.", EDIT: "The next chord, on the next bar.",
   GLO: "The Setup page.", HOME: "The Dub page. Hold it and turn SELECT for the tempo.", SAVE: "Saves all eight pieces. Hold it to put the piece back to its recipe.",
   ARP: "The Texture page.", SEQ: "The Drums page.", PLAY: "Play or rest.", REC: "Dub hold: the echo and the cloud repeat what they hold; the chord holds.",
   "OCT-": "The pings an octave down.", "OCT+": "The pings an octave up.", SELECT: "The previous or next page; with HOME held, the tempo.",

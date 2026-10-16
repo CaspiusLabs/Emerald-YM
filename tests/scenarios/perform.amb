@@ -36,3 +36,14 @@ tapkey b0
 wait 200
 said ADDED F#
 expect dirty 1
+# the mixer: PERFORM puts the four levels on the knobs; SEL off goes back to the page
+expect view 0
+tap SEL
+wait 200
+expect view 7
+spin K2 -100
+wait 200
+expect par1 == 0
+tap SEL
+wait 200
+expect view 0

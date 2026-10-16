@@ -83,7 +83,8 @@ measurement (renders analysed for level, timing and spectrum).
 - [ ] **On the device**: install (`python3 tools/fm1_install.py build/amb.fwsc`), check the Setup
       page's CPU and the sound on the FM-1's speaker and on headphones
 - [x] The name: DUB-1 (decided 2026-10-16)
-- [ ] Where the words file and a hosted build are published (the `# url:` in
+- [ ] Publishing (the words file, a hosted emulator and installer): later, after trying it longer
+      (decided 2026-10-16). Where (the `# url:` in
       `firmware/words.tsv` still points at AMB-1's site)
 - [ ] With everything at maximum the mix drives the output limiter (peak 0.98): fine as a limit, but
       the levels could leave more room
@@ -105,7 +106,7 @@ measurement (renders analysed for level, timing and spectrum).
   doesn't fade. Also the chord's name, the section and phrase, the layers' levels, a duck meter,
   and four lanes (stabs, kick, hats, bass) showing the bar as it plays. The scale ring, ping loops
   and drum rings are gone (the keys still light the scale).
-- **PERFORM (SEL):** white keys 1–5 mute the chord, pings, bass, kick and hats; 6–10, held, throw
+- **PERFORM (SEL):** the knobs become the Mix page (chord, pings, bass, drums levels); white keys 1–5 mute the chord, pings, bass, kick and hats; 6–10, held, throw
   every stab, push the filter open or shut, drop the kick, push the echo. The keys light up for
   the layers playing and the moves held. Mutes keep the music's random choices, so a layer comes
   back where it would have been. The engine API is `en_mute`, `en_perf`.
