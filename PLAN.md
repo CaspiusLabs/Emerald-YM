@@ -132,6 +132,18 @@ each idea below is weighed by how much it adds to playing it.
         printing the cue sheet), so the music runs unbroken; the edit cuts between the framings only.
         The script with its cues: `build/video-script.md`
   - [ ] Cut, titles, voice-over or captions (the user, in DaVinci)
+- [ ] **Next release: Tempo moves to GLO, next to Root** (the user's note, 2026-10-17). Both are master
+      settings, so they belong on the Setup page. That frees KNOB 1 on HOME (the Dub page) for
+      something to play.
+  - GLO has four knobs (Root, Tune, MIDI out, Lights) and needs room for Tempo. MIDI out and Lights
+    are rarely touched: they could share one knob, or move to a long press. To decide.
+  - Tempo and Root are kept with each piece, as now; Tune and MIDI out stay global. HOME + SELECT
+    still sets the tempo from any page.
+  - Ideas for the free knob, by how playable they are:
+    - a master **Filter**, bipolar: left is Shut's low-pass, right is Open's high-pass, the middle is
+      off, with the kick left out. It's the DJ mixer's filter, the move people reach for;
+    - a **Dub** macro: the echo send, feedback and band-pass together;
+    - an **Energy** macro: density, hits and stabs together.
 - [ ] **Projects outside the FM-1, and new sets of pieces for people to load** (the user's idea).
   - **What travels:** a whole project is the eight pieces with everything in them: tempo, scale and
     root, the voices and their sound and FM pages, the mix, the echo and space, the chord slots, the
