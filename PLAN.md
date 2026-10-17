@@ -99,6 +99,50 @@ measurement (renders analysed for level, timing and spectrum).
 - [ ] **Sound design** with your ears: the stab's character, the kick, the bass, the hats, the
       echo's colour, the cloud, the crackle (a round of its own)
 
+## Next: after 1.0.0 (the user's ideas, 2026-10-17)
+
+- [ ] **A video for YouTube and other platforms** (the most urgent). Real action and sound from the
+      simulator, not stills: the screen inside a drawn FM-1 panel, with the buttons and keys lit as they
+      are pressed (`film` in the host simulator, `tools/film.py`). The script follows the Reddit post:
+      it plays as soon as it starts; playing it (PERFORM, dub hold, the effects grid); making your own
+      piece (sounds, chord progression, drums). Clips to cut in DaVinci Resolve.
+  - [x] The clips: `tools/make_film.sh` runs `tests/film/*.amb` and makes three MP4s of each in
+        `build/film/` (the panel with the screen large, the panel alone, the screen alone) and the WAV
+  - [ ] Cut, titles, voice-over or captions (the user, in DaVinci)
+- [ ] **Projects outside the FM-1:** save and load whole projects (eight pieces: songs, sounds,
+      everything) from the web page, over USB. Then write other sets of eight pieces for people to
+      explore.
+- [ ] **Nail the sounds:** some voices sound too alike. Make each voice on ALGORITHM clearly its own.
+- [ ] **The live side, further:** more to play by hand (see the Reddit feedback below).
+- [ ] **From the feedback (Reddit, 2026-10-17):**
+  - "More for composing my own melodies": a way to write or lock the ping line. At Evolve 0 the
+    loops still add and drop notes (`loop_target` rounds at random). Keep them fixed at Evolve 0, and
+    let SAVE keep the current pings with the piece.
+  - The Feedback knob reads 0-100 while the loop runs 45-112%: show the real figure.
+- [ ] **Ideas from "Understanding Dub Techno: A Musicologist's Approach"** by Bahadırhan Koçer
+      (https://www.youtube.com/watch?v=2XMWPQmSBOw; studied from its subtitles, 2026-10-17). It rests on
+      three ideas: spontaneous repetition ("a river": the loop the same, its echo, reverb and filter
+      always moving, some of it barely heard), atmosphere (the mix as a room, a "backcloth" filling the
+      gaps between the stabs), and noise as the canvas. DUB-1 already has slow random movement on the
+      cutoff and the echo, feedback past 100% held by a clip, crackle, the cloud and the plate, and a rim
+      on two and four into the echo. To try:
+  - the stab's decay moving at random (tight, then loose): `mod[1..4]` are named the stab's but only
+    `mod[0]` (the cutoff) is read;
+  - a faster random layer under Motion: small sixteenth-step jitter on the cutoff and the echo feedback;
+  - the crackle tuned to the key: through a resonator on the root or the fifth and a moving band-pass,
+    part of it sent into the echo;
+  - part of the crackle on the sixteenths, as a quiet percussion lane;
+  - a backcloth: a hum near the root and filtered tape noise, always under everything (a sibling of
+    Crackle);
+  - noise in the kick (a breath) and a little in the sub;
+  - a "gritty shimmer": an octave-up return through a saturator into the plate (the cloud could be it);
+  - a two-pad backcloth in Thin and Break (low and held, high and swept), so the gaps are never empty;
+  - two-chord pieces: a recipe that keeps the walk on two degrees, the harmony still, the effects moving;
+  - a flanger or phaser in the echo's feedback, at an odd rate (or as a grid effect);
+  - a spring colour on the rim or the clap.
+- [ ] **For later: other genres.** Fork AMB-1 again and bring DUB-1's new parts (the FM core, the
+      effects grid, PERFORM, the pattern page, the screen views) to other styles: techno, industrial.
+
 ## Done: voices (a first approach)
 
 - ALGORITHM on a layer's page steps through its voices; on Dub, Space, Setup and Mix it is still the

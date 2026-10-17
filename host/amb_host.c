@@ -20,6 +20,12 @@
  *   expect WHAT VALUE            check state: exit 1 on mismatch; VALUE "<N" / ">N" is a bound
  *   reboot                       re-run boot from the simulated flash (persistence test)
  *   splash N                     draw the launch screen's frame N (0..UI_SPLASH_N-1) on the screen
+ *   splashrun                    the launch screen played out as the device does at power-on (55 ms a frame,
+ *                                the music running, the UI not), then the UI started again
+ *   film FILE | filmstop         record the device, 30 frames a second of simulated time, to FILE: each frame
+ *                                a header (FILM_HDR words: ms, buttons held, keys held, buttons lit, keys lit,
+ *                                master, the detents each encoder turned since the frame before) and the
+ *                                screen (240 x 240 RGB565, big-endian). tools/film.py makes it a video.
  *   listen                       a screen reader starts listening (HELLO, again every 2 s): each SAY is printed
  *                                ("said: ..."; "said!:" cuts off what was being said)
  *   where                        the reader asks for everything on the screen
@@ -304,6 +310,24 @@ static void wav_close(void)
     wav = 0;
 }
 
+/* ------------------------------------------------------------ film --- */
+#define FILM_HDR (6 + NE)
+static FILE *film;
+static double film_due;
+static int32_t film_enc[NE];
+static int ui_off;                       /* (splashrun: the launch screen owns the screen) */
+static void film_frame(void)
+{
+    uint32_t h[FILM_HDR], i;
+    h[0] = now_ms, h[1] = held_btn, h[2] = held_keys, h[3] = lit_btn, h[4] = lit_keys, h[5] = master;
+    for (i = 0; i < NE; i++) {
+        h[6 + i] = (uint32_t)film_enc[i];
+        film_enc[i] = 0;
+    }
+    fwrite(h, 4, FILM_HDR, film);
+    fwrite(fb, 2, 240 * 240, film);
+}
+
 /* --------------------------------------------------------- the device --- */
 static double audio_due_ms, render_ns_total, render_budget_ns_total;
 static uint32_t ui_due;
@@ -359,11 +383,16 @@ static void run_ms(uint32_t ms)
             static const uint8_t HELLO[] = {ANN_H0, ANN_H1, ANN_H2, ANN_HELLO, ANN_VER};
             ann_frame(HELLO, sizeof HELLO, now_ms);
         }
-        if (now_ms >= ui_due) {
+        if (ui_off) {
+        } else if (now_ms >= ui_due) {
             ui_due = now_ms + 16;
             ui_frame();
         } else {
             ui_input_only();
+        }
+        if (film && (double)now_ms >= film_due) {
+            film_frame();
+            film_due += 1000.0 / 30.0;
         }
     }
 }
@@ -549,6 +578,7 @@ int main(int argc, char **argv)
             }
             for (; n; n -= s) {
                 enc_acc[e] += s;
+                film_enc[e] += s;
                 run_ms(gap);
             }
         } else if (!strcmp(cmd, "spin")) {
@@ -558,6 +588,7 @@ int main(int argc, char **argv)
                 return 2;
             }
             enc_acc[e] += atoi(b);
+            film_enc[e] += atoi(b);
             accel_off = 1;
             run_ms(1);
             accel_off = 0;
@@ -592,7 +623,24 @@ int main(int argc, char **argv)
             printf("\n");
         } else if (!strcmp(cmd, "expect"))
             fails += expect(a, b);
-        else if (!strcmp(cmd, "splash"))           /* splash N: the launch screen's frame N (shot it after) */
+        else if (!strcmp(cmd, "film")) {
+            snprintf(out, sizeof out, "%s/%s", dir, a);
+            film = fopen(out, "wb");
+            film_due = (double)now_ms;
+        } else if (!strcmp(cmd, "filmstop")) {
+            if (film)
+                fclose(film);
+            film = 0;
+        } else if (!strcmp(cmd, "splashrun")) {
+            int f;
+            ui_off = 1;
+            for (f = 1; f < UI_SPLASH_N; f++) {
+                ui_splash(f);
+                run_ms(55);
+            }
+            ui_off = 0;
+            ui_init();
+        } else if (!strcmp(cmd, "splash"))           /* splash N: the launch screen's frame N (shot it after) */
             ui_splash(atoi(a));
         else if (!strcmp(cmd, "reboot")) {
             memset(&proj, 0, sizeof proj);

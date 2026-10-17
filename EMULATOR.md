@@ -92,6 +92,11 @@ One command per line, `#` starts a comment (the full list is at the top of `host
 
 Screen-reader commands (`listen`, `where`, `said`, `said_none`, `speakdump`) are also there; see the file.
 
+`film FILE` / `filmstop` record the device at 30 frames a second (the screen, the buttons and keys held
+and lit, the knobs turned), and `splashrun` plays the launch screen as at power-on.
+`tools/film.py FILM WAV OUT.mp4` draws that as the FM-1's panel and encodes it with the audio (ffmpeg);
+`tools/make_film.sh` makes the video's clips from `tests/film/*.amb` into `build/film/`.
+
 ### Listening to changes
 
 Keep our own listening scripts apart from the test scenarios, e.g. in `tests/listen/` (scripts)
