@@ -1044,7 +1044,7 @@ static void draw_header(void)
     int msg = plat_ms() < ui.msg_until;
     uint32_t h = hash(hash(hash(2166136261u, proj.piece | (uint32_t)proj.par[P_ROOT] << 8 | (uint32_t)proj.pool << 12),
                            en_playing | ui.dirty << 4 | (uint32_t)msg << 5 | (uint32_t)en_ext << 6 | (uint32_t)proj.par[P_MODE] << 8),
-                      (uint32_t)proj.par[P_TEMPO] | (uint32_t)batt_bars() << 29 | (uint32_t)plat_usb_power() << 31 |
+                      (uint32_t)proj.par[P_TEMPO] | (uint32_t)(ui.view == V_SETUP ? batt_pct() : 0) << 22 | (uint32_t)batt_bars() << 29 | (uint32_t)plat_usb_power() << 31 |
                       (plat_usb_power() ? (plat_ms() / 600u) % 3u << 7 : 0u) | (ui.view == V_SETUP ? plat_cpu_pct() << 8 | plat_cpu_peak() << 15 |
                                                                            (plat_xruns() & 0x1FFu) << 22 : 0u));
     if (msg)
@@ -1063,6 +1063,21 @@ static void draw_header(void)
         if (plat_battery() >= 0 || plat_usb_power()) {   /* the battery, at the right edge */
             draw_battery(219);
             x = 213;
+        }
+        if (ui.view == V_SETUP && (plat_battery() >= 0 || plat_usb_power())) {   /* Setup: the charge, by the icon */
+            char c[8];
+            if (plat_usb_power()) {
+                c[0] = 'U', c[1] = 'S', c[2] = 'B', c[3] = 0;
+            } else {
+                uint32_t k;
+                itoa_u((uint32_t)batt_pct(), c);
+                for (k = 0; c[k]; k++)
+                    ;
+                c[k++] = '%', c[k] = 0;
+            }
+            x -= text_w(&FONT_XS, c);
+            cv_text(x, 8, &FONT_XS, c, K_TEXT);
+            x -= 8;
         }
         if (ui.dirty) {                            /* unsaved */
             cv_round(x - 5, 12, 5, 5, 2, K_DIM);
@@ -1091,9 +1106,8 @@ static void draw_header(void)
                 itoa_u(plat_xruns() > 999u ? 999u : plat_xruns(), c + k);
             }
             x -= text_w(&FONT_XS, c);
-            cv_text(x, 8, &FONT_XS, c, K_DIM);
-            x -= 10;
-        }
+            cv_text(x, 8, &FONT_XS, c, K_DIM);   /* (the leftmost on the right: its changing width moves nothing) */
+        } else {                                 /* elsewhere: the tempo and the beat light */
         x -= text_w(&FONT_S, t);
         cv_text(x, 6, &FONT_S, t, en_playing ? K_TEXT : K_DIM);
         x -= 16;
@@ -1104,6 +1118,7 @@ static void draw_header(void)
             int32_t j;                            /* resting: a play triangle */
             for (j = 0; j < 5; j++)
                 cv_rect(x + 2 + j, 9 + j, 1, 11 - 2 * j, K_DIM);
+        }
         }
         w = text_w(&FONT_B, piece_name(proj.piece)) + 12;   /* the piece, in a coral tag */
         cv_round(4, 4, w, 20, 6, K_TEXT);
@@ -1776,7 +1791,7 @@ static void draw_main(void)
     for (i = 0; i < 6; i++)
         h = hash(h, en_lane[i] | (uint32_t)proj.par[i < 4 ? i : 0] << 16);
     h = hash(h, en_drum_pos[0] | (uint32_t)q16(en_duck) << 4 | (uint32_t)q16(en_pad_level) << 9 | (uint32_t)q16(en_bass_level) << 14);
-    h = hash(h, (uint32_t)(ui.view == V_SETUP ? (plat_usb_power() ? 200 : batt_pct()) + 1 : 0) | (uint32_t)(en_prog_pos + 1) << 12);
+    h = hash(h, (uint32_t)(en_prog_pos + 1) << 12);
     h = hash(h, (uint32_t)(en_drift * 40.0f) | en_section << 8 | (uint32_t)en_phrase_bar << 12 | (uint32_t)ui.perf << 16 | ui.solo << 20);
     for (i = 0; i < EN_NLOOP; i++)
         h = hash(h, (uint32_t)q16(en_loop_glow[i]) | (uint32_t)en_loop_pos[i] << 8);
@@ -1848,19 +1863,6 @@ static void draw_main(void)
     draw_meters();
     draw_duck();
     draw_lanes();
-    if (ui.view == V_SETUP && (plat_battery() >= 0 || plat_usb_power())) {   /* the battery: on USB, or ~% */
-        char t[24] = "BATT ";
-        uint32_t k = 5;
-        if (plat_usb_power()) {
-            t[k++] = 'U', t[k++] = 'S', t[k++] = 'B', t[k] = 0;
-        } else {
-            itoa_u((uint32_t)batt_pct(), t + k);
-            while (t[k])
-                k++;
-            t[k++] = '%', t[k] = 0;
-        }
-        text_c(120, -1, &FONT_XS, t, K_DIM);
-    }
     cv_blit(0, MAIN_Y);
 }
 
