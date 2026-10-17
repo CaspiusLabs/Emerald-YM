@@ -20,6 +20,9 @@
  *   expect WHAT VALUE            check state: exit 1 on mismatch; VALUE "<N" / ">N" is a bound
  *   reboot                       re-run boot from the simulated flash (persistence test)
  *   splash N                     draw the launch screen's frame N (0..UI_SPLASH_N-1) on the screen
+ *   at S [LABEL]                 run until S seconds after the film started (or the boot, without a film)
+ *   bar N [LABEL]                run until bar N's downbeat (N x 16 sixteenths played): a move on the beat.
+ *                                Both print the film's time there, "@ mm:ss.s  bar N  LABEL" (the edit's cue)
  *   splashrun                    the launch screen played out as the device does at power-on (55 ms a frame,
  *                                the music running, the UI not), then the UI started again
  *   film FILE | filmstop         record the device, 30 frames a second of simulated time, to FILE: each frame
@@ -314,6 +317,7 @@ static void wav_close(void)
 #define FILM_HDR (6 + NE)
 static FILE *film;
 static double film_due;
+static uint32_t film_t0;
 static int32_t film_enc[NE];
 static int ui_off;                       /* (splashrun: the launch screen owns the screen) */
 static void film_frame(void)
@@ -627,10 +631,29 @@ int main(int argc, char **argv)
             snprintf(out, sizeof out, "%s/%s", dir, a);
             film = fopen(out, "wb");
             film_due = (double)now_ms;
+            film_t0 = now_ms;
         } else if (!strcmp(cmd, "filmstop")) {
             if (film)
                 fclose(film);
             film = 0;
+        } else if (!strcmp(cmd, "at") || !strcmp(cmd, "bar")) {
+            const char *lab = strstr(line, a) + strlen(a);
+            uint32_t t;
+            while (*lab == ' ' || *lab == '\t')
+                lab++;
+            if (cmd[0] == 'a') {
+                uint32_t due = film_t0 + (uint32_t)(atof(a) * 1000.0 + 0.5);
+                if (now_ms > due)
+                    printf("line %d: at %s is already past (%.1f s)\n", lineno, a, (now_ms - film_t0) / 1000.0);
+                while (now_ms < due)
+                    run_ms(1);
+            } else {
+                uint32_t want = 16u * (uint32_t)atoi(a), guard = 0;
+                while (en_bars < want && guard++ < 600000u)
+                    run_ms(1);
+            }
+            t = now_ms - film_t0;
+            printf("@ %02u:%04.1f  bar %u  %s", t / 60000u, (t % 60000u) / 1000.0, en_bars / 16u, lab[0] ? lab : "\n");
         } else if (!strcmp(cmd, "splashrun")) {
             int f;
             ui_off = 1;

@@ -108,6 +108,9 @@ measurement (renders analysed for level, timing and spectrum).
       piece (sounds, chord progression, drums). Clips to cut in DaVinci Resolve.
   - [x] The clips: `tools/make_film.sh` runs `tests/film/*.amb` and makes three MP4s of each in
         `build/film/` (the panel with the screen large, the panel alone, the screen alone) and the WAV
+  - [x] One take (`tests/film/00-take.amb`, 2:48): every move on a downbeat (`bar N` in the simulator,
+        printing the cue sheet), so the music runs unbroken; the edit cuts between the framings only.
+        The script with its cues: `build/video-script.md`
   - [ ] Cut, titles, voice-over or captions (the user, in DaVinci)
 - [ ] **Projects outside the FM-1:** save and load whole projects (eight pieces: songs, sounds,
       everything) from the web page, over USB. Then write other sets of eight pieces for people to
