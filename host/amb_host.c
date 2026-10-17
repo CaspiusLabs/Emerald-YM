@@ -23,6 +23,8 @@
  *   at S [LABEL]                 run until S seconds after the film started (or the boot, without a film)
  *   bar N [LABEL]                run until bar N's downbeat (N x 16 sixteenths played): a move on the beat.
  *                                Both print the film's time there, "@ mm:ss.s  bar N  LABEL" (the edit's cue)
+ *   store8                       save the project as DUB-1 1.0.0 did (format 8): reboot then reads it
+ *   pingmark                     remember the ping loops (expect pingsame 1: they are as they were)
  *   splashrun                    the launch screen played out as the device does at power-on (55 ms a frame,
  *                                the music running, the UI not), then the UI started again
  *   film FILE | filmstop         record the device, 30 frames a second of simulated time, to FILE: each frame
@@ -313,6 +315,18 @@ static void wav_close(void)
     wav = 0;
 }
 
+/* the ping loops, as a hash (pingmark, expect pingsame) */
+static uint32_t ping_mark;
+static uint32_t ping_hash(void)
+{
+    uint32_t h = 2166136261u;
+    int l, i;
+    for (l = 0; l < EN_NLOOP; l++)
+        for (i = 0; i < EN_LOOP_MAX; i++)
+            h = (h ^ (uint32_t)(uint8_t)en_loop_note[l][i]) * 16777619u;
+    return h;
+}
+
 /* ------------------------------------------------------------ film --- */
 #define FILM_HDR (6 + NE)
 static FILE *film;
@@ -439,6 +453,10 @@ static int expect(const char *what, const char *val)
         got = proj.piece;
     else if (!strcmp(what, "pool"))               /* the scale, relative to the root (hex ok) */
         got = proj.pool;
+    else if (!strcmp(what, "format"))
+        got = (int)proj.format;
+    else if (!strcmp(what, "pingsame"))           /* 1: the ping loops as at the last pingmark */
+        got = ping_hash() == ping_mark;
     else if (!strcmp(what, "screen"))
         got = proj.screen;
     else if (!strcmp(what, "dirty"))
@@ -654,6 +672,21 @@ int main(int argc, char **argv)
             }
             t = now_ms - film_t0;
             printf("@ %02u:%04.1f  bar %u  %s", t / 60000u, (t % 60000u) / 1000.0, en_bars / 16u, lab[0] ? lab : "\n");
+        } else if (!strcmp(cmd, "store8")) {     /* the project as DUB-1 1.0.0 saved it (format 8), into the flash */
+            static project8_t o;
+            int i;
+            keep();
+            memset(&o, 0, sizeof o);
+            o.magic = PROJ_MAGIC, o.format = 8u;
+            memcpy(o.par, proj.par, sizeof o.par);
+            o.pool = proj.pool, o.leds = proj.leds, o.piece = proj.piece, o.screen = proj.screen;
+            for (i = 0; i < NPIECES; i++) {
+                memcpy(o.slot[i].par, proj.slot[i].par, sizeof o.slot[i].par);
+                o.slot[i].pool = proj.slot[i].pool;
+            }
+            plat_store_save(OBJ_PROJ, &o, sizeof o);
+        } else if (!strcmp(cmd, "pingmark")) {
+            ping_mark = ping_hash();
         } else if (!strcmp(cmd, "splashrun")) {
             int f;
             ui_off = 1;

@@ -29,7 +29,7 @@ installer can reach.
 |---|---|
 | Keys | The scale: each key adds its note or takes it out |
 | PLAY · REC · EDIT | Play / rest · a tap: dub hold, held: the effects grid (16 effects on the white keys) · a tap: the Chords page (eight slots: root, kind, type; Play random or the slots), held: the next chord |
-| SEL | PERFORM: the knobs a mixer; the keys mute the layers and, held, throw, open, shut, drop the kick, push the echo |
+| SEL | PERFORM: the knobs a mixer; white keys 1–5 mute the layers, black keys 1–5 solo them; white 7–11, held: throw, open, shut, drop (the kick and the bass), push the echo. The keys that do something are lit; hold SEL for the map |
 | HOME · ENV · ARP · LFO · SEQ · FX · GLO | The pages: Dub, Chord, Texture, Bass, Drums, Space, Setup; KNOB 1–4 set their four values. A layer's button again: its sound page (four more, relative to the voice) |
 | SELECT | The previous or next page; with HOME held, the tempo |
 | SEQ, twice, three times | The drums' sound page, then the **Pattern page**: four lanes (kick, shaker, open hat, rim) of sixteen steps on the white keys, accents, chance |

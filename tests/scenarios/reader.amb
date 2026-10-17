@@ -53,7 +53,7 @@ wait 300
 said Echo 0
 spin K3 -100
 wait 300
-said Feedback 0
+said Feedback 45%
 spin K4 -100
 wait 300
 said Reverb 0
@@ -63,7 +63,7 @@ wait 300
 said Drums page, kit Tight: Level 
 tap FX
 wait 300
-said Space page: Echo 0, Echo time 1 bar, Feedback 0, Reverb 0
+said Space page: Echo 0, Echo time 1 bar, Feedback 45%, Reverb 0
 tap HOME
 wait 300
 said Dub page

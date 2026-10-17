@@ -43,10 +43,10 @@ wait 2500
 shot screen-hold.png
 tap REC
 tap SEL
-key w5 down
+key w6 down
 wait 2000
 shot screen-perform.png
-key w5 up
+key w6 up
 tap SEL
 turn K3 50
 wait 52000

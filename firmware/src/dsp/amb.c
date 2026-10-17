@@ -217,6 +217,12 @@ void en_param_text(int i, int v, char *b)
         *b = 0;
         return;
     }
+    if (i == P_FEEDBACK) {                       /* as the loop's gain: 45% .. 112% (past 100: the clip holds it) */
+        b = itoa_s(45 + (v * 67 + 50) / 100, b);
+        *b++ = '%';
+        *b = 0;
+        return;
+    }
     if (i == P_SWING) {                          /* as a swing percentage: 50% (straight) .. 70% */
         b = itoa_s(50 + v / 5, b);
         *b++ = '%';
@@ -373,7 +379,7 @@ const char *en_chord_name(const int *pcs, int n, char *buf)
 }
 
 /* ------------------------------------------------------------ commands --- */
-enum { C_SET, C_POOL, C_PLAY, C_NEXT, C_FREEZE, C_SEED, C_PANIC, C_CLOCK, C_REGROW, C_MUTE, C_PERF, C_FX };
+enum { C_SET, C_POOL, C_PLAY, C_NEXT, C_FREEZE, C_SEED, C_PANIC, C_CLOCK, C_REGROW, C_MUTE, C_PERF, C_FX, C_PINGS };
 #define QN 256u                                 /* (a piece is every parameter at once: room for four) */
 _Static_assert(QN >= 2u * (P_NPARAMS + 8), "the command queue can't hold a piece's parameters twice over");
 static uint32_t q[QN];
@@ -1021,9 +1027,52 @@ static void loop_regrow(int l)
     loop_publish(l);
 }
 
+/* a piece's own loops (en_pings): packed by the UI, unpacked here */
+static uint8_t pings_pend[EN_PINGS_N], pings_have;
+void en_pings_get(uint8_t *b)
+{
+    int l, i, k = 0;
+    for (l = 0; l < EN_NLOOP; l++)
+        for (i = 0; i < EN_LOOP_LEN[l]; i++, k++) {
+            int nt = loop_note[l][i], v = (loop_vel[l][i] - 50) / 3;
+            b[k] = (uint8_t)((nt < 0 || nt > 14 ? 15 : nt) | (v < 0 ? 0 : v > 15 ? 15 : v) << 4);
+        }
+}
+void en_pings(const uint8_t *b)
+{
+    int i;
+    for (i = 0; b && i < EN_PINGS_N; i++)
+        pings_pend[i] = b[i];
+    post(C_PINGS, b ? 1 : 0, 0);
+}
+static void pings_take(void)
+{
+    int l, i, k = 0;
+    for (l = 0; l < EN_NLOOP; l++) {
+        for (i = 0; i < EN_LOOP_MAX; i++)
+            loop_note[l][i] = -1;
+        for (i = 0; i < EN_LOOP_LEN[l]; i++, k++) {
+            int nt = pings_pend[k] & 15;
+            loop_note[l][i] = (int8_t)(nt == 15 ? -1 : nt);
+            loop_vel[l][i] = (uint8_t)(50 + 3 * (pings_pend[k] >> 4));
+        }
+        loop_publish(l);
+    }
+}
+
 static void loop_pass(int l)                    /* the end of a pass: grow, prune, evolve */
 {
     int c = loop_count(l), t = loop_target(), s;
+    if (evolve < 0.005f) {                      /* Evolve 0: the loops as they are (Density changed: to it) */
+        t = (int)(fm_clampf((float)par[P_DENSITY] * 0.05f, 0.0f, 5.0f) + 0.5f);
+        for (; c < t; c++)
+            loop_add(l);
+        for (; c > t && (s = loop_pick(l)) >= 0; c--)
+            loop_note[l][s] = -1;
+        loop_rest[l] = frand() < 0.2f * fm_maxf(-arcm, 0.0f);   /* (Motion's dark: a pass sat out, the notes kept) */
+        loop_publish(l);
+        return;
+    }
     for (; c < t; c++)
         loop_add(l);
     for (; c > t && (s = loop_pick(l)) >= 0; c--)
@@ -1433,7 +1482,7 @@ static void lanes(void)
     en_lane[2] = (uint16_t)(hats ? (lay_hats ? dpat(1) : 0u) | (lay_open || fill ? dpat(2) : 0u) : 0u);
     en_lane[3] = (uint16_t)(hats && lay_hats ? dpat(3) : 0u);
     en_lane[4] = (uint16_t)(hats && (sec == SEC_FULL || sec == SEC_GROOVE || par[P_DMODE]) ? dpat(4) : 0u);
-    en_lane[5] = (uint16_t)(lay_bass && !(mutes & EN_M_BASS) && par[P_BASS] > 0 ? en_groove(par[P_GROOVE]) : 0u);
+    en_lane[5] = (uint16_t)(lay_bass && !(mutes & EN_M_BASS) && !(perf & EN_PF_KICKDROP) && par[P_BASS] > 0 ? en_groove(par[P_GROOVE]) : 0u);
 }
 
 /* a pattern's hit: its chance (Play: Pattern only, so Auto's music stays as it was), its accent */
@@ -1474,7 +1523,7 @@ static void tick(void)
                 drum_hit(4, v4, 0);
         }
     }
-    if (lay_bass && !(mutes & EN_M_BASS) && en_groove(par[P_GROOVE]) >> st & 1u)
+    if (lay_bass && !(mutes & EN_M_BASS) && !(perf & EN_PF_KICKDROP) && en_groove(par[P_GROOVE]) >> st & 1u)
         bass_hit(st == 0);
     if (en_stab_pat >> st & 1u) {               /* (the random draws made muted or not: the music goes on the same) */
         uint32_t later = en_stab_pat >> (st + 1);
@@ -2210,7 +2259,16 @@ static void drain(void)
             }
             break;
         case C_PANIC: quiet(); break;
-        case C_REGROW: regrow(); break;
+        case C_REGROW:
+            regrow();
+            if (pings_have)                      /* (a piece's own loops, kept) */
+                pings_take();
+            break;
+        case C_PINGS:
+            pings_have = (uint8_t)a;
+            if (a)
+                pings_take();
+            break;
         case C_MUTE: mutes = (uint32_t)a; lanes(); break;
         case C_PERF: perf = (uint32_t)a; lanes(); break;
         case C_FX: fxm = c & 0xFFFFu; break;
@@ -2383,6 +2441,11 @@ static void render_bass(uint32_t n)
         float x, tgt = gate > 0 ? 1.0f : 0.0f;
         if (gate > 0 && --gate == 0)
             midi(0x82, bass.midi_note, 0);
+        if (perf & EN_PF_KICKDROP && gate > 0) {   /* PERFORM's Drop: the bass let go at once (~20 ms) */
+            gate = 0;
+            midi(0x82, bass.midi_note, 0);
+            tgt = 0.0f;
+        }
         env += (tgt - env) * (tgt > env ? 0.02f : 0.0012f);   /* ~1 ms in, ~20 ms out */
         if (BV_PATCH[bv]) {                      /* (Bite: the modulators' levels) */
             if (!(j & 31u))

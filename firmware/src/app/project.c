@@ -10,7 +10,26 @@ const char *piece_name(int i) { return en_piece_name(i); }
 
 static int global_par(int p) { return p == P_TUNE || p == P_MIDI; }
 
-static void recipe(int i, slot_t *s) { en_piece(i, s->par, &s->pool); }
+static void recipe(int i, slot_t *s)
+{
+    en_piece(i, s->par, &s->pool);
+    s->pings_ok = 0;
+}
+
+/* DUB-1 1.0.0's project (format 8): the same, without the pings; read, and kept */
+typedef struct {
+    int16_t par[P_NPARAMS];
+    uint16_t pool;
+} slot8_t;
+typedef struct {
+    uint32_t magic, format;
+    int16_t par[P_NPARAMS];
+    uint16_t pool;
+    uint8_t leds, piece, screen, rsv0;
+    slot8_t slot[NPIECES];
+    uint8_t rsv[16];
+} project8_t;
+_Static_assert(sizeof(project_t) <= 3840u, "the project must fit one storage sector's payload");
 
 static void take(const slot_t *s)                /* a piece's settings into play, the globals kept */
 {
@@ -21,12 +40,14 @@ static void take(const slot_t *s)                /* a piece's settings into play
     proj.pool = s->pool;
 }
 
-static void keep(void)                           /* the piece playing, into its slot */
+static void keep(void)                           /* the piece playing, into its slot (with its ping loops) */
 {
     int p;
     for (p = 0; p < P_NPARAMS; p++)
         proj.slot[proj.piece].par[p] = proj.par[p];
     proj.slot[proj.piece].pool = proj.pool;
+    en_pings_get(proj.slot[proj.piece].pings);
+    proj.slot[proj.piece].pings_ok = 1;
 }
 
 void project_defaults(void)
@@ -75,13 +96,31 @@ static int project_valid(void)                  /* an older format: the recipes 
     return 1;
 }
 
+static void from8(const project8_t *o)          /* 1.0.0's project: everything kept, the pings grown afresh */
+{
+    int i;
+    memset(&proj, 0, sizeof proj);
+    proj.magic = o->magic;
+    proj.format = PROJ_FORMAT;
+    memcpy(proj.par, o->par, sizeof proj.par);
+    proj.pool = o->pool;
+    proj.leds = o->leds, proj.piece = o->piece, proj.screen = o->screen;
+    for (i = 0; i < NPIECES; i++) {
+        memcpy(proj.slot[i].par, o->slot[i].par, sizeof proj.slot[i].par);
+        proj.slot[i].pool = o->slot[i].pool;
+    }
+}
+
 int project_load(void)
 {
     static project_t buf;
     int n;
     memset(&buf, 0, sizeof buf);
     n = plat_store_load(OBJ_PROJ, &buf, sizeof buf);
-    proj = buf;
+    if (n >= 8 && buf.magic == PROJ_MAGIC && buf.format == 8u && n >= (int)sizeof(project8_t))
+        from8((const project8_t *)(const void *)&buf);
+    else
+        proj = buf;
     if (n >= 8 && project_valid())
         return 0;
     project_defaults();
@@ -106,12 +145,15 @@ void project_piece_reset(void)
     slot_t s;
     recipe(proj.piece, &s);
     take(&s);
+    proj.slot[proj.piece].pings_ok = 0;          /* (its loops grown afresh too) */
 }
 
-void project_apply(void)
+void project_apply(void)                         /* (then en_regrow keeps the piece's loops, if it has them) */
 {
     int i;
+    const slot_t *s = &proj.slot[proj.piece];
     for (i = 0; i < P_NPARAMS; i++)
         en_set(i, proj.par[i]);
     en_pool(proj.pool);
+    en_pings(s->pings_ok ? s->pings : 0);
 }

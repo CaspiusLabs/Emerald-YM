@@ -42,12 +42,12 @@ same code the FM-1 runs, with sound.
 to install on the computer. Don't unplug it while it's writing; when it finishes, the FM-1 restarts
 into DUB-1.
 
-**Or from the command line:** download `dub-1.0.0.fwsc` from the
+**Or from the command line:** download `dub-1.1.0.fwsc` from the
 [releases](https://github.com/sbegueria/fm1-dub/releases), install Python 3 with
 `pip3 install mido python-rtmidi`, and run, in a checkout of the source:
 
 ```
-python3 tools/fm1_install.py dub-1.0.0.fwsc
+python3 tools/fm1_install.py dub-1.1.0.fwsc
 ```
 
 **Go back:** the installer page's "Back to the stock firmware", or M-VAVE's own updater, M-UPGRADE,
@@ -115,7 +115,7 @@ dark key between them. Each key that does something is lit (hold SEL for this ma
 | | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | **Black keys:** solo | Chord | Pings | Bass | Kick | Hats | | | | | | |
-| **White keys:** mute, moves | Chord | Pings | Bass | Kick | Hats | (dark) | Throw | Open | Shut | Kick drop | Echo |
+| **White keys:** mute, moves | Chord | Pings | Bass | Kick | Hats | (dark) | Throw | Open | Shut | Drop | Echo |
 
 The first five black keys (F♯ G♯ A♯, C♯ D♯) sit above the five mutes, like a mixer's channel strip.
 
@@ -136,7 +136,9 @@ The first five black keys (F♯ G♯ A♯, C♯ D♯) sit above the five mutes, 
     echo's band-pass and the pings brighter with it.
   - **Shut:** the music goes under water while the kick keeps pumping: a low-pass on everything but
     the kick sweeps down to about 230 Hz, the chords' filter and the echo's band-pass closing with it.
-  - **Kick drop:** the kick dropped.
+  - **Drop:** the floor falls away: the kick and the bass out while held (the bass let go at once),
+    both back on the next beat when you let go. The kick's mute (white 4) takes it out until you
+    press again; Drop is the move you hold for a bar or two and release on the downbeat.
   - **Echo:** the echo pushed: everything into it, feeding back more.
   - Each sweeps in over about half a second; letting go eases back.
 - The other keys do nothing in PERFORM; MIDI notes in still change the scale.
@@ -224,7 +226,7 @@ another button puts the card away; letting go after it does nothing else.
 - **Bottom:** the page's name and seven dots, one a page, then its four values, one for each knob:
   a dial (or, for a switch, its positions) and the value. The one you're turning lights up.
 
-![The Space page with FEEDBACK lit as it turns, set to 63; ECHO 55, ECHO TIME 1/8., REVERB 35](img/screen-turning.png "Turning Feedback on the Space page")
+![The Space page with FEEDBACK lit as it turns, set to 87%; ECHO 55, ECHO TIME 1/8., REVERB 35](img/screen-turning.png "Turning Feedback on the Space page")
 ![The scope: the output as a thick teal line over a dotted centre line, the two traces before it fading behind; Fm7 at the top](img/screen-scope.png "HOME again: the scope")
 ![The spectrum: eighteen columns of teal and brass segments, a white cap over each; Fm7 at the top](img/screen-spectrum.png "HOME again: the spectrum")
 ![Dub hold: red rings, the chord's name and "hold" in red](img/screen-hold.png "Dub hold")
@@ -488,13 +490,13 @@ PERFORM's mutes), and Swing still delays the off sixteenths. The patterns are ke
 
 ### FX: Space
 
-![The Space page: ECHO 55, ECHO TIME 1/8., FEEDBACK 60, REVERB 35](img/screen-space.png "The Space page")
+![The Space page: ECHO 55, ECHO TIME 1/8., FEEDBACK 85%, REVERB 35](img/screen-space.png "The Space page")
 
 - **Echo:** how much goes to the echo.
 - **Echo time:** the tape loop's length: an eighth, a dotted eighth, a quarter, a dotted quarter, a
   half or one bar. The second head repeats at three quarters of it, or with Motion up, wherever it
   has slid to.
-- **Feedback:** how much of each repeat goes round again, from 45% to past 100% at the top: there,
+- **Feedback:** how much of each repeat goes round again, shown as it is: 45% to 112%. Past 100%
   the soft clip holds it, and the echo swells and smears on itself instead of dying away. While
   resting it's kept under 90%, so the tails always die out.
 - **Reverb:** how much goes to the plate.
@@ -640,7 +642,7 @@ The defaults are Basic's; each piece has its own.
 | Drums | Duck | 0–100 (to −12 dB) | 50 |
 | Space | Echo | 0–100 | 55 |
 | Space | Echo time | 1/8, 1/8., 1/4, 1/4., 1/2, 1 bar | 1/8. |
-| Space | Feedback | 0–100 (45% – 112%) | 60 |
+| Space | Feedback | 45% – 112% | 85% |
 | Space | Reverb | 0–100 | 35 |
 | Setup | Root | C – B | F |
 | Setup | Tune | −50 – +50 cents | 0 |

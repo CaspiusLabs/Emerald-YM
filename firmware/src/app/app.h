@@ -10,12 +10,16 @@
 #define EN_VERSION "DEV"
 #endif
 #define PROJ_MAGIC 0x31425544u           /* "DUB1": AMB-1's projects ("ENO1") give the recipes */
-#define PROJ_FORMAT 8u                   /* 8: the clap (older projects give the recipes) */
+#define PROJ_FORMAT 9u                   /* 9: each piece's ping loops (8, DUB-1 1.0.0's, is read and kept; older
+                                         * projects give the recipes) */
 #define NPIECES EN_NPIECES
 
 typedef struct {
     int16_t par[P_NPARAMS];
     uint16_t pool;
+    uint8_t pings[EN_PINGS_N];           /* its ping loops as they were left (en_pings_get) */
+    uint8_t pings_ok;                    /* 0: none kept (a recipe, or a project from 1.0.0): grown afresh */
+    uint8_t rsv1;
 } slot_t;
 
 typedef struct {

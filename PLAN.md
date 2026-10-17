@@ -102,11 +102,13 @@ measurement (renders analysed for level, timing and spectrum).
 ## Release 1.1.0 (in progress, 2026-10-17)
 
 - [x] PERFORM's Open and Shut you can hear (a filter on the music, the kick left out)
-- [ ] PERFORM reworked: white 1-5 mutes, black 1-5 solos (above the mutes, a mixer's strip), white 6
+- [x] PERFORM reworked: white 1-5 mutes, black 1-5 solos (above the mutes, a mixer's strip), white 6
       dark, white 7-11 the moves; every key that does something lit (a solo blinks while on, a move
       goes dark while held); the key map on SEL's card; SOLO on the screen
-- [ ] Ping lock: at Evolve 0 the loops stay as they are; SAVE keeps them with the piece
-- [ ] The Feedback knob shows the real loop gain (45-112%)
+- [x] Ping lock: at Evolve 0 the loops stay as they are; SAVE keeps them with the piece (format 9; 1.0.0's
+      projects are read and kept)
+- [x] The Feedback knob shows the real loop gain (45-112%)
+- [x] White 10 is Drop: the kick and the bass out while held (was Kick drop, the same as the kick's mute)
 - [ ] The video take again with the new keys (`tests/film/00-take.amb`, `build/video-script.md`)
 - [ ] Manual, README, the emulator page, release notes; `./build.sh --release 1.1.0`; the site; push
       and the tag (when the user says)

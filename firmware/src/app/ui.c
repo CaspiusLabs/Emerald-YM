@@ -408,7 +408,7 @@ static void set_piece(int i)                    /* the piece playing kept as it 
  *   white 1-5    the layers, a press each: off and back (chord, pings, bass, kick, hats)
  *   black 1-5    the same layers soloed, a press each (more than one: they play together; the rest muted)
  *   white 7-11   dub moves, held as long as the key is: every stab thrown into the echo, the filter pushed
- *                open, pushed shut, the kick dropped, the echo pushed (all in, feeding back)
+ *                open, pushed shut, the floor dropped (the kick and the bass out), the echo pushed (all in, feeding back)
  * Each key that does something is lit: a layer while it sounds, a solo (blinking while on), a move (dark
  * while held). The rest do nothing; MIDI notes in still change the scale */
 #define PERF_N 15
@@ -416,7 +416,7 @@ static const uint8_t PERF_KEY[PERF_N] = {0, 2, 4, 6, 7,          /* white 1-5: t
                                          11, 12, 14, 16, 18,     /* white 7-11: the moves */
                                          1, 3, 5, 8, 10};        /* black 1-5: the solos */
 static const char *const PERF_NAME[PERF_N] = {"CHORD", "PINGS", "BASS", "KICK", "HATS", "THROW", "OPEN", "SHUT",
-                                              "KICK DROP", "ECHO", "CHORD", "PINGS", "BASS", "KICK", "HATS"};
+                                              "DROP", "ECHO", "CHORD", "PINGS", "BASS", "KICK", "HATS"};
 static void perf_mutes(void)                     /* to the engine: the mutes, and with a solo, all but it */
 {
     en_mute(ui.mutes | (ui.solo ? 0x1Fu & ~ui.solo : 0u));
@@ -1586,7 +1586,7 @@ static int help_lines(int b, const char *l[HELP_LINES])
     case B_FX: L("THE SPACE"); L("ECHO, ECHO TIME, FEEDBACK,"); L("REVERB"); break;
     case B_GLO: L("SETUP"); L("ROOT, TUNE, MIDI OUT, LIGHTS"); break;
     case B_EDIT: L("TAP: THE CHORDS (8 SLOTS:"); L(" THE KEYS, THE SLOT'S ROOT)"); L("HOLD: THE NEXT CHORD"); break;
-    case B_SEL: L("PERFORM: THE KNOBS MIX"); L("WHITE 1-5 MUTE, BLACK 1-5 SOLO:"); L(" CHORD PINGS BASS KICK HATS"); L("WHITE 7-11 HELD: THROW OPEN SHUT"); L(" KICK DROP ECHO"); break;
+    case B_SEL: L("PERFORM: THE KNOBS MIX"); L("WHITE 1-5 MUTE, BLACK 1-5 SOLO:"); L(" CHORD PINGS BASS KICK HATS"); L("WHITE 7-11 HELD: THROW OPEN SHUT"); L(" DROP ECHO"); break;
     case B_REC: L("TAP: DUB HOLD (THE ECHO"); L(" REPEATS WHAT IT HOLDS)"); L("HOLD: THE EFFECTS GRID,"); L(" PLAYED ON THE WHITE KEYS"); break;
     case B_OCTDN: L("THE PINGS AN OCTAVE DOWN"); L("WITH OCT+, 5 S: UPDATE MODE"); break;
     case B_OCTUP: L("THE PINGS AN OCTAVE UP"); L("WITH OCT-, 5 S: UPDATE MODE"); break;

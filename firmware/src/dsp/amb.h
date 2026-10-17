@@ -95,9 +95,15 @@ void en_freeze(int on);
 void en_seed(uint32_t s);                      /* stir some entropy into the generators */
 void en_panic(void);                           /* everything quiet, now */
 void en_regrow(void);                          /* a new piece: fresh loops and patterns, the home chord */
+/* the ping loops, packed a byte a step (EN_PINGS_N: every loop's steps, in turn): the note offset in the low
+ * nibble (15: a rest), the velocity in the high one (50 + 3 x v). A piece keeps them; en_pings gives them back
+ * (0: none kept, the loops grown afresh), taken at once and again after each en_regrow */
+#define EN_PINGS_N 82
+void en_pings_get(uint8_t *b);
+void en_pings(const uint8_t *b);
 /* performance (SEL's mode): layers muted (EN_M_*, a mask: set = muted), and the moves held now (EN_PF_*) */
 enum { EN_M_CHORD = 1, EN_M_PINGS = 2, EN_M_BASS = 4, EN_M_KICK = 8, EN_M_HATS = 16 };
-enum { EN_PF_THROW = 1, EN_PF_OPEN = 2, EN_PF_CLOSE = 4, EN_PF_KICKDROP = 8, EN_PF_ECHO = 16 };
+enum { EN_PF_THROW = 1, EN_PF_OPEN = 2, EN_PF_CLOSE = 4, EN_PF_KICKDROP = 8, EN_PF_ECHO = 16 };   /* (KICKDROP: Drop, the kick and the bass) */
 void en_mute(uint32_t mask);
 void en_perf(uint32_t flags);
 /* the effects grid (REC held): the effects held now, a bit each (EN_FX_*), in the grid's order */
