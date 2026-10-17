@@ -150,6 +150,18 @@ each idea below is weighed by how much it adds to playing it.
     - **Energy** macro: Density, Hits and Stabs together. Down, the pings, hats and stabs thin out
       towards a sparse groove; up, everything fills in.
     - (More can come in the same spirit: one knob, several parameters, a musical direction.)
+  - **The user's idea (2026-10-17): the master actions in PERFORM.** The keys stay the mutes, solos
+    and moves; the four knobs become the master actions (Filter, Dub, Energy, and a fourth: for
+    example Space, the reverb and the cloud together). The mix is still there: **hold a key and turn
+    a knob** for the levels, as the knobs are now. Two ways to read "a key":
+    - *the layer's own mute key* held: any knob sets that layer's level (a mixer's channel, picked
+      by hand). The mute would then act on the key's release, and only if no knob was turned while
+      it was held (as the buttons do). That costs a press-to-release delay on the mutes.
+    - *one shift key* held (SEL itself, or white 6, the dark key between the sets): the knobs are
+      the Mix page as now (chord, pings, bass, drums). The mutes keep acting on the press.
+    - The screen shows which: the master actions' page, or MIX while the key is held.
+    If the master actions live in PERFORM, HOME can keep Tempo, Root and the piece's settings, and
+    GLO stays for what is really global.
   - **The questions:** HOME has four knobs (Tempo, Evolve, Motion, Drift today). Do Evolve, Motion
     and Drift stay there, or move to make room for the master actions? Should the master actions
     live on their own page, or in PERFORM (the Mix knobs)? And what happens to the knobs' values when
