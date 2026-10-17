@@ -132,18 +132,28 @@ each idea below is weighed by how much it adds to playing it.
         printing the cue sheet), so the music runs unbroken; the edit cuts between the framings only.
         The script with its cues: `build/video-script.md`
   - [ ] Cut, titles, voice-over or captions (the user, in DaVinci)
-- [ ] **Next release: Tempo moves to GLO, next to Root** (the user's note, 2026-10-17). Both are master
-      settings, so they belong on the Setup page. That frees KNOB 1 on HOME (the Dub page) for
-      something to play.
-  - GLO has four knobs (Root, Tune, MIDI out, Lights) and needs room for Tempo. MIDI out and Lights
-    are rarely touched: they could share one knob, or move to a long press. To decide.
-  - Tempo and Root are kept with each piece, as now; Tune and MIDI out stay global. HOME + SELECT
-    still sets the tempo from any page.
-  - Ideas for the free knob, by how playable they are:
-    - a master **Filter**, bipolar: left is Shut's low-pass, right is Open's high-pass, the middle is
-      off, with the kick left out. It's the DJ mixer's filter, the move people reach for;
-    - a **Dub** macro: the echo send, feedback and band-pass together;
-    - an **Energy** macro: density, hits and stabs together.
+- [ ] **Next release, to think through carefully: where Tempo, Root and the master actions go**
+      (the user, 2026-10-17). Nothing decided yet.
+  - **GLO only for what is really global:** settings that hold for every piece and the whole
+    machine (Tune, MIDI out, Lights, the battery). The piece's own settings stay out of it.
+  - **Tempo and Root are the piece's**, and they rarely change within a song. They could sit
+    together on HOME (Root moving there from GLO), or elsewhere. HOME + SELECT stays as the tempo
+    shortcut from any page.
+  - **Master actions at hand.** Knobs that act on the whole music, for playing it live. Where they
+    belong is open; the HOME page is a good candidate. The ideas:
+    - **Filter**, bipolar: left is Shut's low-pass (the music under water), right is Open's
+      high-pass (thin and bright), the middle is off, and the kick always stays out of it. It's the
+      DJ mixer's filter, a continuous version of PERFORM's Open and Shut keys.
+    - **Dub** macro: the echo send, feedback and band-pass on one knob. Turned up, more goes into
+      the echo, it feeds back longer and turns darker, towards a runaway; turned down, it's dry and
+      tight.
+    - **Energy** macro: Density, Hits and Stabs together. Down, the pings, hats and stabs thin out
+      towards a sparse groove; up, everything fills in.
+    - (More can come in the same spirit: one knob, several parameters, a musical direction.)
+  - **The questions:** HOME has four knobs (Tempo, Evolve, Motion, Drift today). Do Evolve, Motion
+    and Drift stay there, or move to make room for the master actions? Should the master actions
+    live on their own page, or in PERFORM (the Mix knobs)? And what happens to the knobs' values when
+    you change pieces: saved per piece, or performance-only, reset to the middle?
 - [ ] **Projects outside the FM-1, and new sets of pieces for people to load** (the user's idea).
   - **What travels:** a whole project is the eight pieces with everything in them: tempo, scale and
     root, the voices and their sound and FM pages, the mix, the echo and space, the chord slots, the
