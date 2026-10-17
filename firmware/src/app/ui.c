@@ -1776,7 +1776,7 @@ static void draw_main(void)
     for (i = 0; i < 6; i++)
         h = hash(h, en_lane[i] | (uint32_t)proj.par[i < 4 ? i : 0] << 16);
     h = hash(h, en_drum_pos[0] | (uint32_t)q16(en_duck) << 4 | (uint32_t)q16(en_pad_level) << 9 | (uint32_t)q16(en_bass_level) << 14);
-    h = hash(h, (uint32_t)(ui.view == V_SETUP ? plat_battery() + 1 : 0) | (uint32_t)(en_prog_pos + 1) << 12);
+    h = hash(h, (uint32_t)(ui.view == V_SETUP ? (plat_usb_power() ? 200 : batt_pct()) + 1 : 0) | (uint32_t)(en_prog_pos + 1) << 12);
     h = hash(h, (uint32_t)(en_drift * 40.0f) | en_section << 8 | (uint32_t)en_phrase_bar << 12 | (uint32_t)ui.perf << 16 | ui.solo << 20);
     for (i = 0; i < EN_NLOOP; i++)
         h = hash(h, (uint32_t)q16(en_loop_glow[i]) | (uint32_t)en_loop_pos[i] << 8);
@@ -1848,7 +1848,7 @@ static void draw_main(void)
     draw_meters();
     draw_duck();
     draw_lanes();
-    if (ui.view == V_SETUP && (plat_battery() >= 0 || plat_usb_power())) {   /* the battery: on USB, or ~% (raw) */
+    if (ui.view == V_SETUP && (plat_battery() >= 0 || plat_usb_power())) {   /* the battery: on USB, or ~% */
         char t[24] = "BATT ";
         uint32_t k = 5;
         if (plat_usb_power()) {
@@ -1858,10 +1858,6 @@ static void draw_main(void)
             while (t[k])
                 k++;
             t[k++] = '%', t[k] = 0;
-        }
-        if (plat_battery() >= 0) {               /* (and the raw reading, dim) */
-            t[k++] = ' ', t[k++] = ' ', t[k++] = 'r', t[k++] = 'a', t[k++] = 'w', t[k++] = ' ';
-            itoa_u((uint32_t)plat_battery(), t + k);
         }
         text_c(120, -1, &FONT_XS, t, K_DIM);
     }
