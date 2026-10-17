@@ -109,7 +109,8 @@ measurement (renders analysed for level, timing and spectrum).
       projects are read and kept)
 - [x] The Feedback knob shows the real loop gain (45-112%)
 - [x] White 10 is Drop: the kick and the bass out while held (was Kick drop, the same as the kick's mute)
-- [ ] The video take again with the new keys (`tests/film/00-take.amb`, `build/video-script.md`)
+- [x] The video take again with the new keys (`tests/film/00-take.amb`, `build/video-script.md`)
+- [x] The chord's name bigger; the Setup page's battery in the header, the raw reading gone
 - [ ] Manual, README, the emulator page, release notes; `./build.sh --release 1.1.0`; the site; push
       and the tag (when the user says)
 
