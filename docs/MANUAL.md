@@ -121,9 +121,16 @@ Mix page, back to the page you started from). The white keys from the lowest up:
   lit while playing. The Drums knob follows: 0 once both are out, 100 when one comes back. The
   mutes stay when you leave PERFORM. The music goes on underneath: a muted
   layer comes back where it would have been.
-- **6–10, moves, held:** as long as the key is down, every stab is thrown into the echo (Throw);
-  the filter, and the echo's band-pass with it, pushed open (Open) or shut (Shut); the kick dropped
-  (Kick drop); the echo pushed: everything into it, feeding back more (Echo). Letting go eases back.
+- **6–10, moves, held:** as long as the key is down:
+  - **Throw:** every stab is thrown into the echo.
+  - **Open:** the music thins and brightens over the kick: a resonant high-pass on everything but
+    the kick sweeps up to about 400 Hz, and the chords' filter opens three octaves and sings, the
+    echo's band-pass and the pings brighter with it.
+  - **Shut:** the music goes under water while the kick keeps pumping: a low-pass on everything but
+    the kick sweeps down to about 230 Hz, the chords' filter and the echo's band-pass closing with it.
+  - **Kick drop:** the kick dropped.
+  - **Echo:** the echo pushed: everything into it, feeding back more.
+  - Each sweeps in over about half a second; letting go eases back.
 - The black keys do nothing in PERFORM; MIDI notes in still change the scale.
 
 **The Chords page** (EDIT tapped). Eight slots, to write the chords yourself:

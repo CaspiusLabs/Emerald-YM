@@ -429,7 +429,7 @@ volatile uint32_t en_spec_w;
 static float scope_acc, spec_acc;
 static uint32_t scope_ph;
 static uint32_t mutes, perf, fxm, fxm_was;      /* performance: the layers muted, the moves held; the effects held */
-static float perf_sw, perf_echo;                /* the filter pushed open (+) or shut (-), the echo pushed */
+static float perf_sw, perf_echo, mb_c[4], mb_s[4];   /* (mb: Open's and Shut's filter on the music, the kick left out) */                /* the filter pushed open (+) or shut (-), the echo pushed */
 
 static int16_t par[P_NPARAMS];
 static uint32_t pool = 0xAADu;                  /* Ionian until told */
@@ -1088,7 +1088,7 @@ static void bell_voice(int l, int n, float vel, int32_t wait)
      * as turns, and its decay; Ratio, the sound page's: its ratio), and two more operators for the 4-op algorithms
      * (Glass's own: two pairs) */
     {
-        float idx = (0.2f + 5.0f * btone * btone) * LOOP_IDX[l] * (0.6f + 0.4f * vel) * PV[pv].idx * (1.0f / FM_TWO_PI),
+        float idx = (0.2f + 5.0f * btone * btone) * (1.0f + 0.4f * fm_maxf(perf_sw, 0.0f)) * LOOP_IDX[l] * (0.6f + 0.4f * vel) * PV[pv].idx * (1.0f / FM_TWO_PI),
               td = (0.08f + 0.5f * btone) * PV[pv].idec * (1.0f / 6.9f);
         fmpatch_t *pt = &v->pt;
         pt->alg = pv == 2 ? 4 : FM_ALG2;
@@ -1684,7 +1684,7 @@ static void heads_step(uint32_t n)
     want = fm_clampf((head2_t - head2) * (1.0f / (2.0f * TAPE_SR)), -vmax, vmax);
     head2_v += (want - head2_v) * fm_minf((float)n * (1.0f / EN_SR), 1.0f);
     /* the band-pass: ~60..500 Hz below, ~1.1..2.6 kHz above, moving up together */
-    sw = fm_clampf(0.45f + 0.35f * arcm + 0.25f * perf_sw + 0.35f * motion * mod[5].v, 0.0f, 1.0f);
+    sw = fm_clampf(0.45f + 0.35f * arcm + 0.3f * perf_sw + 0.35f * motion * mod[5].v, 0.0f, 1.0f);
     tape_hpc = 0.035f + 0.24f * sw * sw;
     tape_lpc = 0.58f + 0.3f * sw;
 }
@@ -2231,7 +2231,8 @@ static void render_stabs(uint32_t n)
      * drawbars, the noise against the saw), Resonance, Env (how far each stab opens the filter) */
     const float xa = rel(P_CATT), xc = rel(P_CCOL), up = fm_clampf(1.0f + xc, 0.0f, 2.0f), fx = fm_exp2f(1.5f * xc);
     const float g = chord_vol * 0.5f * CV[cv].gain,
-                k = fm_clampf(1.25f - 0.6f * fm_clampf(0.5f + 0.5f * arcm, 0.0f, 1.0f) - 0.55f * rel(P_CRES), 0.12f, 2.0f);
+                k = fm_clampf(1.25f - 0.6f * fm_clampf(0.5f + 0.5f * arcm, 0.0f, 1.0f) - 0.55f * rel(P_CRES) -
+                                 0.22f * fm_maxf(perf_sw, 0.0f), 0.12f, 2.0f);   /* (Open: it sings) */
     const float att = fm_clampf(CV[cv].att * fm_exp2f(-(xa > 0.0f ? 9.0f : 3.0f) * xa), 0.00004f, 0.3f),
                 fe = CV[cv].fenv * fm_maxf(1.0f + rel(P_CENV), 0.0f);
     float pc = 0.0f, ck = click;
@@ -2255,7 +2256,7 @@ static void render_stabs(uint32_t n)
         float l = 0.0f, r = 0.0f, v1, v2, v3, yl, yr, e;
         if (!(j & 31u)) {                        /* the filter: its base, its envelope, the sweep */
             float fc = cut_base * fm_exp2f(fe * st_fenv + 1.0f * arcm + perf_sw + 0.3f * motion * mod[0].v);
-            svf_coefs(st_c, fm_minf(fc, 12000.0f), k);
+            svf_coefs(st_c, fm_clampf(fc, 90.0f, 12000.0f), k);
             st_fenv *= st_fdec;
             pc = st_fenv * st_fenv;              /* (Tonewheel: the percussion, quicker still) */
             if (pt)
@@ -2757,6 +2758,15 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
     /* (the cloud listens as if Reverb were at 63 at least, so Cloud works with little reverb too) */
     const float cl_in = rev_send > 0.0001f ? fm_maxf(rev_send, 0.4f) / rev_send : 0.0f;
     float eg = (echo_send + (1.0f - echo_send) * perf_echo) * ein_gain, ca = cloud_amt * (sec == SEC_BREAK ? 1.4f : 1.0f);   /* more in a Break */
+    /* PERFORM's Open and Shut on the music, the kick left out on top: Shut a low-pass down to ~230 Hz, Open a
+     * resonant high-pass up to ~400 Hz (thin and bright), both swept with perf_sw */
+    const float shut = fm_maxf(-perf_sw, 0.0f), open = fm_maxf(perf_sw, 0.0f);
+    if (shut > 0.01f)
+        svf_coefs(mb_c, 14000.0f * fm_exp2f(-1.9f * shut), 0.55f);
+    else if (open > 0.01f)
+        svf_coefs(mb_c, 25.0f * fm_exp2f(1.33f * open), 0.5f);
+    else
+        mb_s[0] = mb_s[1] = mb_s[2] = mb_s[3] = 0.0f;
     for (j = 0; j < n; j++)
         mixl[j] = mixr[j] = rsend[j] = esend[j] = kickb[j] = 0.0f;
     render_stabs(n);
@@ -2788,8 +2798,20 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
         pl_back = 0.5f * (wl + wr);
         cl *= 1.0f + 9.0f * fx_cf;               /* (Freeze: the held cloud brought forward) */
         cr *= 1.0f + 9.0f * fx_cf;
-        l = ((mixl[j] * dry + 1.2f * el + 0.25f * xl + 1.1f * wl + 1.4f * cl) * dg + kickb[j] * (1.0f - 0.5f * fx_wash) + crl[j]) * 0.5f * gain;
-        r = ((mixr[j] * dry + 1.2f * er + 0.25f * xr + 1.1f * wr + 1.4f * cr) * dg + kickb[j] * (1.0f - 0.5f * fx_wash) + crr[j]) * 0.5f * gain;
+        l = (mixl[j] * dry + 1.2f * el + 0.25f * xl + 1.1f * wl + 1.4f * cl) * dg;
+        r = (mixr[j] * dry + 1.2f * er + 0.25f * xr + 1.1f * wr + 1.4f * cr) * dg;
+        if (shut > 0.01f) {
+            float bp;
+            l = svf_lp(mb_c, mb_s, l, &bp);
+            r = svf_lp(mb_c, mb_s + 2, r, &bp);
+        } else if (open > 0.01f) {               /* (the high-pass: what the low-pass and its band leave) */
+            float bp, lp = svf_lp(mb_c, mb_s, l, &bp);
+            l -= lp + mb_c[3] * bp;
+            lp = svf_lp(mb_c, mb_s + 2, r, &bp);
+            r -= lp + mb_c[3] * bp;
+        }
+        l = (l + kickb[j] * (1.0f - 0.5f * fx_wash) + crl[j]) * 0.5f * gain;
+        r = (r + kickb[j] * (1.0f - 0.5f * fx_wash) + crr[j]) * 0.5f * gain;
         if (mf_lp < 14.15f || mf_hp > 4.35f || mf_wah > 0.001f) {   /* the master filter */
             l = mfx(l, mf_s);
             r = mfx(r, mf_s + 6);
@@ -2849,9 +2871,9 @@ static void control(uint32_t n)                 /* once a chunk: the slow things
     rev_in_gain += ((en_frozen ? 0.0f : 1.0f) - rev_in_gain) * 0.01f;
     ein_gain += ((en_frozen ? 0.0f : 1.0f) - ein_gain) * 0.05f;
     fb_cap += ((en_playing ? 2.0f : 0.9f) - fb_cap) * fm_minf((float)n / (2.0f * EN_SR), 1.0f);
-    {   /* the performance's pushes, eased in and out (~150 ms, ~40 ms for the echo) */
-        float t = (perf & EN_PF_OPEN ? 2.0f : 0.0f) - (perf & EN_PF_CLOSE ? 2.5f : 0.0f);
-        perf_sw += (t - perf_sw) * fm_minf((float)n / (0.15f * EN_SR), 1.0f);
+    {   /* the performance's pushes, eased in and out (the filter swept over ~400 ms, three octaves; the echo ~40 ms) */
+        float t = (perf & EN_PF_OPEN ? 3.0f : 0.0f) - (perf & EN_PF_CLOSE ? 3.0f : 0.0f);
+        perf_sw += (t - perf_sw) * fm_minf((float)n / (0.4f * EN_SR), 1.0f);
         perf_echo += ((perf & EN_PF_ECHO || fxm >> EN_FX_SWELL & 1u ? 1.0f : 0.0f) - perf_echo) * fm_minf((float)n / (0.04f * EN_SR), 1.0f);
     }
     if (echo_len > 0.0f)                        /* for the screen's ripples */
