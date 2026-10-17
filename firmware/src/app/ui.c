@@ -1830,14 +1830,21 @@ static void draw_main(void)
     } else if (parent_of(ui.view) < 0) {         /* the chord, in the middle */
         char nm[16];
         chord_now(nm);
-        if (text_w(&FONT_B, nm) <= 44)
+        if (text_w(&FONT_C, nm) <= 66) {         /* (the bigger face, the rings behind it; a long name, smaller) */
+            int32_t w = text_w(&FONT_C, nm);
+            cv_round(CX - w / 2 - 3, CY - 9, w + 6, 19, 5, K_BG);
+            text_c(CX, CY - 11, &FONT_C, nm, en_frozen ? K_FROST : K_TEXT);
+        } else if (text_w(&FONT_B, nm) <= 72) {
+            int32_t w = text_w(&FONT_B, nm);
+            cv_round(CX - w / 2 - 3, CY - 7, w + 6, 15, 4, K_BG);
             text_c(CX, CY - 8, &FONT_B, nm, en_frozen ? K_FROST : K_TEXT);
+        }
         else
             text_c(CX, CY - 6, &FONT_XS, nm, en_frozen ? K_FROST : K_TEXT);
         if (proj.par[P_PMODE] && en_prog_pos >= 0 && prog_count()) {   /* the slots: where they are ("2/4") */
             char t[8];
             t[0] = (char)('1' + en_prog_pos), t[1] = '/', t[2] = (char)('0' + prog_count()), t[3] = 0;
-            text_c(CX, CY + 8, &FONT_XS, t, K_DIM);
+            text_c(CX, CY + 11, &FONT_XS, t, K_DIM);
         }
     }
     {   /* top left: the phrase's section and its eight bars; under it, the mode the keys are in */

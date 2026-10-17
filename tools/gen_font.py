@@ -19,7 +19,7 @@ FONTS = Path(__file__).resolve().parents[1] / "assets" / "fonts"
 # (name, file, px, scale, pixel, first, last): pixel fonts are rendered without
 # anti-aliasing at their design size and enlarged by an integer factor
 # X0X: five roles, XS (grid labels, units, hints), S (body), B (headers, names, the selected
-# row), M (knob values) and L (the big readout). Each set gives them a face and a pixel size,
+# row), M (knob values), L (the big readout) and C (the chord's name, over the ripples). Each set gives them a face and a pixel size,
 # chosen so the line height stays near the layout's 12 / 16 / 24 / 32. X0X_FONTSET picks one.
 # A TTF entry "file.ttf@wght=600" sets a variable font's axis.
 FONTSETS = {
@@ -27,27 +27,32 @@ FONTSETS = {
                  ("S", "ter-u16n.bdf", 16, 1, True, 32, 126),
                  ("B", "ter-u16b.bdf", 16, 1, True, 32, 126),
                  ("M", "ter-u24b.bdf", 24, 1, True, 32, 95),
-                 ("L", "ter-u32b.bdf", 32, 1, True, 32, 95)],
+                 ("L", "ter-u32b.bdf", 32, 1, True, 32, 95),
+                 ("C", "ter-u24b.bdf", 24, 1, True, 32, 126)],
     "barlow": [("XS", "BarlowSemiCondensed-SemiBold.ttf", 12, 1, False, 32, 126),
                ("S", "BarlowSemiCondensed-Medium.ttf", 15, 1, False, 32, 126),
                ("B", "BarlowSemiCondensed-Bold.ttf", 15, 1, False, 32, 126),
                ("M", "BarlowSemiCondensed-SemiBold.ttf", 23, 1, False, 32, 95),
-               ("L", "BarlowSemiCondensed-Bold.ttf", 31, 1, False, 32, 126)],
+               ("L", "BarlowSemiCondensed-Bold.ttf", 31, 1, False, 32, 126),
+               ("C", "BarlowSemiCondensed-Bold.ttf", 20, 1, False, 32, 126)],
     "inter": [("XS", "Inter[opsz,wght].ttf@wght=600", 11, 1, False, 32, 126),
               ("S", "Inter[opsz,wght].ttf@wght=500", 14, 1, False, 32, 126),
               ("B", "Inter[opsz,wght].ttf@wght=700", 14, 1, False, 32, 126),
               ("M", "Inter[opsz,wght].ttf@wght=650", 21, 1, False, 32, 95),
-              ("L", "Inter[opsz,wght].ttf@wght=700", 29, 1, False, 32, 95)],
+              ("L", "Inter[opsz,wght].ttf@wght=700", 29, 1, False, 32, 95),
+              ("C", "Inter[opsz,wght].ttf@wght=700", 19, 1, False, 32, 126)],
     "rajdhani": [("XS", "Rajdhani-Bold.ttf", 14, 1, False, 32, 126),
                  ("S", "Rajdhani-SemiBold.ttf", 17, 1, False, 32, 126),
                  ("B", "Rajdhani-Bold.ttf", 17, 1, False, 32, 126),
                  ("M", "Rajdhani-Bold.ttf", 26, 1, False, 32, 95),
-                 ("L", "Rajdhani-Bold.ttf", 35, 1, False, 32, 95)],
+                 ("L", "Rajdhani-Bold.ttf", 35, 1, False, 32, 95),
+                 ("C", "Rajdhani-Bold.ttf", 23, 1, False, 32, 126)],
     "chakra": [("XS", "ChakraPetch-SemiBold.ttf", 11, 1, False, 32, 126),
                ("S", "ChakraPetch-Medium.ttf", 14, 1, False, 32, 126),
                ("B", "ChakraPetch-Bold.ttf", 14, 1, False, 32, 126),
                ("M", "ChakraPetch-SemiBold.ttf", 21, 1, False, 32, 95),
-               ("L", "ChakraPetch-Bold.ttf", 29, 1, False, 32, 95)],
+               ("L", "ChakraPetch-Bold.ttf", 29, 1, False, 32, 95),
+               ("C", "ChakraPetch-Bold.ttf", 19, 1, False, 32, 126)],
 }
 import os  # noqa: E402
 FONTSET = os.environ.get("X0X_FONTSET", "barlow")    # the others need X0X_FONT_DIRS (not in assets/)
