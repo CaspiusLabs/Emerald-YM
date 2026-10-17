@@ -19,26 +19,31 @@ bar 18 KNOB 2: the pings up
 turn K2 12 60
 bar 20 white 4: the kick muted
 tapkey w3
-bar 22 white 4: the kick back
+bar 21 white 4: the kick back
 tapkey w3
 spin K4 -35
 expect par3 65
-bar 24 white 6 held: THROW
-key w5 down
-bar 26 white 7 held: OPEN
-key w5 up
+bar 22 black 3 and 4: the bass and the kick soloed
+tapkey b2
+tapkey b3
+bar 24 the solos off; white 7 held: THROW
+tapkey b2
+tapkey b3
 key w6 down
-bar 28 white 8 held: SHUT
+bar 26 white 8 held: OPEN
 key w6 up
 key w7 down
-bar 30 white 9 held: KICK DROP
+bar 28 white 9 held: SHUT
 key w7 up
 key w8 down
-bar 32 white 10 held: ECHO
+bar 30 white 10 held: KICK DROP
 key w8 up
 key w9 down
-bar 34 let go
+bar 32 white 11 held: ECHO
 key w9 up
+key w10 down
+bar 34 let go
+key w10 up
 bar 35 SEL: PERFORM off
 tap SEL
 bar 36 3. DUB HOLD: a tap on REC

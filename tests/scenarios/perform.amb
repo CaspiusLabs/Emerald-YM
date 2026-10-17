@@ -1,4 +1,5 @@
-# PERFORM (SEL): the keys mute the layers and, held, make the dub moves; SEL again gives the scale back
+# PERFORM (SEL): white 1-5 mute the layers, black 1-5 solo them, white 7-11 held make the dub moves; SEL again
+# gives the scale back
 listen
 wait 3000
 expect pool 0x6AD
@@ -11,20 +12,34 @@ said KICK OFF
 tapkey w0
 wait 200
 said CHORD OFF
-key w5 down
+key w6 down
 wait 200
 said THROW
 wait 1500
-key w5 up
-key w9 down
+key w6 up
+key w10 down
 wait 200
 said ECHO
 wait 1000
-key w9 up
-# a scale key does not change the scale while performing
+key w10 up
+# white 6, between the sets, does nothing
+tapkey w5
+wait 200
+said_none ON
+# a black key solos its layer (the scale stays): the others go quiet; more than one play together
 tapkey b0
 wait 200
 expect pool 0x6AD
+said SOLO CHORD
+tapkey b2
+wait 200
+said SOLO BASS
+tapkey b0
+wait 200
+said CHORD SOLO OFF
+tapkey b2
+wait 200
+said SOLO OFF
 tapkey w3
 wait 200
 said KICK ON

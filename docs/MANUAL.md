@@ -94,7 +94,7 @@ The drawing at the top shows them all; here they are in more detail.
 | PLAY | Play / rest. DUB-1 starts playing by itself when it's switched on. At rest, the echo's feedback eases under 90% so its tails die away, the reverb rings out and the crackle fades. Playing again starts from the first bar of a phrase. Lit while playing. |
 | REC | A tap: **dub hold**: the echo stops listening and repeats what it holds, sample for sample, for ever; the reverb stops listening too and rings on; the chord doesn't move. The stabs, pings and drums go on, dry, above it. Tap again to let go. Lit while held. Held: the **effects grid** (below). |
 | EDIT | A tap: the **Chords page** (below): eight slots to write the chords. Held (half a second): the next chord, at the start of the next bar (at once while resting; in dub hold, once you let go). |
-| SEL | **PERFORM**: the knobs become a mixer and the keys stop being the scale and play the layers (see below). Press again to go back; lit while on. |
+| SEL | **PERFORM**: the knobs become a mixer and the keys stop being the scale: they mute and solo the layers and make the dub moves (see below). Press again to go back; lit while on. Held: the key map. |
 | HOME | The Dub page: tempo and the machine's movement. Again, on the Dub page: the middle of the screen as ripples, a scope or a spectrum. |
 | ENV · ARP · LFO · SEQ | The layers' pages: Chord, Texture (the pings and the crackle), Bass, Drums. |
 | FX · GLO | The Space and Setup pages. The lit button shows the page. |
@@ -109,19 +109,27 @@ The drawing at the top shows them all; here they are in more detail.
 **PERFORM** (SEL). The knobs become the **Mix** page: KNOB 1–4 the levels of the chord, the pings,
 the bass and the drums (the same values as each layer's page). SELECT or a page's button still
 takes you to the other pages while you perform, and SEL again leaves PERFORM where you are (from the
-Mix page, back to the page you started from). The white keys from the lowest up:
+Mix page, back to the page you started from). The keys, from the lowest up, are three sets, with a
+dark key between them. Each key that does something is lit (hold SEL for this map on the screen):
 
-| Key (white) | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
-|---|---|---|---|---|---|---|---|---|---|---|
-| | Chord | Pings | Bass | Kick | Hats | Throw | Open | Shut | Kick drop | Echo |
+| | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| **Black keys:** solo | Chord | Pings | Bass | Kick | Hats | | | | | | |
+| **White keys:** mute, moves | Chord | Pings | Bass | Kick | Hats | (dark) | Throw | Open | Shut | Kick drop | Echo |
 
-- **1–3, the chord, pings and bass:** a press turns the layer's level (its Mix knob) to 0, the
+The first five black keys (F♯ G♯ A♯, C♯ D♯) sit above the five mutes, like a mixer's channel strip.
+
+- **White 1–3, the chord, pings and bass:** a press turns the layer's level (its Mix knob) to 0, the
   next to 100; the knob shows it. The key is lit while the level is up.
-- **4–5, the kick and the hats** (one Drums knob for both): a press mutes, another brings back;
+- **White 4–5, the kick and the hats** (one Drums knob for both): a press mutes, another brings back;
   lit while playing. The Drums knob follows: 0 once both are out, 100 when one comes back. The
   mutes stay when you leave PERFORM. The music goes on underneath: a muted
   layer comes back where it would have been.
-- **6–10, moves, held:** as long as the key is down:
+- **Black 1–5, solos:** a press solos the layer: the others go quiet (their echoes and reverb ring
+  out), and SOLO shows at the top of the screen. Solo more than one and they play together; press
+  again to let one go. A soloed key blinks; the white keys show what you hear. Solos stay when you
+  leave PERFORM, as the mutes do.
+- **White 7–11, moves, held** (lit; dark while held):
   - **Throw:** every stab is thrown into the echo.
   - **Open:** the music thins and brightens over the kick: a resonant high-pass on everything but
     the kick sweeps up to about 400 Hz, and the chords' filter opens three octaves and sings, the
@@ -131,7 +139,7 @@ Mix page, back to the page you started from). The white keys from the lowest up:
   - **Kick drop:** the kick dropped.
   - **Echo:** the echo pushed: everything into it, feeding back more.
   - Each sweeps in over about half a second; letting go eases back.
-- The black keys do nothing in PERFORM; MIDI notes in still change the scale.
+- The other keys do nothing in PERFORM; MIDI notes in still change the scale.
 
 **The Chords page** (EDIT tapped). Eight slots, to write the chords yourself:
 

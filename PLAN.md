@@ -99,7 +99,25 @@ measurement (renders analysed for level, timing and spectrum).
 - [ ] **Sound design** with your ears: the stab's character, the kick, the bass, the hats, the
       echo's colour, the cloud, the crackle (a round of its own)
 
+## Release 1.1.0 (in progress, 2026-10-17)
+
+- [x] PERFORM's Open and Shut you can hear (a filter on the music, the kick left out)
+- [ ] PERFORM reworked: white 1-5 mutes, black 1-5 solos (above the mutes, a mixer's strip), white 6
+      dark, white 7-11 the moves; every key that does something lit (a solo blinks while on, a move
+      goes dark while held); the key map on SEL's card; SOLO on the screen
+- [ ] Ping lock: at Evolve 0 the loops stay as they are; SAVE keeps them with the piece
+- [ ] The Feedback knob shows the real loop gain (45-112%)
+- [ ] The video take again with the new keys (`tests/film/00-take.amb`, `build/video-script.md`)
+- [ ] Manual, README, the emulator page, release notes; `./build.sh --release 1.1.0`; the site; push
+      and the tag (when the user says)
+
 ## Next: after 1.0.0 (the user's ideas, 2026-10-17)
+
+**The main direction (the user, 2026-10-17):** after the small fixes and ideas, expand how playable
+the instrument is. DUB-1 should be something you play live, not only leave running. PERFORM (mutes,
+solos, moves), the effects grid and dub hold are the start. More hands-on control comes next, and
+each idea below is weighed by how much it adds to playing it.
+
 
 - [ ] **A video for YouTube and other platforms** (the most urgent). Real action and sound from the
       simulator, not stills: the screen inside a drawn FM-1 panel, with the buttons and keys lit as they
@@ -112,9 +130,22 @@ measurement (renders analysed for level, timing and spectrum).
         printing the cue sheet), so the music runs unbroken; the edit cuts between the framings only.
         The script with its cues: `build/video-script.md`
   - [ ] Cut, titles, voice-over or captions (the user, in DaVinci)
-- [ ] **Projects outside the FM-1:** save and load whole projects (eight pieces: songs, sounds,
-      everything) from the web page, over USB. Then write other sets of eight pieces for people to
-      explore.
+- [ ] **Projects outside the FM-1, and new sets of pieces for people to load** (the user's idea).
+  - **What travels:** a whole project is the eight pieces with everything in them: tempo, scale and
+    root, the voices and their sound and FM pages, the mix, the echo and space, the chord slots, the
+    drum patterns. It's the same data the FM-1 keeps in flash (`project_t`, `PROJ_FORMAT` 8, magic
+    "DUB1"), about 2 KB.
+  - **Out and in:** from a web page (the installer's site), over USB-MIDI SysEx, the way the screen
+    reader already talks to the FM-1. "Save to file" reads the project into a `.dub1` file; "Load"
+    writes one back. The firmware checks the magic, the format and a CRC before taking it, and keeps
+    a single piece or all eight.
+  - **New sets of pieces:** write other banks of eight for people to explore, for example a deep and
+    slow set, a Chain Reaction-style set, a minimal set, or a set built on two chords. Publish them
+    as a library on the site, each with a short listen, loadable in one click. Load them in the
+    emulator too: try before you load.
+  - **Later:** people share their own `.dub1` files, and a set can carry its own names.
+  - **To decide:** whether a loaded set replaces the eight pieces or goes into slots, and whether
+    the firmware ships with more than one bank.
 - [ ] **Nail the sounds:** some voices sound too alike. Make each voice on ALGORITHM clearly its own.
 - [ ] **The live side, further:** more to play by hand (see the Reddit feedback below).
 - [ ] **From the feedback (Reddit, 2026-10-17):**

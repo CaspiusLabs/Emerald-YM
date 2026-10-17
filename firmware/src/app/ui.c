@@ -108,6 +108,7 @@ static struct {
     uint8_t perf, perf_from;           /* PERFORM (SEL): the keys play the mutes and the moves, the knobs
                                         * the mix; the page it was started from */
     uint32_t mutes, moves;             /* the layers muted (EN_M_*), the moves held (EN_PF_*) */
+    uint32_t solo;                     /* the layers soloed (EN_M_*): the others muted while any is */
     uint32_t fx;                       /* the effects held (EN_FX_*), REC's grid */
     uint8_t slot, chords_from;         /* the Chords page: the slot edited; the page it was opened from */
     uint8_t lane;                      /* the Pattern page: the lane edited */
@@ -403,20 +404,51 @@ static void set_piece(int i)                    /* the piece playing kept as it 
 }
 
 /* ----------------------------------------------------------- PERFORM --- */
-/* SEL's mode: the white keys from F3 up. The first five mute and bring back a layer (a press each); the next
- * five are dub moves, held as long as the key is: every stab thrown into the echo, the filter pushed open,
- * pushed shut, the kick dropped, the echo pushed (all in, feeding back). The black keys and the rest do
- * nothing; MIDI notes in still change the scale */
-static const uint8_t PERF_KEY[10] = {0, 2, 4, 6, 7, 9, 11, 12, 14, 16};   /* white keys 1..10, as key numbers */
-static const char *const PERF_NAME[10] = {"CHORD", "PINGS", "BASS", "KICK", "HATS", "THROW", "OPEN", "SHUT",
-                                           "KICK DROP", "ECHO"};
+/* SEL's mode, on the keys from F3 up, in three sets, a dark key between:
+ *   white 1-5    the layers, a press each: off and back (chord, pings, bass, kick, hats)
+ *   black 1-5    the same layers soloed, a press each (more than one: they play together; the rest muted)
+ *   white 7-11   dub moves, held as long as the key is: every stab thrown into the echo, the filter pushed
+ *                open, pushed shut, the kick dropped, the echo pushed (all in, feeding back)
+ * Each key that does something is lit: a layer while it sounds, a solo (blinking while on), a move (dark
+ * while held). The rest do nothing; MIDI notes in still change the scale */
+#define PERF_N 15
+static const uint8_t PERF_KEY[PERF_N] = {0, 2, 4, 6, 7,          /* white 1-5: the layers */
+                                         11, 12, 14, 16, 18,     /* white 7-11: the moves */
+                                         1, 3, 5, 8, 10};        /* black 1-5: the solos */
+static const char *const PERF_NAME[PERF_N] = {"CHORD", "PINGS", "BASS", "KICK", "HATS", "THROW", "OPEN", "SHUT",
+                                              "KICK DROP", "ECHO", "CHORD", "PINGS", "BASS", "KICK", "HATS"};
+static void perf_mutes(void)                     /* to the engine: the mutes, and with a solo, all but it */
+{
+    en_mute(ui.mutes | (ui.solo ? 0x1Fu & ~ui.solo : 0u));
+}
+static int perf_sounds(int i)                    /* layer i (0..4) heard: its level up, not muted, not soloed out */
+{
+    static const uint8_t LEVEL[3] = {P_CHORD, P_PINGS, P_BASS};
+    if (ui.solo && !(ui.solo >> i & 1u))
+        return 0;
+    return i < 3 ? proj.par[LEVEL[i]] > 0 : !(ui.mutes >> i & 1u);
+}
 static void perf_key(uint32_t key, int down)
 {
     int i;
-    for (i = 0; i < 10 && PERF_KEY[i] != key; i++)
+    for (i = 0; i < PERF_N && PERF_KEY[i] != key; i++)
         ;
-    if (i >= 10)
+    if (i >= PERF_N)
         return;
+    if (i >= 10) {                               /* a solo: on or off, a press each */
+        uint32_t m = 1u << (i - 10);
+        if (!down)
+            return;
+        ui.solo ^= m;
+        perf_mutes();
+        if (ui.solo & m)
+            say("SOLO", PERF_NAME[i]);
+        else if (ui.solo)                        /* (one let go, others still soloed) */
+            say(PERF_NAME[i], "SOLO OFF");
+        else
+            say("SOLO", "OFF");
+        return;
+    }
     if (i < 3) {                                 /* the chord, pings, bass: their Mix knob to 0 or 100 */
         static const uint8_t LEVEL[3] = {P_CHORD, P_PINGS, P_BASS};
         int v;
@@ -435,7 +467,7 @@ static void perf_key(uint32_t key, int down)
         if (!down)
             return;
         ui.mutes ^= 1u << i;
-        en_mute(ui.mutes);
+        perf_mutes();
         /* the Drums knob follows: 0 once both are out, 100 when one comes back (from 0) */
         if ((ui.mutes & (EN_M_KICK | EN_M_HATS)) == (EN_M_KICK | EN_M_HATS))
             knob_set(P_DRUMS, 0);
@@ -1538,7 +1570,7 @@ static void draw_lanes(void)                     /* below: the bar, a lane a lay
 
 /* a button's card (help_tick): its name, then what it does, in the garden's place. A line starting with a
  * space goes on from the one before (a screen reader joins them: sp_line) */
-#define HELP_LINES 4
+#define HELP_LINES 5
 static const char *const BTN_LABEL[NB] = {"FX", "SEL", "ENV", "LFO", "EDIT", "GLO", "HOME", "SAVE", "ARP", "SEQ",
                                           "PLAY", "REC", "OCT-", "OCT+"};
 static int help_lines(int b, const char *l[HELP_LINES])
@@ -1554,7 +1586,7 @@ static int help_lines(int b, const char *l[HELP_LINES])
     case B_FX: L("THE SPACE"); L("ECHO, ECHO TIME, FEEDBACK,"); L("REVERB"); break;
     case B_GLO: L("SETUP"); L("ROOT, TUNE, MIDI OUT, LIGHTS"); break;
     case B_EDIT: L("TAP: THE CHORDS (8 SLOTS:"); L(" THE KEYS, THE SLOT'S ROOT)"); L("HOLD: THE NEXT CHORD"); break;
-    case B_SEL: L("PERFORM: KNOBS MIX; KEYS 1-5"); L(" MUTE CHORD PINGS BASS KICK HATS;"); L("6-10 HELD: THROW OPEN SHUT"); L(" KICK DROP ECHO"); break;
+    case B_SEL: L("PERFORM: THE KNOBS MIX"); L("WHITE 1-5 MUTE, BLACK 1-5 SOLO:"); L(" CHORD PINGS BASS KICK HATS"); L("WHITE 7-11 HELD: THROW OPEN SHUT"); L(" KICK DROP ECHO"); break;
     case B_REC: L("TAP: DUB HOLD (THE ECHO"); L(" REPEATS WHAT IT HOLDS)"); L("HOLD: THE EFFECTS GRID,"); L(" PLAYED ON THE WHITE KEYS"); break;
     case B_OCTDN: L("THE PINGS AN OCTAVE DOWN"); L("WITH OCT+, 5 S: UPDATE MODE"); break;
     case B_OCTUP: L("THE PINGS AN OCTAVE UP"); L("WITH OCT-, 5 S: UPDATE MODE"); break;
@@ -1574,7 +1606,7 @@ static void draw_help(void)
     cv_rect(16, 34, 208, 6, K_TEXT);
     text_c(120, 18, &FONT_B, BTN_LABEL[ui.help - 1], K_BG);
     for (k = 0; k < n; k++)
-        text_c(120, 56 + k * 20, &FONT_S, l[k] + (l[k][0] == ' '), K_TEXT);
+        text_c(120, (n > 4 ? 45 : 56) + k * (n > 4 ? 17 : 20), &FONT_S, l[k] + (l[k][0] == ' '), K_TEXT);
 }
 
 /* the effects grid, in the main screen's place while REC is held: four rows of four, the first of each lit
@@ -1745,7 +1777,7 @@ static void draw_main(void)
         h = hash(h, en_lane[i] | (uint32_t)proj.par[i < 4 ? i : 0] << 16);
     h = hash(h, en_drum_pos[0] | (uint32_t)q16(en_duck) << 4 | (uint32_t)q16(en_pad_level) << 9 | (uint32_t)q16(en_bass_level) << 14);
     h = hash(h, (uint32_t)(ui.view == V_SETUP ? plat_battery() + 1 : 0) | (uint32_t)(en_prog_pos + 1) << 12);
-    h = hash(h, (uint32_t)(en_drift * 40.0f) | en_section << 8 | (uint32_t)en_phrase_bar << 12 | (uint32_t)ui.perf << 16);
+    h = hash(h, (uint32_t)(en_drift * 40.0f) | en_section << 8 | (uint32_t)en_phrase_bar << 12 | (uint32_t)ui.perf << 16 | ui.solo << 20);
     for (i = 0; i < EN_NLOOP; i++)
         h = hash(h, (uint32_t)q16(en_loop_glow[i]) | (uint32_t)en_loop_pos[i] << 8);
     for (i = 0; i < EN_NDRUM; i++)
@@ -1803,6 +1835,8 @@ static void draw_main(void)
     }
     if (ui.perf)
         cv_text(232 - text_w(&FONT_XS, "PERFORM"), 18, &FONT_XS, "PERFORM", K_ACC);
+    if (ui.solo)                                 /* a solo on (in PERFORM or kept after it) */
+        cv_text(232 - text_w(&FONT_XS, "PERFORM") - 6 - text_w(&FONT_XS, "SOLO"), 18, &FONT_XS, "SOLO", K_CLAP);
     if (en_frozen) {                             /* the way to the next chord, top right (dub hold: hold) */
         cv_text(232 - text_w(&FONT_XS, "hold"), 2, &FONT_XS, "hold", K_FROST);
     } else if (en_drift_bars(proj.par[P_DRIFT])) {
@@ -1921,18 +1955,17 @@ static void leds(void)
         for (i = 0; i < EN_NFX; i++)
             if (!(i & 3) || (ui.fx >> i & 1u))
                 k |= 1u << FX_KEY[i];
-    } else if (ui.perf) {                        /* PERFORM: the layers playing, the moves held */
+    } else if (ui.perf) {                        /* PERFORM: the layers heard, the solos, the moves (dark while held) */
+        const int blink = (plat_ms() / 250u) & 1u;
         b |= 1u << B_SEL;
-        static const uint8_t LEVEL[3] = {P_CHORD, P_PINGS, P_BASS};
-        for (i = 0; i < 3; i++)
-            if (proj.par[LEVEL[i]] > 0)
+        for (i = 0; i < 5; i++) {
+            if (perf_sounds((int)i))
                 k |= 1u << PERF_KEY[i];
-        for (i = 3; i < 5; i++)
-            if (!(ui.mutes >> i & 1u))
-                k |= 1u << PERF_KEY[i];
-        for (i = 0; i < 5; i++)
-            if (ui.moves >> i & 1u)
+            if (!(ui.moves >> i & 1u))
                 k |= 1u << PERF_KEY[5 + i];
+            if (!(ui.solo >> i & 1u) || blink)
+                k |= 1u << PERF_KEY[10 + i];
+        }
     } else if (proj.leds) {
         for (i = 0; i < NKEYS; i++)
             if (ap >> ((5u + i) % 12u) & 1u)
@@ -2369,6 +2402,14 @@ static void speak_dump(void)
         msg_text("REMOVED", EN_NOTE_NAME[x], t);
         sp_print("MSG", t);
     }
+    for (x = 10; x < PERF_N; x++) {
+        msg_text("SOLO", PERF_NAME[x], t);
+        sp_print("MSG", t);
+        msg_text(PERF_NAME[x], "SOLO OFF", t);
+        sp_print("MSG", t);
+    }
+    msg_text("SOLO", "OFF", t);
+    sp_print("MSG", t);
     for (x = 0; x < 10; x++) {
         msg_text(PERF_NAME[x], x < 5 ? "OFF" : 0, t);
         sp_print("MSG", t);
