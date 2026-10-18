@@ -7,7 +7,8 @@ keys as they are pressed, encoded with ffmpeg.
   tools/film.py FILM WAV OUT.mp4 [--layout split|panel|screen] [--fps 30]
 
 Layouts: split (1920x1080: the panel on the left, the screen large on the right), panel (1920x1080: the
-panel alone), screen (1080x1080: the screen alone, 4x). Needs Pillow, numpy and ffmpeg."""
+panel alone), screen (1080x1080: the screen alone, 4x). Each press of a button or key, and each turn of a knob, sends a short teal
+ripple out from it (in the panel framings). Needs Pillow, numpy and ffmpeg."""
 import argparse
 import os
 import struct
@@ -30,6 +31,7 @@ BLACK_AFTER = [0, 1, 2, 4, 5, 7, 8, 9, 11, 12, 14]
 BODY, TRAY, KEY_W, KEY_B, KNOB, BTNC, LABEL = "#3a3d42", "#26282c", "#d9dadc", "#c9cacd", "#1f2124", "#2e3135", "#e8e8ea"
 LIT_BTN, LIT_TXT, LIT_KW, LIT_KB, HELD = "#f28a5a", "#2a140a", "#f6b48e", "#4cc3b6", "#f28a5a"
 GROUND = (13, 16, 20)
+RIP_C, RIP_FR = (92, 196, 204), 20            # a press's ripple: the screen's teal (K_ACC), 2/3 s at 30 fps
 FONT = os.path.join(os.path.dirname(__file__), "..", "assets", "fonts", "BarlowSemiCondensed-SemiBold.ttf")
 SS = 2                                         # supersampling for the static drawing and the sprites
 
@@ -174,6 +176,9 @@ def main():
                           stdin=subprocess.PIPE)
     angle = {e: 0.0 for e in range(NE)}
     n = 0
+    prev_b = prev_k = 0
+    rip = []                                   # press ripples: (kind, x, y, w, h, first frame), panel units
+    knob_last = {e: -99 for e in range(NE)}
     with open(a.film, "rb") as f:
         while True:
             rec = f.read(FRAME)
@@ -186,6 +191,21 @@ def main():
                 angle[e] += 18.0 * turns[e]
             scrn = screen_rgb(rec[HDR * 4:])
             im = canvas.copy()
+            if ps:                             # a press: a ripple from the control (a knob: one per turn, ~1/3 s apart)
+                for b in P.buttons:
+                    bit = 1 << BTN[b[4]]
+                    if held_b & bit and not prev_b & bit:
+                        rip.append(("box", b[0], b[1], b[2], b[3], n))
+                for k, (x, y, w, hh, _) in P.keys.items():
+                    if held_k >> k & 1 and not prev_k >> k & 1:
+                        rip.append(("box", x, y, w, hh, n))
+                for x, y, r, label, role in P.knobs:
+                    if role != "master" and turns[role] and n - knob_last[role] > 10:
+                        rip.append(("ring", x - r, y - r, 2 * r, 2 * r, n))
+                    if role != "master" and turns[role]:
+                        knob_last[role] = n
+                prev_b, prev_k = held_b, held_k
+                rip = [q for q in rip if n - q[5] < RIP_FR]
             if ps:
                 for b in P.buttons:
                     bit = BTN[b[4]]
@@ -215,6 +235,22 @@ def main():
                     d.line((p0, p1), fill=LABEL, width=wd)
                     for q in (p0, p1):
                         d.ellipse((q[0] - wd / 2, q[1] - wd / 2, q[0] + wd / 2, q[1] + wd / 2), fill=LABEL)
+                if rip:
+                    lay = Image.new("RGBA", im.size, (0, 0, 0, 0))
+                    dl = ImageDraw.Draw(lay)
+                    for kind, x, y, w, hh, f0 in rip:
+                        t = (n - f0) / RIP_FR
+                        g = (4 + 26 * (t * (2 - t))) * ps          # (out fast, then slower)
+                        al = int(255 * (1 - t) ** 1.5)
+                        box = (off[0] + x * ps - g, off[1] + y * ps - g, off[0] + (x + w) * ps + g, off[1] + (y + hh) * ps + g)
+                        wd = max(2, int(round(3.5 * ps * (1 - 0.5 * t))))
+                        if kind == "ring":
+                            dl.ellipse(box, outline=RIP_C + (al,), width=wd)
+                        else:
+                            rad = min(w, hh) * ps / 2 + g if w < 30 else 9 * ps + g
+                            dl.rounded_rectangle(box, rad, outline=RIP_C + (al,), width=wd)
+                    im = Image.alpha_composite(im.convert("RGBA"), lay).convert("RGB")
+                    d = ImageDraw.Draw(im)
                 if a.layout == "split":        # the panel's own screen, small
                     sz = int(200 * ps)
                     im.paste(scrn.resize((sz, sz), Image.LANCZOS), (off[0] + int(318 * ps), off[1] + int(62 * ps)))
