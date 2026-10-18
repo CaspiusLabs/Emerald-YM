@@ -288,10 +288,10 @@ def main():
         scr = (480 * k, 60 * k, 960 * k)
     elif a.layout == "screen":
         W, H, ps, scr, off = 1080 * k, 1080 * k, None, (60 * k, 60 * k, 960 * k), None
-    elif a.layout == "vertical":               # a short: the screen (3x) on top, the panel under it; clear of the
+    elif a.layout == "vertical":               # a short: the screen (3x) on top, the panel under it, centred; clear of the
         W, H, ps = 1080 * k, 1920 * k, 0.9 * k  # Shorts' own overlays (the bottom fifth, the right edge's buttons)
         scr = (180 * k, 170 * k, 720 * k)
-        off = (30 * k, 930 * k)
+        off = (90 * k, 930 * k)                 # (centred, as the screen)
     elif a.layout == "panel":
         W, H, ps = 1920 * k, 1080 * k, 1.8 * k
         off = ((W - int(1000 * ps)) // 2, (H - int(640 * ps)) // 2)
