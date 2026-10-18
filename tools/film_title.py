@@ -61,7 +61,7 @@ def frame(f, W, H, s, fonts, version):
         d.text(P(120, 204 + 8), "Dub techno for the FM-1", font=fonts[5],
                fill=mix(K_BG, K_ACC, 16 if f >= 23 else (f - 19) * 4), anchor="mm")
     if f >= 22:
-        d.text(P(120, 224 + 7.5), "DUB-1\u2002" + version, font=fonts[6], fill=K_DIM, anchor="mm")
+        d.text(P(120, 224 + 7.5), "DUB-1  " + version, font=fonts[6], fill=K_DIM, anchor="mm")
     return im
 
 
