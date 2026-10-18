@@ -16,7 +16,7 @@ import subprocess
 import sys
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 NE = 7
 HDR = 6 + NE
@@ -137,6 +137,28 @@ def mix(a, b, t):
     return "#%02x%02x%02x" % tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
 
 
+def lcd(scrn, sz):
+    """the screen as a close-up of the real one (--look lcd): each pixel a cell with a thin dark gap, a faint
+    glow over it; a whole number of cells a pixel, so nothing is smoothed away"""
+    k = max(1, sz // 240)
+    a = np.asarray(scrn.resize((240 * k, 240 * k), Image.NEAREST)).astype(np.float32)
+    m = LCD_MASK.get(k)
+    if m is None:
+        m = np.ones((240 * k, 240 * k, 1), np.float32)
+        g = max(1, k // 4)                       # (the gap: a quarter of a cell)
+        for j in range(g):
+            m[k - 1 - j::k, :, :] *= 0.55
+            m[:, k - 1 - j::k, :] *= 0.55
+        LCD_MASK[k] = m
+    im = Image.fromarray(np.clip(a * m, 0, 255).astype(np.uint8))
+    glow = scrn.resize((240 * k, 240 * k), Image.NEAREST).filter(ImageFilter.GaussianBlur(0.75 * k))
+    im = Image.blend(im, glow, 0.18)
+    return im if im.size[0] == sz else im.resize((sz, sz), Image.LANCZOS)
+
+
+LCD_MASK = {}
+
+
 def screen_rgb(raw):
     v = np.frombuffer(raw, dtype=">u2").reshape(240, 240).astype(np.uint32)
     rgb = np.stack([(v >> 11 & 31) * 255 // 31, (v >> 5 & 63) * 255 // 63, (v & 31) * 255 // 31], -1)
@@ -150,18 +172,21 @@ def main():
     ap.add_argument("out")
     ap.add_argument("--layout", default="split", choices=["split", "panel", "screen"])
     ap.add_argument("--fps", type=int, default=30)
+    ap.add_argument("--scale", type=int, default=1, choices=[1, 2], help="2: 4K (3840x2160; the screen layout 2160x2160)")
+    ap.add_argument("--look", default="lcd", choices=["lcd", "pixels"], help="the large screen: lcd (a close-up, the default) or plain pixels")
     a = ap.parse_args()
 
+    k = a.scale                                # (2: 4K, the same layout doubled, the screen 8x)
     if a.layout == "screen":
-        W, H, ps, scr, off = 1080, 1080, None, (60, 60, 960), None
+        W, H, ps, scr, off = 1080 * k, 1080 * k, None, (60 * k, 60 * k, 960 * k), None
     elif a.layout == "panel":
-        W, H, ps = 1920, 1080, 1.8
+        W, H, ps = 1920 * k, 1080 * k, 1.8 * k
         off = ((W - int(1000 * ps)) // 2, (H - int(640 * ps)) // 2)
         scr = (off[0] + int(318 * ps), off[1] + int(62 * ps), int(200 * ps))
     else:
-        W, H, ps = 1920, 1080, 0.85
-        off = (30, (H - int(640 * ps)) // 2)
-        scr = (W - 960 - 40, 60, 960)          # 4x, on the right
+        W, H, ps = 1920 * k, 1080 * k, 0.85 * k
+        off = (30 * k, (H - int(640 * ps)) // 2)
+        scr = (W - 1000 * k, 60 * k, 960 * k)  # 4x (8x at 4K), on the right
     canvas = Image.new("RGB", (W, H), GROUND)
     if ps:
         P = Panel(ps)
@@ -255,7 +280,10 @@ def main():
                     sz = int(200 * ps)
                     im.paste(scrn.resize((sz, sz), Image.LANCZOS), (off[0] + int(318 * ps), off[1] + int(62 * ps)))
             x, y, sz = scr
-            im.paste(scrn.resize((sz, sz), Image.NEAREST if sz % 240 == 0 else Image.LANCZOS), (x, y))
+            if a.look == "lcd":
+                im.paste(lcd(scrn, sz), (x, y))
+            else:
+                im.paste(scrn.resize((sz, sz), Image.NEAREST if sz % 240 == 0 else Image.LANCZOS), (x, y))
             ff.stdin.write(im.tobytes())
             n += 1
     ff.stdin.close()
