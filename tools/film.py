@@ -4,11 +4,14 @@
 FM-1's panel (the web emulator's drawing, web/emu/index.html) with the screen, the lights and the buttons and
 keys as they are pressed, encoded with ffmpeg.
 
-  tools/film.py FILM WAV OUT.mp4 [--layout split|panel|screen] [--fps 30]
+  tools/film.py FILM WAV OUT.mp4 [--layout split|panel|screen|vertical|center] [--fps 30]
+  tools/film.py FILM - OUT.mp4 ...        (WAV "-" or --no-audio: the video alone, to mux later)
 
 Layouts: split (1920x1080: the panel on the left, the screen large on the right), panel (1920x1080: the
 panel alone), screen (1080x1080: the screen alone, 4x), vertical (1080x1920, a short: the screen large on top,
-the panel under it). Each press of a button or key, and each turn of a knob, sends a short teal
+the panel under it), center (1920x1080: the screen alone, 4x, in the middle, a faint glow around it; for the
+long listening videos). --captions FILE.tsv (seconds<TAB>text): a caption in the lower left, each for 8 s,
+fading in and out. FILM may be a named pipe (amb_host writing to it as it runs: nothing on disk). Each press of a button or key, and each turn of a knob, sends a short teal
 ripple out from it (in the panel framings). Needs Pillow, numpy and ffmpeg."""
 import argparse
 import os
@@ -34,6 +37,8 @@ LIT_BTN, LIT_TXT, LIT_KW, LIT_KB, HELD = "#f28a5a", "#2a140a", "#f6b48e", "#4cc3
 GROUND = (13, 16, 20)
 RIP_C, RIP_FR = (92, 196, 204), 20            # a press's ripple: the screen's teal (K_ACC), 2/3 s at 30 fps
 FONT = os.path.join(os.path.dirname(__file__), "..", "assets", "fonts", "BarlowSemiCondensed-SemiBold.ttf")
+CAP_FONT = os.path.join(os.path.dirname(__file__), "..", "assets", "fonts", "BarlowSemiCondensed-Medium.ttf")
+CAP_C, CAP_A, CAP_S, CAP_F = (222, 228, 232), 0.85, 10.0, 1.5   # a caption: light grey at 85%, 10 s, 1.5 s fades
 SS = 2                                         # supersampling for the static drawing and the sprites
 
 
@@ -160,6 +165,101 @@ def lcd(scrn, sz):
 LCD_MASK = {}
 
 
+def glow_ground(W, H, scr, k):
+    """the ground for the center layout: a soft, faint glow around the screen, as of its backlight"""
+    x, y, sz = scr
+    lay = Image.new("L", (W, H), 0)
+    ImageDraw.Draw(lay).rectangle((x - 6 * k, y - 6 * k, x + sz + 6 * k, y + sz + 6 * k), fill=255)
+    lay = lay.filter(ImageFilter.GaussianBlur(36 * k))
+    g = np.asarray(lay).astype(np.float32)[..., None] / 255.0 * 0.10
+    base = np.array(GROUND, np.float32) * (1 - g) + np.array(RIP_C, np.float32) * g
+    return base.astype(np.uint8)
+
+
+def load_captions(path, W, H, k):
+    """--captions: (start s, end s, x, y, premultiplied rgb float array, alpha float array) a caption, each drawn
+    once with a soft shadow, in the lower left. "4:15 · Pressure" (a " · " in it) is drawn as a title: the first
+    part small and grey, the second large below it"""
+    out = []
+    small = ImageFont.truetype(CAP_FONT, 40 * k)
+    big = ImageFont.truetype(os.path.join(os.path.dirname(CAP_FONT), "BarlowSemiCondensed-Bold.ttf"), 84 * k)
+    for line in open(path, encoding="utf-8"):
+        if not line.strip() or line.startswith("#"):
+            continue
+        t, text = line.rstrip("\n").split("\t", 1)
+        t = float(t)
+        parts = text.split(" \u00b7 ", 1)
+        lines = [(parts[0], small, 0.7), (parts[1], big, 1.0)] if len(parts) == 2 else [(text, small, 1.0)]
+        pad = 28 * k
+        gap = 10 * k
+        boxes = [f.getbbox(s_) for s_, f, _ in lines]
+        w = max(b_[2] for b_ in boxes) + 2 * pad
+        h = sum(b_[3] for b_ in boxes) + gap * (len(lines) - 1) + 2 * pad
+        sh = Image.new("L", (w, h), 0)
+        tx = Image.new("L", (w, h), 0)
+        lum = Image.new("L", (w, h), 0)              # (each line's brightness: the time dimmer)
+        y = pad
+        for (s_, f, v), b_ in zip(lines, boxes):
+            ImageDraw.Draw(sh).text((pad + 3 * k, y + 4 * k), s_, font=f, fill=255)
+            ImageDraw.Draw(tx).text((pad, y), s_, font=f, fill=255)
+            ImageDraw.Draw(lum).text((pad, y), s_, font=f, fill=int(255 * v))
+            y += b_[3] + gap
+        sh = np.asarray(sh.filter(ImageFilter.GaussianBlur(7 * k))).astype(np.float32) / 255.0 * 0.75
+        tx = np.asarray(tx).astype(np.float32) / 255.0 * CAP_A
+        lum = np.asarray(lum).astype(np.float32) / 255.0
+        a = tx + sh * (1 - tx)                   # the text over its shadow (black)
+        rgb = (lum * CAP_A)[..., None] * np.array(CAP_C, np.float32)   # (premultiplied: the time line dimmer)
+        X, Y = 64 * k - pad, H - 60 * k - h + pad
+        out.append((t, t + CAP_S, X, Y, rgb, a))
+    return out
+
+
+def caption_on(frame, caps, sec):
+    for t0, t1, X, Y, rgb, a in caps:
+        if t0 <= sec < t1:
+            v = min(1.0, (sec - t0) / CAP_F, (t1 - sec) / CAP_F)
+            h, w = a.shape
+            reg = frame[Y:Y + h, X:X + w].astype(np.float32)
+            frame[Y:Y + h, X:X + w] = (reg * (1 - a[..., None] * v) + rgb * v).astype(np.uint8)
+
+
+def center_screen(job):
+    """(a worker) one frame's screen, drawn large: its bytes"""
+    raw, sz, look = job
+    scrn = screen_rgb(raw)
+    return (lcd(scrn, sz) if look == "lcd" else scrn.resize((sz, sz), Image.NEAREST)).tobytes()
+
+
+def run_center(a, ff, ground, scr, caps):
+    """the center layout: the frames read in order (FILM may be a pipe being written), their screens drawn by a
+    pool of processes, at most a window of them ahead (so a fast writer is not read into memory), each put on
+    the precomputed ground with its caption and sent to ffmpeg in order"""
+    from collections import deque
+    from concurrent.futures import ProcessPoolExecutor
+    x, y, sz = scr
+    nw = max(2, min(8, (os.cpu_count() or 4) // 2))
+    q, n = deque(), 0
+    with open(a.film, "rb") as f, ProcessPoolExecutor(nw) as pool:
+        def put(buf):
+            nonlocal n
+            fr = ground.copy()
+            fr[y:y + sz, x:x + sz] = np.frombuffer(buf, np.uint8).reshape(sz, sz, 3)
+            if caps:
+                caption_on(fr, caps, n / a.fps)
+            ff.stdin.write(fr.tobytes())
+            n += 1
+        while True:
+            rec = f.read(FRAME)
+            if len(rec) < FRAME:
+                break
+            q.append(pool.submit(center_screen, (rec[HDR * 4:], sz, a.look)))
+            if len(q) >= 4 * nw:
+                put(q.popleft().result())
+        while q:
+            put(q.popleft().result())
+    return n
+
+
 def screen_rgb(raw):
     v = np.frombuffer(raw, dtype=">u2").reshape(240, 240).astype(np.uint32)
     rgb = np.stack([(v >> 11 & 31) * 255 // 31, (v >> 5 & 63) * 255 // 63, (v & 31) * 255 // 31], -1)
@@ -171,14 +271,22 @@ def main():
     ap.add_argument("film")
     ap.add_argument("wav")
     ap.add_argument("out")
-    ap.add_argument("--layout", default="split", choices=["split", "panel", "screen", "vertical"])
+    ap.add_argument("--layout", default="split", choices=["split", "panel", "screen", "vertical", "center"])
+    ap.add_argument("--no-audio", action="store_true", help="the video alone (as WAV '-'), to mux later")
+    ap.add_argument("--captions", help="FILE.tsv: seconds<TAB>text, a caption in the lower left")
+    ap.add_argument("--crf", type=int, default=14)
+    ap.add_argument("--preset", default="medium")
     ap.add_argument("--fps", type=int, default=30)
     ap.add_argument("--scale", type=int, default=1, choices=[1, 2], help="2: 4K (3840x2160; the screen layout 2160x2160)")
     ap.add_argument("--look", default="lcd", choices=["lcd", "pixels"], help="the large screen: lcd (a close-up, the default) or plain pixels")
     a = ap.parse_args()
 
     k = a.scale                                # (2: 4K, the same layout doubled, the screen 8x)
-    if a.layout == "screen":
+    audio = not a.no_audio and a.wav != "-"
+    if a.layout == "center":                   # the screen alone, 4x, in the middle of 1920x1080
+        W, H, ps, off = 1920 * k, 1080 * k, None, None
+        scr = (480 * k, 60 * k, 960 * k)
+    elif a.layout == "screen":
         W, H, ps, scr, off = 1080 * k, 1080 * k, None, (60 * k, 60 * k, 960 * k), None
     elif a.layout == "vertical":               # a short: the screen (3x) on top, the panel under it; clear of the
         W, H, ps = 1080 * k, 1920 * k, 0.9 * k  # Shorts' own overlays (the bottom fifth, the right edge's buttons)
@@ -193,6 +301,8 @@ def main():
         off = (30 * k, (H - int(640 * ps)) // 2)
         scr = (W - 1000 * k, 60 * k, 960 * k)  # 4x (8x at 4K), on the right
     canvas = Image.new("RGB", (W, H), GROUND)
+    ground = glow_ground(W, H, scr, k) if a.layout == "center" else None
+    caps = load_captions(a.captions, W, H, k) if a.captions else []
     if ps:
         P = Panel(ps)
         P.layout()
@@ -200,15 +310,21 @@ def main():
         canvas.paste(base, off)
         bsprites, ksprites = {}, {}
     ff = subprocess.Popen(["ffmpeg", "-loglevel", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24",
-                           "-s", f"{W}x{H}", "-r", str(a.fps), "-i", "-", "-i", a.wav,
-                           "-c:v", "libx264", "-preset", "medium", "-crf", "14", "-pix_fmt", "yuv420p",
-                           "-c:a", "aac", "-b:a", "320k", "-shortest", "-movflags", "+faststart", a.out],
-                          stdin=subprocess.PIPE)
+                           "-s", f"{W}x{H}", "-r", str(a.fps), "-i", "-"] + (["-i", a.wav] if audio else []) +
+                          ["-c:v", "libx264", "-preset", a.preset, "-crf", str(a.crf), "-pix_fmt", "yuv420p"] +
+                          (["-c:a", "aac", "-b:a", "320k", "-shortest"] if audio else ["-an"]) +
+                          ["-movflags", "+faststart", a.out], stdin=subprocess.PIPE)
     angle = {e: 0.0 for e in range(NE)}
     n = 0
     prev_b = prev_k = 0
     rip = []                                   # press ripples: (kind, x, y, w, h, first frame), panel units
     knob_last = {e: -99 for e in range(NE)}
+    if ground is not None:                     # center: the screens drawn in parallel, a few frames ahead
+        n = run_center(a, ff, ground, scr, caps)
+        ff.stdin.close()
+        ff.wait()
+        print(f"film: {a.out}  {n} frames, {n / a.fps:.1f} s, {W}x{H}")
+        return ff.returncode
     with open(a.film, "rb") as f:
         while True:
             rec = f.read(FRAME)

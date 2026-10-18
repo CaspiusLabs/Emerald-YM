@@ -671,7 +671,8 @@ int main(int argc, char **argv)
                     run_ms(1);
             }
             t = now_ms - film_t0;
-            printf("@ %02u:%04.1f  bar %u  %s", t / 60000u, (t % 60000u) / 1000.0, en_bars / 16u, lab[0] ? lab : "\n");
+            t = (t + 50u) / 100u;                /* (in tenths, rounded first: 59.96 s is 01:00.0, not 00:60.0) */
+            printf("@ %02u:%02u.%u  bar %u  %s", t / 600u, t % 600u / 10u, t % 10u, en_bars / 16u, lab[0] ? lab : "\n");
         } else if (!strcmp(cmd, "store8")) {     /* the project as DUB-1 1.0.0 saved it (format 8), into the flash */
             static project8_t o;
             int i;
