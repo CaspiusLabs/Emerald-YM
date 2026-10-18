@@ -7,7 +7,8 @@ keys as they are pressed, encoded with ffmpeg.
   tools/film.py FILM WAV OUT.mp4 [--layout split|panel|screen] [--fps 30]
 
 Layouts: split (1920x1080: the panel on the left, the screen large on the right), panel (1920x1080: the
-panel alone), screen (1080x1080: the screen alone, 4x). Each press of a button or key, and each turn of a knob, sends a short teal
+panel alone), screen (1080x1080: the screen alone, 4x), vertical (1080x1920, a short: the screen large on top,
+the panel under it). Each press of a button or key, and each turn of a knob, sends a short teal
 ripple out from it (in the panel framings). Needs Pillow, numpy and ffmpeg."""
 import argparse
 import os
@@ -170,7 +171,7 @@ def main():
     ap.add_argument("film")
     ap.add_argument("wav")
     ap.add_argument("out")
-    ap.add_argument("--layout", default="split", choices=["split", "panel", "screen"])
+    ap.add_argument("--layout", default="split", choices=["split", "panel", "screen", "vertical"])
     ap.add_argument("--fps", type=int, default=30)
     ap.add_argument("--scale", type=int, default=1, choices=[1, 2], help="2: 4K (3840x2160; the screen layout 2160x2160)")
     ap.add_argument("--look", default="lcd", choices=["lcd", "pixels"], help="the large screen: lcd (a close-up, the default) or plain pixels")
@@ -179,6 +180,10 @@ def main():
     k = a.scale                                # (2: 4K, the same layout doubled, the screen 8x)
     if a.layout == "screen":
         W, H, ps, scr, off = 1080 * k, 1080 * k, None, (60 * k, 60 * k, 960 * k), None
+    elif a.layout == "vertical":               # a short: the screen (3x) on top, the panel under it; clear of the
+        W, H, ps = 1080 * k, 1920 * k, 0.9 * k  # Shorts' own overlays (the bottom fifth, the right edge's buttons)
+        scr = (180 * k, 170 * k, 720 * k)
+        off = (30 * k, 930 * k)
     elif a.layout == "panel":
         W, H, ps = 1920 * k, 1080 * k, 1.8 * k
         off = ((W - int(1000 * ps)) // 2, (H - int(640 * ps)) // 2)
@@ -276,7 +281,7 @@ def main():
                             dl.rounded_rectangle(box, rad, outline=RIP_C + (al,), width=wd)
                     im = Image.alpha_composite(im.convert("RGBA"), lay).convert("RGB")
                     d = ImageDraw.Draw(im)
-                if a.layout == "split":        # the panel's own screen, small
+                if a.layout in ("split", "vertical"):   # the panel's own screen, small
                     sz = int(200 * ps)
                     im.paste(scrn.resize((sz, sz), Image.LANCZOS), (off[0] + int(318 * ps), off[1] + int(62 * ps)))
             x, y, sz = scr
