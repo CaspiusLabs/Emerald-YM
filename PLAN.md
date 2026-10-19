@@ -597,3 +597,28 @@ over DUB-1's groove, in time and in key. It goes a bit beyond dub, and that's fi
   240×240 screen and the FM-1's CPU: Winamp/MilkDrop presets, Teenage Engineering's OP-1 and OP-Z screens, Elektron's
   scopes, demoscene effects (plasma, tunnels, starfields), the Lissajous stereo scope, a tape-loop view of the echo's
   buffer, a waterfall spectrogram.
+
+### An X-Y pad for playing live (the user's idea, 2026-10-19)
+
+Use a touch pad as an X-Y controller for live performance: one finger moving two things at once, such as the Filter
+and its resonance, or the echo's feedback and time, Dub and Space. The community would appreciate it.
+
+- **The way in that works first: MIDI CC.** DUB-1 takes MIDI in over USB and the TRS jack, but only notes (the scale)
+  and clock today. Mapping CCs to the master actions and a few parameters (a fixed map, or a "learn") would let any
+  X-Y source drive it:
+  - the **Korg NTS-3**, if it sends its pad as CC (to check: its MIDI implementation, and whether USB-C carries
+    MIDI);
+  - a phone or tablet app (TouchOSC and the like) through a USB-MIDI host;
+  - a laptop's trackpad through a small app that turns it into MIDI.
+- **An Apple trackpad over Bluetooth, directly: a long shot.** It's a Bluetooth HID device, so the FM-1 would need a
+  Bluetooth radio and antenna, and a Bluetooth HID host stack. The chip family has Bluetooth (the SMK-37 runs
+  Bluetooth MIDI on the same chip), but it's unknown whether the FM-1's board has the radio and antenna fitted. To
+  research:
+  - the FM-1's board;
+  - the SDK's Bluetooth stack: HID host support, its code size, and the CPU it leaves for the sound;
+  - how the trackpad pairs.
+- **The SMK-37 already has 16 pressure pads and a mod wheel.** The pads' pressure could also play X-Y-like moves.
+- First steps:
+  1. MIDI CC in for the master actions (small, useful on its own);
+  2. check the NTS-3's CC output;
+  3. then the Bluetooth question.
