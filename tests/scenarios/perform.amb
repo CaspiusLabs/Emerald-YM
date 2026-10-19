@@ -75,6 +75,8 @@ said SOLO OFF
 tapkey w3
 wait 200
 said KICK ON
+# (the kick back while the hats play: the Drums level as it was, not 100)
+expect par3 65
 tap SEL
 wait 200
 said PERFORM OFF

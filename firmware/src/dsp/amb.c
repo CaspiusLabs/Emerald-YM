@@ -440,7 +440,8 @@ static float perf_sw, perf_echo, mb_c[4], mb_s[4];   /* (mb: Open's and Shut's f
 
 static int16_t par[P_NPARAMS];
 static int8_t mac[EN_NMAC];                     /* the master actions, -50..50 */
-static int8_t pofs[P_NPARAMS];                  /* what they add to the piece's parameters */
+static int8_t pofs[P_NPARAMS];
+static float dub_up;                            /* Dub turned up, 0..1: the echo darker, feeding back past its knob */                  /* what they add to the piece's parameters */
 static int pe(int p)                            /* a parameter as heard: the piece's, moved by the master actions */
 {
     int v = par[p] + pofs[p];
@@ -1348,9 +1349,10 @@ static void drum_fire(int d, float vel)
     midi(0x89, v->note, 0);
 }
 
-static void drum_hit(int d, float vel, int off)  /* off: an off sixteenth, which Swing delays */
+static void drum_hit(int d, float vel, int off)  /* (Swing delays the whole off sixteenth now: clock_pulse) */
 {
-    int32_t w = off ? (int32_t)(swing * step_len) : 0;
+    int32_t w = 0;
+    (void)off;
     if (w > 0) {
         drum[d].wait = w;
         drum[d].pend = vel;
@@ -1741,7 +1743,8 @@ static void heads_step(uint32_t n)
     want = fm_clampf((head2_t - head2) * (1.0f / (2.0f * TAPE_SR)), -vmax, vmax);
     head2_v += (want - head2_v) * fm_minf((float)n * (1.0f / EN_SR), 1.0f);
     /* the band-pass: ~60..500 Hz below, ~1.1..2.6 kHz above, moving up together */
-    sw = fm_clampf(0.45f + 0.35f * arcm + 0.3f * perf_sw + 0.35f * motion * mod[5].v, 0.0f, 1.0f);
+    dub_up = fm_maxf((float)mac[EN_MAC_DUB], 0.0f) * (1.0f / 50.0f);
+    sw = fm_clampf(0.45f + 0.35f * arcm + 0.3f * perf_sw + 0.35f * motion * mod[5].v - 0.3f * dub_up, 0.0f, 1.0f);   /* (Dub up: darker) */
     tape_hpc = 0.035f + 0.24f * sw * sw;
     tape_lpc = 0.58f + 0.3f * sw;
 }
@@ -1783,7 +1786,7 @@ static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
                 tape_w = 0;
             tape[tape_w] = s;
         } else {
-            float g = fm_minf(echo_fb + 0.15f * st_throw + 0.12f * perf_echo, fb_cap);
+            float g = fm_minf(echo_fb + 0.15f * st_throw + 0.12f * perf_echo + 0.1f * dub_up, fb_cap);   /* (Dub: past the knob) */
             tape_lp += tape_lpc * (h1 + fb_lean * (h2 - h1) - tape_lp);   /* each time round: thinner, darker */
             tape_hp += tape_hpc * (tape_lp - tape_hp);
             fb = tape_lp - tape_hp;
@@ -2006,7 +2009,7 @@ static void apply(int p, int v)
     case P_STABS: stabs_home(); break;
     case P_SWING: swing = (float)v * 0.004f; break;      /* the off sixteenths up to 0.4 of a step late */
     case P_HATS: case P_HTONE: {                 /* the piece's colour, moved by the sound page's Hats */
-        float h = fm_clampf((float)(par[P_HATS] + par[P_HTONE]), 0.0f, 100.0f);
+        float h = fm_clampf((float)(pe(P_HATS) + par[P_HTONE]), 0.0f, 100.0f);
         hat_f = 0.55f + 0.0070f * h;                      /* the high-pass: ~4 kHz dark .. ~10 kHz bright */
         hat_open = 0.4f - 0.0025f * h;                    /* the open hat: long and soft .. short and crisp */
         break;
@@ -2183,10 +2186,16 @@ void en_init(void)
 }
 
 /* ------------------------------------------------------------ transport --- */
+static int32_t tick_wait;                       /* Swing: samples until an off sixteenth plays (0: none waiting) */
 static void clock_pulse(void)
 {
-    if (pulse == 0)
-        tick();
+    if (pulse == 0) {                           /* an off sixteenth: everything on it late together (the clock straight) */
+        int32_t w = (sixteenth & 1u) ? (int32_t)(swing * step_len) : 0;
+        if (w > 0)
+            tick_wait = w;
+        else
+            tick();
+    }
     if (!en_ext)
         midi(0xF8, 0, 0);
     if (++pulse >= 6)
@@ -2207,6 +2216,7 @@ static void play_start(int from_top)
         sec_next = SEC_FULL;
     }
     pulse_left = 0.0f;
+    tick_wait = 0;
     en_playing = 1;
     if (!en_ext)
         midi(from_top ? 0xFA : 0xFB, 0, 0);
@@ -2217,6 +2227,7 @@ static void play_stop(void)
     int d;
     for (d = 0; d < EN_NDRUM; d++)
         drum[d].wait = 0;                        /* a swung hit still waiting stays unplayed */
+    tick_wait = 0;
     en_playing = 0;
     bass.gate = 0;
     if (!en_ext)
@@ -2229,11 +2240,13 @@ static void macro(int i, int v)
 {
     /* each: the parameters it moves and how far at full turn (+50), in the parameter's own units */
     static const struct { uint8_t p; int8_t at50; } MOVE[] = {
-        {P_ECHO, 40}, {P_FEEDBACK, 35},                  /* Dub */
-        {P_DENSITY, 45}, {P_HITS, 45}, {P_STABS, 45},    /* Energy */
-        {P_REVERB, 45}, {P_CLOUD, 45}, {P_SIZE, 30},     /* Space */
+        {P_ECHO, 90}, {P_FEEDBACK, 50},                  /* Dub (and, up, the music pushed into the echo: render_chunk) */
+        {P_DENSITY, 85}, {P_HITS, 85}, {P_STABS, 85},    /* Energy: the notes and hits, */
+        {P_PINGS, 40}, {P_HATS, 45},                     /* the pings' level, the hats' colour */
+        {P_REVERB, 85}, {P_CLOUD, 80}, {P_SIZE, 45},     /* Space */
     };
-    static const uint8_t OF[] = {EN_MAC_DUB, EN_MAC_DUB, EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_SPACE,
+    static const uint8_t OF[] = {EN_MAC_DUB, EN_MAC_DUB, EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_ENERGY,
+                                 EN_MAC_ENERGY, EN_MAC_SPACE,
                                  EN_MAC_SPACE, EN_MAC_SPACE};
     unsigned k;
     mac[i] = (int8_t)v;
@@ -2860,7 +2873,8 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
     const float rg = rev_send * rev_in_gain * (1.0f - 0.2f * arcm);
     /* (the cloud listens as if Reverb were at 63 at least, so Cloud works with little reverb too) */
     const float cl_in = rev_send > 0.0001f ? fm_maxf(rev_send, 0.4f) / rev_send : 0.0f;
-    float eg = (echo_send + (1.0f - echo_send) * perf_echo) * ein_gain, ca = cloud_amt * (sec == SEC_BREAK ? 1.4f : 1.0f);   /* more in a Break */
+    const float push = fm_maxf(perf_echo, 0.5f * fm_maxf((float)mac[EN_MAC_DUB], 0.0f) * (1.0f / 50.0f));   /* (Dub up pushes too) */
+    float eg = (echo_send + (1.0f - echo_send) * push) * ein_gain, ca = cloud_amt * (sec == SEC_BREAK ? 1.4f : 1.0f);   /* more in a Break */
     /* PERFORM's Open and Shut on the music, the kick left out on top: Shut a low-pass down to ~230 Hz, Open a
      * resonant high-pass up to ~400 Hz (thin and bright), both swept with perf_sw */
     const float shut = fm_maxf(-perf_sw, 0.0f), open = fm_maxf(perf_sw, 0.0f);
@@ -2976,15 +2990,16 @@ static void control(uint32_t n)                 /* once a chunk: the slow things
     fb_cap += ((en_playing ? 2.0f : 0.9f) - fb_cap) * fm_minf((float)n / (2.0f * EN_SR), 1.0f);
     {   /* the performance's pushes, eased in and out (the filter swept over ~400 ms, three octaves; the echo ~40 ms) */
         /* (the Filter knob: the same sweep, quicker to follow a hand; the keys on top of it, to the same ends) */
-        float t = fm_clampf((float)mac[EN_MAC_FILTER] * 0.06f + (perf & EN_PF_OPEN ? 3.0f : 0.0f) - (perf & EN_PF_CLOSE ? 3.0f : 0.0f),
-                            -3.0f, 3.0f);
+        /* (the knob reaches further than the keys: Shut down to ~120 Hz, Open up to ~1.2 kHz) */
+        float t = fm_clampf((float)mac[EN_MAC_FILTER] * (mac[EN_MAC_FILTER] < 0 ? 0.072f : 0.084f) +
+                            (perf & EN_PF_OPEN ? 3.0f : 0.0f) - (perf & EN_PF_CLOSE ? 3.0f : 0.0f), -3.6f, 4.2f);
         perf_sw += (t - perf_sw) * fm_minf((float)n / ((perf & (EN_PF_OPEN | EN_PF_CLOSE) ? 0.4f : 0.12f) * EN_SR), 1.0f);
         perf_echo += ((perf & EN_PF_ECHO || fxm >> EN_FX_SWELL & 1u ? 1.0f : 0.0f) - perf_echo) * fm_minf((float)n / (0.04f * EN_SR), 1.0f);
     }
     if (echo_len > 0.0f)                        /* for the screen's ripples */
         en_echo_ms = echo_len * (1000.0f / TAPE_SR);
     en_echo_g = en_frozen ? 1.0f : fm_minf(echo_fb + 0.12f * perf_echo, fb_cap) * 0.82f;
-    en_echo_in = echo_send + (1.0f - echo_send) * perf_echo;
+    en_echo_in = echo_send + (1.0f - echo_send) * fm_maxf(perf_echo, 0.5f * fm_maxf((float)mac[EN_MAC_DUB], 0.0f) * (1.0f / 50.0f));
     en_duck = duck_d * (duck_depth > 0.0f ? 1.0f : 0.0f);
     cl_dens = cloud_amt > 0.0f ? fm_clampf(0.25f + 0.5f * cloud_amt + 0.3f * arcm, 0.05f, 1.0f) : 0.0f;
     if (fx_cf > 0.01f)                          /* (Freeze: the grains thick, even at Cloud 0) */
@@ -3018,12 +3033,19 @@ void en_render(int32_t *out, uint32_t n, uint32_t gain_q12)
             int32_t w = drums_wait();            /* a swung hit lands on its sample */
             if (w > 0 && (uint32_t)w < k)
                 k = (uint32_t)w;
+            if (tick_wait > 0 && (uint32_t)tick_wait < k)   /* (and a swung sixteenth) */
+                k = (uint32_t)tick_wait;
         }
         if (timed)
             pulse_left -= (float)k;
         control(k);
         render_chunk(out, k, gain);
         drums_wait_step((int32_t)k);
+        if (tick_wait > 0 && (tick_wait -= (int32_t)k) <= 0) {
+            tick_wait = 0;
+            if (en_playing)
+                tick();
+        }
         out += 2 * k;
         n -= k;
     }

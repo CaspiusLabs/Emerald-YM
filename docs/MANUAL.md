@@ -137,7 +137,7 @@ white 6 between them. Each key that does something is lit (hold SEL for this map
 
 The first five black keys (F♯ G♯ A♯, C♯ D♯) sit above the five mutes, like a mixer's channel strip.
 
-- **White 6, held:** the Mix page on the knobs (lit; dark while held). The mutes still act the moment
+- **White 6, held:** the Mix page on the knobs. It blinks slowly in PERFORM, so it's easy to find, and goes dark while held. The mutes still act the moment
   you press them, with or without it.
 - **White 1–3, the chord, pings and bass:** a press turns the layer's level (its Mix knob) to 0, the
   next to 100; the knob shows it. The key is lit while the level is up.
@@ -453,7 +453,7 @@ again goes back to the Dub page.
 - **Mode:** Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, pentatonic major and minor; it
   loads the mode's scale (as ALGORITHM does off the Dub page). Editing the scale with the keys
   makes it Custom.
-- **Swing:** the off sixteenths late, 50% to 70% (the same as on the Drums page).
+- **Swing:** the off sixteenths late, 50% to 70%: everything on them, the stabs, the bass, the pings and the drums, together (the same as on the Drums page).
 
 ### ENV: Chord
 
@@ -504,7 +504,7 @@ OCT− and OCT+ set the pings' octave, two down to two up.
 - **Hits:** how busy the hats are. The shaker plays from none to all twelve sixteenths that aren't
   the open hat's, the ones before the beats first. The open hat comes in at 15, on the off-beat of
   beats 1 and 3, and plays all four off-beats from 40. At 0, kick only.
-- **Swing:** the shaker's off sixteenths later, from straight (50%) to a heavy lilt (70%).
+- **Swing:** the off sixteenths later, from straight (50%) to a heavy lilt (70%): the whole groove, not only the drums.
 - **Duck:** how far the kick pushes the rest down, to −12 dB at 100, letting it back in over a
   little more than a tenth of a second. The crackle isn't ducked.
 

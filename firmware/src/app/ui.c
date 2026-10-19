@@ -533,7 +533,7 @@ static void perf_key(uint32_t key, int down)
         /* the Drums knob follows: 0 once both are out, 100 when one comes back (from 0) */
         if ((ui.mutes & (EN_M_KICK | EN_M_HATS)) == (EN_M_KICK | EN_M_HATS))
             knob_set(P_DRUMS, 0);
-        else if (proj.par[P_DRUMS] == 0 || !(ui.mutes >> i & 1u))
+        else if (proj.par[P_DRUMS] == 0)           /* (one back while the other plays: the level as it was) */
             knob_set(P_DRUMS, 100);
         if (ui.view == V_MIX) {
             ui.touched = 3;
@@ -2027,7 +2027,8 @@ static void leds(void)
     } else if (ui.perf) {                        /* PERFORM: the layers heard, the solos, the moves (dark while held) */
         const int blink = (plat_ms() / 250u) & 1u;
         b |= 1u << B_SEL;
-        if (ui.view != V_MIX)                    /* white 6: dark while held (the mix on the knobs) */
+        if (ui.view != V_MIX && (plat_ms() / 450u) & 1u)   /* white 6: blinking, slower than a solo, to be found;
+                                                          * dark while held (the mix on the knobs) */
             k |= 1u << PERF_SHIFT;
         for (i = 0; i < 5; i++) {
             if (perf_sounds((int)i))
