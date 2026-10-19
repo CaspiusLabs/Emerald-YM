@@ -1464,6 +1464,12 @@ static void bar_start(void)
         /* the last bar before the kick: a fill (the kick drops out halfway, the last stab is thrown) */
         if (sec_next != SEC_BREAK && (sec == SEC_BREAK || frand() < 0.5f * motion))
             fill = 1;
+        /* Energy far down: the next phrase Thin (no bass, no shaker); far up: Full, with a fill into it (after the
+         * draws, which stay as they were: at Energy 0 the music is the same) */
+        if (mac[EN_MAC_ENERGY] <= -25)
+            sec_next = SEC_THIN;
+        else if (mac[EN_MAC_ENERGY] >= 25)
+            sec_next = SEC_FULL, fill = 1;
     }
     if (!en_frozen && (change_pending || (db && bar > 0 && chord_bars >= (uint32_t)db))) {
         change_pending = 0;
@@ -2022,7 +2028,7 @@ static void apply(int p, int v)
     case P_CUTOFF: cut_base = 110.0f * fm_exp2f((float)v * 0.055f); break;   /* 110 Hz .. 5.4 kHz */
     case P_DECAY: case P_CVOICE:                 /* 60 ms .. 1.5 s (times the voice's); the filter's envelope, quicker */
         cvoice = (unsigned)par[P_CVOICE] < EN_NCV ? par[P_CVOICE] : 0;
-        st_t60 = 0.06f * fm_exp2f((float)par[P_DECAY] * 0.0464f) * CV[cvoice].dec;
+        st_t60 = 0.06f * fm_exp2f((float)pe(P_DECAY) * 0.0464f) * CV[cvoice].dec;
         st_dec = fm_expf(-6.9f / (st_t60 * EN_SR));
         st_fdec = fm_expf(-6.9f * 32.0f / ((0.4f * st_t60 + 0.03f) * EN_SR));
         break;
@@ -2242,11 +2248,12 @@ static void macro(int i, int v)
     static const struct { uint8_t p; int8_t at50; } MOVE[] = {
         {P_ECHO, 90}, {P_FEEDBACK, 50},                  /* Dub (and, up, the music pushed into the echo: render_chunk) */
         {P_DENSITY, 85}, {P_HITS, 85}, {P_STABS, 85},    /* Energy: the notes and hits, */
-        {P_PINGS, 40}, {P_HATS, 45},                     /* the pings' level, the hats' colour */
+        {P_PINGS, 40}, {P_HATS, 45}, {P_DECAY, 30},      /* the pings' level, the hats' colour, the stabs' length
+                                                          * (and the hats' level, the phrases: render_drums, bar_start) */
         {P_REVERB, 85}, {P_CLOUD, 80}, {P_SIZE, 45},     /* Space */
     };
     static const uint8_t OF[] = {EN_MAC_DUB, EN_MAC_DUB, EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_ENERGY,
-                                 EN_MAC_ENERGY, EN_MAC_SPACE,
+                                 EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_SPACE,
                                  EN_MAC_SPACE, EN_MAC_SPACE};
     unsigned k;
     mac[i] = (int8_t)v;
@@ -2633,8 +2640,11 @@ static void render_drums(uint32_t n)
         v->x1 = fm_flush(cl);
         v->on = amp > 0.0005f;
     }
-    render_hat(&drum[1], n, g * 0.16f, 0.6f, 1.0f, 0.03f);   /* shaker: a little right */
-    render_hat(&drum[2], n, g * 0.15f, 1.0f, 0.7f, 0.12f);   /* open: a little left, a little echo */
+    {   /* (Energy: the hats -6 dB down to +6 dB up) */
+        const float hl = fm_exp2f((float)mac[EN_MAC_ENERGY] * (1.0f / 50.0f));
+        render_hat(&drum[1], n, g * 0.16f * hl, 0.6f, 1.0f, 0.03f);   /* shaker: a little right */
+        render_hat(&drum[2], n, g * 0.15f * hl, 1.0f, 0.7f, 0.12f);   /* open: a little left, a little echo */
+    }
     v = &drum[3];                                /* the rim: two tones (~520 Hz, ~1.7 kHz) and a click of noise */
     if (v->on) {
         float amp = v->amp, att = v->att, clk = v->clk;

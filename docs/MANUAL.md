@@ -115,7 +115,7 @@ the middle, so it's easy to find:
 |---|---|---|
 | KNOB 1 · **Filter** | Shut 1–100: a low-pass on the music, down to about 230 Hz: under water | Open 1–100: a resonant high-pass, up to about 400 Hz: thin and bright |
 | KNOB 2 · **Dub** | less echo: a lower send and shorter feedback, dry and tight | more echo: a higher send, feeding back longer, towards a runaway |
-| KNOB 3 · **Energy** | sparser: fewer ping notes, shaker hits and stabs a bar | busier: more of each |
+| KNOB 3 · **Energy** | sparser and drier: fewer and quieter pings, fewer and quieter hats, fewer and shorter stabs; past halfway, the next phrases go Thin (no bass, no shaker) | busier and brighter: more of each, louder hats, longer stabs; past halfway, the phrases stay Full, with a fill into each |
 | KNOB 4 · **Space** | drier: less reverb and cloud, a smaller plate | wider: more reverb and cloud, a longer plate |
 
 The Filter is the same as KNOB 1 on the Dub page (one value, on both pages); the kick is always
