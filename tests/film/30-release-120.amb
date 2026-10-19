@@ -3,6 +3,10 @@
 # then a transition by hand to Haze. The title clip covers the first 4 s (the boot's launch screen).
 # Each `bar` prints the film's time there: the cue sheet (build/film/channel/long_videos/release-1.2.0/).
 # Night Drive (5), from the boot's Basic (0), before the film: the first frame is the launch screen.
+# (The 48 ms first: choosing the piece seeds its generators with the time, and this seed keeps Night Drive Full
+# every phrase to the piece change, checked on the screen's section name bar by bar, so no Thin or Break phrase
+# hides a move; the 1.2.0 build's swing and wider actions had turned bars 32-39 and 48-55 Thin.)
+wait 48
 turn PRESET 5 5
 wait 30
 expect piece 5
@@ -49,21 +53,21 @@ expect view 0
 bar 26 5. PERFORM (SEL): the master actions
 tap SEL
 expect view 17
-bar 27 KNOB 2: Dub up (the echo towards a runaway)
-turn K2 40 100
+bar 27 KNOB 2: Dub up to +50 (the echo towards a runaway; the wider 1.2.0 Dub: +80 was 5 LU up, too far)
+turn K2 25 100
 bar 31 Dub back
-turn K2 -40 60
-bar 33 KNOB 3: Energy down (sparse)
+turn K2 -25 60
+bar 33 KNOB 3: Energy down to -80 (sparse)
 turn K3 -40 60
-bar 35 Energy up (busy)
+bar 35 Energy up through 0 (it stops there) to +40 (busy: the wider Energy's +80 was 4 LU up)
 turn K3 40 60
-turn K3 40 60
+turn K3 20 60
 bar 39 Energy back
-turn K3 -40 60
-bar 41 KNOB 4: Space up (+100)
-turn K4 50 50
+turn K3 -20 60
+bar 41 KNOB 4: Space up to +70 (the wider Space's +100 was a 3 LU wash)
+turn K4 35 50
 bar 44 Space back
-turn K4 -50 45
+turn K4 -35 45
 bar 46 KNOB 1: the Filter, in PERFORM too (Open 70)
 turn K1 35 50
 bar 48 the Filter back to Off
