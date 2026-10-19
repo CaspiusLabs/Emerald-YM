@@ -3,8 +3,8 @@
 wait 200
 listen
 wait 100
-# the page, its knobs and the header (the Dub page's first knob says the tempo)...
-said . Piece Basic, F Dorian, playing
+# the page, its knobs and the header (the tempo too: it is the Key page's first knob, not Dub's)...
+said . Piece Basic, F Dorian, tempo 122, playing
 # ...then the main screen, queued: the chord, how far to the next, the section, the scale from the root up
 listen
 where
@@ -15,15 +15,15 @@ wait 300
 said Chord page, voice Saws: Level 
 tap GLO
 wait 300
-said Setup page: Root F, Tune 0, MIDI out On, Lights On
+said Setup page: Tune 0, MIDI out On, Lights On
 # a knob: its name and value, once it settles
-spin K2 3
+spin K1 3
 wait 300
 said Tune +3
-spin K4 1
+spin K3 1
 wait 300
 said Lights Keys
-spin K4 -1
+spin K3 -1
 wait 300
 # SELECT turns the pages
 turn SELECT -1
@@ -71,10 +71,21 @@ said Dub page
 spin K4 -20
 wait 300
 said Drift 2 bars
+# the Filter: down, the low-pass; it stops at the middle on the way back
+spin K1 -100
+wait 300
+said Filter Shut 100
+spin K1 80
+wait 300
+said Filter Off
+# HOME again: the Key page
+tap HOME
+wait 300
+said Key page: Tempo
 spin K1 -100
 wait 300
 said Tempo 90
-# HOME + SELECT: the tempo (the Dub page's first knob says it)
+# HOME + SELECT: the tempo (the Key page's first knob says it)
 press HOME
 turn SELECT 2 200
 release HOME
@@ -90,8 +101,8 @@ said ADDED C#
 tapkey b3
 said REMOVED C#
 tapkey w0
-said THE ROOT STAYS (SETUP)
-# the encoders: the mode, the piece (with its key and tempo)
+said THE ROOT STAYS (HOME, KEY)
+# the encoders: the mode (off the Dub page), the piece (with its key and tempo)
 turn ALGO 1
 said MODE Phrygian
 turn ALGO -1
@@ -152,6 +163,9 @@ wait 300
 said RESTING
 wait 1000
 said Tempo 92
+tap HOME
+wait 300
+said Dub page
 # Drift Hold, and Evolve and Motion to known values
 spin K4 20
 wait 300
@@ -164,6 +178,6 @@ wait 300
 said Motion 100
 # WHERE: everything again (the chord held now)
 where
-said Dub page: Tempo 92, Evolve 0, Motion 100, Drift Hold. Piece Basic, F Dorian, resting
+said Dub page: Filter Off, Evolve 0, Motion 100, Drift Hold. Piece Basic, F Dorian, tempo 92, resting
 where
 said , held. Section 

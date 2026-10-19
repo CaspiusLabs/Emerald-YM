@@ -6,12 +6,17 @@ wait 1500
 shot screen-help.png
 release SAVE
 wait 300
-tap HOME
+turn ALGO 1
 wait 2000
 shot screen-scope.png
-tap HOME
+turn ALGO 1
 wait 2000
 shot screen-spectrum.png
+turn ALGO 1
+wait 300
+tap HOME
+wait 1500
+shot screen-key.png
 tap HOME
 wait 300
 tap ENV

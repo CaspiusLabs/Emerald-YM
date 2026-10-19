@@ -1,14 +1,14 @@
-# the Dub page's middle: HOME again goes ripples, scope, spectrum, ripples; it is said, and kept by SAVE
+# the Dub page's middle: ALGORITHM goes ripples, scope, spectrum, ripples; it is said, and kept by SAVE
 wait 4000
 listen
 shot ripples.png
-tap HOME
+turn ALGO 1
 wait 1500
 expect view 0
 expect screen 1
 said SCREEN SCOPE
 shot scope.png
-tap HOME
+turn ALGO 1
 wait 1500
 expect screen 2
 said SCREEN SPECTRUM
@@ -24,6 +24,19 @@ tap SAVE
 reboot
 wait 1500
 expect screen 2
-tap HOME
+turn ALGO 1
 wait 200
 expect screen 0
+turn ALGO -1
+wait 200
+expect screen 2
+turn ALGO 1
+wait 200
+# HOME again: the Key page (the tempo, the root, the mode, swing), and again: back to Dub
+tap HOME
+wait 200
+expect view 18
+said Key page: Tempo 122, Root F, Mode Dorian, Swing
+tap HOME
+wait 200
+expect view 0

@@ -143,7 +143,7 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
       <div>
         <h3>Dub <span>HOME</span></h3>
         <dl>
-          <dt>Tempo</dt><dd>90 to 140 (also HOME + SELECT, from any page).</dd><dt>Evolve</dt><dd>How restless it is: the stab and shaker patterns turn, ping notes change, stabs drop out or are thrown into the echo.</dd><dt>Motion</dt><dd>How often the eight-bar phrases leave Full for a Break, a Groove or Thin, how far the filter sweeps, how much the echo wanders.</dd><dt>Drift</dt><dd>How long a chord lasts, 2 to 64 bars, or Hold. The thin bar top right fills on the way to the next. EDIT moves on at the next bar.</dd>
+          <dt>Filter</dt><dd>The DJ filter on the music (the kick left out): down, under water; up, thin and bright; Off in the middle, where the knob stops on its way through. For playing: not saved, kept across pieces.</dd><dt>Evolve</dt><dd>How restless it is: the stab and shaker patterns turn, ping notes change, stabs drop out or are thrown into the echo.</dd><dt>Motion</dt><dd>How often the eight-bar phrases leave Full for a Break, a Groove or Thin, how far the filter sweeps, how much the echo wanders.</dd><dt>Drift</dt><dd>How long a chord lasts, 2 to 64 bars, or Hold. The thin bar top right fills on the way to the next. EDIT moves on at the next bar.</dd>
         </dl>
       </div>
       <div>
@@ -179,7 +179,13 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
       <div>
         <h3>Setup <span>GLO</span></h3>
         <dl>
-          <dt>Root, Tune</dt><dd>The key's root; fine tuning in cents.</dd><dt>MIDI out, Lights</dt><dd>MIDI out over USB; the key lights and the buttons' glow. The audio load shows top right.</dd>
+          <dt>Tune</dt><dd>Fine tuning in cents, for every piece.</dd><dt>MIDI out, Lights</dt><dd>MIDI out over USB; the key lights and the buttons' glow. The audio load shows top right.</dd>
+        </dl>
+      </div>
+      <div>
+        <h3>Key <span>HOME again</span></h3>
+        <dl>
+          <dt>Tempo, Root</dt><dd>90 to 140 (also HOME + SELECT, from any page); the key's root.</dd><dt>Mode, Swing</dt><dd>The scale (as ALGORITHM sets it off the Dub page); the off sixteenths late.</dd>
         </dl>
       </div>
     </div>
@@ -189,8 +195,8 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
     <ul>
       <li><b>Keys</b> are the scale: each one adds or removes its note. The root stays. A lit key (a pressed one, to a screen reader) is in the scale.</li>
       <li><b>PLAY</b> plays / rests. <b>REC</b> tapped: dub hold, the echo and the cloud repeat what they hold; held: the <b>effects grid</b>, sixteen effects on the white keys (echo: Throw, Time x2, Tape stop, Swell; filter: Low, High, Wah, Phone; space: Verb, Crash, Freeze, Wash; rhythm: Stutter, Gate, Siren, Riser). <b>EDIT</b> the next chord, on the next bar.</li>
-      <li><b>SELECT</b> the previous or next page; with <b>HOME</b> held, the tempo. <b>ALGORITHM</b> the mode, <b>PRESETS</b> the piece (each remembers how you left it).</li>
-      <li><b>SEL</b> PERFORM: the knobs are a mixer (chord, pings, bass, drums); the white keys 1–5 mute and bring back the chord, pings, bass, kick and hats, and the black keys 1–5 above them solo them; white 7–11, held, throw every stab into the echo, push the filter open, shut it, drop the floor (the kick and the bass), push the echo. The keys that do something are lit. SEL again: the keys are the scale again (the mutes and solos stay). Hold SEL for the key map.</li>
+      <li><b>SELECT</b> the previous or next page; with <b>HOME</b> held, the tempo. <b>ALGORITHM</b> on the Dub page the screen (ripples, scope, spectrum), on a layer's page its voice, elsewhere the mode; <b>PRESETS</b> the piece (each remembers how you left it).</li>
+      <li><b>SEL</b> PERFORM: the knobs are the master actions, <b>Filter</b> (as on HOME), <b>Dub</b> (the echo's send and feedback), <b>Energy</b> (the pings, shaker and stabs thinner or busier) and <b>Space</b> (the reverb and the cloud), each 0 in the middle; hold white 6 and they are the mix (chord, pings, bass, drums). The white keys 1–5 mute and bring back the chord, pings, bass, kick and hats, and the black keys 1–5 above them solo them; white 7–11, held, throw every stab into the echo, push the filter open, shut it, drop the floor (the kick and the bass), push the echo. The keys that do something are lit. SEL again: the keys are the scale again (the mutes and solos stay). Hold SEL for the key map.</li>
       <li><b>OCT−</b> / <b>OCT+</b> move the pings an octave. <b>SAVE</b> saves; hold it to reset the piece.</li>
       <li>Hold a button for a second and a card says what it does (with a mouse: <kbd>Shift</kbd>-click to hold it, click again to let go).</li>
     </ul>
@@ -326,11 +332,11 @@ function hit(c, cls, attrs, parent = controls) {
 }
 // what each control does (the Buttons list below says the same); a page button's light is its page, PLAY's
 // playing, REC's dub hold: those are toggle buttons (aria-pressed), the others plain ones
-const TIP = { FX: "The Space page.", SEL: "PERFORM: the knobs are a mixer; the white keys 1 to 5 mute the layers, the black keys 1 to 5 solo them, and white 7 to 11, held, make the dub moves.", ENV: "The Chord page.", LFO: "The Bass page.", EDIT: "A tap: the Chords page, eight slots (KNOB 1 the slot, the keys its root, KNOB 2 its kind, KNOB 3 its type, KNOB 4 Play: Random or the slots). Held: the next chord.",
-  GLO: "The Setup page.", HOME: "The Dub page. Hold it and turn SELECT for the tempo.", SAVE: "Saves all eight pieces. Hold it to put the piece back to its recipe.",
+const TIP = { FX: "The Space page.", SEL: "PERFORM: the knobs are Filter, Dub, Energy and Space (hold white 6: the mix); the white keys 1 to 5 mute the layers, the black keys 1 to 5 solo them, and white 7 to 11, held, make the dub moves.", ENV: "The Chord page.", LFO: "The Bass page.", EDIT: "A tap: the Chords page, eight slots (KNOB 1 the slot, the keys its root, KNOB 2 its kind, KNOB 3 its type, KNOB 4 Play: Random or the slots). Held: the next chord.",
+  GLO: "The Setup page.", HOME: "The Dub page; again, the Key page (tempo, root, mode, swing). Hold it and turn SELECT for the tempo.", SAVE: "Saves all eight pieces. Hold it to put the piece back to its recipe.",
   ARP: "The Texture page.", SEQ: "The Drums page. Again: their sound; again: the Pattern page (four lanes, sixteen steps on the white keys).", PLAY: "Play or rest.", REC: "Tap: dub hold (the echo and the cloud repeat what they hold; the chord holds). Hold: the effects grid, played on the white keys.",
   "OCT-": "The pings an octave down.", "OCT+": "The pings an octave up.", SELECT: "The previous or next page; with HOME held, the tempo.",
-  ALGORITHM: "On a layer's page, its voice; elsewhere, the mode.", PRESETS: "The piece.", KNOB1: "The first value on the screen.", KNOB2: "The second value on the screen.",
+  ALGORITHM: "On the Dub page, the screen; on a layer's page, its voice; elsewhere, the mode.", PRESETS: "The piece.", KNOB1: "The first value on the screen.", KNOB2: "The second value on the screen.",
   KNOB3: "The third value on the screen.", KNOB4: "The fourth value on the screen." };
 const LIGHTS = new Set(["FX", "SEL", "ENV", "LFO", "GLO", "HOME", "ARP", "SEQ", "PLAY", "REC"]);
 const spokenLabel = (l) => l.replace("OCT-", "OCT minus").replace("OCT+", "OCT plus").replace(/^KNOB(\d)$/, "KNOB $1");

@@ -42,12 +42,12 @@ same code the FM-1 runs, with sound.
 to install on the computer. Don't unplug it while it's writing; when it finishes, the FM-1 restarts
 into DUB-1.
 
-**Or from the command line:** download `dub-1.1.0.fwsc` from the
+**Or from the command line:** download `dub-1.2.0.fwsc` from the
 [releases](https://github.com/sbegueria/fm1-dub/releases), install Python 3 with
 `pip3 install mido python-rtmidi`, and run, in a checkout of the source:
 
 ```
-python3 tools/fm1_install.py dub-1.1.0.fwsc
+python3 tools/fm1_install.py dub-1.2.0.fwsc
 ```
 
 **Go back:** the installer page's "Back to the stock firmware", or M-VAVE's own updater, M-UPGRADE,
@@ -72,9 +72,10 @@ DUB-1 starts playing as soon as it's on. A few minutes with it:
 5. **Hold the echo.** Press REC: dub hold. The echo stops listening and repeats what it holds,
    over and over, while the stabs, pings and drums go on dry above it. Press REC again to let it go.
 6. **Shape a layer.** Each layer has a button: ENV the chord, ARP the pings and the crackle (the
-   Texture page), LFO the bass, SEQ the drums, FX the space, HOME the whole (the Dub page), GLO the
-   setup. KNOB 1–4 set the four values at the bottom of the screen. SELECT steps through the pages.
-   Try Cutoff on the Chord page, or Feedback on the Space page.
+   Texture page), LFO the bass, SEQ the drums, FX the space, HOME the whole (the Dub page; again, the
+   Key page: tempo, root, mode, swing), GLO the setup. KNOB 1–4 set the four values at the bottom of
+   the screen. SELECT steps through the pages. Try Cutoff on the Chord page, or Feedback on the Space
+   page. Or turn the Filter on the Dub page (KNOB 1) down, and bring it back.
 7. **Rest.** Press PLAY: the music stops and the echo and reverb ring away. PLAY again and it
    starts from the top of a phrase.
 
@@ -94,31 +95,50 @@ The drawing at the top shows them all; here they are in more detail.
 | PLAY | Play / rest. DUB-1 starts playing by itself when it's switched on. At rest, the echo's feedback eases under 90% so its tails die away, the reverb rings out and the crackle fades. Playing again starts from the first bar of a phrase. Lit while playing. |
 | REC | A tap: **dub hold**: the echo stops listening and repeats what it holds, sample for sample, for ever; the reverb stops listening too and rings on; the chord doesn't move. The stabs, pings and drums go on, dry, above it. Tap again to let go. Lit while held. Held: the **effects grid** (below). |
 | EDIT | A tap: the **Chords page** (below): eight slots to write the chords. Held (half a second): the next chord, at the start of the next bar (at once while resting; in dub hold, once you let go). |
-| SEL | **PERFORM**: the knobs become a mixer and the keys stop being the scale: they mute and solo the layers and make the dub moves (see below). Press again to go back; lit while on. Held: the key map. |
-| HOME | The Dub page: tempo and the machine's movement. Again, on the Dub page: the middle of the screen as ripples, a scope or a spectrum. |
+| SEL | **PERFORM**: the knobs become the master actions (Filter, Dub, Energy, Space) and the keys stop being the scale: they mute and solo the layers, make the dub moves, and white 6 held puts the mix on the knobs (see below). Press again to go back; lit while on. Held: the key map. |
+| HOME | The Dub page: the Filter and the machine's movement. Again: the Key page (tempo, root, mode, swing), and again back to Dub; HOME blinks on the Key page. |
 | ENV · ARP · LFO · SEQ | The layers' pages: Chord, Texture (the pings and the crackle), Bass, Drums. |
-| FX · GLO | The Space and Setup pages. The lit button shows the page. |
+| FX · GLO | The Space page; the Setup page, for what holds for every piece. The lit button shows the page. |
 | SELECT | The previous or next page. Hold HOME and turn it for the tempo, from any page. |
-| ALGORITHM | On a layer's page (Chord, Texture, Bass, Drums): that layer's **voice** (see [The voices](#the-voices)). On the other pages: the mode, Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, pentatonic major and minor; it loads the mode's scale, and editing it with the keys makes it Custom. |
+| ALGORITHM | On the Dub page: the middle of the screen, as ripples, a scope or a spectrum (see [The screen](#4-the-screen)). On a layer's page (Chord, Texture, Bass, Drums): that layer's **voice** (see [The voices](#the-voices)). On the other pages: the mode, Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, pentatonic major and minor; it loads the mode's scale, and editing it with the keys makes it Custom. |
 | PRESETS | The piece (see [The pieces](#7-the-pieces)). |
 | KNOB 1–4 | The four values on the screen. A few clicks are always single steps; a quick turn speeds up, so half a turn sweeps the range. |
 | OCT− / OCT+ | The pings' octave, two down to two up, from any page. While playing, a ping sounds at once in the new octave. |
 | MASTER | Volume. |
 | SAVE | Saves all eight pieces. Held for 1.5 s: puts the piece back to its recipe. |
 
-**PERFORM** (SEL). The knobs become the **Mix** page: KNOB 1–4 the levels of the chord, the pings,
-the bass and the drums (the same values as each layer's page). SELECT or a page's button still
+**PERFORM** (SEL). The knobs become the **Perform** page, the master actions, each acting on the
+whole music. They are 0 in the middle (the piece as it is), and on the way through the knob stops at
+the middle, so it's easy to find:
+
+| Knob | Down | Up |
+|---|---|---|
+| KNOB 1 · **Filter** | Shut 1–100: a low-pass on the music, down to about 230 Hz: under water | Open 1–100: a resonant high-pass, up to about 400 Hz: thin and bright |
+| KNOB 2 · **Dub** | less echo: a lower send and shorter feedback, dry and tight | more echo: a higher send, feeding back longer, towards a runaway |
+| KNOB 3 · **Energy** | sparser: fewer ping notes, shaker hits and stabs a bar | busier: more of each |
+| KNOB 4 · **Space** | drier: less reverb and cloud, a smaller plate | wider: more reverb and cloud, a longer plate |
+
+The Filter is the same as KNOB 1 on the Dub page (one value, on both pages); the kick is always
+left out of it, so it keeps pumping under the filtered music. PERFORM's Open and Shut keys push on
+top of it. The master actions are for playing: they aren't saved, and they stay where they are when
+you change piece (turn the Filter down, change piece, open it again), back in the middle when the
+FM-1 starts.
+
+**Hold white 6** for the **Mix** page: KNOB 1–4 the levels of the chord, the pings, the bass and the
+drums (the same values as each layer's page), until you let go. SELECT or a page's button still
 takes you to the other pages while you perform, and SEL again leaves PERFORM where you are (from the
-Mix page, back to the page you started from). The keys, from the lowest up, are three sets, with a
-dark key between them. Each key that does something is lit (hold SEL for this map on the screen):
+Perform page, back to the page you started from). The keys, from the lowest up, are three sets, with
+white 6 between them. Each key that does something is lit (hold SEL for this map on the screen):
 
 | | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | **Black keys:** solo | Chord | Pings | Bass | Kick | Hats | | | | | | |
-| **White keys:** mute, moves | Chord | Pings | Bass | Kick | Hats | (dark) | Throw | Open | Shut | Drop | Echo |
+| **White keys:** mute, mix, moves | Chord | Pings | Bass | Kick | Hats | Mix (held) | Throw | Open | Shut | Drop | Echo |
 
 The first five black keys (F♯ G♯ A♯, C♯ D♯) sit above the five mutes, like a mixer's channel strip.
 
+- **White 6, held:** the Mix page on the knobs (lit; dark while held). The mutes still act the moment
+  you press them, with or without it.
 - **White 1–3, the chord, pings and bass:** a press turns the layer's level (its Mix knob) to 0, the
   next to 100; the knob shows it. The key is lit while the level is up.
 - **White 4–5, the kick and the hats** (one Drums knob for both): a press mutes, another brings back;
@@ -140,7 +160,7 @@ The first five black keys (F♯ G♯ A♯, C♯ D♯) sit above the five mutes, 
     both back on the next beat when you let go. The kick's mute (white 4) takes it out until you
     press again; Drop is the move you hold for a bar or two and release on the downbeat.
   - **Echo:** the echo pushed: everything into it, feeding back more.
-  - Each sweeps in over about half a second; letting go eases back.
+  - Each sweeps in over about half a second; letting go eases back (to where the Filter knob is).
 - The other keys do nothing in PERFORM; MIDI notes in still change the scale.
 
 **The Chords page** (EDIT tapped). Eight slots, to write the chords yourself:
@@ -204,8 +224,8 @@ another button puts the card away; letting go after it does nothing else.
   holds. The chord's name is in the middle (red in dub hold). Around it the four ping loops each
   circle as a blue dot, one step at a time, and light up as they play. The loops have different
   lengths, so the dots drift apart and meet again.
-- **HOME again** (on the Dub page) changes what the middle shows: the ripples, a **scope** or a
-  **spectrum**, and then the ripples again. The choice is saved with the pieces (SAVE). With the
+- **ALGORITHM** (on the Dub page) changes what the middle shows: the ripples, a **scope** or a
+  **spectrum**, and then the ripples again (turned back, the other way round). The choice is saved with the pieces (SAVE). With the
   scope or the spectrum showing, the chord's name moves to the top.
   - The **scope** draws the output (left and right mixed) as a thick line. Each trace starts on a
     rising zero crossing so the picture stands still, and the two traces before it fade behind.
@@ -227,8 +247,8 @@ another button puts the card away; letting go after it does nothing else.
   a dial (or, for a switch, its positions) and the value. The one you're turning lights up.
 
 ![The Space page with FEEDBACK lit as it turns, set to 87%; ECHO 55, ECHO TIME 1/8., REVERB 35](img/screen-turning.png "Turning Feedback on the Space page")
-![The scope: the output as a thick teal line over a dotted centre line, the two traces before it fading behind; Fm7 at the top](img/screen-scope.png "HOME again: the scope")
-![The spectrum: eighteen columns of teal and brass segments, a white cap over each; Fm7 at the top](img/screen-spectrum.png "HOME again: the spectrum")
+![The scope: the output as a thick teal line over a dotted centre line, the two traces before it fading behind; Fm7 at the top](img/screen-scope.png "ALGORITHM on the Dub page: the scope")
+![The spectrum: eighteen columns of teal and brass segments, a white cap over each; Fm7 at the top](img/screen-spectrum.png "ALGORITHM on the Dub page: the spectrum")
 ![Dub hold: red rings, the chord's name and "hold" in red](img/screen-hold.png "Dub hold")
 ![PERFORM with THROW held: PERFORM top right, every stab a double ring](img/screen-perform.png "PERFORM, throwing")
 
@@ -403,11 +423,15 @@ voice's length times its own: an Organ or a Pad rings longer than Saws at the sa
 
 ### HOME: Dub
 
-![The Dub page: TEMPO 122, EVOLVE 40, MOTION 50, DRIFT 32 bars](img/screen-main.png "The Dub page")
+![The Dub page: FILTER Off, EVOLVE 40, MOTION 50, DRIFT 32 bars](img/screen-main.png "The Dub page")
 
-- **HOME** again, on this page: the middle of the screen as ripples, scope or spectrum (see
-  [The screen](#4-the-screen)).
-- **Tempo:** 90 to 140 (also HOME + SELECT, from any page).
+The song as it plays. **ALGORITHM** on this page: the middle of the screen as ripples, scope or
+spectrum (see [The screen](#4-the-screen)). **HOME** again: the Key page (below).
+
+- **Filter:** the DJ filter on the whole music but the kick. Down (Shut 1–100), a low-pass that
+  takes it under water; up (Open 1–100), a resonant high-pass that thins it; Off in the middle,
+  where the knob stops on its way through. It's PERFORM's Filter too (see [Controls](#3-controls)):
+  for playing, so it isn't saved, and it stays where it is when you change piece.
 - **Evolve:** how restless it is: the stab pattern turning and gaining or losing stabs, stabs
   dropping out, the shaker's pattern, the pings' notes, loops sitting out, octave jumps in the
   bass, and dub throws (see [The layers](#5-the-layers)). At 0, with Motion at 0 too, it's a strict
@@ -416,6 +440,20 @@ voice's length times its own: an Organ or a Pad rings longer than Saws at the sa
   is, and how much the echo's heads, the filter and the band-pass wander.
 - **Drift:** how many bars a chord lasts before it moves on: 2, 4, 8, 16, 32 or 64 bars, or Hold
   (it moves only when you press EDIT). The chord moves at the start of a bar.
+
+### HOME again: Key
+
+![The Key page: TEMPO 122, ROOT F, MODE Dorian, SWING 52%](img/screen-key.png "The Key page")
+
+The piece's key and time, which a dub track seldom changes. HOME blinks while you're here; HOME
+again goes back to the Dub page.
+
+- **Tempo:** 90 to 140. Also HOME + SELECT, from any page.
+- **Root:** the key's root note. The scale moves with it, and the chord at once.
+- **Mode:** Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, pentatonic major and minor; it
+  loads the mode's scale (as ALGORITHM does off the Dub page). Editing the scale with the keys
+  makes it Custom.
+- **Swing:** the off sixteenths late, 50% to 70% (the same as on the Drums page).
 
 ### ENV: Chord
 
@@ -505,9 +543,10 @@ How long the plate rings comes with the piece.
 
 ### GLO: Setup
 
-![The Setup page: ROOT F, TUNE 0, MIDI OUT On, LIGHTS On](img/screen-setup.png "The Setup page")
+![The Setup page: TUNE 0, MIDI OUT On, LIGHTS On](img/screen-setup.png "The Setup page")
 
-- **Root:** the key's root note. The scale moves with it, and the chord at once.
+What holds for every piece and the whole machine (the root is the piece's: on the Key page).
+
 - **Tune:** fine tuning, ±50 cents.
 - **MIDI out:** on or off.
 - **Lights:** On: the keys light the scale, and the unlit buttons glow dimly so they can be read
@@ -620,7 +659,7 @@ The defaults are Basic's; each piece has its own.
 
 | Page | Value | Range | Basic |
 |---|---|---|---|
-| Dub | Tempo | 90–140 | 122 |
+| Dub | Filter | Shut 100 – Off – Open 100 (for playing, not saved) | Off |
 | Dub | Evolve | 0–100 | 40 |
 | Dub | Motion | 0–100 | 50 |
 | Dub | Drift | 2, 4, 8, 16, 32, 64 bars, Hold | 32 bars |
@@ -636,6 +675,10 @@ The defaults are Basic's; each piece has its own.
 | Bass | Octave | −1 – +1 | 0 |
 | Bass | Groove | Drone, Offbeat, Dotted, Roller, Sync | Offbeat |
 | Bass | Fifth | 0–100 | 20 |
+| Key | Tempo | 90–140 | 122 |
+| Key | Root | C – B | F |
+| Key | Mode | 8 modes, or Custom | Dorian |
+| Key | Swing | 50%–70% (the Drums page's) | 52% |
 | Drums | Level | 0–100 | 65 |
 | Drums | Hits | 0–100 | 50 |
 | Drums | Swing | 50%–70% | 52% |
@@ -644,11 +687,12 @@ The defaults are Basic's; each piece has its own.
 | Space | Echo time | 1/8, 1/8., 1/4, 1/4., 1/2, 1 bar | 1/8. |
 | Space | Feedback | 45% – 112% | 85% |
 | Space | Reverb | 0–100 | 35 |
-| Setup | Root | C – B | F |
 | Setup | Tune | −50 – +50 cents | 0 |
 | Setup | MIDI out | Off, On | On |
 | Setup | Lights | Off, On, Keys | On |
-| ALGORITHM | Mode (Dub, Space, Setup, Mix pages) | 8 modes, or Custom | Dorian |
+| Perform | Filter, Dub, Energy, Space | −100 – 0 – +100 (Filter: Shut, Off, Open); for playing, not saved | 0 |
+| ALGORITHM | Screen (Dub page) | Ripples, Scope, Spectrum | Ripples |
+| ALGORITHM | Mode (Key, Space, Setup, Perform, Mix pages) | 8 modes, or Custom | Dorian |
 | ALGORITHM | Chord voice (Chord page) | 7 voices | Saws |
 | ALGORITHM | Ping voice (Texture page) | 5 voices | Blip |
 | ALGORITHM | Bass voice (Bass page) | 4 voices | Sub |

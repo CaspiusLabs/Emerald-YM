@@ -1,11 +1,12 @@
 # the keys are the scale: toggles, the root stays, three notes at least; modes and the root
 wait 300
-# the first piece is in Dorian; its root to C (Setup page, KNOB 1, down to its lowest)
+# the first piece is in Dorian; its root to C (HOME on the Dub page, the Key page: KNOB 2, down to its lowest)
 expect par20 1
-tap GLO
-spin K1 -12
-expect par19 0
 tap HOME
+wait 200
+expect view 18
+spin K2 -12
+expect par19 0
 # C Dorian: C D Eb F G A Bb. E4 is key 11: add E (relative 4)
 expect pool 0x6AD
 tapkey 11
@@ -15,7 +16,7 @@ expect pool 0x6AD
 # key 7 is C4: the root stays
 tapkey 7
 expect pool 0x6AD
-# the next mode: Phrygian
+# the next mode: Phrygian (ALGORITHM, off the Dub page)
 turn ALGO 1
 expect par20 2
 expect pool 0x5AB
@@ -23,10 +24,8 @@ turn ALGO -1
 expect par20 1
 expect pool 0x6AD
 # the root up a tone: D Dorian (the pool is relative to the root: the same)
-tap GLO
-spin K1 2
+spin K2 2
 expect par19 2
-tap HOME
 expect pool 0x6AD
 wait 300
 shot d_dorian.png

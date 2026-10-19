@@ -106,6 +106,11 @@ enum { EN_M_CHORD = 1, EN_M_PINGS = 2, EN_M_BASS = 4, EN_M_KICK = 8, EN_M_HATS =
 enum { EN_PF_THROW = 1, EN_PF_OPEN = 2, EN_PF_CLOSE = 4, EN_PF_KICKDROP = 8, EN_PF_ECHO = 16 };   /* (KICKDROP: Drop, the kick and the bass) */
 void en_mute(uint32_t mask);
 void en_perf(uint32_t flags);
+/* the master actions (HOME's and PERFORM's knobs), -50..50 each, 0: the piece as it is; for playing, never saved.
+ * Filter: down a low-pass on the music (Shut's), up a resonant high-pass (Open's), the kick left out; Dub: the
+ * echo's send and feedback; Energy: Density, Hits and Stabs; Space: the reverb, the cloud and the plate's size */
+enum { EN_MAC_FILTER, EN_MAC_DUB, EN_MAC_ENERGY, EN_MAC_SPACE, EN_NMAC };
+void en_macro(int i, int v);
 /* the effects grid (REC held): the effects held now, a bit each (EN_FX_*), in the grid's order */
 enum { EN_FX_THROW, EN_FX_TIME, EN_FX_TAPESTOP, EN_FX_SWELL, EN_FX_LOWPASS, EN_FX_HIGHPASS, EN_FX_WAH, EN_FX_PHONE,
        EN_FX_VERB, EN_FX_CRASH, EN_FX_FREEZE, EN_FX_WASH, EN_FX_STUTTER, EN_FX_GATE, EN_FX_SIREN, EN_FX_RISER, EN_NFX };

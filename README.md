@@ -6,7 +6,7 @@ FM pings on loops of unequal length, a sub bass on one of five grooves, a four-o
 that ducks the rest, a shaker and an open hat, and a bed of vinyl crackle. An eight-bar arrangement
 takes the kick out for a break, thins the layers and brings them back with a fill, and now and then
 a stab is thrown into the echo. You don't play it, you steer it: pick a piece and a scale, take
-notes out, open the filter, push the feedback, hold the echo.
+notes out, sweep the filter, push the echo, hold it, mute and solo the layers.
 
 DUB-1 is a fork of [AMB-1](https://github.com/charlesvestal/fm1-amb), Charles Vestal's generative
 ambient firmware for the FM-1, and keeps its platform, its panel and much of its sound engine.
@@ -29,11 +29,11 @@ installer can reach.
 |---|---|
 | Keys | The scale: each key adds its note or takes it out |
 | PLAY · REC · EDIT | Play / rest · a tap: dub hold, held: the effects grid (16 effects on the white keys) · a tap: the Chords page (eight slots: root, kind, type; Play random or the slots), held: the next chord |
-| SEL | PERFORM: the knobs a mixer; white keys 1–5 mute the layers, black keys 1–5 solo them; white 7–11, held: throw, open, shut, drop (the kick and the bass), push the echo. The keys that do something are lit; hold SEL for the map |
-| HOME · ENV · ARP · LFO · SEQ · FX · GLO | The pages: Dub, Chord, Texture, Bass, Drums, Space, Setup; KNOB 1–4 set their four values. A layer's button again: its sound page (four more, relative to the voice) |
+| SEL | PERFORM: the knobs the master actions, Filter, Dub (the echo), Energy and Space (white 6 held: the mix); white keys 1–5 mute the layers, black keys 1–5 solo them; white 7–11, held: throw, open, shut, drop (the kick and the bass), push the echo. The keys that do something are lit; hold SEL for the map |
+| HOME · ENV · ARP · LFO · SEQ · FX · GLO | The pages: Dub (the Filter, Evolve, Motion, Drift), Chord, Texture, Bass, Drums, Space, Setup (for every piece); KNOB 1–4 set their four values. HOME again: the Key page (tempo, root, mode, swing). A layer's button again: its sound page (four more, relative to the voice) |
 | SELECT | The previous or next page; with HOME held, the tempo |
 | SEQ, twice, three times | The drums' sound page, then the **Pattern page**: four lanes (kick, shaker, open hat, rim) of sixteen steps on the white keys, accents, chance |
-| ALGORITHM | On a layer's page, its voice (7 chord, 5 ping, 5 bass voices, 5 kits); elsewhere, the mode. An FM voice's layer button a third time: its FM page (the algorithm, ratio, feedback, modulators' decay) |
+| ALGORITHM | On the Dub page, the screen (ripples, scope, spectrum); on a layer's page, its voice (7 chord, 5 ping, 5 bass voices, 5 kits); elsewhere, the mode. An FM voice's layer button a third time: its FM page (the algorithm, ratio, feedback, modulators' decay) |
 | PRESETS | The piece (eight of them) |
 | OCT− / OCT+ | The pings' octave |
 | SAVE | Saves; held, puts the piece back to its recipe |

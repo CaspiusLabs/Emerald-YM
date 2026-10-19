@@ -1,4 +1,4 @@
-# the voices: ALGORITHM on a layer's page steps through its voices (round); on Dub, the mode
+# the voices: ALGORITHM on a layer's page steps through its voices (round); on Dub, the screen; elsewhere, the mode
 listen
 wait 3000
 tap ENV
@@ -30,7 +30,7 @@ said KIT Deep
 expect par35 1
 wait 8000
 expect peak_db_max -0.5
-tap HOME
+tap FX
 wait 300
 turn ALGO 1
 wait 300

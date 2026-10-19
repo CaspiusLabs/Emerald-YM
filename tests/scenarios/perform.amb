@@ -1,5 +1,5 @@
-# PERFORM (SEL): white 1-5 mute the layers, black 1-5 solo them, white 7-11 held make the dub moves; SEL again
-# gives the scale back
+# PERFORM (SEL): white 1-5 mute the layers, black 1-5 solo them, white 7-11 held make the dub moves, white 6 held
+# puts the mix on the knobs (else the master actions: Filter, Dub, Energy, Space); SEL again gives the scale back
 listen
 wait 3000
 expect pool 0x6AD
@@ -22,10 +22,42 @@ wait 200
 said ECHO
 wait 1000
 key w10 up
-# white 6, between the sets, does nothing
-tapkey w5
+# white 6 held: the mix on the knobs; let go: the master actions
+expect view 17
+key w5 down
 wait 200
-said_none ON
+expect view 7
+said MIX
+key w5 up
+wait 200
+expect view 17
+# the master actions: the Filter (it stops at the middle on the way through), Dub, Energy, Space
+spin K1 -20
+wait 300
+said Filter Shut 40
+spin K1 30
+wait 300
+said Filter Off
+spin K1 10
+wait 300
+said Filter Open 20
+spin K1 -10
+wait 300
+spin K2 25
+wait 300
+said Dub +50
+spin K2 -25
+wait 300
+spin K3 -25
+wait 300
+said Energy -50
+spin K3 25
+wait 300
+spin K4 50
+wait 300
+said Space +100
+spin K4 -50
+wait 300
 # a black key solos its layer (the scale stays): the others go quiet; more than one play together
 tapkey b0
 wait 200
@@ -55,10 +87,15 @@ expect dirty 1
 expect view 0
 tap SEL
 wait 200
+expect view 17
+key w5 down
+wait 200
 expect view 7
 spin K2 -100
 wait 200
 expect par1 0
+key w5 up
+wait 200
 tap SEL
 wait 200
 expect view 0

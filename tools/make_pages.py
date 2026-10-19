@@ -107,6 +107,9 @@ your own chords and drum patterns.</p>
 <p>Eight pieces, each remembering how you left it; a voice for each layer on ALGORITHM, two more pages of
 sound under each layer's button, an FM page with the algorithm drawn. The screen shows the echo: each stab
 a ring, its repeats following.</p>
+<p>Or play it live: a DJ filter on the main page; PERFORM (SEL) mutes and solos the layers on the keys, throws,
+opens, shuts and drops the floor, and turns the knobs into four master actions, Filter, Dub, Energy and
+Space.</p>
 <p class="small">To go back to the official firmware, use the installer's "Back to the stock firmware", or
 M-VAVE's updater, M-UPGRADE, from <a href="https://www.m-vave.com/download">m-vave.com/download</a>.
 DUB-1 is a fork of <a href="https://github.com/charlesvestal/fm1-amb">AMB-1</a> by Charles Vestal; its granular

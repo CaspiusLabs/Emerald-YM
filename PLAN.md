@@ -114,6 +114,40 @@ measurement (renders analysed for level, timing and spectrum).
 - [ ] Manual, README, the emulator page, release notes; `./build.sh --release 1.1.0`; the site; push
       and the tag (when the user says)
 
+## Release 1.2.0: live performance (in progress, 2026-10-19)
+
+Decided with the user (2026-10-19):
+
+- [x] **HOME, Dub (the song as it plays):** Filter, Evolve, Motion, Drift. Tempo leaves knob 1 for
+      **Filter**. Filter is bipolar: down is Shut's low-pass (the music under water), up is Open's resonant
+      high-pass, the middle is off (the knob stops at the middle on the way through), and the kick is always
+      left out. It is the same filter as PERFORM's Open and Shut keys, which push on top of it.
+- [x] **HOME again: the Key page:** Tempo, Root, Mode, Swing (the piece's settings, rarely changed in a
+      dub song). HOME + SELECT stays as the tempo shortcut from any page. HOME blinks on the Key page.
+- [x] **ALGORITHM on HOME: the screen view** (ripples, scope, spectrum; was HOME again). ALGORITHM still
+      sets the voice on a layer's page and the mode elsewhere.
+- [x] **GLO only for what is global:** Tune, MIDI out, Lights (and CPU and battery in the header). Root
+      moves to the Key page.
+- [x] **PERFORM's knobs: the master actions** Filter, Dub, Energy, Space (Filter on knob 1, as on HOME, the
+      same value). **White 6 held: the mix** (chord, pings, bass, drums), as the knobs were; the mutes still
+      act on the press. White 6 is lit in PERFORM and goes dark while held.
+  - Dub: the echo send (+40 at full) and feedback (+35). Energy: Density, Hits and Stabs (+45 each).
+    Space: Reverb and Cloud (+45), the plate's Size (+30). All bipolar: 0 is the piece as written.
+  - **For playing only:** never saved. They keep their value across a piece change (filter down, change
+    piece, open it up: the night video's transition by hand), and are back in the middle on boot.
+- [x] The scenarios updated (screen, scale, voices, pings, help, reader, perform: the master actions and white 6),
+      the help cards, the emulator page's help
+- [ ] To listen: the Filter's range and speed, how far Dub, Energy and Space go
+- [ ] Manual, README, the release notes; the film takes (`tests/film/*.amb`) use 1.1.0's controls (HOME again for
+      the screen): update them before rendering with 1.2.0
+- [x] Fixed: Tape stop past the tape's end in dub hold (genkigenki's report; reproduced under AddressSanitizer);
+      ALGORITHM and PRESETS skipping detents on a quick turn; the clap's bursts clicking (they started at full level)
+- [x] Haze's "faint clicks" (the shorts agent): nothing broken. They're the kick's designed click, the hats' noise and the
+      Blip pings' attacks, made more noticeable by Haze's long echo.
+- [ ] SMK-37: genkigenki's PR #1, kept on an `smk37` branch until he tests it on his unit (the user, 2026-10-19:
+      accept it in principle; host the SMK packages and an SMK emulator; the user will get an SMK-37 Pro later).
+      See `build/smk37/REPORT.md` and `MERGE.md`
+
 ## Next: after 1.0.0 (the user's ideas, 2026-10-17)
 
 **The main direction (the user, 2026-10-17):** after the small fixes and ideas, expand how playable
@@ -502,3 +536,52 @@ would fit.
 - A spring reverb next to the plate
 - MIDI CC out for the filter and the echo send, to drive other gear
 - Keys as live mutes, or a held key as a manual throw
+
+## Releases after 1.2.0 (the user's ideas, 2026-10-19)
+
+1.2.0 is about live performance. Then, in roughly this order:
+
+### Sound: noise, the bass, the stereo field
+
+- **Noise as a substantial part of DUB-1**, maybe a layer of its own (to plan: a sixth lane? see "Study: a
+  sixth lane"). Start from the ideas taken from the musicologist's video ("Understanding Dub Techno",
+  Bahadırhan Koçer; the list above): noise as the canvas, the backcloth (hum and filtered tape noise), the
+  crackle tuned to the key and sent into the echo, noise in the kick and the sub. Also read the notes from
+  his talk on dub techno; the user would like to get his book.
+- **The bass:** more grooves, and slow groove changes within a song (the pattern moving over phrases, as the
+  chord does with Drift).
+- **The stereo field:** panning that moves (layers or echo repeats shifting between left and right,
+  modulated), so the soundscape breathes across the stereo image.
+
+### Composition: your own melodic lines
+
+- A way to write a melodic line, for the bass or another layer (the pings, a new lead), and keep it with
+  the piece. Builds on 1.1.0's ping lock and the pattern page's step entry on the keys.
+
+### Connectivity: the output split in two
+
+- **A split mode:** some layers on the left output, the rest on the right (mono each), so each can be
+  treated on its own in a mixer (the user's Behringer Xenyx 1200) or an effects unit (the Korg NTS-3).
+  The stereo field is lost in that mode, but nothing like it exists in the FM-1 firmware ecosystem; other
+  firmware authors would appreciate it. The details are in "Ideas for later": the Korg NTS-3 (the send
+  voice, the return, sync).
+
+
+### A sidekick firmware: a second FM-1 that plays along with DUB-1 (the user's idea, 2026-10-19)
+
+Many people own several FM-1s, mostly to keep different firmwares ready. The user is getting a second one. The idea is a
+**companion firmware** for the second FM-1 that plays with DUB-1: it throws melodic lines, phrases or samples
+over DUB-1's groove, in time and in key. It goes a bit beyond dub, and that's fine.
+
+- **The link:** DUB-1 already sends MIDI clock and start/stop, and its notes (the chord, the pings, the bass,
+  the drums, each on its own channel). The FM-1 sends MIDI out over USB only. It takes MIDI in over USB and
+  the TRS jack. Two FM-1s therefore need a USB-MIDI host between them, such as a small host box, a computer
+  or a phone. The second FM-1 then follows the clock and reads the key and the chord from DUB-1's notes.
+- **To study:**
+  - what DUB-1 should send for a companion: the root, the mode and the pool as CC or SysEx, the section
+    (Full, Break, Thin), the phrase bar, dub hold, so the sidekick can answer the arrangement;
+  - which devices act as a host at the lowest cost;
+  - whether the TRS jack could carry clock from a host;
+  - what the sidekick plays: phrases from a scale-aware generator, a sample player (if the flash holds
+    enough), call and response with the pings.
+- Related: "Connectivity: the output split in two", and the MIDI notes in section 9 of the manual.

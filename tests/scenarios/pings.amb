@@ -35,6 +35,7 @@ spin K2 80
 wait 60000
 expect pingsame 0
 # a project saved by DUB-1 1.0.0 (format 8, no pings) is read and kept: the tempo, the piece; the loops afresh
+tap HOME
 spin K1 -6
 expect par18 116
 turn PRESET 2

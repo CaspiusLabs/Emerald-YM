@@ -41,8 +41,10 @@ wait 200
 # the recipe's level again (not the 2 it was left at)
 expect par0 >20
 expect store_writes 0
-# the tempo from a known value: the Dub page's first knob down to its lowest
+# the tempo from a known value: the Key page's first knob (HOME, HOME again) down to its lowest
 tap HOME
+tap HOME
+expect view 18
 spin K1 -100
 expect par18 90
 tap FX

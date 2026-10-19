@@ -7,8 +7,9 @@
  *                  keys its root, KNOB 2 its kind, KNOB 3 its type, KNOB 4 Play: Random or the slots); held: the next chord
  *   REC            tapped: DUB HOLD (the echo repeats what it holds, the chord holds); held: the EFFECTS grid, played
  *                  on the white keys while they're held             OCT- / OCT+   the pings' octave
- *   SEL            PERFORM: the keys mute the layers (white 1-5) and, held, make the dub moves (white 6-10)
- *   SELECT         the pages (with HOME held: the tempo)   ALGORITHM mode (loads a pool)   PRESETS the piece
+ *   SEL            PERFORM: the keys mute (white 1-5) and solo (black 1-5) the layers and, held, make the dub moves
+ *                  (white 7-11); the knobs the master actions (Filter, Dub, Energy, Space), with white 6 held the mix
+ *   SELECT         the pages (with HOME held: the tempo)   ALGORITHM the voice, the screen (Dub), the mode   PRESETS the piece
  *   HOME ENV ARP LFO SEQ FX GLO   the pages: DUB, CHORD, TEXTURE, BASS, DRUMS, SPACE, SETUP
  *   KNOB 1-4       the page's four values
  *   SAVE           saves (it also saves by itself a few seconds after a change, while resting);
@@ -19,13 +20,15 @@
 /* (past NPAGES, off SELECT's round and on no button of their own: V_MIX, PERFORM's knobs, the four layers'
  * levels; the layers' sound pages, the layer's button pressed again) */
 enum { V_DUB, V_CHORD, V_TEXTURE, V_BASS, V_DRUMS, V_SPACE, V_SETUP, NPAGES, V_MIX = NPAGES, V_CSND, V_PSND, V_BSND,
-       V_DSND, V_CFM, V_PFM, V_BFM, V_CHORDS, V_PAT, NVIEWS };
+       V_DSND, V_CFM, V_PFM, V_BFM, V_CHORDS, V_PAT, V_PERF, V_KEY, NVIEWS };
+/* (V_PERF: PERFORM's knobs, the master actions; V_MIX while white 6 is held. V_KEY: HOME again, the key and the
+ * tempo, the Dub page's second) */
 static const char *const VIEW_NAME[NVIEWS] = {"Dub", "Chord", "Texture", "Bass", "Drums", "Space", "Setup", "Mix",
                                               "Chord sound", "Ping sound", "Bass sound", "Drum sound",
-                                              "Chord FM", "Ping FM", "Bass FM", "Chords", "Pattern"};
+                                              "Chord FM", "Ping FM", "Bass FM", "Chords", "Pattern", "Perform", "Key"};
 #define B_NONE 0xFFu
 static const uint8_t VIEW_BTN[NVIEWS] = {B_HOME, B_ENV, B_ARP, B_LFO, B_SEQ, B_FX, B_GLO, B_NONE, B_NONE, B_NONE, B_NONE,
-                                         B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE};
+                                         B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE};
 static int sound_of(int v) { return v == V_CHORD ? V_CSND : v == V_TEXTURE ? V_PSND : v == V_BASS ? V_BSND : v == V_DRUMS ? V_DSND : -1; }
 static int fm_of(int v) { return v == V_CHORD ? V_CFM : v == V_TEXTURE ? V_PFM : v == V_BASS ? V_BFM : -1; }
 static int parent_of(int v)
@@ -34,20 +37,22 @@ static int parent_of(int v)
          : v == V_DSND || v == V_PAT ? V_DRUMS : -1;
 }
 static int layer_of(int v) { v = parent_of(v) >= 0 ? parent_of(v) : v; return v == V_CHORD ? 0 : v == V_TEXTURE ? 1 : v == V_BASS ? 2 : 3; }
-static int page_of(int v) { return parent_of(v) >= 0 ? parent_of(v) : v; }   /* a sound page: its layer's */
+static int page_of(int v) { return v == V_KEY ? V_DUB : parent_of(v) >= 0 ? parent_of(v) : v; }   /* a sound page: its layer's */
 /* the four knobs of each page: a parameter, or one of these; and what the knob is called there */
 enum { K_LEDS = 200, K_CPU, K_NONE, K_SLOT, K_CQ, K_CX,    /* (the Chords page: the slot, and its kind and type) */
-       K_LANE, K_LCH };                                      /* (the Pattern page: the lane, and its chance) */
+       K_LANE, K_LCH,                                        /* (the Pattern page: the lane, and its chance) */
+       K_FILTER, K_DUB, K_ENERGY, K_SPACE,                   /* the master actions (EN_MAC_*), in that order */
+       K_MODE };                                             /* (the Key page: the mode, as ALGORITHM sets it) */
 static const char *const LANE_NAME[EN_NDRUM] = {"Kick", "Shaker", "Open", "Rim", "Clap"};
 _Static_assert(P_NPARAMS <= K_LEDS, "the knobs' own codes must come after the parameters");
 static const uint16_t VIEW_KNOB[NVIEWS][4] = {
-    {P_TEMPO, P_EVOLVE, P_MOTION, P_DRIFT},
+    {K_FILTER, P_EVOLVE, P_MOTION, P_DRIFT},
     {P_CHORD, P_STABS, P_DECAY, P_CUTOFF},
     {P_PINGS, P_DENSITY, P_CLOUD, P_CRACKLE},
     {P_BASS, P_BASSOCT, P_GROOVE, P_FIFTH},
     {P_DRUMS, P_HITS, P_SWING, P_DUCK},
     {P_ECHO, P_ETIME, P_FEEDBACK, P_REVERB},
-    {P_ROOT, P_TUNE, P_MIDI, K_LEDS},
+    {P_TUNE, P_MIDI, K_LEDS, K_NONE},
     {P_CHORD, P_PINGS, P_BASS, P_DRUMS},
     {P_CATT, P_CCOL, P_CRES, P_CENV},
     {P_PTON, P_PRAT, P_PLEN, P_PBEND},
@@ -58,15 +63,17 @@ static const uint16_t VIEW_KNOB[NVIEWS][4] = {
     {P_BALG, P_BFRAT, P_BFB, P_BFDEC},
     {K_SLOT, K_CQ, K_CX, P_PMODE},
     {K_LANE, P_DACCENT, K_LCH, P_DMODE},
+    {K_FILTER, K_DUB, K_ENERGY, K_SPACE},
+    {P_TEMPO, P_ROOT, K_MODE, P_SWING},
 };
 static const char *const KNOB_LABEL[NVIEWS][4] = {
-    {"Tempo", "Evolve", "Motion", "Drift"},
+    {"Filter", "Evolve", "Motion", "Drift"},
     {"Level", "Stabs", "Decay", "Cutoff"},
     {"Pings", "Density", "Cloud", "Crackle"},
     {"Level", "Octave", "Groove", "Fifth"},
     {"Level", "Hits", "Swing", "Duck"},
     {"Echo", "Echo time", "Feedback", "Reverb"},
-    {"Root", "Tune", "MIDI out", "Lights"},
+    {"Tune", "MIDI out", "Lights", ""},
     {"Chord", "Pings", "Bass", "Drums"},
     {"Attack", "Colour", "Reso", "Env"},
     {"Tone", "Ratio", "Length", "Bend"},
@@ -77,6 +84,8 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Algo", "Ratio", "Feedback", "Mod dec"},
     {"Slot", "Chord", "Type", "Play"},
     {"Lane", "Accent", "Chance", "Play"},
+    {"Filter", "Dub", "Energy", "Space"},
+    {"Tempo", "Root", "Mode", "Swing"},
 };
 
 /* the screen's colours: a dark room, as a dub techno sleeve (grey on black, a cold blue). The chord and
@@ -109,6 +118,7 @@ static struct {
                                         * the mix; the page it was started from */
     uint32_t mutes, moves;             /* the layers muted (EN_M_*), the moves held (EN_PF_*) */
     uint32_t solo;                     /* the layers soloed (EN_M_*): the others muted while any is */
+    int8_t mac[EN_NMAC];               /* the master actions (HOME's Filter, PERFORM's knobs): -50..50, never saved */
     uint32_t fx;                       /* the effects held (EN_FX_*), REC's grid */
     uint8_t slot, chords_from;         /* the Chords page: the slot edited; the page it was opened from */
     uint8_t lane;                      /* the Pattern page: the lane edited */
@@ -227,6 +237,10 @@ static int knob_get(int k)
         return ui.lane;
     if (k == K_LCH)
         return proj.par[P_DCH0 + ui.lane];
+    if (k >= K_FILTER && k <= K_SPACE)
+        return ui.mac[k - K_FILTER];
+    if (k == K_MODE)
+        return proj.par[P_MODE];
     return 0;
 }
 static void knob_range(int k, int *lo, int *hi)
@@ -234,9 +248,12 @@ static void knob_range(int k, int *lo, int *hi)
     if (k < P_NPARAMS) {
         *lo = en_param_info(k)->lo;
         *hi = en_param_info(k)->hi;
+    } else if (k >= K_FILTER && k <= K_SPACE) {
+        *lo = -50;
+        *hi = 50;
     } else {
         *lo = 0;
-        *hi = k == K_LEDS ? 2 : k == K_CPU ? 100 : k == K_SLOT ? EN_NPROG - 1 : k == K_CQ ? EN_NCQ - 1 : k == K_CX ? EN_NCX - 1
+        *hi = k == K_MODE ? EN_NMODES - 1 : k == K_LEDS ? 2 : k == K_CPU ? 100 : k == K_SLOT ? EN_NPROG - 1 : k == K_CQ ? EN_NCQ - 1 : k == K_CX ? EN_NCX - 1
             : k == K_LANE ? EN_NDRUM - 1 : k == K_LCH ? 100 : 0;
     }
 }
@@ -245,7 +262,8 @@ static const char *knob_name(int k)
     if (k < P_NPARAMS)
         return en_param_info(k)->name;
     return k == K_LEDS ? "Lights" : k == K_CPU ? "CPU" : k == K_SLOT ? "Slot" : k == K_CQ ? "Chord" : k == K_CX ? "Type"
-         : k == K_LANE ? "Lane" : k == K_LCH ? "Chance" : "";
+         : k == K_LANE ? "Lane" : k == K_LCH ? "Chance" : k == K_FILTER ? "Filter" : k == K_DUB ? "Dub"
+         : k == K_ENERGY ? "Energy" : k == K_SPACE ? "Space" : k == K_MODE ? "Mode" : "";
 }
 static void knob_text(int k, char *b)
 {
@@ -276,11 +294,31 @@ static void knob_text(int k, char *b)
             b++;
         *b++ = '%';
         *b = 0;
+    } else if (k == K_FILTER) {                  /* Off in the middle; Shut (the low-pass) down, Open up, 0..100 */
+        const char *n = v < 0 ? "Shut " : "Open ";
+        if (!v) {
+            n = "Off";
+            while ((*b++ = *n++))
+                ;
+            return;
+        }
+        while (*n)
+            *b++ = *n++;
+        itoa_u((uint32_t)(v < 0 ? -v : v) * 2u, b);
+    } else if (k >= K_DUB && k <= K_SPACE) {     /* 0: the piece as it is; more or less of it, -100..+100 */
+        if (v)
+            *b++ = v < 0 ? '-' : '+';
+        itoa_u((uint32_t)(v < 0 ? -v : v) * 2u, b);
+    } else if (k == K_MODE) {
+        const char *n = mode_name();
+        while ((*b++ = *n++))
+            ;
     } else {
         b[0] = 0;
     }
 }
 
+static void set_mode(int m);
 static void knob_set(int k, int v)
 {
     int lo, hi;
@@ -308,6 +346,13 @@ static void knob_set(int k, int v)
         return;
     } else if (k == K_LCH) {
         knob_set(P_DCH0 + ui.lane, v);
+        return;
+    } else if (k >= K_FILTER && k <= K_SPACE) {
+        ui.mac[k - K_FILTER] = (int8_t)v;
+        en_macro(k - K_FILTER, v);
+        return;                                  /* (for playing: nothing saved) */
+    } else if (k == K_MODE) {
+        set_mode(v);
         return;
     }
     mark_dirty();
@@ -340,6 +385,11 @@ static void turn(int role, int k, int32_t e)
     if (!e || k == K_NONE || k == K_CPU)
         return;
     knob_range(k, &lo, &hi);
+    if (k >= K_FILTER && k <= K_SPACE) {         /* the master actions stop at the middle on the way through */
+        int v = knob_get(k), n = v + accel(role, e, hi - lo);
+        knob_set(k, (v > 0 && n < 0) || (v < 0 && n > 0) ? 0 : n);
+        return;
+    }
     knob_set(k, knob_get(k) + accel(role, e, hi - lo));
 }
 
@@ -349,7 +399,7 @@ static void toggle_note(int pc)                 /* a key: its note in or out of 
     int rel = (pc - proj.par[P_ROOT] + 12) % 12;
     uint32_t p = proj.pool ^ (1u << rel);
     if (rel == 0) {
-        warn("THE ROOT STAYS", "(SETUP)");
+        warn("THE ROOT STAYS", "(HOME, KEY)");
         return;
     }
     if (pool_count(p) < 3) {
@@ -428,9 +478,17 @@ static int perf_sounds(int i)                    /* layer i (0..4) heard: its le
         return 0;
     return i < 3 ? proj.par[LEVEL[i]] > 0 : !(ui.mutes >> i & 1u);
 }
+static void set_view(int v);
+#define PERF_SHIFT 9u                            /* white 6 (D4), held: the knobs the mix */
 static void perf_key(uint32_t key, int down)
 {
     int i;
+    if (key == PERF_SHIFT) {
+        set_view(down ? V_MIX : V_PERF);
+        if (down)
+            say("MIX", 0);
+        return;
+    }
     for (i = 0; i < PERF_N && PERF_KEY[i] != key; i++)
         ;
     if (i >= PERF_N)
@@ -441,6 +499,10 @@ static void perf_key(uint32_t key, int down)
             return;
         ui.solo ^= m;
         perf_mutes();
+        if (ui.view == V_MIX) {                  /* (the mix's knob lit, as for a mute) */
+            ui.touched = (int8_t)(i - 10 < 3 ? i - 10 : 3);
+            ui.touch_until = plat_ms() + 1200u;
+        }
         if (ui.solo & m)
             say("SOLO", PERF_NAME[i]);
         else if (ui.solo)                        /* (one let go, others still soloed) */
@@ -494,15 +556,15 @@ static void perf_set(int on)                     /* on: the mixer on the knobs; 
 {
     ui.perf = (uint8_t)on;
     if (on) {
-        if (ui.view != V_MIX)
+        if (ui.view != V_MIX && ui.view != V_PERF)
             ui.perf_from = ui.view;
-        set_view(V_MIX);
+        set_view(V_PERF);
     } else {
         if (ui.moves) {                          /* the moves let go; the mutes stay */
             ui.moves = 0;
             en_perf(0);
         }
-        if (ui.view == V_MIX)
+        if (ui.view == V_MIX || ui.view == V_PERF)
             set_view(ui.perf_from);
     }
     say("PERFORM", on ? "ON" : "OFF");
@@ -647,11 +709,8 @@ static void button(int b)
             set_view(pv);
         return;
     }
-    if (b == B_HOME && ui.view == V_DUB) {       /* HOME again: the middle of the screen, the next way */
-        static const char *const SCREEN_NAME[3] = {"RIPPLES", "SCOPE", "SPECTRUM"};
-        proj.screen = (uint8_t)((proj.screen + 1u) % 3u);
-        mark_dirty();
-        say("SCREEN", SCREEN_NAME[proj.screen]);
+    if (b == B_HOME && ui.view == V_DUB) {       /* HOME again: the Key page (the key and the tempo); again: back */
+        set_view(V_KEY);
         return;
     }
     for (v = 0; v < NPAGES; v++)                 /* a page's button: its page */
@@ -797,7 +856,7 @@ static void input(void)
         if (btn >> B_HOME & 1u) {
             turn(EN_SELECT, P_TEMPO, e);
             ui.btn_used |= 1u << B_HOME;
-            if (ui.view == V_DUB) {              /* Tempo is the Dub page's first knob */
+            if (ui.view == V_KEY) {              /* Tempo is the Key page's first knob */
                 ui.touched = 0;
                 ui.touch_until = plat_ms() + 1200u;
             } else {
@@ -807,7 +866,7 @@ static void input(void)
             }
         } else {
             int v = page_of(ui.view) + (e > 0 ? 1 : -1);
-            if (ui.view == V_MIX)                /* from the mixer: SELECT goes on from the page it came from */
+            if (ui.view == V_MIX || ui.view == V_PERF)   /* from PERFORM: SELECT goes on from the page it came from */
                 v = (int)ui.perf_from + (e > 0 ? 1 : -1);
             if (ui.view == V_CHORDS)
                 v = (int)ui.chords_from + (e > 0 ? 1 : -1);
@@ -816,16 +875,21 @@ static void input(void)
         }
         ui.turn_t = plat_ms();
     }
-    if ((e = plat_enc(EN_ALGO)) != 0) {         /* on a layer's page: its voice; elsewhere: the mode */
+    if ((e = plat_enc(EN_ALGO)) != 0) {         /* on a layer's page: its voice; on Dub: the screen; elsewhere: the mode */
         int vp = view_voice(ui.view);
-        if (vp >= 0)
-            set_voice(vp, proj.par[vp] + (e > 0 ? 1 : -1));
+        if (ui.view == V_DUB) {                  /* the middle of the screen: the ripples, a scope, a spectrum */
+            static const char *const SCREEN_NAME[3] = {"RIPPLES", "SCOPE", "SPECTRUM"};
+            proj.screen = (uint8_t)(((int)proj.screen + (int)(e % 3) + 3) % 3);
+            mark_dirty();
+            say("SCREEN", SCREEN_NAME[proj.screen]);
+        } else if (vp >= 0)
+            set_voice(vp, proj.par[vp] + (int)e);   /* (every detent: a quick turn comes as several at once) */
         else
-            set_mode(proj.par[P_MODE] + (e > 0 ? 1 : -1));
+            set_mode(proj.par[P_MODE] + (int)e);
         ui.turn_t = plat_ms();
     }
     if ((e = plat_enc(EN_PRESET)) != 0) {
-        set_piece(proj.piece + (e > 0 ? 1 : -1));
+        set_piece(proj.piece + (int)e);
         ui.turn_t = plat_ms();
     }
     if ((btn >> B_SAVE & 1u) && !ui.reset_done && plat_ms() - ui.down_t[B_SAVE] > RESET_HOLD) {
@@ -1593,15 +1657,15 @@ static int help_lines(int b, const char *l[HELP_LINES])
     int n = 0;
 #define L(t) (l[n++] = (t))
     switch (b) {
-    case B_HOME: L("DUB"); L("TEMPO, EVOLVE, MOTION, DRIFT"); L("+ SELECT: TEMPO"); L("AGAIN: RIPPLES, SCOPE, SPECTRUM"); break;
+    case B_HOME: L("DUB: FILTER, EVOLVE,"); L(" MOTION, DRIFT"); L("ALGORITHM: THE SCREEN"); L("AGAIN: TEMPO, ROOT, MODE, SWING"); L("+ SELECT: TEMPO"); break;
     case B_ENV: L("THE CHORD: LEVEL, STABS,"); L(" DECAY, CUTOFF"); L("ALGORITHM: ITS VOICE"); L("AGAIN: SOUND; AGAIN: FM"); break;
     case B_ARP: L("TEXTURE: PINGS, DENSITY,"); L(" CLOUD, CRACKLE"); L("ALGORITHM: THE PINGS' VOICE"); L("AGAIN: SOUND; AGAIN: FM"); break;
     case B_LFO: L("THE BASS"); L("LEVEL, OCTAVE, GROOVE, FIFTH"); L("ALGORITHM: ITS VOICE"); L("AGAIN: SOUND; AGAIN: FM"); break;
     case B_SEQ: L("THE DRUMS"); L("LEVEL, HITS, SWING, DUCK"); L("ALGORITHM: THE KIT"); L("AGAIN: SOUND; AGAIN: PATTERN"); break;
     case B_FX: L("THE SPACE"); L("ECHO, ECHO TIME, FEEDBACK,"); L("REVERB"); break;
-    case B_GLO: L("SETUP"); L("ROOT, TUNE, MIDI OUT, LIGHTS"); break;
+    case B_GLO: L("SETUP (FOR EVERY PIECE)"); L("TUNE, MIDI OUT, LIGHTS"); break;
     case B_EDIT: L("TAP: THE CHORDS (8 SLOTS:"); L(" THE KEYS, THE SLOT'S ROOT)"); L("HOLD: THE NEXT CHORD"); break;
-    case B_SEL: L("PERFORM: THE KNOBS MIX"); L("WHITE 1-5 MUTE, BLACK 1-5 SOLO:"); L(" CHORD PINGS BASS KICK HATS"); L("WHITE 7-11 HELD: THROW OPEN SHUT"); L(" DROP ECHO"); break;
+    case B_SEL: L("FILTER, DUB, ENERGY, SPACE;"); L(" WHITE 6 HELD: THE MIX"); L("WHITE 1-5 MUTE, BLACK 1-5 SOLO:"); L(" CHORD PINGS BASS KICK HATS"); L("WHITE 7-11: THROW OPEN SHUT DROP ECHO"); break;
     case B_REC: L("TAP: DUB HOLD (THE ECHO"); L(" REPEATS WHAT IT HOLDS)"); L("HOLD: THE EFFECTS GRID,"); L(" PLAYED ON THE WHITE KEYS"); break;
     case B_OCTDN: L("THE PINGS AN OCTAVE DOWN"); L("WITH OCT+, 5 S: UPDATE MODE"); break;
     case B_OCTUP: L("THE PINGS AN OCTAVE UP"); L("WITH OCT-, 5 S: UPDATE MODE"); break;
@@ -1807,7 +1871,7 @@ static void draw_main(void)
         return;
     ui.sig[1] = h;
     cv_begin(240, MAIN_H, K_BG);
-    if (ui.view >= V_CFM) {                      /* an FM page: the algorithm */
+    if (ui.view >= V_CFM && ui.view <= V_BFM) {  /* an FM page: the algorithm */
         draw_alg(layer_of(ui.view));
         moving = 0;
     } else if (parent_of(ui.view) >= 0) {        /* a sound page: the layer's envelope instead of the ripples */
@@ -1940,8 +2004,8 @@ static void draw_knobs(void)
 static void leds(void)
 {
     uint32_t b = 0, k = 0, i, ap = pool_abs();
-    if (VIEW_BTN[page_of(ui.view)] != B_NONE && (parent_of(ui.view) < 0 || (plat_ms() / 300u) & 1u))
-        b |= 1u << VIEW_BTN[page_of(ui.view)];   /* (a sound page: its layer's button blinks) */
+    if (VIEW_BTN[page_of(ui.view)] != B_NONE && ((parent_of(ui.view) < 0 && ui.view != V_KEY) || (plat_ms() / 300u) & 1u))
+        b |= 1u << VIEW_BTN[page_of(ui.view)];   /* (a sound page, or Key: its button blinks) */
     if (en_playing)
         b |= 1u << B_PLAY;
     if (en_frozen)
@@ -1963,6 +2027,8 @@ static void leds(void)
     } else if (ui.perf) {                        /* PERFORM: the layers heard, the solos, the moves (dark while held) */
         const int blink = (plat_ms() / 250u) & 1u;
         b |= 1u << B_SEL;
+        if (ui.view != V_MIX)                    /* white 6: dark while held (the mix on the knobs) */
+            k |= 1u << PERF_SHIFT;
         for (i = 0; i < 5; i++) {
             if (perf_sounds((int)i))
                 k |= 1u << PERF_KEY[i];
@@ -2087,6 +2153,8 @@ static void sp_page(int all)
         sp_cat(vn);
     }
     for (i = 0; i < 4; i++) {
+        if (VIEW_KNOB[ui.view][i] == K_NONE)
+            continue;
         sp_cat(i ? ", " : ": ");
         sp_knob(ui.view, i);
     }
@@ -2100,7 +2168,7 @@ static void sp_page(int all)
     sp_cat(mode_name());
     if (en_ext) {
         sp_cat(", tempo EXT");
-    } else if (ui.view != V_DUB) {             /* (the Dub page's first knob says it) */
+    } else if (ui.view != V_KEY) {             /* (the Key page's first knob says it) */
         sp_cat(", tempo ");
         sp_int((uint32_t)proj.par[P_TEMPO]);
     }

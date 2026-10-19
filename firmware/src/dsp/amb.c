@@ -379,7 +379,7 @@ const char *en_chord_name(const int *pcs, int n, char *buf)
 }
 
 /* ------------------------------------------------------------ commands --- */
-enum { C_SET, C_POOL, C_PLAY, C_NEXT, C_FREEZE, C_SEED, C_PANIC, C_CLOCK, C_REGROW, C_MUTE, C_PERF, C_FX, C_PINGS };
+enum { C_SET, C_POOL, C_PLAY, C_NEXT, C_FREEZE, C_SEED, C_PANIC, C_CLOCK, C_REGROW, C_MUTE, C_PERF, C_FX, C_PINGS, C_MACRO };
 #define QN 256u                                 /* (a piece is every parameter at once: room for four) */
 _Static_assert(QN >= 2u * (P_NPARAMS + 8), "the command queue can't hold a piece's parameters twice over");
 static uint32_t q[QN];
@@ -405,6 +405,7 @@ void en_regrow(void) { post(C_REGROW, 0, 0); }
 void en_mute(uint32_t m) { post(C_MUTE, (int)(m & 0xFFu), 0); }
 void en_perf(uint32_t f) { post(C_PERF, (int)(f & 0xFFu), 0); }
 void en_fx(uint32_t m) { post(C_FX, 0, (int)(m & 0xFFFFu)); }
+void en_macro(int i, int v) { post(C_MACRO, i, v + 50); }   /* (sent as 0..100) */
 const char *const EN_FX_NAME[EN_NFX] = {"Throw", "Time x2", "Tape stop", "Swell", "Low-pass", "High-pass", "Wah",
                                         "Phone", "Verb", "Crash", "Freeze", "Wash", "Stutter", "Gate", "Siren", "Riser"};
 
@@ -438,6 +439,13 @@ static uint32_t mutes, perf, fxm, fxm_was;      /* performance: the layers muted
 static float perf_sw, perf_echo, mb_c[4], mb_s[4];   /* (mb: Open's and Shut's filter on the music, the kick left out) */                /* the filter pushed open (+) or shut (-), the echo pushed */
 
 static int16_t par[P_NPARAMS];
+static int8_t mac[EN_NMAC];                     /* the master actions, -50..50 */
+static int8_t pofs[P_NPARAMS];                  /* what they add to the piece's parameters */
+static int pe(int p)                            /* a parameter as heard: the piece's, moved by the master actions */
+{
+    int v = par[p] + pofs[p];
+    return v < PARAMS[p].lo ? PARAMS[p].lo : v > PARAMS[p].hi ? PARAMS[p].hi : v;
+}
 static uint32_t pool = 0xAADu;                  /* Ionian until told */
 static int nsteps, steps[12];                   /* the scale */
 static int deg;                                 /* the chord's scale degree */
@@ -983,7 +991,7 @@ static int loop_count(int l)
 
 static int loop_target(void)                    /* 0..5 notes: Density, thinned in the dark */
 {
-    float d = (float)par[P_DENSITY] * 0.05f * (1.0f + 0.5f * arcm);
+    float d = (float)pe(P_DENSITY) * 0.05f * (1.0f + 0.5f * arcm);
     return (int)(fm_clampf(d, 0.0f, 5.0f) + frand());
 }
 static uint8_t loop_rest[EN_NLOOP];             /* this pass: silent (Evolve) */
@@ -1064,7 +1072,7 @@ static void loop_pass(int l)                    /* the end of a pass: grow, prun
 {
     int c = loop_count(l), t = loop_target(), s;
     if (evolve < 0.005f) {                      /* Evolve 0: the loops as they are (Density changed: to it) */
-        t = (int)(fm_clampf((float)par[P_DENSITY] * 0.05f, 0.0f, 5.0f) + 0.5f);
+        t = (int)(fm_clampf((float)pe(P_DENSITY) * 0.05f, 0.0f, 5.0f) + 0.5f);
         for (; c < t; c++)
             loop_add(l);
         for (; c > t && (s = loop_pick(l)) >= 0; c--)
@@ -1173,7 +1181,7 @@ static uint32_t stab_home;                      /* the pattern, before this bar'
 
 static void stabs_home(void)                    /* Stabs: one a bar .. six, off the beat */
 {
-    stab_kb = stab_k = 1 + (par[P_STABS] * 5 + 50) / 100;
+    stab_kb = stab_k = 1 + (pe(P_STABS) * 5 + 50) / 100;
     stab_rot = 2;
     stab_home = en_euclid(stab_k, 16, stab_rot);
 }
@@ -1247,7 +1255,7 @@ static void stab_fire(float vel, int throw_it)
 static void hats_publish(void)
 {
     uint32_t c = 0, o = 0;
-    int i, k = par[P_HITS], ko = k < 15 ? 0 : k < 40 ? 2 : 4;
+    int i, k = pe(P_HITS), ko = k < 15 ? 0 : k < 40 ? 2 : 4;
     for (i = 0; i < hat_k && i < 12; i++)
         c |= 1u << hat_order[i];
     if (ko >= 2)
@@ -1271,7 +1279,7 @@ static void hats_home(void)                     /* Hits: the shaker's count, its
     int i;
     for (i = 0; i < 12; i++)
         hat_order[i] = HAT_ORDER[i];
-    hat_kb = hat_k = (par[P_HITS] * 12 + 50) / 100;
+    hat_kb = hat_k = (pe(P_HITS) * 12 + 50) / 100;
     hats_publish();
 }
 
@@ -1759,6 +1767,9 @@ static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
         float d, h1, h2, fb, w;
         tape_ph = 0;
         echo_len += (echo_len_t * fx_em - echo_len) * fx_ek;   /* (the grid: the time doubled, the tape slowing) */
+        if (echo_len > (float)(TAPE_N - 8))      /* (Tape stop slows a long echo past the tape: it stops at its end;
+                                                  * the hold below reads echo_len itself. Reported by genkigenki) */
+            echo_len = (float)(TAPE_N - 8);
         head2 += head2_v;
         d = echo_len * (1.0f + 0.002f * motion * mod[5].v);   /* wow */
         if (d > (float)(TAPE_N - 4))
@@ -1984,6 +1995,7 @@ static void apply(int p, int v)
     if (v > pi->hi)
         v = pi->hi;
     par[p] = (int16_t)v;
+    v = pe(p);                                   /* (as the master actions move it) */
     switch (p) {
     case P_CHORD: chord_vol = (float)(v * v) * 0.0001f; lanes(); break;
     case P_PINGS: bell_vol = (float)(v * v) * 0.0001f; break;
@@ -2212,6 +2224,28 @@ static void play_stop(void)
     notes_off();
 }
 
+/* a master action turned: the parameters it moves, applied again as heard (Filter: read by render_chunk) */
+static void macro(int i, int v)
+{
+    /* each: the parameters it moves and how far at full turn (+50), in the parameter's own units */
+    static const struct { uint8_t p; int8_t at50; } MOVE[] = {
+        {P_ECHO, 40}, {P_FEEDBACK, 35},                  /* Dub */
+        {P_DENSITY, 45}, {P_HITS, 45}, {P_STABS, 45},    /* Energy */
+        {P_REVERB, 45}, {P_CLOUD, 45}, {P_SIZE, 30},     /* Space */
+    };
+    static const uint8_t OF[] = {EN_MAC_DUB, EN_MAC_DUB, EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_SPACE,
+                                 EN_MAC_SPACE, EN_MAC_SPACE};
+    unsigned k;
+    mac[i] = (int8_t)v;
+    for (k = 0; k < sizeof OF; k++)
+        if (OF[k] == i) {
+            int o = MOVE[k].at50 * v / 50, before = pe(MOVE[k].p);
+            pofs[MOVE[k].p] = (int8_t)o;
+            if (pe(MOVE[k].p) != before)
+                apply(MOVE[k].p, par[MOVE[k].p]);
+        }
+}
+
 static void drain(void)
 {
     while (q_r != q_w) {
@@ -2272,6 +2306,10 @@ static void drain(void)
         case C_MUTE: mutes = (uint32_t)a; lanes(); break;
         case C_PERF: perf = (uint32_t)a; lanes(); break;
         case C_FX: fxm = c & 0xFFFFu; break;
+        case C_MACRO:
+            if (a < EN_NMAC && (unsigned)b <= 100u)
+                macro(a, b - 50);
+            break;
         }
     }
 }
@@ -2622,7 +2660,9 @@ static void render_drums(uint32_t n)
             x1 += 0.16f * hp;
             x2 += 0.16f * x1;
             bp = x1;
-            e = tb < 1e8f ? fm_expf(-tb * (1.0f / 130.0f)) : 0.0f;   /* a burst: ~3 ms */
+            /* a burst: ~3 ms, in over ~0.3 ms (from nothing at once, the ringing band stepped: a click each burst,
+             * which the plate and the echo repeated) */
+            e = tb < 1e8f ? (1.0f - fm_expf(-tb * (1.0f / 6.0f))) * fm_expf(-tb * (1.0f / 130.0f)) : 0.0f;
             if (t >= 1200.0f)
                 e = amp * 0.9f;
             x = bp * e * g * 1.1f;
@@ -2935,8 +2975,10 @@ static void control(uint32_t n)                 /* once a chunk: the slow things
     ein_gain += ((en_frozen ? 0.0f : 1.0f) - ein_gain) * 0.05f;
     fb_cap += ((en_playing ? 2.0f : 0.9f) - fb_cap) * fm_minf((float)n / (2.0f * EN_SR), 1.0f);
     {   /* the performance's pushes, eased in and out (the filter swept over ~400 ms, three octaves; the echo ~40 ms) */
-        float t = (perf & EN_PF_OPEN ? 3.0f : 0.0f) - (perf & EN_PF_CLOSE ? 3.0f : 0.0f);
-        perf_sw += (t - perf_sw) * fm_minf((float)n / (0.4f * EN_SR), 1.0f);
+        /* (the Filter knob: the same sweep, quicker to follow a hand; the keys on top of it, to the same ends) */
+        float t = fm_clampf((float)mac[EN_MAC_FILTER] * 0.06f + (perf & EN_PF_OPEN ? 3.0f : 0.0f) - (perf & EN_PF_CLOSE ? 3.0f : 0.0f),
+                            -3.0f, 3.0f);
+        perf_sw += (t - perf_sw) * fm_minf((float)n / ((perf & (EN_PF_OPEN | EN_PF_CLOSE) ? 0.4f : 0.12f) * EN_SR), 1.0f);
         perf_echo += ((perf & EN_PF_ECHO || fxm >> EN_FX_SWELL & 1u ? 1.0f : 0.0f) - perf_echo) * fm_minf((float)n / (0.04f * EN_SR), 1.0f);
     }
     if (echo_len > 0.0f)                        /* for the screen's ripples */
