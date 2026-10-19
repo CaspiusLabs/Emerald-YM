@@ -585,3 +585,15 @@ over DUB-1's groove, in time and in key. It goes a bit beyond dub, and that's fi
   - what the sidekick plays: phrases from a scale-aware generator, a sample player (if the flash holds
     enough), call and response with the pings.
 - Related: "Connectivity: the output split in two", and the MIDI notes in section 9 of the manual.
+
+### The screen: richer visualisations (the user's idea, 2026-10-19)
+
+- **More information in the ripples.** The rings could carry more of the music, for example:
+  - each layer's hits in its own colour or shape;
+  - the echo's feedback and its band-pass in the rings' width or blur;
+  - the section (Full, Break, Thin) in the field's density;
+  - the master actions (Filter, Dub, Space) bending or blurring the field as they're turned.
+- **More views on ALGORITHM** besides ripples, scope and spectrum. First, survey other projects for ideas that fit a
+  240×240 screen and the FM-1's CPU: Winamp/MilkDrop presets, Teenage Engineering's OP-1 and OP-Z screens, Elektron's
+  scopes, demoscene effects (plasma, tunnels, starfields), the Lissajous stereo scope, a tape-loop view of the echo's
+  buffer, a waterfall spectrogram.
