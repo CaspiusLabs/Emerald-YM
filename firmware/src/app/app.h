@@ -19,7 +19,7 @@ typedef struct {
     uint16_t pool;
     uint8_t pings[EN_PINGS_N];           /* its ping loops as they were left (en_pings_get) */
     uint8_t pings_ok;                    /* 0: none kept (a recipe, or a project from 1.0.0): grown afresh */
-    uint8_t rsv1;
+    uint8_t screen;                      /* its screen view, 0..2: ripples, scope, spectrum (before 1.2.0: 0) */
 } slot_t;
 
 typedef struct {

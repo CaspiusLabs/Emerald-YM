@@ -14,6 +14,7 @@ static void recipe(int i, slot_t *s)
 {
     en_piece(i, s->par, &s->pool);
     s->pings_ok = 0;
+    s->screen = 0;
 }
 
 /* DUB-1 1.0.0's project (format 8): the same, without the pings; read, and kept */
@@ -38,6 +39,7 @@ static void take(const slot_t *s)                /* a piece's settings into play
         if (!global_par(p))
             proj.par[p] = s->par[p];
     proj.pool = s->pool;
+    proj.screen = (uint8_t)(s->screen % 3u);      /* (each piece its own view) */
 }
 
 static void keep(void)                           /* the piece playing, into its slot (with its ping loops) */
@@ -46,6 +48,7 @@ static void keep(void)                           /* the piece playing, into its 
     for (p = 0; p < P_NPARAMS; p++)
         proj.slot[proj.piece].par[p] = proj.par[p];
     proj.slot[proj.piece].pool = proj.pool;
+    proj.slot[proj.piece].screen = proj.screen;
     en_pings_get(proj.slot[proj.piece].pings);
     proj.slot[proj.piece].pings_ok = 1;
 }
@@ -144,6 +147,7 @@ void project_piece_reset(void)
 {
     slot_t s;
     recipe(proj.piece, &s);
+    s.screen = proj.screen;                      /* (the view stays as it is) */
     take(&s);
     proj.slot[proj.piece].pings_ok = 0;          /* (its loops grown afresh too) */
 }

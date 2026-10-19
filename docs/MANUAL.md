@@ -225,7 +225,7 @@ another button puts the card away; letting go after it does nothing else.
   circle as a blue dot, one step at a time, and light up as they play. The loops have different
   lengths, so the dots drift apart and meet again.
 - **ALGORITHM** (on the Dub page) changes what the middle shows: the ripples, a **scope** or a
-  **spectrum**, and then the ripples again (turned back, the other way round). The choice is saved with the pieces (SAVE). With the
+  **spectrum**, and then the ripples again (turned back, the other way round). Each piece keeps its own view, saved with it (SAVE): Haze on the spectrum, say, and Pressure on the scope. With the
   scope or the spectrum showing, the chord's name moves to the top.
   - The **scope** draws the output (left and right mixed) as a thick line. Each trace starts on a
     rising zero crossing so the picture stands still, and the two traces before it fade behind.
