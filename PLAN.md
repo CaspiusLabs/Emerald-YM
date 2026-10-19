@@ -114,7 +114,7 @@ measurement (renders analysed for level, timing and spectrum).
 - [ ] Manual, README, the emulator page, release notes; `./build.sh --release 1.1.0`; the site; push
       and the tag (when the user says)
 
-## Release 1.2.0: live performance (in progress, 2026-10-19)
+## Release 1.2.0: live performance (released 2026-10-19)
 
 Decided with the user (2026-10-19):
 
@@ -137,8 +137,9 @@ Decided with the user (2026-10-19):
     piece, open it up: the night video's transition by hand), and are back in the middle on boot.
 - [x] The scenarios updated (screen, scale, voices, pings, help, reader, perform: the master actions and white 6),
       the help cards, the emulator page's help
-- [ ] To listen: the Filter's range and speed, how far Dub, Energy and Space go
-- [ ] Manual, README, the release notes; the film takes (`tests/film/*.amb`) use 1.1.0's controls (HOME again for
+- [x] Listened to on the FM-1 (the user): the master actions widened, white 6 blinking, Swing fixed, each piece its own view
+- [x] Manual, README, the release notes; `./build.sh --release 1.2.0`, the site, the tag
+- [ ] The film takes (`tests/film/*.amb`) use 1.1.0's controls (HOME again for
       the screen): update them before rendering with 1.2.0
 - [x] Fixed: Tape stop past the tape's end in dub hold (genkigenki's report; reproduced under AddressSanitizer);
       ALGORITHM and PRESETS skipping detents on a quick turn; the clap's bursts clicking (they started at full level)
