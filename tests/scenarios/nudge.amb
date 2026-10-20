@@ -44,6 +44,13 @@ release SEQ
 wait 300
 said DRUMS SHAKE
 expect par35 >0
+# the bass held on: a shake, a new voice and a new groove (a neighbour)
+press LFO
+wait 1800
+release LFO
+wait 300
+said BASS SHAKE
+expect view 10
 # FX, the space: a nudge, then held on a shake (a new echo time); the Space page
 press FX
 wait 700

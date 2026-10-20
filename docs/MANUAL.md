@@ -230,7 +230,7 @@ Colour +5"), and the layer's sound page comes up with that knob lit (in PERFORM,
 |---|---|
 | ENV | the chord: Attack, Colour, Reso, Env, its Decay and Cutoff a little; on an FM voice, its ratio and feedback |
 | ARP | the pings: Tone, Ratio, Length, Bend (an FM voice: its ratio and feedback); now and then one note of one loop |
-| LFO | the bass: Bite, Shape, Length, Slide, the Fifth (an FM voice: its ratio and feedback) |
+| LFO | the bass: Bite, Shape, Length, Slide, the Fifth (an FM voice: its ratio and feedback); its shake also moves the **groove** to a neighbour (Drone, Offbeat, Dotted, Roller, Sync, in that row) |
 | SEQ | the drums: the kick's tune, length and punch, the hats' tone |
 | FX | the space: the echo's send and feedback (smaller steps), the reverb, the plate's size, the cloud; its shake: a new echo time |
 
@@ -477,6 +477,9 @@ spectrum (see [The screen](#4-the-screen)). **HOME** again: the Key page (below)
   it also nudges the sound by itself: now and then, on a phrase's first bar, one or two of one
   layer's sound values take a step (half a nudge by hand's), so over a long run the piece slowly
   changes colour (at 100, about every third phrase; at 40 and under, never). It never shakes.
+  Above 60 it also moves the **bass's groove**, rarely, to a neighbour (Offbeat to Dotted, say), and
+  back towards the piece's own later: at 100, every few minutes; at 60 and under, never. The groove
+  away from home usually lasts a few minutes, so a long run's bass line slowly breathes.
 - **Motion:** how often the arrangement leaves Full, how far the filter sweeps, how likely a fill
   is, and how much the echo's heads, the filter and the band-pass wander.
 - **Drift:** how many bars a chord lasts before it moves on: 2, 4, 8, 16, 32 or 64 bars, or Hold

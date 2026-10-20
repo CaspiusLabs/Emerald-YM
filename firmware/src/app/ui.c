@@ -885,6 +885,17 @@ static int nrand(int n)
     nudge_seed = nudge_seed * 1664525u + 1013904223u;
     return n > 0 ? (int)((nudge_seed >> 8) % (uint32_t)n) : 0;
 }
+/* the bass's groove, a step to a neighbour (Drone, Offbeat, Dotted, Roller, Sync, in that row): back towards the
+ * piece's own as often as not (pull: 0..100, how likely back when it isn't the piece's) */
+static void groove_step(int recipe, int pull)
+{
+    int g = proj.par[P_GROOVE], hi = en_param_info(P_GROOVE)->hi, d;
+    if (g != recipe && nrand(100) < pull)
+        d = g > recipe ? -1 : 1;
+    else
+        d = g == 0 ? 1 : g == hi ? -1 : nrand(2) ? 1 : -1;
+    knob_set(P_GROOVE, g + d);
+}
 enum { NUDGE_EVOLVE, NUDGE_HAND, NUDGE_SHAKE };
 /* how a nudge goes: EVOLVE (Evolve's, 1-2 values, half steps, nothing said), HAND (the button held: 3-4 values, steps
  * up to an eighth of the range), SHAKE (held on: a new voice or kit, and every value a big step). Each value walks
@@ -898,7 +909,7 @@ static void nudge(int layer, int how)
     uint16_t pool;
     int j, best = -1, bd = 0, fm, n, np = 0;
     uint8_t pick[8];
-    char vn[12] = "";
+    char vn[24] = "";
     if (how == NUDGE_SHAKE && layer == 4) {      /* the space's: another echo time */
         int nt = en_param_info(P_ETIME)->hi + 1, cur = proj.par[P_ETIME], v = (cur + 1 + nrand(nt - 1)) % nt;
         knob_set(P_ETIME, v);
@@ -915,6 +926,23 @@ static void nudge(int layer, int how)
     }
     fm = layer < 3 && en_voice_fm(layer);
     en_piece(proj.piece, rec, &pool);
+    if (how == NUDGE_SHAKE && layer == 2) {      /* the bass's shake: a new groove too, a neighbour */
+        int k = 0;
+        groove_step(rec[P_GROOVE], 50);
+        while (vn[k] && k < 10)
+            k++;
+        vn[k++] = ',';
+        vn[k++] = ' ';
+        vn[k] = 0;
+        {
+            char gn[12];
+            int i;
+            en_param_text(P_GROOVE, proj.par[P_GROOVE], gn);
+            for (i = 0; gn[i] && k < 23; i++)
+                vn[k++] = gn[i];
+            vn[k] = 0;
+        }
+    }
     for (j = 0; j < (fm ? 8 : 6); j++) {         /* (the values to choose from, each once) */
         int q, dup = 0;
         for (q = 0; q < np; q++)
@@ -958,7 +986,7 @@ static void nudge(int layer, int how)
         char t[24], head[16], v[8];
         const char *nm = how == NUDGE_SHAKE ? vn : best >= 0 ? en_param_info(best)->name : "";
         int k = 0, i;
-        while (*nm && k < 14)
+        while (*nm && k < (how == NUDGE_SHAKE ? 23 : 14))
             t[k++] = *nm++;
         if (how == NUDGE_HAND && best >= 0) {
             t[k++] = ' ';
@@ -996,6 +1024,13 @@ static void nudge_tick(void)                     /* Evolve's nudges: on a phrase
         return;
     if (nrand(100) < (ev - 40) * 2 / 3)          /* (Evolve 100: 40% of the phrases; 70: 20%; 40 and under: none) */
         nudge(nrand(NNUDGE), NUDGE_EVOLVE);
+    if (ev > 60 && nrand(400) < (ev - 60) * 7 / 10) {   /* the bass's groove, rarely, to a neighbour and back (Evolve
+                                                  * 100: 7% of the phrases, every few minutes; 60 and under: never) */
+        int16_t rec[P_NPARAMS];
+        uint16_t pool;
+        en_piece(proj.piece, rec, &pool);
+        groove_step(rec[P_GROOVE], 70);
+    }
 }
 static void input(void)
 {

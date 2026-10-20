@@ -574,7 +574,9 @@ today switches between Random and the slots.
       button held 0.5 s (ENV, ARP, LFO, SEQ) moves 3-4 of its sound values, steps up to an eighth of the range, a walk
       pulled back to the recipe (a quarter of the range away: always back); held on 1.5 s, a shake: another voice or
       kit (not the chord's Noise) and every value a big step. FX too (the space: echo, feedback, reverb, size, cloud; its
-      shake a new echo time). EDIT held on 1.5 s: new chords (the walk's all walked again). Evolve above 40 nudges by itself on a phrase's first
+      shake a new echo time). EDIT held on 1.5 s: new chords (the walk's all walked again). The bass's groove (2026-10-20):
+      its shake moves it to a neighbour; Evolve above 60 moves it now and then by itself, back towards the piece's
+      (the user's earlier idea of slow groove changes within a song). Evolve above 40 nudges by itself on a phrase's first
       bar (1-2 values, half steps; never a shake). The help cards removed to make room for the hold.
 - The videos for it: see "Videos to make" below.
 
