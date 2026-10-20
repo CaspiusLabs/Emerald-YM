@@ -4,6 +4,14 @@
 # Level; the pings' Octave on the Pings page); a 1.3.0 ladder project (format 12) read
 listen
 wait 1000
+# (Basic's chord at 76, as these numbers were written for)
+tap SEL
+key w5 down
+spin K1 -100
+spin K1 76
+key w5 up
+tap SEL
+expect par0 76
 # SELECT's round: Space, Chord, Bass, Setup, Dub, Noise, Pings, Drums (and at its ends it stays)
 tap FX
 wait 100
@@ -59,25 +67,25 @@ wait 300
 # Groove's five), Drums' Density (the kick) and Hats, Noise's Density and Level
 tap ENV
 wait 300
-said Chord page, voice Saws: Density 30, Throws 50, Ghost 50, Cutoff 45
+said Chord page, voice Saws: Density 15, Throws 70, Ghost 65, Cutoff 45
 shot chord_page.png
 spin K2 10
 wait 300
-said Throws 60
-expect par111 60
+said Throws 80
+expect par111 80
 spin K3 10
 wait 300
-said Ghost 60
-expect par115 60
+said Ghost 75
+expect par115 75
 spin K3 -10
 tap ARP
 wait 300
-said Pings page, voice Blip: Density 30, Ghost 50, Cloud 30, Octave 0
+said Pings page, voice Blip: Density 30, Ghost 70, Cloud 30, Octave 0
 shot pings_page.png
 spin K2 -10
 wait 300
-said Ghost 40
-expect par112 40
+said Ghost 60
+expect par112 60
 spin K4 1
 wait 300
 said Octave +1
@@ -85,12 +93,12 @@ expect par21 1
 spin K4 -1
 tap LFO
 wait 300
-said Bass page, voice Sub: Density 100, Octave 0, Groove Offbeat, Fifth 20
+said Bass page, voice Sub: Density 75, Octave 0, Groove Offbeat, Fifth 20
 shot bass_page.png
 spin K1 -40
 wait 300
-said Density 60
-expect par113 60
+said Density 35
+expect par113 35
 spin K3 3
 wait 300
 said Groove Roller
@@ -106,7 +114,7 @@ expect par24 1
 spin K1 40
 tap SEQ
 wait 300
-said Drums page, kit Tight: Density 100, Hits 50, Hats 50, Duck 50
+said Drums page, kit Tight: Density 85, Hits 35, Hats 50, Duck 50
 shot drums_page.png
 spin K3 10
 wait 300
@@ -114,8 +122,8 @@ said Hats 60
 expect par114 60
 spin K1 -10
 wait 300
-said Density 90
-expect par116 90
+said Density 75
+expect par116 75
 spin K1 10
 tap SAVE
 wait 300
@@ -350,8 +358,8 @@ expect format 14
 expect piece 0
 expect par24 3
 expect par113 65
-expect par111 50
-expect par112 50
+expect par111 70
+expect par112 70
 expect par114 50
 expect par0 90
 turn PRESET 2
@@ -368,13 +376,13 @@ wait 300
 expect view 2
 spin K2 10
 wait 300
-expect par112 60
+expect par112 80
 store13
 reboot
 wait 1000
 expect format 14
-expect par112 60
-expect par115 50
-expect par116 100
+expect par112 80
+expect par115 65
+expect par116 85
 expect par117 50
 expect par120 50

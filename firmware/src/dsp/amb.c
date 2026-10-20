@@ -77,78 +77,78 @@ static const struct {
     const char *name;
     int16_t v[P_NPARAMS];
 } PIECES[EN_NPIECES] = {
-    {"Basic",      {76, 30, 60, 65, 30, 40, 4, 50, 55, 1, 35, 60, 45, 35, 40, 50, 0, 1, 122, 5, 1, 0,
-                    0, 0, 1, 20, 10, 50, 30, 35, 50, 55, 30, 0, 0, 0,
+    {"Basic",      {59, 30, 60, 65, 30, 55, 4, 35, 55, 1, 35, 60, 45, 35, 40, 50, 0, 1, 122, 5, 1, 0,
+                    0, 0, 1, 20, 10, 50, 15, 35, 50, 55, 30, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     0, 0, 0, 0, 0,
-                    50, 50, 100, 50,
-                    50, 100, 50, 50, 50, 50}},
-    {"Chamber",    {68, 20, 55, 60, 20, 45, 6, 40, 70, 1, 45, 75, 50, 55, 30, 60, 0, 1, 118, 9, 5, 0,
-                    2, 0, 0, 10, 0, 40, 15, 45, 45, 70, 45, 2, 0, 1,
+                    70, 70, 75, 50,
+                    65, 85, 50, 50, 50, 50}},
+    {"Chamber",    {54, 20, 55, 60, 20, 45, 6, 30, 70, 1, 45, 75, 50, 55, 30, 60, 0, 1, 118, 9, 5, 0,
+                    2, 0, 0, 10, 0, 40, 5, 45, 45, 70, 45, 2, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     -5, -10, 10, 0, 3,
-                    50, 50, 100, 50,
-                    50, 100, 50, 50, 50, 50}},
-    {"Steppers",   {60, 35, 70, 70, 35, 40, 3, 60, 50, 3, 30, 55, 55, 25, 50, 45, 0, 1, 126, 2, 1, 0,
-                    0, 0, 2, 35, 15, 60, 45, 25, 60, 50, 20, 1, 1, 2,
+                    70, 60, 100, 50,
+                    50, 55, 50, 50, 50, 50}},
+    {"Steppers",   {60, 35, 70, 70, 35, 55, 3, 38, 50, 3, 30, 55, 55, 25, 50, 45, 0, 1, 126, 2, 1, 0,
+                    0, 0, 2, 35, 15, 60, 25, 25, 60, 50, 20, 1, 1, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     5, 10, -10, 0, 0,
-                    50, 50, 100, 50,
-                    50, 100, 50, 50, 50, 50}},
-    {"Fog",        {64, 34, 50, 50, 40, 55, 5, 30, 75, 2, 55, 80, 46, 70, 25, 70, 0, 1, 112, 7, 5, 0,
-                    1, -1, 0, 15, 0, 30, 20, 60, 35, 80, 60, 0, 0, 3,
+                    70, 70, 75, 50,
+                    60, 85, 50, 50, 50, 50}},
+    {"Fog",        {50, 34, 50, 50, 40, 55, 5, 30, 75, 2, 55, 80, 46, 70, 25, 70, 0, 1, 112, 7, 5, 0,
+                    1, -1, 0, 15, 0, 30, 5, 60, 35, 80, 60, 0, 0, 3,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     -10, 0, 15, 10, 1,
-                    50, 50, 100, 50,
-                    50, 100, 50, 50, 50, 50}},
-    {"Concrete",   {65, 25, 65, 75, 25, 35, 4, 75, 50, 1, 25, 60, 60, 20, 60, 40, 0, 1, 130, 0, 7, 0,
-                    6, 0, 4, 30, 20, 75, 50, 20, 65, 45, 15, 3, 3, 2,
+                    70, 65, 100, 50,
+                    50, 50, 50, 50, 50, 50}},
+    {"Concrete",   {65, 25, 65, 75, 25, 50, 4, 50, 50, 1, 25, 60, 60, 20, 60, 40, 0, 1, 130, 0, 7, 0,
+                    6, 0, 4, 30, 20, 75, 30, 20, 65, 45, 15, 3, 3, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     0, 15, 0, 10, 4,
-                    50, 50, 100, 50,
-                    50, 100, 50, 50, 50, 50}},
-    {"Night Drive", {65, 45, 60, 65, 45, 50, 3, 55, 60, 4, 35, 65, 50, 40, 45, 55, 0, 1, 124, 10, 1, 0,
-                    1, 0, 3, 25, 25, 55, 35, 30, 50, 60, 35, 4, 4, 0,
+                    70, 65, 70, 42,
+                    60, 92, 50, 50, 50, 50}},
+    {"Night Drive", {52, 45, 60, 65, 45, 60, 3, 35, 60, 4, 35, 65, 50, 40, 45, 55, 0, 1, 124, 10, 1, 0,
+                    1, 0, 3, 25, 25, 55, 20, 30, 50, 60, 35, 4, 4, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     0, -10, 0, 0, 1,
-                    50, 50, 100, 50,
-                    50, 100, 50, 50, 50, 50}},
-    {"Pressure",   {78, 20, 54, 74, 20, 30, 6, 65, 45, 1, 20, 55, 48, 30, 35, 35, 0, 1, 128, 4, 2, 0,
+                    70, 75, 75, 50,
+                    65, 85, 50, 50, 50, 50}},
+    {"Pressure",   {62, 20, 54, 74, 20, 45, 6, 38, 45, 1, 20, 55, 48, 30, 35, 35, 0, 1, 128, 4, 2, 0,
                     5, 0, 1, 10, 5, 65, 25, 32, 70, 40, 20, 3, 4, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     -10, -20, -25, -10, 0,
-                    50, 50, 100, 50,
-                    50, 100, 50, 50, 50, 50}},
-    {"Haze",       {56, 42, 52, 45, 50, 60, 4, 35, 80, 3, 60, 85, 45, 80, 25, 80, 0, 1, 116, 3, 0, 1,
-                    3, 0, 0, 20, 10, 35, 30, 62, 30, 85, 70, 2, 0, 4,
+                    70, 70, 75, 42,
+                    60, 92, 50, 50, 50, 50}},
+    {"Haze",       {45, 42, 52, 45, 50, 60, 4, 35, 80, 3, 60, 85, 45, 80, 25, 80, 0, 1, 116, 3, 0, 1,
+                    3, 0, 0, 20, 10, 35, 5, 62, 30, 85, 70, 2, 0, 4,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     5, 10, 10, 15, 2,
-                    50, 50, 100, 50,
-                    50, 100, 50, 50, 50, 50}},
+                    70, 70, 100, 50,
+                    50, 50, 50, 50, 50, 50}},
 };
 
 const char *en_piece_name(int i) { return PIECES[(unsigned)i < EN_NPIECES ? i : 0].name; }
@@ -727,6 +727,7 @@ static void mods_step(uint32_t n)
     }
 }
 static float motion, evolve;                    /* 0..1: Motion, Evolve */
+static float loose(void) { return fm_minf(evolve * 2.5f, 1.0f); }   /* (1.3.0: how loose the playing is; 0 at Evolve 0) */
 static float arcm;                              /* the sweep, -1 dark .. +1 open, times Motion */
 
 /* -------------------------------------------------------------- chord --- */
@@ -739,7 +740,7 @@ typedef struct {
 } stab_t;
 static stab_t stab[EN_NPAD];
 static float chord_vol, cut_base = 800.0f, st_dec = 0.9995f, st_fdec = 0.99f, st_t60 = 0.3f;
-static float st_env, st_amp, st_fenv, st_throw, throw_dec;
+static float st_env, st_amp, st_fenv, st_throw, throw_dec, st_cofs;
 static float st_s[4], st_c[4], st_h[2];
 static int32_t st_midi_left;
 static int shape, root_note = 55;               /* the voicing's shape, the chord's root as voiced (MIDI) */
@@ -1387,10 +1388,13 @@ static void stabs_bar(void)                     /* this bar's stabs: the pattern
     first = 1;
     for (i = 0; i < 16; i++)
         if (p >> i & 1u) {
-            if (first || frand() >= 0.2f * evolve)
+            if (first || frand() >= 0.3f * evolve)
                 out |= 1u << i;
             first = 0;
         }
+    if (sec != SEC_BREAK && frand() < 0.5f * evolve)   /* (1.3.0: now and then a bar with none: the echo carries it;
+                                                      * ~20% at Evolve 40) */
+        out = 0;
     en_stab_pat = out;
 }
 
@@ -1413,6 +1417,7 @@ static void stab_fire(float vel, int throw_it)
     }
     st_env = vel;
     st_fenv = 1.0f;
+    st_cofs = (frand() - 0.5f) * 0.8f * loose();   /* (1.3.0: each stab its own cutoff, +-0.4 octave) */
     click = cvoice == CV_WHEEL ? 0.12f * vel : 0.0f;
     en_stab_vel = vel;
     en_stab_thrown = (uint8_t)(throw_it != 0);
@@ -1527,6 +1532,8 @@ static void drum_hit(int d, float vel, int off)  /* (Swing delays the whole off 
 {
     int32_t w = 0;
     (void)off;
+    if ((d == 1 || d == 2) && !par[P_DMODE])     /* (1.3.0: the hats a few ms late, at random) */
+        w = (int32_t)(frand() * 0.006f * EN_SR * loose());
     if (w > 0) {
         drum[d].wait = w;
         drum[d].pend = vel;
@@ -1655,7 +1662,7 @@ static void bar_start(void)
     }
     en_drift = db ? fm_clampf((float)chord_bars / (float)db, 0.0f, 1.0f) : 0.0f;
     chord_bars++;
-    if ((bar & 3u) == 0u && bar > 0 && frand() < evolve * 0.6f)
+    if ((bar & 1u) == 0u && bar > 0 && frand() < evolve * 0.6f)   /* (1.3.0: every two bars, was four) */
         stabs_evolve();
     if (frand() < evolve * 0.25f)
         hats_evolve();
@@ -1725,7 +1732,9 @@ static void tick(void)
     const int kick = lay_kick && !(mutes & EN_M_KICK) && !(perf & EN_PF_KICKDROP), hats = !(mutes & EN_M_HATS);
     lanes();
     {
-        float v0 = st ? 0.88f : 1.0f, v1 = 0.35f + 0.3f * r + (st & 1 ? 0.0f : 0.15f), v2 = 0.7f + 0.2f * r, v3 = 0.75f + 0.15f * r;
+        float v0 = st ? 0.88f : 1.0f, v1 = 0.3f + 0.4f * r + (st & 1 ? 0.0f : 0.15f), v2 = 0.55f + 0.35f * r, v3 = 0.75f + 0.15f * r;
+        const float lo = par[P_DMODE] ? 0.0f : loose();   /* (1.3.0, Auto: the hats looser, a shaker step or an open hat
+                                                            * left out now and then) */
         if (!par[P_DMODE] && kick_shape == KS_GHOST && (st == 4 || st == 12))
             v0 *= 0.32f;                         /* (two and four ghosted, -10 dB) */
         if (kick && dpat(0) >> st & 1u && !(fill && st >= 8) && dhit(0, st, &v0))
@@ -1736,9 +1745,9 @@ static void tick(void)
             duck_x = fm_maxf(duck_x, gd);
             duck_xb = fm_maxf(duck_xb, gd);
         }
-        if (hats && lay_hats && dpat(1) >> st & 1u && dhit(1, st, &v1))
+        if (hats && lay_hats && dpat(1) >> st & 1u && dhit(1, st, &v1) && frand() >= 0.45f * lo)
             drum_hit(1, v1, st & 1);
-        if (hats && (lay_open || fill) && dpat(2) >> st & 1u && dhit(2, st, &v2))
+        if (hats && (lay_open || fill) && dpat(2) >> st & 1u && dhit(2, st, &v2) && frand() >= 0.6f * lo)
             drum_hit(2, v2, 0);
         if (hats && lay_hats && dpat(3) >> st & 1u && dhit(3, st, &v3))
             drum_hit(3, v3, st & 1);
@@ -1758,7 +1767,7 @@ static void tick(void)
     }
     if (en_stab_pat >> st & 1u) {               /* (the random draws made muted or not: the music goes on the same) */
         uint32_t later = en_stab_pat >> (st + 1);
-        int last = !later, thr = (fill && last) || frand() < fm_minf(0.075f * evolve * (sec == SEC_BREAK ? 2.5f : 1.0f) * throw_mul, 0.6f);
+        int last = !later, thr = (fill && last) || frand() < fm_minf(0.12f * loose() * (sec == SEC_BREAK ? 1.5f : 1.0f) * throw_mul, 0.6f);
         float vel = st == (int)__builtin_ctz(en_stab_pat) ? 0.9f + 0.1f * frand() : 0.65f + 0.25f * frand();
         if (!(mutes & EN_M_CHORD))
             stab_fire(vel, thr || (perf & EN_PF_THROW) || (fxm >> EN_FX_THROW & 1u));
@@ -1968,7 +1977,7 @@ static void heads_step(uint32_t n)
     /* the band-pass: ~165..700 Hz below (1.3.0: from ~60..500, so the repeats thin), ~1.1..2.6 kHz above, moving
      * up together */
     dub_up = fm_maxf((float)mac[EN_MAC_DUB], 0.0f) * (1.0f / 50.0f);
-    sw = fm_clampf(0.45f + 0.35f * arcm + 0.3f * perf_sw + 0.35f * motion * mod[5].v - 0.3f * dub_up, 0.0f, 1.0f);   /* (Dub up: darker) */
+    sw = fm_clampf(0.45f + 0.5f * arcm + 0.3f * perf_sw + 0.5f * motion * mod[5].v - 0.3f * dub_up, 0.0f, 1.0f);   /* (Dub up: darker) */
     tape_hpc = 0.09f + 0.24f * sw * sw;
     tape_lpc = 0.58f + 0.3f * sw;
 }
@@ -2322,9 +2331,9 @@ static void apply(int p, int v)
         ping_dry = 0.5f * fm_exp2f((v <= 50 ? 6.0f * (float)(50 - v) : -14.0f * (float)(v - 50)) * 0.02f * 0.16609640f);
         break;
     case P_HATSLVL: hats_lvl = fm_exp2f((float)(v - 50) * 0.04f); break;   /* x1 at 50, -12 .. +12 dB */
-    case P_CGHOST:                               /* the chord's dry: 0 dB (0), -6 dB (50), -20 dB (100); its sends x1 .. x2 */
+    case P_CGHOST:                               /* the chord's dry: 0 dB (0), -6 dB (50), -20 dB (100); its sends x1 .. x1.7 */
         chord_dry = 0.5f * fm_exp2f((v <= 50 ? 6.0f * (float)(50 - v) : -14.0f * (float)(v - 50)) * 0.02f * 0.16609640f);
-        chord_snd = 1.0f + (float)v * 0.01f;
+        chord_snd = 1.0f + (float)v * 0.007f;
         break;
     case P_EBLUR:                                /* the diffusers' gain: 0.15 (clean copies) .. 0.6 (50) .. 0.75 */
         ec_g = v <= 50 ? 0.15f + 0.009f * (float)v : 0.6f + 0.003f * (float)(v - 50);
@@ -2722,7 +2731,7 @@ static void render_stabs(uint32_t n)
     for (j = 0; j < n; j++) {
         float l = 0.0f, r = 0.0f, v1, v2, v3, yl, yr, e;
         if (!(j & 31u)) {                        /* the filter: its base, its envelope, the sweep */
-            float fc = cut_base * fm_exp2f(fe * st_fenv + 1.0f * arcm + perf_sw + 0.3f * motion * mod[0].v);
+            float fc = cut_base * fm_exp2f(fe * st_fenv + 1.6f * arcm + st_cofs + perf_sw + 0.3f * motion * mod[0].v);
             svf_coefs(st_c, fm_clampf(fc, 90.0f, 12000.0f), k);
             st_fenv *= st_fdec;
             pc = st_fenv * st_fenv;              /* (Tonewheel: the percussion, quicker still) */
@@ -2808,8 +2817,8 @@ static void render_stabs(uint32_t n)
             yl *= gg;
             yr *= gg;
         }
-        mixl[j] += yl * chord_dry;           /* (Ghost: the dry against the sends) */
-        mixr[j] += yr * chord_dry;
+        mixl[j] += yl * chord_dry * (1.0f - 0.5f * thr);   /* (Ghost: the dry against the sends; a throw's, -6 dB) */
+        mixr[j] += yr * chord_dry * (1.0f - 0.5f * thr);
         esend[j] += (yl + yr) * (0.8f + 2.5f * thr) * chord_snd;
         rsend[j] += (yl + yr) * 0.35f;
         thr *= throw_dec;

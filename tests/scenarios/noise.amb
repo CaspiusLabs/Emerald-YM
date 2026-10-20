@@ -87,7 +87,7 @@ store10
 reboot
 wait 1000
 expect format 14
-expect par111 50
+expect par111 70
 expect par113 100
 expect par0 50
 expect par110 0

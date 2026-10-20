@@ -118,6 +118,6 @@ said PINGS ON
 tapkey w0
 wait 200
 expect mutes 0
-expect par0 76
+expect par0 59
 said CHORD ON
 tap SEL

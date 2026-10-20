@@ -68,10 +68,13 @@ tap ENV
 wait 300
 expect view 1
 said_none NUDGE
-# Evolve 40 (Basic's): two minutes playing, nothing nudged (saved, then still saved)
+# Evolve 40: two minutes playing, nothing nudged (saved, then still saved)
 tap HOME
 wait 300
 expect view 0
+spin K2 -15
+wait 200
+expect par5 40
 press GLO
 wait 600
 release GLO

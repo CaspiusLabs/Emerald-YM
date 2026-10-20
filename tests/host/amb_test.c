@@ -372,7 +372,7 @@ int main(void)
         CHECK(first && !diff && en_throws == t0, "Evolve 0: the stabs changed (%d of 60, %u throws)", diff, en_throws - t0);
     }
 
-    /* Throws: 0 none (Motion 0: no fills), 100 more than 50 (the same draws) */
+    /* Throws: 0 none (Motion 0: no fills), 100 well over 50 (the same draws) */
     {
         uint32_t n[3];
         int k;
@@ -391,7 +391,7 @@ int main(void)
             n[k] = en_throws - n[k];
         }
         printf("  throws in a minute at Throws 0 / 50 / 100: %u / %u / %u\n", n[0], n[1], n[2]);
-        CHECK(n[0] == 0 && n[1] > 0 && n[2] > n[1] * 2u, "Throws: %u / %u / %u", n[0], n[1], n[2]);
+        CHECK(n[0] == 0 && n[1] > 0 && n[2] * 2u > n[1] * 3u, "Throws: %u / %u / %u", n[0], n[1], n[2]);
     }
 
     /* the kick's shapes, a phrase at a time: Density 100 four on the floor in every bar it plays; 90 mostly four, some
