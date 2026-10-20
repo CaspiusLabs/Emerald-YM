@@ -1614,11 +1614,22 @@ static void draw_header(void)
 #define RIP_N 10
 #define RIP_R 46                                 /* a ring is gone by this radius */
 #define RIP_V 0.04f                              /* px a millisecond: ~1.3 s across */
+#define RIP_K 8                                  /* a ring and up to seven repeats */
+#define RIP_W 64                                 /* a ring's outline: the sound's wave, round the circle */
 static struct {
     uint32_t t0;
-    float amp;
-    uint8_t thr, on;
+    float a[RIP_K], l1;                          /* each repeat's strength (a[0] the note), the first echo's level */
+    uint8_t thr, on, nk, done;                   /* nk: the repeats measured so far; done: no more to come */
+    int8_t w[RIP_W];
 } rip[RIP_N];
+/* the echo's output, as measured: its peak each frame, the last few frames (a repeat's level is the peak around
+ * when it's due) */
+#define EPK_N 16
+static struct {
+    uint32_t t;
+    float pk;
+} epk[EPK_N];
+static uint8_t epk_w;
 static uint32_t rip_stabs;
 static int8_t rip_src = -2;                      /* whose notes the ripples are: -1 the whole (the stabs), or a layer */
 static int scr_layer(int v)                      /* a layer's own page (and the Noise page): the screen that layer's */
@@ -1658,23 +1669,6 @@ static void ripples_take(uint32_t now)
         return;
     if (src == 4)                                /* (the Noise page shows its spectrum) */
         return;
-    if (src > 0) {
-        for (i = 0; i < RIP_N; i++) {
-            if (!rip[i].on) {
-                k = i;
-                break;
-            }
-            if (rip[i].t0 < rip[k].t0)
-                k = i;
-        }
-        rip[k].t0 = now;
-        rip[k].thr = 0;
-        rip[k].amp = fm_minf(en_hit_vel[src] * 0.9f, 1.0f);
-        rip[k].on = 1;
-        return;
-    }
-    if (en_frozen || en_echo_in < 0.01f)        /* nothing new goes into a held echo */
-        return;
     for (i = 0; i < RIP_N; i++) {
         if (!rip[i].on) {
             k = i;
@@ -1684,9 +1678,68 @@ static void ripples_take(uint32_t now)
             k = i;
     }
     rip[k].t0 = now;
-    rip[k].thr = en_stab_thrown;
-    rip[k].amp = fm_minf(en_stab_vel * (0.45f + 0.55f * en_echo_in) * (en_stab_thrown ? 1.5f : 1.0f), 1.0f);
     rip[k].on = 1;
+    rip[k].nk = 1;
+    rip[k].l1 = 0.0f;
+    if (src > 0) {                               /* (the pings, the bass, the drums) */
+        rip[k].thr = 0;
+        rip[k].a[0] = fm_minf(en_hit_vel[src] * 0.9f, 1.0f);
+    } else {
+        rip[k].thr = en_stab_thrown;
+        rip[k].a[0] = fm_minf(en_stab_vel * (0.6f + 0.4f * en_echo_in) * (en_stab_thrown ? 1.5f : 1.0f), 1.0f);
+    }
+    /* repeats: from the echo as it comes out (none for the bass and the drums, hardly in it; none for a note into a
+     * held echo, which plays what it holds) */
+    rip[k].done = (uint8_t)(src == 2 || src == 3 || en_frozen || (src <= 0 && en_echo_in < 0.01f));
+    {   /* its outline: the wave as it sounds now (the last 128 of the scope's samples, every other one; drawn so its
+         * ends meet), at its own peak */
+        int32_t v[RIP_W], pk = 1, j;
+        uint32_t w0 = en_scope_w - 2u * RIP_W;
+        for (j = 0; j < RIP_W; j++)
+            v[j] = en_scope[(w0 + 2u * (uint32_t)j) & (EN_SCOPE_N - 1u)];
+        for (j = 0; j < RIP_W; j++) {
+            v[j] -= (v[RIP_W - 1] - v[0]) * j / (RIP_W - 1);
+            pk = v[j] > pk ? v[j] : -v[j] > pk ? -v[j] : pk;
+        }
+        for (j = 0; j < RIP_W; j++)
+            rip[k].w[j] = (int8_t)(v[j] * 127 / pk);
+    }
+}
+
+/* the echo's level this frame (its peak since the last); then each ring's next repeat, once it's due and past: the
+ * echo's peak around then, against its first repeat's. So a filtered, ducked or dropped echo shows, and the feedback
+ * as it really dies away */
+static void echo_take(uint32_t now)
+{
+    const float ms = en_echo_ms > 20.0f ? en_echo_ms : 400.0f;
+    int i, j;
+    epk[epk_w].t = now;
+    epk[epk_w].pk = en_echo_pk;
+    en_echo_pk = 0.0f;
+    epk_w = (uint8_t)((epk_w + 1u) % EPK_N);
+    for (i = 0; i < RIP_N; i++) {
+        uint32_t tk;
+        float pk = 0.0f, a;
+        if (!rip[i].on || rip[i].done)
+            continue;
+        tk = rip[i].t0 + (uint32_t)((float)rip[i].nk * ms);
+        if ((int32_t)(now - tk) < 35)
+            continue;
+        for (j = 0; j < EPK_N; j++)
+            if ((int32_t)(epk[j].t - tk) >= -30 && (int32_t)(epk[j].t - tk) <= 35 && epk[j].pk > pk)
+                pk = epk[j].pk;
+        if (rip[i].nk == 1)
+            rip[i].l1 = pk;
+        if (rip[i].l1 < 0.004f)                  /* (no echo to speak of) */
+            a = 0.0f;
+        else if (rip[i].nk == 1)
+            a = rip[i].a[0] * 0.85f;
+        else                                     /* (as the echo's level fell since the first; never louder) */
+            a = fm_minf(rip[i].a[1] * pk / rip[i].l1, rip[i].a[rip[i].nk - 1]);
+        rip[i].a[rip[i].nk] = a;
+        if (++rip[i].nk >= RIP_K || a < 0.05f)
+            rip[i].done = 1;
+    }
 }
 
 static void circle(int32_t cx, int32_t cy, int32_t r, uint16_t c)   /* an outline, one pixel (midpoint) */
@@ -1705,47 +1758,69 @@ static void circle(int32_t cx, int32_t cy, int32_t r, uint16_t c)   /* an outlin
     }
 }
 
+static void line(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t c);
+
+/* a ring: its outline the wave it was born with (smoothed a little more each repeat, as the tape darkens it), the
+ * wave's depth with its strength, small near the middle */
+static void wave_ring(float r, const float *w, float d, uint16_t c)
+{
+    static float cs[RIP_W], sn[RIP_W];
+    int32_t x0 = 0, y0 = 0, x1, y1, xp = 0, yp = 0, j;
+    if (cs[0] == 0.0f)
+        for (j = 0; j < RIP_W; j++)
+            cs[j] = fm_cosf(6.2831853f * (float)j / RIP_W), sn[j] = fm_sinf(6.2831853f * (float)j / RIP_W);
+    d *= fm_minf(r * (1.0f / 14.0f), 1.0f);
+    for (j = 0; j <= RIP_W; j++) {
+        float rr = r + d * w[j % RIP_W];
+        x1 = CX + (int32_t)(rr * cs[j % RIP_W] + 0.5f);
+        y1 = CY + (int32_t)(rr * sn[j % RIP_W] + 0.5f);
+        if (j)
+            line(xp, yp, x1, y1, c);
+        else
+            x0 = x1, y0 = y1;
+        xp = x1, yp = y1;
+    }
+    (void)x0, (void)y0;
+}
+
 static int draw_ripples(uint32_t now)           /* 1: something still moves */
 {
     static const uint16_t LC[4] = {K_PAD, K_BELL, K_BASS, K_PULSE};
-    const float ms = en_echo_ms > 20.0f ? en_echo_ms : 400.0f, life = (float)RIP_R / RIP_V;
-    const float g = rip_src == 2 || rip_src == 3 ? 0.0f : en_echo_g;
+    const float ms = en_echo_ms > 20.0f ? en_echo_ms : 400.0f;
     const uint16_t lc = rip_src > 0 && rip_src < 4 ? LC[rip_src] : K_PAD;
     int i, live = 0;
     for (i = 0; i < RIP_N; i++) {
-        float age = (float)(now - rip[i].t0), a0;
-        int k, k0, seen = 0;
+        float age = (float)(now - rip[i].t0), w[RIP_W], tmp[RIP_W];
+        int k, j, p = 0, seen = 0;
         if (!rip[i].on)
             continue;
-        k0 = age > life ? (int)((age - life) / ms) + 1 : 0;   /* the repeats already gone */
-        a0 = rip[i].amp;
-        for (k = 0; k < k0 && a0 > 0.0f; k++)
-            a0 *= g;
-        for (k = k0; k < k0 + 8; k++, a0 *= g) {
-            float t = age - (float)k * ms, r, a;
+        for (j = 0; j < RIP_W; j++)
+            w[j] = (float)rip[i].w[j] * (1.0f / 127.0f);
+        for (k = 0; k < rip[i].nk; k++) {
+            float t = age - (float)k * ms, r = 5.0f + t * RIP_V, a = rip[i].a[k] * (1.0f - r / (float)RIP_R);
             uint16_t c;
-            if (t < 0.0f)
-                break;
-            r = 5.0f + t * RIP_V;
-            a = a0 * (1.0f - r / (float)RIP_R);
-            if (r >= (float)RIP_R || a < 0.05f)
+            for (; p < k; p++) {                 /* (a pass of the smoothing a repeat) */
+                for (j = 0; j < RIP_W; j++)
+                    tmp[j] = 0.25f * (w[(j + RIP_W - 1) % RIP_W] + 2.0f * w[j] + w[(j + 1) % RIP_W]);
+                for (j = 0; j < RIP_W; j++)
+                    w[j] = tmp[j];
+            }
+            if (t < 0.0f || r >= (float)RIP_R || a < 0.05f)
                 continue;
             seen = 1;
             c = mix(K_BG, en_frozen && rip_src < 2 ? K_FROST : rip[i].thr ? K_ACC : lc, q16(a * 2.0f));
-            circle(CX, CY, (int32_t)r, c);       /* two pixels wide (a throw: three) */
-            circle(CX, CY, (int32_t)r + 1, c);
+            wave_ring(r, w, 4.0f * rip[i].a[k], c);   /* two pixels wide (a throw: three) */
+            wave_ring(r + 1.0f, w, 4.0f * rip[i].a[k], c);
             if (rip[i].thr)
-                circle(CX, CY, (int32_t)r + 2, c);
+                wave_ring(r + 2.0f, w, 4.0f * rip[i].a[k], c);
         }
-        if (!seen && (en_frozen ? 0 : a0 < 0.05f || g <= 0.0f) && age > 200.0f)
+        if (!seen && rip[i].done && age > 200.0f)
             rip[i].on = 0;                       /* its last repeat has faded */
         else
             live = 1;
     }
     return live;
 }
-
-static void line(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t c);
 
 static void draw_orbits(void)                    /* the ping loops, around the ripples: a dot each, going round */
 {
@@ -1941,14 +2016,15 @@ static void line(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t c)   /
     int32_t dx = x1 > x0 ? x1 - x0 : x0 - x1, dy = y1 > y0 ? y0 - y1 : y1 - y0, sx = x0 < x1 ? 1 : -1,
             sy = y0 < y1 ? 1 : -1, e = dx + dy;
     for (;;) {
+        int32_t e2 = 2 * e;                      /* (taken before either step: else a short slope can overshoot) */
         cv_pset(x0, y0, c);
         if (x0 == x1 && y0 == y1)
             break;
-        if (2 * e >= dy) {
+        if (e2 >= dy) {
             e += dy;
             x0 += sx;
         }
-        if (2 * e <= dx) {
+        if (e2 <= dx) {
             e += dx;
             y0 += sy;
         }
@@ -2250,6 +2326,8 @@ static void draw_main(void)
     uint32_t now = plat_ms(), h = hash(2166136261u, (uint32_t)en_frozen << 16 | proj.piece << 24 | (uint32_t)en_playing << 17), i;
     static uint8_t moving;
     en_view_layer = (uint8_t)(scr_layer(ui.view) + 1);   /* (the scope and spectrum: this page's layer, or the whole) */
+    echo_take(now);                              /* (the ripples: each frame, so the repeats are measured on time) */
+    ripples_take(now);
     if (ui.frame % 3u)                           /* 20 frames a second is plenty */
         return;
     if (ui.view == V_PAT) {                      /* the Pattern page: the steps */
@@ -2294,7 +2372,6 @@ static void draw_main(void)
         return;
     }
     ui.grid_said = 0;
-    ripples_take(now);
     for (i = 0; i < EN_NPAD; i++)
         h = hash(h, en_chord[i]);
     for (i = 0; i < 6; i++)

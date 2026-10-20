@@ -257,13 +257,17 @@ page, below), but never shakes.
   the phrase's bars, lit up to the bar playing.
 - **Top right:** a thin bar fills up on the way to the next chord (none when Drift is Hold); in
   dub hold it says "hold" in red instead. PERFORM, when SEL's mode is on.
-- **The ripples:** each stab drops a ring in the middle that spreads and fades, and the echo's
-  repeats follow it, a ring each echo time, each as faint as the echo keeps it: a long Feedback
-  makes long trains of rings, a short one a single ring. A stab thrown into the echo makes a
-  double, brighter ring. In dub hold the rings turn red and keep coming, as the echo repeats what it
-  holds. The chord's name is in the middle (red in dub hold). Around it the four ping loops each
-  circle as a blue dot, one step at a time, and light up as they play. The loops have different
-  lengths, so the dots drift apart and meet again.
+- **The ripples:** each stab drops a ring in the middle that spreads and fades. Its outline is the
+  sound itself at that moment, its wave wrapped round the circle: a soft pad a smooth ring, a
+  bright stab a jagged one. The echo's repeats follow it, a ring each echo time, each as strong as
+  the echo's output really is then (measured, not worked out), and a little smoother each time
+  round, as the tape darkens them. So a long Feedback makes long trains of rings, a short one a
+  single ring, and a filtered, ducked or dropped echo shows as it sounds. A stab thrown into the
+  echo makes a thicker, brighter ring. In dub hold the rings turn red, and a new stab makes a
+  single ring (the echo plays what it holds). The chord's name is in the middle (red in dub
+  hold). Around it the four ping loops each circle as a blue dot, one step a turn's step: its
+  place is where the loop is, and it lights up when the loop plays a ping (dim, a ghost, between).
+  The loops have different lengths, so the dots drift apart and meet again.
 - **ALGORITHM** (on any page but a layer's or the Chords page) changes what the middle shows: the ripples, a **scope** or a
   **spectrum**, and then the ripples again (turned back, the other way round). Each piece keeps its own view, saved with it: Haze on the spectrum, say, and Pressure on the scope. With the
   scope or the spectrum showing, the chord's name moves to the top.

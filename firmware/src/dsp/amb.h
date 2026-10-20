@@ -193,6 +193,7 @@ extern volatile uint32_t en_scope_w, en_spec_w;
 extern volatile uint8_t en_view_layer;
 extern volatile uint32_t en_hits[5];
 extern volatile float en_hit_vel[5];
+extern volatile float en_echo_pk;               /* the echo's output, its peak since the screen last took it */
 extern volatile uint16_t en_lane[6];           /* this bar as it plays: the stabs, the kick, the hats, the rim, the clap, the bass */
 
 /* the pure parts, for the tests and the screen */

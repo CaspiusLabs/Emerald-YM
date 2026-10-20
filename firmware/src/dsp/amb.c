@@ -472,6 +472,7 @@ volatile uint32_t en_spec_w;
 volatile uint8_t en_view_layer;
 volatile uint32_t en_hits[5];
 volatile float en_hit_vel[5];
+volatile float en_echo_pk;
 static void hit(int l, float vel) { en_hit_vel[l] = vel; en_hits[l]++; }
 static float scope_acc, spec_acc;
 static uint32_t scope_ph;
@@ -3269,6 +3270,7 @@ static float ms_lp1, ms_lp2;                     /* the side's lows (mono below 
 static void render_chunk(int32_t *out, uint32_t n, float gain)
 {
     uint32_t j;
+    float epk;
     const float rg = rev_send * rev_in_gain * (1.0f - 0.2f * arcm);
     /* (the cloud listens as if Reverb were at 63 at least, so Cloud works with little reverb too) */
     const float cl_in = rev_send > 0.0001f ? fm_maxf(rev_send, 0.4f) / rev_send : 0.0f;
@@ -3317,6 +3319,7 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
     if (fxm || sir_amp > 0.0005f || ris_amp > 0.0005f)
         render_fx(n);
     eg += (1.0f - eg) * fx_wash;                 /* Wash: everything into the echo */
+    epk = en_echo_pk;
     for (j = 0; j < n; j++) {
         float wl, wr, l, r, el, er, xl, xr, dg, dgb, rin, cl, cr, sd, dry = 1.0f - 0.75f * fx_wash;
         duck_d += (duck_x - duck_d) * 0.08f;
@@ -3326,6 +3329,7 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
         duck_xb *= duck_relb;
         dgb = 1.0f - fm_minf(2.0f * duck_depth, 0.9f) * duck_db;
         echoes(esend[j] * eg, &el, &er, &xl, &xr);
+        epk = fm_maxf(epk, fm_fabsf(el + er));   /* (the screen's ripples: the echo as it comes out) */
         rin = (rsend[j] * rg + (el + er) * 0.25f * rev_send) * 0.8f;
         if (fx_vt + fx_wash > 0.001f || crash > 0.001f) {   /* Verb, Wash: the dry into the plate; Crash: a burst */
             rin += (mixl[j] + mixr[j] + 2.0f * bassb[j]) * (0.35f * fx_vt + 0.3f * fx_wash);
@@ -3407,6 +3411,7 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
             en_scope_w++;
         }
     }
+    en_echo_pk = epk;
     duck_x = fm_flush(duck_x);
     duck_d = fm_flush(duck_d);
     duck_xb = fm_flush(duck_xb);
