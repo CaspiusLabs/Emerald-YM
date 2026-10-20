@@ -852,6 +852,12 @@ static float cr_wd, cr_ww, cr_wr;               /* Crackle's dust, wind and rumb
 static uint32_t sixteenth, bar, chord_bars;    /* bars since the start, since the chord moved */
 static uint8_t sec, sec_next, fill;
 static uint8_t lay_kick = 1, lay_hats = 1, lay_open = 1, lay_bass = 1, lay_stabs = 1;
+/* the kick's shape, a phrase at a time (1.3.0, REPORT2's proposal 2): none, the downbeat, 1 and 3, four with 2 and 4
+ * ghosted (-10 dB), four on the floor. The Drums page's Density is where they centre; Evolve how far they wander */
+enum { KS_NONE, KS_ONE, KS_HALF, KS_GHOST, KS_FOUR, KS_N };
+static const uint16_t KSHAPE[KS_N] = {0x0000u, 0x0001u, 0x0101u, 0x1111u, 0x1111u};
+static uint8_t kick_shape = KS_FOUR;
+static int kick_draw(int next);
 static float arc, arc_tgt, arc_tau = 1.0f;     /* the sweep, its target, its time (samples) */
 static uint8_t change_pending;
 
@@ -1432,7 +1438,7 @@ static void hats_publish(void)
         o |= 1u << 6 | 1u << 14;
     drum_pat[1] = c;
     drum_pat[2] = o;
-    drum_pat[0] = 0x1111u;
+    drum_pat[0] = KSHAPE[kick_shape];
     drum_pat[3] = k >= 70 ? 0x1010u : 0u;       /* the rim, with many hits: on two and four */
     drum_pat[4] = 0x1010u;                       /* the clap: two and four, now and then (clap_auto) */
     en_drum_pat[0] = drum_pat[0];
@@ -1623,8 +1629,11 @@ static void bar_start(void)
 {
     int pb = (int)(bar & 7u), db = en_drift_bars(par[P_DRIFT]);
     en_phrase_bar = (uint8_t)pb;
-    if (pb == 0 && bar > 0)
+    if (pb == 0 && bar > 0) {
         section_set(sec_next);
+        kick_shape = (uint8_t)kick_draw(sec);   /* (the phrase's kick) */
+        hats_publish();
+    }
     if (sec == SEC_BREAK && pb == 2)            /* two bars in, the filter starts to open */
         arc_tgt = 1.0f, arc_tau = 2.2f * 16.0f * step_len;
     fill = 0;
@@ -1652,6 +1661,29 @@ static void bar_start(void)
         hats_evolve();
     stabs_bar();
     bar++;
+}
+
+/* the kick's shape for the next phrase: around Density (0..100 as 0..4 on the ladder; 100: four, always, as before
+ * 1.3.0), each shape's weight falling with its distance (less steeply as Evolve rises), none at half; a Thin phrase
+ * a step sparser */
+static int kick_draw(int next)
+{
+    const int v = pe(P_KDENS);
+    float x = (float)v * 0.04f, lam = 1.4f - evolve, w[KS_N], t = 0.0f, r;
+    int k;
+    if (v >= 100)
+        return KS_FOUR;
+    if (next == SEC_THIN)
+        x -= 1.0f;
+    for (k = 0; k < KS_N; k++) {
+        w[k] = fm_expf(-fm_fabsf((float)k - x) * lam) * (k == KS_NONE ? 0.5f : 1.0f);
+        t += w[k];
+    }
+    r = frand() * t;
+    for (k = 0; k < KS_N - 1; k++)
+        if ((r -= w[k]) < 0.0f)
+            break;
+    return k;
 }
 
 /* a lane's steps as they play: the pattern page's (Play: Pattern), or the generated ones */
@@ -1694,8 +1726,16 @@ static void tick(void)
     lanes();
     {
         float v0 = st ? 0.88f : 1.0f, v1 = 0.35f + 0.3f * r + (st & 1 ? 0.0f : 0.15f), v2 = 0.7f + 0.2f * r, v3 = 0.75f + 0.15f * r;
+        if (!par[P_DMODE] && kick_shape == KS_GHOST && (st == 4 || st == 12))
+            v0 *= 0.32f;                         /* (two and four ghosted, -10 dB) */
         if (kick && dpat(0) >> st & 1u && !(fill && st >= 8) && dhit(0, st, &v0))
             drum_hit(0, v0, 0);
+        else if (!(st & 3) && par[P_DRUMS] > 0) {   /* the ghost duck: the music breathes on every beat, the kick
+                                                    * or not (lighter without one; lightest in a Break) */
+            const float gd = lay_kick ? 0.7f : 0.45f;
+            duck_x = fm_maxf(duck_x, gd);
+            duck_xb = fm_maxf(duck_xb, gd);
+        }
         if (hats && lay_hats && dpat(1) >> st & 1u && dhit(1, st, &v1))
             drum_hit(1, v1, st & 1);
         if (hats && (lay_open || fill) && dpat(2) >> st & 1u && dhit(2, st, &v2))
@@ -2489,6 +2529,8 @@ static void play_start(int from_top)
             loop_pos[i] = 0;
         section_set(SEC_FULL);
         sec_next = SEC_FULL;
+        kick_shape = (uint8_t)kick_draw(SEC_FULL);
+        hats_publish();
     }
     pulse_left = 0.0f;
     tick_wait = 0;
@@ -2517,12 +2559,12 @@ static void macro(int i, int v)
     static const struct { uint8_t p; int8_t at50; } MOVE[] = {
         {P_ECHO, 90}, {P_FEEDBACK, 50},                  /* Dub (and, up, the music pushed into the echo: render_chunk) */
         {P_DENSITY, 85}, {P_HITS, 85}, {P_STABS, 85},    /* Energy: the notes and hits, */
-        {P_PINGS, 40}, {P_HATS, 45}, {P_DECAY, 30},      /* the pings' level, the hats' colour, the stabs' length
+        {P_PINGS, 40}, {P_HATS, 45}, {P_DECAY, 30}, {P_KDENS, 30},   /* the pings' level, the hats' colour, the stabs' length, the kick
                                                           * (and the hats' level, the phrases: render_drums, bar_start) */
         {P_REVERB, 85}, {P_CLOUD, 80}, {P_SIZE, 45},     /* Space */
     };
     static const uint8_t OF[] = {EN_MAC_DUB, EN_MAC_DUB, EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_ENERGY,
-                                 EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_SPACE,
+                                 EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_SPACE,
                                  EN_MAC_SPACE, EN_MAC_SPACE};
     unsigned k;
     mac[i] = (int8_t)v;

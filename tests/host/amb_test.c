@@ -394,6 +394,38 @@ int main(void)
         CHECK(n[0] == 0 && n[1] > 0 && n[2] > n[1] * 2u, "Throws: %u / %u / %u", n[0], n[1], n[2]);
     }
 
+    /* the kick's shapes, a phrase at a time: Density 100 four on the floor in every bar it plays; 90 mostly four, some
+     * half-time and the downbeat alone */
+    {
+        int k, b, four[2] = {0, 0}, half[2] = {0, 0}, one[2] = {0, 0}, played[2] = {0, 0};
+        static const int KD[2] = {100, 90};
+        for (k = 0; k < 2; k++) {
+            fresh();
+            en_seed(11);
+            en_set(P_KDENS, KD[k]);
+            en_set(P_MOTION, 0);
+            en_regrow();
+            en_play(1);
+            run(1.0f);
+            for (b = 0; b < 240; b++) {
+                uint16_t p;
+                run(60.0f / 122.0f * 4.0f);      /* (a bar at 122) */
+                p = en_lane[1];
+                if (!p)
+                    continue;
+                played[k]++;
+                four[k] += p == 0x1111u;
+                half[k] += p == 0x0101u;
+                one[k] += p == 0x0001u;
+            }
+        }
+        printf("  the kick, Density 100: four in %d of %d bars; 90: four %d, half %d, one %d of %d\n", four[0], played[0],
+               four[1], half[1], one[1], played[1]);
+        CHECK(played[0] > 100 && four[0] == played[0], "Density 100: four in %d of %d", four[0], played[0]);
+        CHECK(played[1] > 100 && four[1] > played[1] / 3 && four[1] < played[1] * 9 / 10 && half[1] + one[1] > played[1] / 12,
+              "Density 90: four %d, half %d, one %d of %d", four[1], half[1], one[1], played[1]);
+    }
+
     /* the bass: Octave -1 a true octave under 0 (E0..Eb1); with Drone, Fifth gives whole bars of the fifth */
     {
         int lo0, hi0;
