@@ -469,6 +469,10 @@ volatile int16_t en_scope[EN_SCOPE_N];
 volatile uint32_t en_scope_w;
 volatile int16_t en_spec[EN_SPEC_N];
 volatile uint32_t en_spec_w;
+volatile uint8_t en_view_layer;
+volatile uint32_t en_hits[5];
+volatile float en_hit_vel[5];
+static void hit(int l, float vel) { en_hit_vel[l] = vel; en_hits[l]++; }
 static float scope_acc, spec_acc;
 static uint32_t scope_ph;
 static uint32_t mutes, perf, fxm, fxm_was;      /* performance: the layers muted, the moves held; the effects held */
@@ -1301,6 +1305,7 @@ static void bell_voice(int l, int n, float vel, int32_t wait)
     v->gr = fm_sinf(p);
     v->wait = wait;
     en_loop_glow[l] = 1.0f;
+    hit(1, vel);
     midi(0x91, (uint32_t)n, (uint32_t)(vel * 110.0f));
 }
 
@@ -1380,6 +1385,7 @@ static void stab_fire(float vel, int throw_it)
     en_stab_vel = vel;
     en_stab_thrown = (uint8_t)(throw_it != 0);
     en_stabs++;
+    hit(0, vel);
     st_midi_left = (int32_t)(fm_maxf(st_t60 * 0.5f, 0.06f) * EN_SR);
     if (throw_it) {
         st_throw = 1.0f;
@@ -1480,6 +1486,7 @@ static void drum_fire(int d, float vel)
         break;
     }
     en_drum_glow[d] = 1.0f;
+    hit(3, d == 0 ? vel : vel * 0.6f);           /* (the kick the biggest ring) */
     midi(0x99, v->note, (uint32_t)(vel * 100.0f));
     midi(0x89, v->note, 0);
 }
@@ -1538,6 +1545,7 @@ static void bass_hit(int first)
             fm_note(&bfm, BV_PATCH[bv], mtof(bass.note), 1.0f, fm_q(P_BFRAT), fm_d(P_BFDEC));
     }
     bass.midi_note = (uint8_t)n;
+    hit(2, first ? 1.0f : 0.75f);
     midi(0x92, (uint32_t)n, 90);
 }
 
@@ -2566,6 +2574,7 @@ static void drain(void)
 /* --------------------------------------------------------------- render --- */
 #define BLK 256
 static float mixl[BLK], mixr[BLK], rsend[BLK], esend[BLK], kickb[BLK], bassb[BLK], crl[BLK], crr[BLK];
+static float tapb[BLK];                          /* the layer the screen listens to, alone (en_view_layer) */
 /* (bassb: the bass, mono, on its own so the duck takes it deeper than the rest) */
 
 static void render_stabs(uint32_t n)
@@ -3276,11 +3285,35 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
         mb_s[0] = mb_s[1] = mb_s[2] = mb_s[3] = 0.0f;
     for (j = 0; j < n; j++)
         mixl[j] = mixr[j] = rsend[j] = esend[j] = kickb[j] = bassb[j] = 0.0f;
-    render_stabs(n);
-    render_bass(n);
-    render_bells(n);
-    render_drums(n);
-    render_crackle(n);
+    {   /* (a layer's own part of the dry mix: what its render adds; the bass, the kick and the noise their own) */
+        const int tl = en_view_layer;
+        render_stabs(n);
+        if (tl == 1)
+            for (j = 0; j < n; j++)
+                tapb[j] = mixl[j] + mixr[j];
+        render_bass(n);
+        if (tl == 2)
+            for (j = 0; j < n; j++)
+                tapb[j] = -(mixl[j] + mixr[j]);
+        render_bells(n);
+        if (tl == 2)
+            for (j = 0; j < n; j++)
+                tapb[j] += mixl[j] + mixr[j];
+        if (tl == 4)
+            for (j = 0; j < n; j++)
+                tapb[j] = -(mixl[j] + mixr[j]);
+        render_drums(n);
+        if (tl == 4)
+            for (j = 0; j < n; j++)
+                tapb[j] += mixl[j] + mixr[j] + 2.0f * kickb[j];
+        if (tl == 3)
+            for (j = 0; j < n; j++)
+                tapb[j] = 2.0f * bassb[j];
+        render_crackle(n);
+        if (tl == 5)
+            for (j = 0; j < n; j++)
+                tapb[j] = crl[j] + crr[j];
+    }
     if (fxm || sir_amp > 0.0005f || ris_amp > 0.0005f)
         render_fx(n);
     eg += (1.0f - eg) * fx_wash;                 /* Wash: everything into the echo */
@@ -3357,8 +3390,11 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
         r = fm_tanhf(r);
         out[2 * j] = (int32_t)(l * 8300000.0f);
         out[2 * j + 1] = (int32_t)(r * 8300000.0f);
-        scope_acc += l + r;                      /* (the screen's scope and spectrum) */
-        spec_acc += l + r;
+        {   /* (the screen's scope and spectrum: the output, or a layer alone) */
+            const float v = en_view_layer ? tapb[j] * 0.595f * gain : l + r;
+            scope_acc += v;
+            spec_acc += v;
+        }
         if (scope_ph & 1u) {
             en_spec[en_spec_w & (EN_SPEC_N - 1u)] = (int16_t)(fm_clampf(spec_acc, -4.0f, 4.0f) * 8000.0f);
             en_spec_w++;

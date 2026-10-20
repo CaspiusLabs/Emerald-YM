@@ -139,6 +139,7 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
 #define K_RIM_T RGB(108, 58, 86)
 #define K_CLAP RGB(232, 206, 98)         /* the clap */
 #define K_CLAP_T RGB(108, 98, 48)
+#define K_NOISE RGB(186, 174, 156)       /* the noise (its level ring) */
 
 static struct {
     uint8_t view;
@@ -153,6 +154,9 @@ static struct {
     uint8_t noise_round;               /* (1: SELECT brought it, and goes on from it) */
     uint8_t oct_both, oct_done;        /* OCT- and OCT+ down together this press; its mute done (or too late) */
     uint32_t oct_t, oct_rep;           /* when both went down; an OCT held: its next step */
+    uint8_t oct_ring;                  /* the level ring in the middle: its layer + 1 (0: none) */
+    uint32_t oct_until, oct_pulse;     /* the ring: up until, then fading; its last step (a pulse) */
+    float oct_v;                       /* the ring's arc, gliding to the level */
     uint32_t prog_gen;                 /* the engine's slots, as last taken (en_prog_gen) */
     uint8_t lane;                      /* the Pattern page: the lane edited */
     uint8_t grid_said;
@@ -877,9 +881,26 @@ static void button(int b)
 #define OCT_REPEAT0 400u
 #define OCT_REPEAT 100u
 #define OCT_QUICK 1000u
+#define OCT_SHOW 1200u                           /* the ring up after the last press, then OCT_FADE fading */
+#define OCT_FADE 250u
 static const uint8_t LAYER_LEVEL[NLAYER] = {P_CHORD, P_PINGS, P_BASS, P_DRUMS, P_CRACKLE};
 static const char *const LAYER_NAME[NLAYER] = {"CHORD", "PINGS", "BASS", "DRUMS", "NOISE"};
 static const uint32_t LAYER_MUTE[NLAYER] = {EN_M_CHORD, EN_M_PINGS, EN_M_BASS, EN_M_KICK | EN_M_HATS, EN_M_NOISE};
+static void oct_show(int l)                      /* the ring up (from where it was, if it was: it glides) */
+{
+    uint32_t now = plat_ms();
+    if (ui.oct_ring != l + 1 || now >= ui.oct_until + OCT_FADE)
+        ui.oct_v = (float)proj.par[LAYER_LEVEL[l]] * 0.01f;
+    ui.oct_ring = (uint8_t)(l + 1);
+    ui.oct_until = now + OCT_SHOW;
+    ui.oct_pulse = now;
+}
+static int oct_ring_on(uint32_t now)             /* the ring's layer + 1, while it shows on this page (else 0) */
+{
+    if (!ui.oct_ring || now >= ui.oct_until + OCT_FADE || oct_layer(ui.view) != ui.oct_ring - 1)
+        return 0;
+    return ui.oct_ring;
+}
 static void oct_step(int b)
 {
     int l = oct_layer(ui.view);
@@ -889,6 +910,7 @@ static void oct_step(int b)
     knob_set(LAYER_LEVEL[l], proj.par[LAYER_LEVEL[l]] + (b == B_OCTUP ? OCT_STEP : -OCT_STEP));
     itoa_u((uint32_t)proj.par[LAYER_LEVEL[l]], t);
     say(LAYER_NAME[l], t);
+    oct_show(l);
 }
 static void oct_mute(void)
 {
@@ -903,6 +925,7 @@ static void oct_mute(void)
         ui.mutes |= m;
     perf_mutes();
     say(LAYER_NAME[l], (ui.mutes & m) == m ? "MUTED" : "ON");
+    oct_show(l);
 }
 static void oct_press(int b)
 {
@@ -1389,9 +1412,10 @@ static float turns(float y, float x)
 
 /* a knob: a 270-degree track from 7:30 to 4:30, anti-aliased, round ends; the value filled from
  * the start (or from the top, for a centred value) and a round handle */
-static void arc(int32_t cx, int32_t cy, int32_t r, float v, uint16_t track, uint16_t fill, uint16_t bg, int bipolar)
+static void arc_th(int32_t cx, int32_t cy, int32_t r, float th, float v, uint16_t track, uint16_t fill, uint16_t bg,
+                   int bipolar)
 {
-    const float th = 3.4f, a0 = 0.375f, sweep = 0.75f;
+    const float a0 = 0.375f, sweep = 0.75f;
     float ro = (float)r, ri = ro - th, rm = ro - th * 0.5f, fx = (float)cx + 0.5f, fy = (float)cy + 0.5f, lo, hi;
     int32_t x, y;
     v = fm_clampf(v, 0.0f, 1.0f);
@@ -1421,6 +1445,11 @@ static void arc(int32_t cx, int32_t cy, int32_t r, float v, uint16_t track, uint
         disc(fx + fm_cosf(ev) * rm - 0.5f, fy + fm_sinf(ev) * rm - 0.5f, th * 0.5f + 1.3f, bg);
         disc(fx + fm_cosf(ev) * rm - 0.5f, fy + fm_sinf(ev) * rm - 0.5f, th * 0.5f + 0.6f, fill);
     }
+}
+
+static void arc(int32_t cx, int32_t cy, int32_t r, float v, uint16_t track, uint16_t fill, uint16_t bg, int bipolar)
+{
+    arc_th(cx, cy, r, 3.4f, v, track, fill, bg, bipolar);
 }
 
 static void caps(char *d, const char *s, int n)  /* s in capitals, at most n - 1 characters */
@@ -1591,6 +1620,11 @@ static struct {
     uint8_t thr, on;
 } rip[RIP_N];
 static uint32_t rip_stabs;
+static int8_t rip_src = -2;                      /* whose notes the ripples are: -1 the whole (the stabs), or a layer */
+static int scr_layer(int v)                      /* a layer's own page (and the Noise page): the screen that layer's */
+{
+    return v == V_CHORD || v == V_TEXTURE || v == V_BASS || v == V_DRUMS || v == V_NSND ? oct_layer(v) : -1;
+}
 
 static const char *chord_now(char *nm)          /* the chord's name, as the screen shows it ("Em7") */
 {
@@ -1603,13 +1637,42 @@ static const char *chord_now(char *nm)          /* the chord's name, as the scre
     return en_chord_name(pcs, EN_NPAD + 1, nm);
 }
 
-static void ripples_take(uint32_t now)          /* a new stab: a new ripple (into the oldest slot if all are busy) */
+/* a new stab: a new ripple (into the oldest slot if all are busy). On a layer's page, that layer's notes instead,
+ * in its colour (the bass and the drums: a ring, no repeats; they hardly go into the echo) */
+static void ripples_take(uint32_t now)
 {
-    uint32_t n = en_stabs;
+    const int src = scr_layer(ui.view);
+    uint32_t n = src > 0 && src < 4 ? en_hits[src] : en_stabs;
     int i, k = 0;
+    if (src != rip_src) {                        /* (another page: the old rings gone) */
+        rip_src = (int8_t)src;
+        rip_stabs = n;
+        for (i = 0; i < RIP_N; i++)
+            rip[i].on = 0;
+        return;
+    }
     if (n == rip_stabs)
         return;
     rip_stabs = n;
+    if (src >= 0 && (ui.mutes & LAYER_MUTE[src]) == LAYER_MUTE[src])   /* (a layer muted: no rings) */
+        return;
+    if (src == 4)                                /* (the Noise page shows its spectrum) */
+        return;
+    if (src > 0) {
+        for (i = 0; i < RIP_N; i++) {
+            if (!rip[i].on) {
+                k = i;
+                break;
+            }
+            if (rip[i].t0 < rip[k].t0)
+                k = i;
+        }
+        rip[k].t0 = now;
+        rip[k].thr = 0;
+        rip[k].amp = fm_minf(en_hit_vel[src] * 0.9f, 1.0f);
+        rip[k].on = 1;
+        return;
+    }
     if (en_frozen || en_echo_in < 0.01f)        /* nothing new goes into a held echo */
         return;
     for (i = 0; i < RIP_N; i++) {
@@ -1644,7 +1707,10 @@ static void circle(int32_t cx, int32_t cy, int32_t r, uint16_t c)   /* an outlin
 
 static int draw_ripples(uint32_t now)           /* 1: something still moves */
 {
-    const float ms = en_echo_ms > 20.0f ? en_echo_ms : 400.0f, g = en_echo_g, life = (float)RIP_R / RIP_V;
+    static const uint16_t LC[4] = {K_PAD, K_BELL, K_BASS, K_PULSE};
+    const float ms = en_echo_ms > 20.0f ? en_echo_ms : 400.0f, life = (float)RIP_R / RIP_V;
+    const float g = rip_src == 2 || rip_src == 3 ? 0.0f : en_echo_g;
+    const uint16_t lc = rip_src > 0 && rip_src < 4 ? LC[rip_src] : K_PAD;
     int i, live = 0;
     for (i = 0; i < RIP_N; i++) {
         float age = (float)(now - rip[i].t0), a0;
@@ -1665,7 +1731,7 @@ static int draw_ripples(uint32_t now)           /* 1: something still moves */
             if (r >= (float)RIP_R || a < 0.05f)
                 continue;
             seen = 1;
-            c = mix(K_BG, en_frozen ? K_FROST : rip[i].thr ? K_ACC : K_PAD, q16(a * 2.0f));
+            c = mix(K_BG, en_frozen && rip_src < 2 ? K_FROST : rip[i].thr ? K_ACC : lc, q16(a * 2.0f));
             circle(CX, CY, (int32_t)r, c);       /* two pixels wide (a throw: three) */
             circle(CX, CY, (int32_t)r + 1, c);
             if (rip[i].thr)
@@ -2136,20 +2202,66 @@ static void draw_slots(void)
     text_c(120, 116, &FONT_XS, "ALGORITHM: THE WALK   KNOB 4: LOOP", K_DIM);
 }
 
+/* the level ring (OCT- / OCT+ on a layer's page): over the middle, the layer's level as a big knob in its colour, the
+ * number inside, its name under; the arc glides to the level, a step a brief brightening; muted, grey; it fades out
+ * OCT_SHOW after the last press */
+static void draw_oct(uint32_t now)
+{
+    static const uint16_t C[NLAYER] = {K_PAD, K_BELL, K_BASS, K_PULSE, K_NOISE};
+    const int32_t r = 30, cy = 66;
+    int l = oct_ring_on(now) - 1, f;
+    int32_t f2;
+    uint16_t c, tr, tx;
+    float v;
+    char t[8];
+    if (l < 0)
+        return;
+    v = (float)proj.par[LAYER_LEVEL[l]] * 0.01f;
+    ui.oct_v += (v - ui.oct_v) * 0.55f;          /* (20 frames a second: there in ~100 ms) */
+    if (fm_fabsf(v - ui.oct_v) < 0.004f)
+        ui.oct_v = v;
+    f = now < ui.oct_until ? 16 : 16 - (int)((now - ui.oct_until) * 16u / OCT_FADE);   /* the fade, 16 .. 0 */
+    c = (ui.mutes & LAYER_MUTE[l]) == LAYER_MUTE[l] ? K_DIM : C[l];
+    if (now - ui.oct_pulse < 160u)               /* a step: brighter for a moment */
+        c = mix(c, K_TEXT, 7 - (int)((now - ui.oct_pulse) * 7u / 160u));
+    tr = mix(K_BG, K_LINE, f);
+    tx = mix(K_BG, K_TEXT, f);
+    c = mix(K_BG, c, f);
+    for (f2 = -(r + 6); f2 <= r + 6; f2++) {     /* (a disc behind it, the middle hidden) */
+        int32_t w = (int32_t)fm_sqrtf((float)((r + 6) * (r + 6) - f2 * f2));
+        cv_rect(CX - w, cy + f2, 2 * w + 1, 1, K_BG);
+    }
+    arc_th(CX, cy, r, 5.0f, ui.oct_v, tr, c, K_BG, 0);
+    if ((ui.mutes & LAYER_MUTE[l]) == LAYER_MUTE[l]) {
+        text_c(CX, cy - 6, &FONT_XS, "MUTED", tx);
+    } else {
+        itoa_u((uint32_t)proj.par[LAYER_LEVEL[l]], t);
+        text_c(CX, cy - 11, &FONT_C, t, tx);
+    }
+    {
+        int32_t w = text_w(&FONT_XS, LAYER_NAME[l]);
+        cv_round(CX - w / 2 - 4, cy + r - 2, w + 8, 14, 4, K_BG);
+        text_c(CX, cy + r - 2, &FONT_XS, LAYER_NAME[l], c);
+    }
+}
+
 static void draw_main(void)
 {
     uint32_t now = plat_ms(), h = hash(2166136261u, (uint32_t)en_frozen << 16 | proj.piece << 24 | (uint32_t)en_playing << 17), i;
     static uint8_t moving;
+    en_view_layer = (uint8_t)(scr_layer(ui.view) + 1);   /* (the scope and spectrum: this page's layer, or the whole) */
     if (ui.frame % 3u)                           /* 20 frames a second is plenty */
         return;
     if (ui.view == V_PAT) {                      /* the Pattern page: the steps */
         h = hash(hash(0x50415454u, ui.lane | (uint32_t)proj.par[P_DMODE] << 4 | (uint32_t)en_drum_pos[0] << 8), en_playing);
         for (i = 0; i < EN_NDRUM; i++)
             h = hash(hash(h, lane_steps((int)i)), (uint32_t)(uint16_t)proj.par[P_DACC0 + i]);
-        if (h != ui.sig[1]) {
+        h = hash(h, (uint32_t)oct_ring_on(now));
+        if (h != ui.sig[1] || oct_ring_on(now)) {
             ui.sig[1] = h;
             cv_begin(240, MAIN_H, K_BG);
             draw_pattern();
+            draw_oct(now);
             cv_blit(0, MAIN_Y);
         }
         return;
@@ -2194,13 +2306,13 @@ static void draw_main(void)
         h = hash(h, (uint32_t)q16(en_loop_glow[i]) | (uint32_t)en_loop_pos[i] << 8);
     for (i = 0; i < EN_NDRUM; i++)
         h = hash(h, (uint32_t)q16(en_drum_glow[i]));
-    h = hash(h, ui.view);
+    h = hash(h, ui.view | (uint32_t)oct_ring_on(now) << 8);
     if (parent_of(ui.view) >= 0) {               /* a sound or FM page: redrawn as its values move */
         for (i = 0; i < 4; i++)
             h = hash(h, (uint32_t)(proj.par[VIEW_KNOB[ui.view][i]] + 64));
         h = hash(h, (uint32_t)proj.par[view_voice(ui.view)] | (uint32_t)proj.par[P_DECAY] << 8 | (uint32_t)proj.par[P_GROOVE] << 16);
     }
-    if (h == ui.sig[1] && !moving)
+    if (h == ui.sig[1] && !moving && !oct_ring_on(now))
         return;
     ui.sig[1] = h;
     cv_begin(240, MAIN_H, K_BG);
@@ -2221,7 +2333,8 @@ static void draw_main(void)
         moving = 1;
     } else {
         moving = (uint8_t)draw_ripples(now);
-        draw_orbits();
+        if (rip_src < 0 || rip_src == 1)         /* (the ping loops: on the whole, and the Pings page) */
+            draw_orbits();
     }
     if (parent_of(ui.view) < 0 && proj.screen % 3u) {   /* the chord: over the scope or the spectrum, small */
         char nm[16];
@@ -2270,6 +2383,7 @@ static void draw_main(void)
     draw_meters();
     draw_duck();
     draw_lanes();
+    draw_oct(now);
     cv_blit(0, MAIN_Y);
 }
 

@@ -188,6 +188,11 @@ extern volatile float en_duck;                 /* the ducking now, 0 .. 1 (full 
 #define EN_SPEC_N 512
 extern volatile int16_t en_scope[EN_SCOPE_N], en_spec[EN_SPEC_N];
 extern volatile uint32_t en_scope_w, en_spec_w;
+/* what the scope and spectrum listen to: 0 the whole output, 1..5 one layer alone, dry (the chord, the pings, the
+ * bass, the drums, the noise), for a layer's page; and each layer's notes struck so far, the last one's strength */
+extern volatile uint8_t en_view_layer;
+extern volatile uint32_t en_hits[5];
+extern volatile float en_hit_vel[5];
 extern volatile uint16_t en_lane[6];           /* this bar as it plays: the stabs, the kick, the hats, the rim, the clap, the bass */
 
 /* the pure parts, for the tests and the screen */
