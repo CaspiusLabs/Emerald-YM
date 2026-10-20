@@ -467,6 +467,12 @@ static int expect(const char *what, const char *val)
         got = (int)(lit_keys >> (atoi(what + 6) % 27) & 1u);
     else if (!strcmp(what, "mutes"))              /* the layers muted (EN_M_*: 1 chord .. 16 hats, 32 noise) */
         got = (int)ui.mutes;
+    else if (!strcmp(what, "scopepk")) {          /* the scope's buffer, its peak (the page's layer alone, or the whole) */
+        int i;
+        got = 0;
+        for (i = 0; i < EN_SCOPE_N; i++)
+            got = abs(en_scope[i]) > got ? abs(en_scope[i]) : got;
+    }
     else if (!strcmp(what, "viewlayer"))          /* what the scope and spectrum listen to (0 the whole, 1.. a layer) */
         got = en_view_layer;
     else if (!strcmp(what, "octring"))            /* the level ring showing: its layer + 1 (0: none) */

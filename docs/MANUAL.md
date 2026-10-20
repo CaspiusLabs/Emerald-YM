@@ -273,7 +273,8 @@ page, below), but never shakes.
   scope or the spectrum showing, the chord's name moves to the top.
 - On a layer's own page (Chord, Pings, Bass, Drums), the middle shows **that layer alone**: the ripples its notes, in
   its colour (the stabs on the Chord page, the pings with their loops' dots on the Pings page, a ring a bass note, a
-  ring a drum hit), and the scope or the spectrum its sound, dry. The Noise page's spectrum is the noise's. Dub,
+  ring a drum hit), and the scope or the spectrum its sound, dry. The lanes below keep showing the whole bar, the
+  layer's own in colour and the others in grey (the pings and the noise have no lane: all grey). The Noise page's spectrum is the noise's. Dub,
   PERFORM and the other pages show the whole piece.
   - The **scope** draws the output (left and right mixed) as a thick line. Each trace starts on a
     rising zero crossing so the picture stands still, and the two traces before it fade behind.

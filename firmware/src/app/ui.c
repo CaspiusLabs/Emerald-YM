@@ -2108,12 +2108,24 @@ static void draw_duck(void)                      /* right: the kick's ducking, f
     cv_text(216 - text_w(&FONT_XS, "DUCK"), 76, &FONT_XS, "DUCK", K_DIM);
 }
 
-static void draw_lanes(void)                     /* below: the bar, a lane a layer */
+/* below: the bar, a lane a layer. On a layer's page (and its sound pages) its lanes as ever, the others in grey (the
+ * pings and the noise have none: all grey) */
+static void draw_lanes(void)
 {
-    static const uint16_t C[6] = {K_PAD, K_PULSE, K_TEXT, K_RIM, K_CLAP, K_BASS},
-                          T[6] = {K_PAD_T, K_PULSE_T, K_LINE, K_RIM_T, K_CLAP_T, K_BASS_T};
+    static const uint16_t C0[6] = {K_PAD, K_PULSE, K_TEXT, K_RIM, K_CLAP, K_BASS},
+                          T0[6] = {K_PAD_T, K_PULSE_T, K_LINE, K_RIM_T, K_CLAP_T, K_BASS_T};
     static const int8_t DR[6] = {-1, 0, 1, 3, 4, -1};   /* each lane's drum (its chance) */
+    static const int8_t LL[6] = {0, 3, 3, 3, 3, 2};     /* each lane's layer (oct_layer's) */
+    const int lay = oct_layer(ui.view);
+    uint16_t C[6], T[6], dot[6], dot4[6];
     int l, i, k, pos = en_drum_pos[0];
+    for (l = 0; l < 6; l++) {
+        int lit = lay < 0 || LL[l] == lay;
+        C[l] = lit ? C0[l] : K_LINE;
+        T[l] = lit ? T0[l] : mix(K_BG, K_LINE, 8);
+        dot[l] = lit ? K_LINE : mix(K_BG, K_LINE, 9);
+        dot4[l] = lit ? K_DIM : K_LINE;
+    }
     float ghost[16];
     if (en_playing)                              /* the step playing: a column */
         cv_round(38 + pos * 11, 94, 10, 50, 2, K_PANEL);
@@ -2142,7 +2154,7 @@ static void draw_lanes(void)                     /* below: the bar, a lane a lay
         for (i = 0; i < 16; i++) {
             int32_t x = 40 + i * 11;
             if (p >> i & 1u && maybe) {          /* a hit that only sometimes comes: a ring; filled when it does */
-                uint16_t c = en_playing && i == pos && en_drum_glow[DR[l]] > 0.5f ? K_TEXT : mix(T[l], C[l], 10);
+                uint16_t c = en_playing && i == pos && en_drum_glow[DR[l]] > 0.5f ? (C[l] == K_LINE ? K_DIM : K_TEXT) : mix(T[l], C[l], 10);
                 if (en_playing && i == pos && en_drum_glow[DR[l]] > 0.5f) {
                     cv_round(x - 1, y - 1, 8, 8, 3, c);
                 } else {
@@ -2151,7 +2163,8 @@ static void draw_lanes(void)                     /* below: the bar, a lane a lay
                 }
             } else if (p >> i & 1u) {
                 cv_round(x, y, 6, 6, 2, en_playing && i == pos ? C[l] : mix(T[l], C[l], 10));
-            } else if (l == 0 && ghost[i] > 0.0f) {   /* an echo's repeat: a ring; as the playhead hits it, a flash */
+            } else if (l == 0 && ghost[i] > 0.0f && (lay < 0 || lay == 0)) {   /* an echo's repeat: a ring; as the
+                                                                                  * playhead hits it, a flash */
                 if (en_playing && i == pos) {
                     cv_round(x - 1, y - 1, 8, 8, 3, K_TEXT);
                 } else {
@@ -2160,9 +2173,9 @@ static void draw_lanes(void)                     /* below: the bar, a lane a lay
                     cv_rect(x, y + 1, 1, 4, c), cv_rect(x + 5, y + 1, 1, 4, c);
                 }
             } else if (i & 3) {
-                cv_rect(x + 2, y + 2, 2, 2, K_LINE);
+                cv_rect(x + 2, y + 2, 2, 2, dot[l]);
             } else {
-                cv_rect(x + 2, y + 2, 2, 2, K_DIM);
+                cv_rect(x + 2, y + 2, 2, 2, dot4[l]);
             }
         }
     }
