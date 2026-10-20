@@ -80,9 +80,16 @@ enum {
     P_DACC0, P_DACC1, P_DACC2, P_DACC3, P_DACC4,
     P_DCH0, P_DCH1, P_DCH2, P_DCH3, P_DCH4,
     P_DACCENT, P_DMODE,
-    /* the noise (ARP's Noise page, 1.3.0): Colour, Grain, Room, Drift, -50..+50 around the piece's own (0), and a
-     * character (EN_NCHAR_NAME: Vinyl, Tape, Dust, Room, Machine); Crackle (the Texture page) is its level */
+    /* the noise (SAVE's Noise page, 1.3.0): Colour, Grain, Room, Drift, -50..+50 around the piece's own (0), and a
+     * character (EN_NCHAR_NAME: Vinyl, Tape, Dust, Room, Machine); Crackle (the Noise page's Level) is its level.
+     * (Room is off the page: the recipes and the characters still set it) */
     P_NCOL, P_NGRAIN, P_NROOM, P_NDRIFT, P_NCHAR,
+    /* 1.3.0's pages (format 13), 0..100: the stabs thrown into the echo (50: as Evolve and the arrangement throw
+     * them; 0 never, 100 about three times as often); the pings' dry level against their sends (50: -6 dB, as the
+     * sound pass left it; 0: +6 dB; 100: about -20 dB, almost all echo); the bass's notes in its groove (100: every
+     * note; less, left out at random, the bar's first kept); the shaker and open hat against the kick (50: x1,
+     * about +-12 dB at the ends) */
+    P_CTHROW, P_PGHOST, P_BNOTES, P_HATSLVL,
     P_NPARAMS
 };
 typedef struct {
@@ -109,7 +116,8 @@ void en_regrow(void);                          /* a new piece: fresh loops and p
 void en_pings_get(uint8_t *b);
 void en_pings(const uint8_t *b);
 /* performance (SEL's mode): layers muted (EN_M_*, a mask: set = muted), and the moves held now (EN_PF_*) */
-enum { EN_M_CHORD = 1, EN_M_PINGS = 2, EN_M_BASS = 4, EN_M_KICK = 8, EN_M_HATS = 16 };
+enum { EN_M_CHORD = 1, EN_M_PINGS = 2, EN_M_BASS = 4, EN_M_KICK = 8, EN_M_HATS = 16, EN_M_NOISE = 32 };   /* (the noise:
+                                                * OCT- + OCT+ on its page; its level kept) */
 enum { EN_PF_THROW = 1, EN_PF_OPEN = 2, EN_PF_CLOSE = 4, EN_PF_KICKDROP = 8, EN_PF_ECHO = 16 };   /* (KICKDROP: Drop, the kick and the bass) */
 void en_mute(uint32_t mask);
 void en_perf(uint32_t flags);
@@ -191,7 +199,9 @@ int en_chord_tones(uint32_t pool, int root, int deg, int *pcs);
  * 7th chord, root 5th 7th 10th; shape 1: root 7th 10th 14th, a 9th without its fifth) */
 void en_voicing(uint32_t pool, int deg, int shape, int *iv);
 const char *en_chord_name(const int *pcs, int n, char *buf);   /* "Em7", "Dsus4", "C" ... */
-uint32_t en_groove(int g);                     /* the bass's pattern g: bit i, a note on step i */
+uint32_t en_groove(int g);                     /* the bass's pattern g (the engine's: Drone, Offbeat, Dotted, Roller,
+                                                * Sync): bit i, a note on step i */
+int en_groove_pat(int knob);                   /* the Groove knob (Drone, Offbeat, Dotted, Sync, Roller): its pattern */
 int en_drift_bars(int v);                      /* Drift's value in bars; 0: the chord holds */
 int en_kick_note(int root);                    /* the kick's note (MIDI) for the key's root: F1..B1 */
 /* a layer's envelope as it sounds now (0 chord, 1 pings, 2 bass, 3 kick), for a sound page's drawing: n points

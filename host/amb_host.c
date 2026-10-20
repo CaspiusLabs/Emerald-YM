@@ -25,6 +25,9 @@
  *                                Both print the film's time there, "@ mm:ss.s  bar N  LABEL" (the edit's cue)
  *   store8                       save the project as DUB-1 1.0.0 did (format 8): reboot then reads it
  *   store10                      save it as 1.2.0 did (format 10, without the noise's five)
+ *   store12 [G]                  save it as 1.3.0's ladder did (format 12, without Throws, Ghost, Notes, Hats level;
+ *                                each groove as its ladder step: the knob's 0..4 as 0 2 4 6 8; G: the playing
+ *                                piece's ladder step instead, 0..8)
  *   pingmark                     remember the ping loops (expect pingsame 1: they are as they were)
  *   splashrun                    the launch screen played out as the device does at power-on (55 ms a frame,
  *                                the music running, the UI not), then the UI started again
@@ -460,6 +463,10 @@ static int expect(const char *what, const char *val)
         got = ping_hash() == ping_mark;
     else if (!strcmp(what, "screen"))
         got = proj.screen;
+    else if (!strncmp(what, "litkey", 6))         /* litkeyN: key N (0..26) lit */
+        got = (int)(lit_keys >> (atoi(what + 6) % 27) & 1u);
+    else if (!strcmp(what, "mutes"))              /* the layers muted (EN_M_*: 1 chord .. 16 hats, 32 noise) */
+        got = (int)ui.mutes;
     else if (!strcmp(what, "dirty"))
         got = ui.dirty;
     else if (!strcmp(what, "store_writes"))
@@ -708,6 +715,25 @@ int main(int argc, char **argv)
             o.pool = proj.pool, o.leds = proj.leds, o.piece = proj.piece, o.screen = proj.screen;
             for (i = 0; i < NPIECES; i++) {
                 memcpy(o.slot[i].par, proj.slot[i].par, sizeof o.slot[i].par);
+                o.slot[i].pool = proj.slot[i].pool;
+                memcpy(o.slot[i].pings, proj.slot[i].pings, sizeof o.slot[i].pings);
+                o.slot[i].pings_ok = proj.slot[i].pings_ok;
+                o.slot[i].screen = proj.slot[i].screen;
+            }
+            plat_store_save(OBJ_PROJ, &o, sizeof o);
+        } else if (!strcmp(cmd, "store12")) {    /* the project as 1.3.0's ladder saved it (format 12) */
+            static project12_t o;
+            static const int16_t LAD[5] = {0, 2, 4, 6, 8};
+            int i;
+            keep();
+            memset(&o, 0, sizeof o);
+            o.magic = PROJ_MAGIC, o.format = 12u;
+            memcpy(o.par, proj.par, sizeof o.par);
+            o.par[P_GROOVE] = a[0] ? (int16_t)atoi(a) : LAD[proj.par[P_GROOVE] % 5];
+            o.pool = proj.pool, o.leds = proj.leds, o.piece = proj.piece, o.screen = proj.screen;
+            for (i = 0; i < NPIECES; i++) {
+                memcpy(o.slot[i].par, proj.slot[i].par, sizeof o.slot[i].par);
+                o.slot[i].par[P_GROOVE] = a[0] && i == proj.piece ? (int16_t)atoi(a) : LAD[proj.slot[i].par[P_GROOVE] % 5];
                 o.slot[i].pool = proj.slot[i].pool;
                 memcpy(o.slot[i].pings, proj.slot[i].pings, sizeof o.slot[i].pings);
                 o.slot[i].pings_ok = proj.slot[i].pings_ok;

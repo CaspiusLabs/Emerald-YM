@@ -14,23 +14,23 @@ expect frozen 1
 tap REC
 wait 200
 expect frozen 0
-# the Chord page's Level, from a known value
+# the Chord page's Throws (KNOB 1), from a known value
 tap ENV
 spin K1 -100
 spin K1 60
-expect par0 60
+expect par111 60
 wait 500
 turn K1 3 10
-expect par0 63
+expect par111 63
 wait 500
 turn K1 -3 30
-expect par0 60
+expect par111 60
 wait 500
 turn K1 -12 10
-expect par0 0
+expect par111 0
 wait 500
 turn K1 2 100
-expect par0 2
+expect par111 2
 wait 1500
 press GLO
 wait 1000
@@ -38,8 +38,8 @@ shot help_save.png
 wait 700
 release GLO
 wait 200
-# the recipe's level again (not the 2 it was left at)
-expect par0 >20
+# the recipe's Throws again (not the 2 it was left at)
+expect par111 >20
 expect store_writes 0
 # the tempo from a known value: the Key page's first knob (HOME, HOME again) down to its lowest
 tap HOME

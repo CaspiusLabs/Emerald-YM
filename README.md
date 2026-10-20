@@ -29,14 +29,14 @@ installer can reach.
 |---|---|
 | Keys | The scale: each key adds its note or takes it out |
 | PLAY · REC · EDIT | Play / rest · a tap: dub hold, held: the effects grid (16 effects on the white keys) · a tap: the Chords page (eight slots: root, kind, type; Play random or the slots), held: the next chord |
-| SEL | PERFORM: the knobs the master actions, Filter, Dub (the echo), Energy and Space (white 6 held: the mix); white keys 1–5 mute the layers, black keys 1–5 solo them; white 7–11, held: throw, open, shut, drop (the kick and the bass), push the echo. The keys that do something are lit; hold SEL for the map |
-| HOME · ENV · ARP · LFO · SEQ · FX · GLO | The pages: Dub (the Filter, Evolve, Motion, Drift), Chord, Texture, Bass, Drums, Space, Setup (for every piece); KNOB 1–4 set their four values. HOME again: the Key page (tempo, root, mode, swing). A layer's button again: its sound page (four more, relative to the voice) |
-| SELECT | The previous or next page; with HOME held, the tempo |
+| SEL | PERFORM: the knobs the master actions, Filter, Dub (the echo), Energy and Space (white 6 held: the mix); white keys 1–5 mute the layers (their levels kept), black keys 1–5 solo them; white 7–11, held: throw, open, shut, drop (the kick and the bass), push the echo. The keys that do something are lit; hold SEL for the map |
+| FX · ENV · LFO · GLO / HOME · SAVE · ARP · SEQ | The pages, as the buttons sit: Space, Chord (Throws, Stabs, Decay, Cutoff), Bass (Notes, Octave, Groove, Fifth), Setup (for every piece) / Dub (the Filter, Evolve, Motion, Drift), Noise (Level, Colour, Grain, Drift), Pings (Ghost, Density, Cloud, Octave), Drums (Hats, Hits, Swing, Duck); KNOB 1–4 set their four values. HOME again: the Key page (tempo, root, mode, swing). A layer's button again: its sound page (four more, relative to the voice) |
+| SELECT | The previous or next page, in the panel's order (the dots by the knobs show where); with HOME held, the tempo |
 | SEQ, twice, three times | The drums' sound page, then the **Pattern page**: four lanes (kick, shaker, open hat, rim) of sixteen steps on the white keys, accents, chance |
-| ALGORITHM | On the Dub page, the screen (ripples, scope, spectrum); on a layer's page, its voice (7 chord, 5 ping, 5 bass voices, 5 kits); elsewhere, the mode. An FM voice's layer button a third time: its FM page (the algorithm, ratio, feedback, modulators' decay) |
+| ALGORITHM | On a layer's page, its voice (7 chord, 5 ping, 5 bass voices, 5 kits); on the Chords page, the walk (Home, Wander, Free); on the Noise page, its character; elsewhere, the screen (ripples, scope, spectrum). The mode is on the Key page (HOME again). An FM voice's layer button a third time: its FM page (the algorithm, ratio, feedback, modulators' decay) |
 | PRESETS | The piece (eight of them) |
-| OCT− / OCT+ | The pings' octave |
-| SAVE | The Noise page (Colour, Grain, Room, Drift; ALGORITHM its character); held, a nudge to the noise |
+| OCT− / OCT+ | On a layer's page (Chord, Pings, Bass, Drums, Noise): its level, 5 a press (held: on); both together, quickly: the layer muted or back, its level kept (the same mutes as PERFORM's); held 5 s: the update mode |
+| SAVE | The Noise page (Level, Colour, Grain, Drift; ALGORITHM its character); held, a nudge to the noise |
 | GLO | The Setup page; held, saves (held on, the piece back to its recipe) |
 
 Hold a layer's button (ENV, ARP, LFO, SEQ) for a nudge: its sound a small step somewhere new.

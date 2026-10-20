@@ -1,26 +1,26 @@
 # the pieces: PRESETS picks one, each remembers its settings, SAVE held resets one, all saved
 wait 500
 expect piece 0
-# Basic's chord down to nothing and its cutoff wide open (the Chord page: ENV)
+# Basic's throws down to nothing and its cutoff wide open (the Chord page: ENV)
 tap ENV
 spin K1 -100
-expect par0 0
+expect par111 0
 spin K4 100
 expect par12 100
-# the next piece: Chamber, its recipe (A Aeolian, its own chord level)
+# the next piece: Chamber, its recipe (A Aeolian, its own throws)
 turn PRESET 1
 expect piece 1
 expect par19 9
 expect par20 5
 expect pool 0x5AD
-expect par0 >0
+expect par111 >0
 expect par12 <100
 wait 8000
 shot chamber.png
 # and Steppers: a groove of its own, the grid running at its tempo
 turn PRESET 1
 expect piece 2
-expect par24 4
+expect par24 2
 wait 20000
 shot steppers.png
 expect sixteenths >150
@@ -31,7 +31,7 @@ wait 3000
 # back to Basic: as it was left
 turn PRESET -2
 expect piece 0
-expect par0 0
+expect par111 0
 expect par12 100
 spin K4 -1
 expect par12 99
@@ -43,14 +43,14 @@ expect par12 99
 press GLO
 wait 1700
 release GLO
-expect par0 >0
+expect par111 >0
 expect par12 <99
 expect store_writes 0
-# a tweak, saved, survives a reboot, on the piece it was made on (the Texture page: ARP)
+# a tweak, saved, survives a reboot, on the piece it was made on (the Pings page: ARP, its Ghost)
 tap ARP
 spin K1 -100
 spin K1 70
-expect par1 70
+expect par112 70
 turn PRESET 6
 expect piece 6
 press GLO
@@ -63,4 +63,4 @@ expect piece 6
 # PRESETS goes round: 6, 7, then 0
 turn PRESET 2
 expect piece 0
-expect par1 70
+expect par112 70

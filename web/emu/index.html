@@ -138,7 +138,7 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
 <section class="help" aria-label="How to play it">
   <div class="knobs">
     <h2>Pages and knobs</h2>
-    <p>One page a layer, each on its own button; a layer's level is always KNOB 1. <b>SELECT</b> steps through the pages. A layer's button pressed again opens its <b>sound page</b>: four knobs that shape its voice, each 0 in the middle (the voice as it is), −50 to +50. On an FM voice, a third press opens its <b>FM page</b>: the algorithm (drawn on the screen), the upper operators' ratio, the feedback, the modulators' decay. On a layer's page, <b>ALGORITHM</b> changes its voice (the chord: Saws, Keys, Organ, Pad, Bell, Tonewheel, Noise; the pings: Blip, Marimba, Glass, Wood, Drop; the bass: Sub, Punch, Rubber, Pluck, Growl; the drums' kit: Tight, Deep, Punch, Soft, Dusty). Each piece remembers its own settings.</p>
+    <p>One page a layer, each on its own button. The levels are on <b>OCT−</b> / <b>OCT+</b> (on a layer's page: 5 a press, held on; both together, quickly: the layer muted or back) and on PERFORM's mix (SEL, white 6 held). <b>SELECT</b> steps through the pages as their buttons sit on the panel: Space (FX), Chord (ENV), Bass (LFO), Setup (GLO), Dub (HOME), Noise (SAVE), Pings (ARP), Drums (SEQ); the dots at the right of the knob row show where you are. A layer's button pressed again opens its <b>sound page</b>: four knobs that shape its voice, each 0 in the middle (the voice as it is), −50 to +50. On an FM voice, a third press opens its <b>FM page</b>: the algorithm (drawn on the screen), the upper operators' ratio, the feedback, the modulators' decay. On a layer's page, <b>ALGORITHM</b> changes its voice (the chord: Saws, Keys, Organ, Pad, Bell, Tonewheel, Noise; the pings: Blip, Marimba, Glass, Wood, Drop; the bass: Sub, Punch, Rubber, Pluck, Growl; the drums' kit: Tight, Deep, Punch, Soft, Dusty). Each piece remembers its own settings.</p>
     <div class="pages">
       <div>
         <h3>Dub <span>HOME</span></h3>
@@ -149,25 +149,31 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
       <div>
         <h3>Chord <span>ENV</span></h3>
         <dl>
-          <dt>Level, Stabs</dt><dd>How loud; one to six stabs a bar, off the beat.</dd><dt>Decay, Cutoff</dt><dd>How long a stab rings (60 ms to 1.5 s); where the resonant low-pass sits.</dd>
+          <dt>Throws, Stabs</dt><dd>How often a stab is thrown into the echo (50: as Evolve and the arrangement throw them; 0 never, 100 about three times as often); one to six stabs a bar, off the beat.</dd><dt>Decay, Cutoff</dt><dd>How long a stab rings (60 ms to 1.5 s); where the resonant low-pass sits.</dd>
         </dl>
       </div>
       <div>
-        <h3>Texture <span>ARP</span></h3>
+        <h3>Pings <span>ARP</span></h3>
         <dl>
-          <dt>Pings, Density</dt><dd>The pings' level; how many notes each of the four loops (13, 17, 23, 29 eighths) holds.</dd><dt>Cloud, Crackle</dt><dd>How much of the reverb goes through the granular cloud; the vinyl.</dd>
+          <dt>Ghost, Density</dt><dd>The pings dry against their echo (0: up front; 50 as the pieces have it; 100: almost all echo); how many notes each of the four loops (13, 17, 23, 29 eighths) holds.</dd><dt>Cloud, Octave</dt><dd>How much of the reverb goes through the granular cloud; the pings two octaves down to two up.</dd>
         </dl>
       </div>
       <div>
         <h3>Bass <span>LFO</span></h3>
         <dl>
-          <dt>Level, Octave</dt><dd>How loud; an octave down or up.</dd><dt>Groove, Fifth</dt><dd>Drone, Offbeat, Dotted, Roller or Sync; how often it leans on the fifth.</dd>
+          <dt>Notes, Octave</dt><dd>How many of the groove's notes play (100: all; less, some left out, the bar's first kept); an octave down or up.</dd><dt>Groove, Fifth</dt><dd>Drone, Offbeat, Dotted, Sync or Roller, sparse to busy; how often it leans on the fifth.</dd>
         </dl>
       </div>
       <div>
         <h3>Drums <span>SEQ</span></h3>
         <dl>
-          <dt>Level, Hits</dt><dd>How loud; how many shaker sixteenths, and the open hat off the beat.</dd><dt>Swing, Duck</dt><dd>The off sixteenths late (50% to 70%); how far the kick ducks the rest.</dd>
+          <dt>Hats, Hits</dt><dd>The shaker and the open hat against the kick (50 as the pieces have it, about ±12 dB at the ends); how many shaker sixteenths, and the open hat off the beat.</dd><dt>Swing, Duck</dt><dd>The off sixteenths late (50% to 70%); how far the kick ducks the rest.</dd>
+        </dl>
+      </div>
+      <div>
+        <h3>Noise <span>SAVE</span></h3>
+        <dl>
+          <dt>Level, Colour</dt><dd>The noise bed's level; dark to bright, around the piece's own.</dd><dt>Grain, Drift</dt><dd>Smooth to granular; steady to restless. ALGORITHM its character: Vinyl, Tape, Dust, Room, Machine. SAVE again: back.</dd>
         </dl>
       </div>
       <div>
@@ -195,9 +201,9 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
     <ul>
       <li><b>Keys</b> are the scale: each one adds or removes its note. The root stays. A lit key (a pressed one, to a screen reader) is in the scale.</li>
       <li><b>PLAY</b> plays / rests. <b>REC</b> tapped: dub hold, the echo and the cloud repeat what they hold; held: the <b>effects grid</b>, sixteen effects on the white keys (echo: Throw, Time x2, Tape stop, Swell; filter: Low, High, Wah, Phone; space: Verb, Crash, Freeze, Wash; rhythm: Stutter, Gate, Siren, Riser). <b>EDIT</b> the next chord, on the next bar.</li>
-      <li><b>SELECT</b> the previous or next page; with <b>HOME</b> held, the tempo. <b>ALGORITHM</b> on a layer's page its voice, on the Chords page the walk (Home, Wander, Free), elsewhere the screen (ripples, scope, spectrum); the mode is on the Key page (HOME again); <b>PRESETS</b> the piece (each remembers how you left it).</li>
-      <li><b>SEL</b> PERFORM: the knobs are the master actions, <b>Filter</b> (as on HOME), <b>Dub</b> (the echo's send and feedback), <b>Energy</b> (the pings, shaker and stabs thinner or busier) and <b>Space</b> (the reverb and the cloud), each 0 in the middle; hold white 6 (the slowly blinking key) and they are the mix (chord, pings, bass, drums). The white keys 1–5 mute and bring back the chord, pings, bass, kick and hats, and the black keys 1–5 above them solo them; white 7–11, held, throw every stab into the echo, push the filter open, shut it, drop the floor (the kick and the bass), push the echo. The keys that do something are lit. SEL again: the keys are the scale again (the mutes and solos stay). Hold SEL for the key map.</li>
-      <li><b>OCT−</b> / <b>OCT+</b> move the pings an octave. <b>SAVE</b> the Noise page (held: a nudge to the noise); <b>GLO</b> held saves (held on: the piece back to its recipe).</li>
+      <li><b>SELECT</b> the previous or next page (in the panel's order); with <b>HOME</b> held, the tempo. <b>ALGORITHM</b> on a layer's page its voice, on the Chords page the walk (Home, Wander, Free), elsewhere the screen (ripples, scope, spectrum); the mode is on the Key page (HOME again); <b>PRESETS</b> the piece (each remembers how you left it).</li>
+      <li><b>SEL</b> PERFORM: the knobs are the master actions, <b>Filter</b> (as on HOME), <b>Dub</b> (the echo's send and feedback), <b>Energy</b> (the pings, shaker and stabs thinner or busier) and <b>Space</b> (the reverb and the cloud), each 0 in the middle; hold white 6 (the slowly blinking key) and they are the mix (chord, pings, bass, drums). The white keys 1–5 mute and bring back the chord, pings, bass, kick and hats (their levels kept: the same mutes as OCT− + OCT+), and the black keys 1–5 above them solo them; white 7–11, held, throw every stab into the echo, push the filter open, shut it, drop the floor (the kick and the bass), push the echo. The keys that do something are lit. SEL again: the keys are the scale again (the mutes and solos stay). Hold SEL for the key map.</li>
+      <li><b>OCT−</b> / <b>OCT+</b> on a layer's page (Chord, Pings, Bass, Drums, Noise, and their sound pages) its level, 5 a press (held: on); both together and let go within a second, the layer muted or back, its level kept (as PERFORM's white 1–5; held 5 s on the FM-1: the update mode). Elsewhere they do nothing. <b>SAVE</b> the Noise page (held: a nudge to the noise); <b>GLO</b> held saves (held on: the piece back to its recipe).</li>
       <li>Hold a layer's button (ENV, ARP, LFO, SEQ) for half a second: a <b>nudge</b>, its sound a small step somewhere new, pulled back to the piece's (with a mouse: <kbd>Shift</kbd>-click to hold it, click again to let go).</li>
     </ul>
   </div>
@@ -333,9 +339,9 @@ function hit(c, cls, attrs, parent = controls) {
 // what each control does (the Buttons list below says the same); a page button's light is its page, PLAY's
 // playing, REC's dub hold: those are toggle buttons (aria-pressed), the others plain ones
 const TIP = { FX: "The Space page.", SEL: "PERFORM: the knobs are Filter, Dub, Energy and Space (hold white 6: the mix); the white keys 1 to 5 mute the layers, the black keys 1 to 5 solo them, and white 7 to 11, held, make the dub moves.", ENV: "The Chord page.", LFO: "The Bass page.", EDIT: "A tap: the Chords page, eight slots (KNOB 1 the slot, the keys its root, KNOB 2 its kind, KNOB 3 its type, KNOB 4 Play: Endless, the walk writing slot 8 as they move up, or Loop, the eight in turn). Held: the next chord.",
-  GLO: "The Setup page. Held: saves all eight pieces; held on: the piece back to its recipe.", HOME: "The Dub page; again, the Key page (tempo, root, mode, swing). Hold it and turn SELECT for the tempo.", SAVE: "The Noise page: Colour, Grain, Room, Drift; ALGORITHM its character. Held: a nudge to the noise; held on: a shake.",
-  ARP: "The Texture page.", SEQ: "The Drums page. Again: their sound; again: the Pattern page (four lanes, sixteen steps on the white keys).", PLAY: "Play or rest.", REC: "Tap: dub hold (the echo and the cloud repeat what they hold; the chord holds). Hold: the effects grid, played on the white keys.",
-  "OCT-": "The pings an octave down.", "OCT+": "The pings an octave up.", SELECT: "The previous or next page; with HOME held, the tempo.",
+  GLO: "The Setup page. Held: saves all eight pieces; held on: the piece back to its recipe.", HOME: "The Dub page; again, the Key page (tempo, root, mode, swing). Hold it and turn SELECT for the tempo.", SAVE: "The Noise page: Level, Colour, Grain, Drift; ALGORITHM its character. Held: a nudge to the noise; held on: a shake.",
+  ARP: "The Pings page.", SEQ: "The Drums page. Again: their sound; again: the Pattern page (four lanes, sixteen steps on the white keys).", PLAY: "Play or rest.", REC: "Tap: dub hold (the echo and the cloud repeat what they hold; the chord holds). Hold: the effects grid, played on the white keys.",
+  "OCT-": "On a layer's page, its level down (held: on). With OCT+, quickly: the layer muted or back.", "OCT+": "On a layer's page, its level up (held: on). With OCT-, quickly: the layer muted or back.", SELECT: "The previous or next page, in the panel's order; with HOME held, the tempo.",
   ALGORITHM: "On a layer's page, its voice; on the Chords page, the walk; elsewhere, the screen (ripples, scope, spectrum).", PRESETS: "The piece.", KNOB1: "The first value on the screen.", KNOB2: "The second value on the screen.",
   KNOB3: "The third value on the screen.", KNOB4: "The fourth value on the screen." };
 const LIGHTS = new Set(["FX", "SEL", "ENV", "LFO", "GLO", "HOME", "ARP", "SEQ", "PLAY", "REC"]);

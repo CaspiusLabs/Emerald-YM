@@ -6,24 +6,28 @@
  *   PLAY           plays / rests                   EDIT  tapped: the CHORDS page (eight slots: KNOB 1 the slot, the
  *                  keys its root, KNOB 2 its kind, KNOB 3 its type, KNOB 4 Play: Endless or Loop); held: the next chord
  *   REC            tapped: DUB HOLD (the echo repeats what it holds, the chord holds); held: the EFFECTS grid, played
- *                  on the white keys while they're held             OCT- / OCT+   the pings' octave
+ *                  on the white keys while they're held
+ *   OCT- / OCT+    on a layer's page (Chord, Pings, Bass, Drums, Noise, and their sound pages): its level -5 / +5
+ *                  (held: on); both together, quickly: the layer muted or back (held 5 s: the update mode)
  *   SEL            PERFORM: the keys mute (white 1-5) and solo (black 1-5) the layers and, held, make the dub moves
  *                  (white 7-11); the knobs the master actions (Filter, Dub, Energy, Space), with white 6 held the mix
- *   SELECT         the pages (with HOME held: the tempo)   ALGORITHM the voice, the walk (Chords), else the screen   PRESETS the piece
- *   HOME ENV ARP LFO SEQ FX GLO   the pages: DUB, CHORD, TEXTURE, BASS, DRUMS, SPACE, SETUP
+ *   SELECT         the pages, in the panel's order (with HOME held: the tempo)   ALGORITHM the voice, the walk
+ *                  (Chords), the noise's character, else the screen   PRESETS the piece
+ *   FX ENV LFO GLO / HOME SAVE ARP SEQ   the pages: SPACE, CHORD, BASS, SETUP / DUB, NOISE, PINGS, DRUMS
  *   KNOB 1-4       the page's four values
- *   SAVE           saves (it also saves by itself a few seconds after a change, while resting);
- *                  held 1.5 s: the piece back to its recipe */
+ *   GLO held       saves (it also saves by itself a few seconds after a change, while resting);
+ *                  held on 1.5 s: the piece back to its recipe */
 #include "../dsp/fastmath.h"
 
-/* the pages, one a layer (a button each); SELECT steps through them in this order */
-/* (past NPAGES, off SELECT's round and on no button of their own: V_MIX, PERFORM's knobs, the four layers'
- * levels; the layers' sound pages, the layer's button pressed again) */
+/* the pages, one a layer (a button each, NPAGES; the Noise page, V_NSND, SAVE's); SELECT steps through them in the
+ * panel's order, PAGE_ORDER below (the view numbers stay as they were: the tests use them) */
+/* (past NPAGES, on no button of their own: V_MIX, PERFORM's knobs, the four layers' levels; the layers' sound
+ * pages, the layer's button pressed again) */
 enum { V_DUB, V_CHORD, V_TEXTURE, V_BASS, V_DRUMS, V_SPACE, V_SETUP, NPAGES, V_MIX = NPAGES, V_CSND, V_PSND, V_BSND,
        V_DSND, V_CFM, V_PFM, V_BFM, V_CHORDS, V_PAT, V_PERF, V_KEY, V_NSND, NVIEWS };
 /* (V_PERF: PERFORM's knobs, the master actions; V_MIX while white 6 is held. V_KEY: HOME again, the key and the
  * tempo, the Dub page's second) */
-static const char *const VIEW_NAME[NVIEWS] = {"Dub", "Chord", "Texture", "Bass", "Drums", "Space", "Setup", "Mix",
+static const char *const VIEW_NAME[NVIEWS] = {"Dub", "Chord", "Pings", "Bass", "Drums", "Space", "Setup", "Mix",
                                               "Chord sound", "Ping sound", "Bass sound", "Drum sound",
                                               "Chord FM", "Ping FM", "Bass FM", "Chords", "Pattern", "Perform", "Key", "Noise"};
 #define B_NONE 0xFFu
@@ -39,6 +43,25 @@ static int parent_of(int v)
 static int layer_of(int v) { v = parent_of(v) >= 0 ? parent_of(v) : v; return v == V_CHORD ? 0 : v == V_TEXTURE ? 1 : v == V_BASS ? 2 : 3; }
 static int fm_off(int v) { return v >= V_CFM && v <= V_BFM && !en_voice_fm(v - V_CFM); }   /* an FM page, not FM */
 static int page_of(int v) { return v == V_KEY ? V_DUB : parent_of(v) >= 0 ? parent_of(v) : v; }   /* a sound page: its layer's */
+/* SELECT's round and the dots, as the buttons sit on the panel: FX ENV LFO GLO, then HOME SAVE ARP SEQ */
+#define NROUND 8
+static const uint8_t PAGE_ORDER[NROUND] = {V_SPACE, V_CHORD, V_BASS, V_SETUP, V_DUB, V_NSND, V_TEXTURE, V_DRUMS};
+static int round_pos(int v)                      /* a page's place in the round (-1: none) */
+{
+    int i;
+    for (i = 0; i < NROUND; i++)
+        if (PAGE_ORDER[i] == v)
+            return i;
+    return -1;
+}
+/* the layer a page is (OCT- / OCT+: its level and its mute): the Chord, Pings, Bass, Drums and Noise pages and
+ * their sound, FM and Pattern pages; -1 elsewhere (the Chords page too) */
+#define NLAYER 5
+static int oct_layer(int v)
+{
+    v = parent_of(v) >= 0 ? parent_of(v) : v;
+    return v == V_CHORD ? 0 : v == V_TEXTURE ? 1 : v == V_BASS ? 2 : v == V_DRUMS ? 3 : v == V_NSND ? 4 : -1;
+}
 /* the four knobs of each page: a parameter, or one of these; and what the knob is called there */
 enum { K_LEDS = 200, K_CPU, K_NONE, K_SLOT, K_CQ, K_CX,    /* (the Chords page: the slot, and its kind and type) */
        K_LANE, K_LCH,                                        /* (the Pattern page: the lane, and its chance) */
@@ -50,10 +73,10 @@ static const char *const LANE_NAME[EN_NDRUM] = {"Kick", "Shaker", "Open", "Rim",
 _Static_assert(P_NPARAMS <= K_LEDS, "the knobs' own codes must come after the parameters");
 static const uint16_t VIEW_KNOB[NVIEWS][4] = {
     {K_FILTER, P_EVOLVE, P_MOTION, P_DRIFT},
-    {P_CHORD, P_STABS, P_DECAY, P_CUTOFF},
-    {P_PINGS, P_DENSITY, P_CLOUD, P_CRACKLE},
-    {P_BASS, P_BASSOCT, P_GROOVE, P_FIFTH},
-    {P_DRUMS, P_HITS, P_SWING, P_DUCK},
+    {P_CTHROW, P_STABS, P_DECAY, P_CUTOFF},
+    {P_PGHOST, P_DENSITY, P_CLOUD, P_POCT},
+    {P_BNOTES, P_BASSOCT, P_GROOVE, P_FIFTH},
+    {P_HATSLVL, P_HITS, P_SWING, P_DUCK},
     {P_ECHO, P_ETIME, P_FEEDBACK, P_REVERB},
     {P_TUNE, P_MIDI, K_LEDS, K_SAVE},
     {P_CHORD, P_PINGS, P_BASS, P_DRUMS},
@@ -68,21 +91,21 @@ static const uint16_t VIEW_KNOB[NVIEWS][4] = {
     {K_LANE, P_DACCENT, K_LCH, P_DMODE},
     {K_FILTER, K_DUB, K_ENERGY, K_SPACE},
     {P_TEMPO, P_ROOT, K_MODE, P_SWING},
-    {P_NCOL, P_NGRAIN, P_NROOM, P_NDRIFT},
+    {P_CRACKLE, P_NCOL, P_NGRAIN, P_NDRIFT},   /* (Room, P_NROOM, off the page: the recipes and characters set it) */
 };
 static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Filter", "Evolve", "Motion", "Drift"},
-    {"Level", "Stabs", "Decay", "Cutoff"},
-    {"Pings", "Density", "Cloud", "Crackle"},
-    {"Level", "Octave", "Groove", "Fifth"},
-    {"Level", "Hits", "Swing", "Duck"},
+    {"Throws", "Stabs", "Decay", "Cutoff"},
+    {"Ghost", "Density", "Cloud", "Octave"},
+    {"Notes", "Octave", "Groove", "Fifth"},
+    {"Hats", "Hits", "Swing", "Duck"},
     {"Echo", "Echo time", "Feedback", "Reverb"},
     {"Tune", "MIDI out", "Lights", "Save"},
     {"Chord", "Pings", "Bass", "Drums"},
     {"Attack", "Colour", "Reso", "Env"},
     {"Tone", "Ratio", "Length", "Bend"},
     {"Bite", "Shape", "Length", "Slide"},
-    {"Kick tune", "Kick len", "Punch", "Hats"},
+    {"Kick tune", "Kick len", "Punch", "Hat tone"},
     {"Algo", "Ratio", "Feedback", "Mod dec"},
     {"Algo", "Ratio", "Feedback", "Mod dec"},
     {"Algo", "Ratio", "Feedback", "Mod dec"},
@@ -90,7 +113,7 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Lane", "Accent", "Chance", "Play"},
     {"Filter", "Dub", "Energy", "Space"},
     {"Tempo", "Root", "Mode", "Swing"},
-    {"Colour", "Grain", "Room", "Drift"},
+    {"Level", "Colour", "Grain", "Drift"},
 };
 
 /* the screen's colours: a dark room, as a dub techno sleeve (grey on black, a cold blue). The chord and
@@ -127,6 +150,9 @@ static struct {
     uint32_t fx;                       /* the effects held (EN_FX_*), REC's grid */
     uint8_t slot, chords_from;         /* the Chords page: the slot edited; the page it was opened from */
     uint8_t noise_from;                /* the Noise page (SAVE): the page it was opened from */
+    uint8_t noise_round;               /* (1: SELECT brought it, and goes on from it) */
+    uint8_t oct_both, oct_done;        /* OCT- and OCT+ down together this press; its mute done (or too late) */
+    uint32_t oct_t, oct_rep;           /* when both went down; an OCT held: its next step */
     uint32_t prog_gen;                 /* the engine's slots, as last taken (en_prog_gen) */
     uint8_t lane;                      /* the Pattern page: the lane edited */
     uint8_t grid_said;
@@ -537,7 +563,8 @@ static void set_piece(int i)                    /* the piece playing kept as it 
 
 /* ----------------------------------------------------------- PERFORM --- */
 /* SEL's mode, on the keys from F3 up, in three sets, a dark key between:
- *   white 1-5    the layers, a press each: off and back (chord, pings, bass, kick, hats)
+ *   white 1-5    the layers, a press each: muted and back, their levels kept (chord, pings, bass, kick, hats: the
+ *                mutes OCT- + OCT+ make on a layer's page, the same)
  *   black 1-5    the same layers soloed, a press each (more than one: they play together; the rest muted)
  *   white 7-11   dub moves, held as long as the key is: every stab thrown into the echo, the filter pushed
  *                open, pushed shut, the floor dropped (the kick and the bass out), the echo pushed (all in, feeding back)
@@ -553,12 +580,11 @@ static void perf_mutes(void)                     /* to the engine: the mutes, an
 {
     en_mute(ui.mutes | (ui.solo ? 0x1Fu & ~ui.solo : 0u));
 }
-static int perf_sounds(int i)                    /* layer i (0..4) heard: its level up, not muted, not soloed out */
+static int perf_sounds(int i)                    /* layer i (0..4) heard: not muted, not soloed out */
 {
-    static const uint8_t LEVEL[3] = {P_CHORD, P_PINGS, P_BASS};
     if (ui.solo && !(ui.solo >> i & 1u))
         return 0;
-    return i < 3 ? proj.par[LEVEL[i]] > 0 : !(ui.mutes >> i & 1u);
+    return !(ui.mutes >> i & 1u);
 }
 static void set_view(int v);
 #define PERF_SHIFT 9u                            /* white 6 (D4), held: the knobs the mix */
@@ -593,32 +619,13 @@ static void perf_key(uint32_t key, int down)
             say("SOLO", "OFF");
         return;
     }
-    if (i < 3) {                                 /* the chord, pings, bass: their Mix knob to 0 or 100 */
-        static const uint8_t LEVEL[3] = {P_CHORD, P_PINGS, P_BASS};
-        int v;
-        if (!down)
-            return;
-        v = proj.par[LEVEL[i]] > 0 ? 0 : 100;
-        knob_set(LEVEL[i], v);
-        if (ui.view == V_MIX) {                  /* the knob lit, as if turned */
-            ui.touched = (int8_t)i;
-            ui.touch_until = plat_ms() + 1200u;
-        }
-        say(PERF_NAME[i], v ? "ON" : "OFF");
-        return;
-    }
-    if (i < 5) {                                 /* the kick, the hats (one Drums knob for both): a mute */
+    if (i < 5) {                                 /* the chord, pings, bass, kick, hats: a mute (the levels kept) */
         if (!down)
             return;
         ui.mutes ^= 1u << i;
         perf_mutes();
-        /* the Drums knob follows: 0 once both are out, 100 when one comes back (from 0) */
-        if ((ui.mutes & (EN_M_KICK | EN_M_HATS)) == (EN_M_KICK | EN_M_HATS))
-            knob_set(P_DRUMS, 0);
-        else if (proj.par[P_DRUMS] == 0)           /* (one back while the other plays: the level as it was) */
-            knob_set(P_DRUMS, 100);
-        if (ui.view == V_MIX) {
-            ui.touched = 3;
+        if (ui.view == V_MIX) {                  /* the layer's Mix knob lit (the kick and the hats: Drums) */
+            ui.touched = (int8_t)(i < 3 ? i : 3);
             ui.touch_until = plat_ms() + 1200u;
         }
         say(PERF_NAME[i], ui.mutes >> i & 1u ? "OFF" : "ON");
@@ -849,24 +856,86 @@ static void button(int b)
         say("DUB HOLD", en_frozen ? "OFF" : "ON");
         en_freeze(!en_frozen);                   /* the engine takes it at its next block */
         break;
-    case B_OCTDN: case B_OCTUP:
-        knob_set(P_POCT, proj.par[P_POCT] + (b == B_OCTUP ? 1 : -1));
-        {
-            char t[8];
-            en_param_text(P_POCT, proj.par[P_POCT], t);
-            say("PING OCTAVE", t);
-        }
-        break;
     case B_SAVE:                                 /* the Noise page, or back from it (saving: GLO held, Setup's KNOB 4) */
         if (ui.view == V_NSND) {
             set_view(ui.noise_from);
         } else {
             ui.noise_from = (uint8_t)ui.view;
+            ui.noise_round = 0;
             set_view(V_NSND);
         }
         break;
     default: break;
     }
+}
+
+/* ---------------------------------------------------------- OCT- / OCT+ --- */
+/* on a layer's page (oct_layer): a tap its level -5 / +5 (on its release), held on from 400 ms a step every 100 ms;
+ * both together, let go within a second: the layer muted, or back (on the first release: held longer, nothing, so
+ * the update mode, both held 5 s, main_fm1.c, never mutes). Elsewhere nothing, for now */
+#define OCT_STEP 5
+#define OCT_REPEAT0 400u
+#define OCT_REPEAT 100u
+#define OCT_QUICK 1000u
+static const uint8_t LAYER_LEVEL[NLAYER] = {P_CHORD, P_PINGS, P_BASS, P_DRUMS, P_CRACKLE};
+static const char *const LAYER_NAME[NLAYER] = {"CHORD", "PINGS", "BASS", "DRUMS", "NOISE"};
+static const uint32_t LAYER_MUTE[NLAYER] = {EN_M_CHORD, EN_M_PINGS, EN_M_BASS, EN_M_KICK | EN_M_HATS, EN_M_NOISE};
+static void oct_step(int b)
+{
+    int l = oct_layer(ui.view);
+    char t[8];
+    if (l < 0)
+        return;
+    knob_set(LAYER_LEVEL[l], proj.par[LAYER_LEVEL[l]] + (b == B_OCTUP ? OCT_STEP : -OCT_STEP));
+    itoa_u((uint32_t)proj.par[LAYER_LEVEL[l]], t);
+    say(LAYER_NAME[l], t);
+}
+static void oct_mute(void)
+{
+    int l = oct_layer(ui.view);
+    uint32_t m;
+    if (l < 0)
+        return;
+    m = LAYER_MUTE[l];
+    if ((ui.mutes & m) == m)                     /* (the drums: both out, back; else both out) */
+        ui.mutes &= ~m;
+    else
+        ui.mutes |= m;
+    perf_mutes();
+    say(LAYER_NAME[l], (ui.mutes & m) == m ? "MUTED" : "ON");
+}
+static void oct_press(int b)
+{
+    const int other = b == B_OCTUP ? B_OCTDN : B_OCTUP;
+    if (ui.btn >> other & 1u) {                  /* both: a mute, if let go soon (the taps' steps not taken) */
+        ui.oct_both = 1;
+        ui.oct_done = 0;
+        ui.oct_t = plat_ms();
+        ui.btn_used |= 1u << B_OCTDN | 1u << B_OCTUP;
+    } else {
+        ui.oct_both = 0;
+        ui.oct_rep = plat_ms() + OCT_REPEAT0;
+    }
+}
+static void oct_release(int b)
+{
+    if (ui.oct_both) {
+        if (!ui.oct_done && plat_ms() - ui.oct_t < OCT_QUICK)
+            oct_mute();
+        ui.oct_done = 1;
+    } else if (!(ui.btn_used >> b & 1u)) {
+        oct_step(b);                             /* a tap */
+    }
+}
+static void oct_hold(void)                       /* one OCT held on: its steps */
+{
+    uint32_t dn = ui.btn >> B_OCTDN & 1u, up = ui.btn >> B_OCTUP & 1u, now = plat_ms();
+    int b = up ? B_OCTUP : B_OCTDN;
+    if (ui.oct_both || dn == up || (int32_t)(now - ui.oct_rep) < 0)
+        return;
+    ui.btn_used |= 1u << b;                      /* (its release then takes no step) */
+    ui.oct_rep = now + OCT_REPEAT;
+    oct_step(b);
 }
 
 /* MIDI in (USB and the TRS jack): channel 1 notes add or remove their note from the scale; clock and
@@ -898,11 +967,11 @@ static const uint8_t NUDGE_BTN[NNUDGE] = {B_ENV, B_ARP, B_LFO, B_SEQ, B_FX, B_SA
 static const char *const NUDGE_NAME[NNUDGE] = {"CHORD", "PINGS", "BASS", "DRUMS", "SPACE", "NOISE"};
 static const uint8_t NUDGE_PAR[NNUDGE][8] = {   /* (the FM ones, the last two of the first three, on an FM voice only) */
     {P_CATT, P_CCOL, P_CRES, P_CENV, P_DECAY, P_CUTOFF, P_CFRAT, P_CFB},
-    {P_PTON, P_PRAT, P_PLEN, P_PBEND, P_PTON, P_PLEN, P_PFRAT, P_PFB},
+    {P_PTON, P_PRAT, P_PLEN, P_PBEND, P_PGHOST, P_PLEN, P_PFRAT, P_PFB},   /* (Ghost: the dry against the echo) */
     {P_BBITE, P_BSHAPE, P_BLEN, P_BSLIDE, P_FIFTH, P_BLEN, P_BFRAT, P_BFB},
-    {P_KTUNE, P_KLEN, P_KPUNCH, P_HTONE, P_KLEN, P_KPUNCH, P_HTONE, P_KTUNE},
+    {P_KTUNE, P_KLEN, P_KPUNCH, P_HTONE, P_KLEN, P_HATSLVL, P_HTONE, P_KTUNE},   /* (Hats: their level, against the kick) */
     {P_ECHO, P_FEEDBACK, P_REVERB, P_SIZE, P_CLOUD, P_ECHO, P_ECHO, P_ECHO},   /* (the space: FX; its shake, a new echo time) */
-    {P_NCOL, P_NGRAIN, P_NROOM, P_NDRIFT, P_NCOL, P_NGRAIN, P_NCOL, P_NGRAIN},   /* (the noise: SAVE; its shake, a new character) */
+    {P_NCOL, P_NGRAIN, P_NDRIFT, P_NCOL, P_NGRAIN, P_NDRIFT, P_NCOL, P_NGRAIN},   /* (the noise: SAVE; its shake, a new character) */
 };
 static uint32_t nudge_seed = 0x9E3779B9u;
 static int nrand(int n)
@@ -910,7 +979,7 @@ static int nrand(int n)
     nudge_seed = nudge_seed * 1664525u + 1013904223u;
     return n > 0 ? (int)((nudge_seed >> 8) % (uint32_t)n) : 0;
 }
-/* the bass's groove, a step to a neighbour (Drone, Offbeat, Dotted, Roller, Sync, in that row): back towards the
+/* the bass's groove, a step to a neighbour (Drone, Offbeat, Dotted, Sync, Roller, the knob's row): back towards the
  * piece's own as often as not (pull: 0..100, how likely back when it isn't the piece's) */
 static void groove_step(int recipe, int pull)
 {
@@ -1029,8 +1098,10 @@ static void nudge(int layer, int how)
         say(head, t);
     }
     if (!ui.perf) {
-        if (SND[layer] == V_NSND && ui.view != V_NSND)
+        if (SND[layer] == V_NSND && ui.view != V_NSND) {
             ui.noise_from = (uint8_t)ui.view;   /* (SAVE again goes back there) */
+            ui.noise_round = 0;
+        }
         set_view(SND[layer]);
         for (j = 0; j < 4; j++)
             if (VIEW_KNOB[ui.view][j] == best && how == NUDGE_HAND) {
@@ -1076,6 +1147,10 @@ static void input(void)
                 ui.reset_done = 0;
             if (i == B_PLAY)                   /* transport on the press */
                 button((int)i);
+            if (i == B_OCTDN || i == B_OCTUP)
+                oct_press((int)i);
+        } else if (i == B_OCTDN || i == B_OCTUP) {
+            oct_release((int)i);
         } else if (i == B_EDIT) {               /* EDIT: the Chords page (a tap), the next chord (held) */
             edit_released(plat_ms() - ui.down_t[B_EDIT]);
         } else if (i == B_GLO && !(ui.btn_used & m) && plat_ms() - ui.down_t[B_GLO] >= NUDGE_HOLD) {
@@ -1084,6 +1159,7 @@ static void input(void)
             button((int)i);
         }
     }
+    oct_hold();
     for (i = 0; i < NNUDGE; i++) {               /* a layer's button held: a nudge; held on: a shake (its release
                                                   * then does nothing) */
         static uint8_t shaken;
@@ -1146,16 +1222,22 @@ static void input(void)
                 itoa_u((uint32_t)proj.par[P_TEMPO], t);
                 say("TEMPO", t);
             }
-        } else {
-            int v = page_of(ui.view) + (e > 0 ? 1 : -1);
+        } else {                                 /* (in the round's order, PAGE_ORDER; at its ends, it stays) */
+            int from = page_of(ui.view), v;
             if (ui.view == V_MIX || ui.view == V_PERF)   /* from PERFORM: SELECT goes on from the page it came from */
-                v = (int)ui.perf_from + (e > 0 ? 1 : -1);
+                from = page_of(ui.perf_from);
             if (ui.view == V_CHORDS)
-                v = (int)ui.chords_from + (e > 0 ? 1 : -1);
-            if (ui.view == V_NSND)
-                v = (int)ui.noise_from + (e > 0 ? 1 : -1);
-            if (v >= 0 && v < NPAGES)
-                set_view(v);
+                from = page_of(ui.chords_from);
+            if (ui.view == V_NSND && !ui.noise_round)    /* (SAVE's: from the page it was opened from) */
+                from = page_of(ui.noise_from);
+            v = round_pos(from) + (e > 0 ? 1 : -1);
+            if (round_pos(from) >= 0 && v >= 0 && v < NROUND) {
+                if (PAGE_ORDER[v] == V_NSND) {   /* (SAVE then goes back to the page before) */
+                    ui.noise_from = (uint8_t)from;
+                    ui.noise_round = 1;
+                }
+                set_view(PAGE_ORDER[v]);
+            }
         }
         ui.turn_t = plat_ms();
     }
@@ -2216,7 +2298,7 @@ static void draw_knobs(void)
     {   /* the rule; at its right end, where you are: the page, then the dots */
         char t[12];
         int k;
-        int32_t xd = 237 - NPAGES * 6, xt;
+        int32_t xd = 237 - NROUND * 6, xt;
         int32_t x0 = 4;
         if (view_voice(ui.view) >= 0 || ui.view == V_CHORDS) {   /* a layer's page: its voice, at the rule's start;
                                                                    * the Chords page: the walk's; Noise: its character */
@@ -2238,8 +2320,8 @@ static void draw_knobs(void)
         xt = xd - 5 - text_w(&FONT_XS, t);
         cv_rect(x0, 5, xt - 5 - x0, 1, K_LINE);
         cv_text(xt, -1, &FONT_XS, t, K_ACC);
-        for (k = 0; k < NPAGES; k++)
-            cv_round(xd + k * 6, 3, 4, 4, 2, k == page_of(ui.view) ? K_ACC : K_LINE);
+        for (k = 0; k < NROUND; k++)             /* (the panel's order: FX ENV LFO GLO HOME SAVE ARP SEQ) */
+            cv_round(xd + k * 6, 3, 4, 4, 2, PAGE_ORDER[k] == page_of(ui.view) ? K_ACC : K_LINE);
     }
     for (i = 0; i < 4; i++) {
         int k = VIEW_KNOB[ui.view][i], lo, hi, v, hot = now_touch && ui.touched == (int)i && !off;
@@ -2735,10 +2817,12 @@ static void speak_dump(void)
         msg_text("MODE", EN_MODE_NAME[MODE_ORDER[x]], t);
         sp_print("MSG", t);
     }
-    for (x = -2; x <= 2; x++) {
-        char o[8];
-        en_param_text(P_POCT, x, o);
-        msg_text("PING OCTAVE", o, t);
+    for (x = 0; x < NLAYER; x++) {                    /* OCT- / OCT+: a level, a mute */
+        msg_text(LAYER_NAME[x], "55", t);
+        sp_print("MSG", t);
+        msg_text(LAYER_NAME[x], "MUTED", t);
+        sp_print("MSG", t);
+        msg_text(LAYER_NAME[x], "ON", t);
         sp_print("MSG", t);
     }
     for (x = 90; x <= 140; x += 25) {

@@ -26,7 +26,11 @@ wait 1500
 shot screen-chord.png
 tap ARP
 wait 1500
-shot screen-texture.png
+shot screen-pings.png
+tap SAVE
+wait 1500
+shot screen-noise.png
+tap SAVE
 tap LFO
 wait 1500
 shot screen-bass.png

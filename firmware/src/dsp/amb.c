@@ -30,7 +30,7 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     {"Cutoff", 0, 100, 45},   {"Decay", 0, 100, 35},    {"Ping tone", 0, 100, 40}, {"Motion", 0, 100, 50},
     {"Tune", -50, 50, 0},     {"MIDI out", 0, 1, 1},    {"Tempo", 90, 140, 122},  {"Root", 0, 11, 5},
     {"Mode", 0, EN_NMODES - 1, MODE_DORIAN}, {"Ping oct", -2, 2, 0}, {"Chord voice", 0, EN_NCV - 1, 0},
-    {"Bass oct", -1, 1, 0},   {"Groove", 0, 8, 2},      {"Fifth", 0, 100, 20},
+    {"Bass oct", -1, 1, 0},   {"Groove", 0, 4, 1},      {"Fifth", 0, 100, 20},
     {"Swing", 0, 100, 10},    {"Hats", 0, 100, 50},
     {"Stabs", 0, 100, 30},    {"Crackle", 0, 100, 35},  {"Duck", 0, 100, 50},     {"Size", 0, 100, 55},
     {"Cloud", 0, 100, 30},
@@ -58,6 +58,7 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     {"Accent", 0, 100, 50}, {"Drum play", 0, 1, 0},
     {"Noise colour", -50, 50, 0}, {"Grain", -50, 50, 0}, {"Room", -50, 50, 0}, {"Noise drift", -50, 50, 0},
     {"Noise", 0, EN_NNCHAR - 1, 0},
+    {"Throws", 0, 100, 50},   {"Ghost", 0, 100, 50},    {"Notes", 0, 100, 100},   {"Hats level", 0, 100, 50},
 };
 const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PARAMS[i] : &PARAMS[0]; }
 
@@ -65,69 +66,78 @@ const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PAR
  * MIDI out are taken from here by neither: they belong to the player, not the piece */
 /*                  Cho Pin Bas Dru  Den Evo Dri Hit  Ech ET Rev Fdb  Cut Dec PTo Mot  Tun MI Tem Rt Md Oc
  *                  CV BO Grv Fif Swi Hat  Stb Crk Dck Siz  Clo PV BV Kit
- *                  then the sound pages' sixteen, all 0: the voices as they are; then the noise's five (its controls, its character)
- * (Dri: Drift, 2 4 8 16 32 64 bars or Hold; ET: Echo time, 1/8 1/8. 1/4 1/4. 1/2 1 bar; Grv: Drone, Offbeat,
- *  Dotted, Roller, Sync, now the ladder LADDER_NAME: 0 Drone .. 8 Roller; CV, PV, BV, Kit: the voices, EN_CV_NAME ...) */
+ *                  then the sound pages' sixteen, all 0: the voices as they are; then the noise's five (its controls, its character);
+ *                  then Throws, Ghost, Notes, Hats level (50, 50, 100, 50: the pieces as they were)
+ * (Dri: Drift, 2 4 8 16 32 64 bars or Hold; ET: Echo time, 1/8 1/8. 1/4 1/4. 1/2 1 bar; Grv: the knob's, Drone,
+ *  Offbeat, Dotted, Sync, Roller (GROOVE_NAME); CV, PV, BV, Kit: the voices, EN_CV_NAME ...) */
 static const struct {
     const char *name;
     int16_t v[P_NPARAMS];
 } PIECES[EN_NPIECES] = {
     {"Basic",      {76, 30, 60, 65, 30, 40, 4, 50, 55, 1, 35, 60, 45, 35, 40, 50, 0, 1, 122, 5, 1, 0,
-                    0, 0, 2, 20, 10, 50, 30, 35, 50, 55, 30, 0, 0, 0,
+                    0, 0, 1, 20, 10, 50, 30, 35, 50, 55, 30, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
-                    0, 0, 0, 0, 0}},
+                    0, 0, 0, 0, 0,
+                    50, 50, 100, 50}},
     {"Chamber",    {68, 20, 55, 60, 20, 45, 6, 40, 70, 1, 45, 75, 50, 55, 30, 60, 0, 1, 118, 9, 5, 0,
                     2, 0, 0, 10, 0, 40, 15, 45, 45, 70, 45, 2, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
-                    -5, -10, 10, 0, 3}},
+                    -5, -10, 10, 0, 3,
+                    50, 50, 100, 50}},
     {"Steppers",   {60, 35, 70, 70, 35, 40, 3, 60, 50, 3, 30, 55, 55, 25, 50, 45, 0, 1, 126, 2, 1, 0,
-                    0, 0, 4, 35, 15, 60, 45, 25, 60, 50, 20, 1, 1, 2,
+                    0, 0, 2, 35, 15, 60, 45, 25, 60, 50, 20, 1, 1, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
-                    5, 10, -10, 0, 0}},
+                    5, 10, -10, 0, 0,
+                    50, 50, 100, 50}},
     {"Fog",        {64, 34, 50, 50, 40, 55, 5, 30, 75, 2, 55, 80, 46, 70, 25, 70, 0, 1, 112, 7, 5, 0,
                     1, -1, 0, 15, 0, 30, 20, 60, 35, 80, 60, 0, 0, 3,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
-                    -10, 0, 15, 10, 1}},
+                    -10, 0, 15, 10, 1,
+                    50, 50, 100, 50}},
     {"Concrete",   {65, 25, 65, 75, 25, 35, 4, 75, 50, 1, 25, 60, 60, 20, 60, 40, 0, 1, 130, 0, 7, 0,
-                    6, 0, 8, 30, 20, 75, 50, 20, 65, 45, 15, 3, 3, 2,
+                    6, 0, 4, 30, 20, 75, 50, 20, 65, 45, 15, 3, 3, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
-                    0, 15, 0, 10, 4}},
+                    0, 15, 0, 10, 4,
+                    50, 50, 100, 50}},
     {"Night Drive", {65, 45, 60, 65, 45, 50, 3, 55, 60, 4, 35, 65, 50, 40, 45, 55, 0, 1, 124, 10, 1, 0,
-                    1, 0, 6, 25, 25, 55, 35, 30, 50, 60, 35, 4, 4, 0,
+                    1, 0, 3, 25, 25, 55, 35, 30, 50, 60, 35, 4, 4, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
-                    0, -10, 0, 0, 1}},
+                    0, -10, 0, 0, 1,
+                    50, 50, 100, 50}},
     {"Pressure",   {78, 20, 54, 74, 20, 30, 6, 65, 45, 1, 20, 55, 48, 30, 35, 35, 0, 1, 128, 4, 2, 0,
-                    5, 0, 2, 10, 5, 65, 25, 32, 70, 40, 20, 3, 4, 1,
+                    5, 0, 1, 10, 5, 65, 25, 32, 70, 40, 20, 3, 4, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
-                    -10, -20, -25, -10, 0}},
+                    -10, -20, -25, -10, 0,
+                    50, 50, 100, 50}},
     {"Haze",       {56, 42, 52, 45, 50, 60, 4, 35, 80, 3, 60, 85, 45, 80, 25, 80, 0, 1, 116, 3, 0, 1,
                     3, 0, 0, 20, 10, 35, 30, 62, 30, 85, 70, 2, 0, 4,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
-                    5, 10, 10, 15, 2}},
+                    5, 10, 10, 15, 2,
+                    50, 50, 100, 50}},
 };
 
 const char *en_piece_name(int i) { return PIECES[(unsigned)i < EN_NPIECES ? i : 0].name; }
@@ -148,13 +158,12 @@ const char *const EN_CQ_NAME[EN_NCQ] = {"Empty", "Major", "Minor", "Sus2", "Sus4
 const char *const EN_CX_NAME[EN_NCX] = {"Triad", "6", "7", "Maj7", "9", "11", "Add9"};
 static const char *const ETIME_NAME[6] = {"1/8", "1/8.", "1/4", "1/4.", "1/2", "1 bar"};
 static const float ETIME_BEATS[6] = {0.5f, 0.75f, 1.0f, 1.5f, 2.0f, 4.0f};
-/* the Groove knob (P_GROOVE): a ladder from sparse to busy, each step a pattern (GROOVE) and how many of its notes
- * play (the rest left out at random, bar by bar); Energy (PERFORM) thins it further, or fills a thin one */
-#define NLADDER 9
-static const uint8_t LADDER_PAT[NLADDER] = {0, 1, 1, 2, 2, 4, 4, 3, 3};
-static const uint8_t LADDER_DENS[NLADDER] = {100, 55, 100, 60, 100, 65, 100, 60, 100};
-static const char *const LADDER_NAME[NLADDER] = {"Drone", "Thin off", "Offbeat", "Thin dot", "Dotted", "Thin sync", "Sync",
-                                                 "Thin roll", "Roller"};
+/* the Groove knob (P_GROOVE): the five patterns from sparse to busy (GROOVE_PAT: the engine's GROOVE below); Notes
+ * (P_BNOTES) how many of its notes play (the rest left out at random, bar by bar); Energy (PERFORM) thins it further,
+ * or fills a thin one */
+#define NGROOVE 5
+static const uint8_t GROOVE_PAT[NGROOVE] = {0, 1, 2, 4, 3};
+static const char *const GROOVE_NAME[NGROOVE] = {"Drone", "Offbeat", "Dotted", "Sync", "Roller"};
 /* the bass's grooves (bit i: a note on sixteenth i) and how long each note holds, in sixteenths (Offbeat's
  * held past the next kick, and Roller's nearly to its next note: the kick lands on a bass the duck shapes, not
  * in silence) */
@@ -165,6 +174,7 @@ static const float GROOVE_LVL[5] = {1.0f, 0.5f, 1.0f, 0.9f, 1.0f};   /* (the lon
 static const uint8_t DRIFT_BARS[7] = {2, 4, 8, 16, 32, 64, 0};
 
 uint32_t en_groove(int g) { return GROOVE[(unsigned)g < 5u ? g : 0]; }
+int en_groove_pat(int knob) { return GROOVE_PAT[(unsigned)knob < NGROOVE ? knob : 0]; }
 int en_drift_bars(int v) { return DRIFT_BARS[(unsigned)v < 7u ? v : 6]; }
 
 static char *itoa_s(int v, char *b)
@@ -214,7 +224,7 @@ void en_param_text(int i, int v, char *b)
     else if (i == P_DMODE)
         s = v ? "Pattern" : "Auto";
     else if (i == P_GROOVE)
-        s = LADDER_NAME[(unsigned)v < NLADDER ? v : 0];
+        s = GROOVE_NAME[(unsigned)v < NGROOVE ? v : 0];
     else if (i == P_MODE)
         s = EN_MODE_NAME[(unsigned)v < EN_NMODES ? v : 0];
     else if (i == P_ROOT)
@@ -471,7 +481,8 @@ typedef struct {
     uint8_t character;                          /* NCHAR[] */
 } noise_ctl_t;
 static noise_ctl_t nctl;
-static int gpat(void) { return LADDER_PAT[(unsigned)par[P_GROOVE] < NLADDER ? par[P_GROOVE] : 0]; }   /* the pattern */
+static float throw_mul = 1.0f, ping_dry = 0.5f, hats_lvl = 1.0f;   /* Throws, Ghost, Hats level (apply) */
+static int gpat(void) { return GROOVE_PAT[(unsigned)par[P_GROOVE] < NGROOVE ? par[P_GROOVE] : 0]; }   /* the pattern */
 static int8_t mac[EN_NMAC];                     /* the master actions, -50..50 */
 static int8_t pofs[P_NPARAMS];
 static float dub_up;                            /* Dub turned up, 0..1: the echo darker, feeding back past its knob */                  /* what they add to the piece's parameters */
@@ -1664,16 +1675,16 @@ static void tick(void)
         }
     }
     if (lay_bass && !(mutes & EN_M_BASS) && !(perf & EN_PF_KICKDROP) && en_groove(gpat()) >> st & 1u) {
-        /* the ladder's density, and Energy: down thins it (to 0.4 of it), up fills a thin one; the first note of a
-         * bar always plays (the random draw only while thinned: a full groove draws nothing, as before) */
-        const float e = (float)mac[EN_MAC_ENERGY] * (1.0f / 50.0f), d0 = (float)LADDER_DENS[(unsigned)par[P_GROOVE] < NLADDER ? par[P_GROOVE] : 0] * 0.01f;
+        /* Notes, and Energy: down thins it (to 0.4 of it), up fills a thin one; the first note of a bar always plays
+         * (the random draw only while thinned: a full groove draws nothing, as before) */
+        const float e = (float)mac[EN_MAC_ENERGY] * (1.0f / 50.0f), d0 = (float)par[P_BNOTES] * 0.01f;
         const float d = fm_clampf(e < 0.0f ? d0 * (1.0f + 0.6f * e) : d0 + (1.0f - d0) * e, 0.0f, 1.0f);
         if (d >= 0.999f || st == 0 || frand() < d)
             bass_hit(st == 0);
     }
     if (en_stab_pat >> st & 1u) {               /* (the random draws made muted or not: the music goes on the same) */
         uint32_t later = en_stab_pat >> (st + 1);
-        int last = !later, thr = (fill && last) || frand() < 0.075f * evolve * (sec == SEC_BREAK ? 2.5f : 1.0f);
+        int last = !later, thr = (fill && last) || frand() < fm_minf(0.075f * evolve * (sec == SEC_BREAK ? 2.5f : 1.0f) * throw_mul, 0.6f);
         float vel = st == (int)__builtin_ctz(en_stab_pat) ? 0.9f + 0.1f * frand() : 0.65f + 0.25f * frand();
         if (!(mutes & EN_M_CHORD))
             stab_fire(vel, thr || (perf & EN_PF_THROW) || (fxm >> EN_FX_THROW & 1u));
@@ -2199,6 +2210,13 @@ static void apply(int p, int v)
     case P_NROOM: nctl.room = (float)v * 0.02f; break;
     case P_NDRIFT: nctl.drift = (float)v * 0.02f; break;
     case P_NCHAR: nctl.character = (uint8_t)((unsigned)v < EN_NNCHAR ? v : 0); break;
+    case P_CTHROW:                               /* the stabs' throws: x0 .. x1 (50) .. x3 */
+        throw_mul = v <= 50 ? (float)v * 0.02f : 1.0f + (float)(v - 50) * 0.04f;
+        break;
+    case P_PGHOST:                               /* the pings' dry: 0 dB (0), -6 dB (50), -20 dB (100) */
+        ping_dry = 0.5f * fm_exp2f((v <= 50 ? 6.0f * (float)(50 - v) : -14.0f * (float)(v - 50)) * 0.02f * 0.16609640f);
+        break;
+    case P_HATSLVL: hats_lvl = fm_exp2f((float)(v - 50) * 0.04f); break;   /* x1 at 50, -12 .. +12 dB */
     case P_POCT:                                 /* let it be heard now: a ping from the first loop */
         if (en_playing && nsteps) {
             int l, k;
@@ -2776,8 +2794,8 @@ static void render_bells(uint32_t n)
             if (!(j & 31u))
                 fm_ctl(&v->fm, &v->pt, alg, 1.0f);
             x = fm_sample(&v->fm, alg, fb, 1.0f + v->drop) * amp * att * g;
-            mixl[j] += x * v->gl * 0.5f;    /* (1.3.0: the dry -6 dB, the sends kept: more ghost) */
-            mixr[j] += x * v->gr * 0.5f;
+            mixl[j] += x * v->gl * ping_dry;   /* (Ghost: the dry against the sends, which stay; 50: -6 dB) */
+            mixr[j] += x * v->gr * ping_dry;
             rsend[j] += x * 0.4f;
             esend[j] += x * 1.1f;
             v->drop *= 0.9993f;                  /* (Drop: ~35 ms to fall) */
@@ -2866,7 +2884,7 @@ static void render_drums(uint32_t n)
         v->on = amp > 0.0005f;
     }
     {   /* (Energy: the hats -6 dB down to +6 dB up) */
-        const float hl = fm_exp2f((float)mac[EN_MAC_ENERGY] * (1.0f / 50.0f));
+        const float hl = fm_exp2f((float)mac[EN_MAC_ENERGY] * (1.0f / 50.0f)) * hats_lvl;   /* (and Hats: +-12 dB) */
         render_hat(&drum[1], n, g * 0.16f * hl, 0.6f, 1.0f, 0.2f, 0.6f, 0.02f);   /* shaker: a little right, soft, into the echo */
         render_hat(&drum[2], n, g * 0.17f * hl, 1.0f, 0.7f, 0.2f, 1.0f, 0.3f);   /* open: a little left, some echo */
     }
@@ -2987,7 +3005,7 @@ static void render_crackle(uint32_t n)
     cr_gate += ((en_playing ? 1.0f : 0.0f) - cr_gate) * fm_minf((float)n / (0.5f * EN_SR), 1.0f);
     if (cr_gate < 1e-4f)
         cr_gate = 0.0f;
-    g = crackle_vol * cr_gate;
+    g = mutes & EN_M_NOISE ? 0.0f : crackle_vol * cr_gate;   /* (muted: its level kept) */
     if (g <= 0.0f) {
         for (j = 0; j < n; j++)
             crl[j] = crr[j] = 0.0f;

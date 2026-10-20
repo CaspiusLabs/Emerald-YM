@@ -196,8 +196,8 @@ int main(void)
     /* texts */
     {
         char t[12];
-        static const char *const GRV[9] = {"Drone", "Thin off", "Offbeat", "Thin dot", "Dotted", "Thin sync", "Sync",
-                                           "Thin roll", "Roller"};   /* (the Groove knob: a ladder, 1.3.0) */
+        static const char *const GRV[5] = {"Drone", "Offbeat", "Dotted", "Sync", "Roller"};   /* (the Groove knob, sparse
+                                                                                              * to busy; Notes thins it) */
         en_param_text(P_DRIFT, 6, t);
         CHECK(!strcmp(t, "Hold"), "drift 6: %s", t);
         en_param_text(P_DRIFT, 4, t);
@@ -208,7 +208,7 @@ int main(void)
         CHECK(!strcmp(t, "1/8."), "etime 1: %s", t);
         en_param_text(P_ETIME, 5, t);
         CHECK(!strcmp(t, "1 bar"), "etime 5: %s", t);
-        for (i = 0; i < 9; i++) {
+        for (i = 0; i < 5; i++) {
             en_param_text(P_GROOVE, i, t);
             CHECK(!strcmp(t, GRV[i]), "groove %d: %s", i, t);
         }
@@ -372,12 +372,34 @@ int main(void)
         CHECK(first && !diff && en_throws == t0, "Evolve 0: the stabs changed (%d of 60, %u throws)", diff, en_throws - t0);
     }
 
+    /* Throws: 0 none (Motion 0: no fills), 100 more than 50 (the same draws) */
+    {
+        uint32_t n[3];
+        int k;
+        static const int TV[3] = {0, 50, 100};
+        for (k = 0; k < 3; k++) {
+            fresh();
+            en_seed(7);
+            en_set(P_EVOLVE, 100);
+            en_set(P_MOTION, 0);
+            en_set(P_STABS, 100);
+            en_set(P_CTHROW, TV[k]);
+            en_regrow();
+            en_play(1);
+            n[k] = en_throws;
+            run(60.0f);
+            n[k] = en_throws - n[k];
+        }
+        printf("  throws in a minute at Throws 0 / 50 / 100: %u / %u / %u\n", n[0], n[1], n[2]);
+        CHECK(n[0] == 0 && n[1] > 0 && n[2] > n[1] * 2u, "Throws: %u / %u / %u", n[0], n[1], n[2]);
+    }
+
     /* the bass: Octave -1 a true octave under 0 (E0..Eb1); with Drone, Fifth gives whole bars of the fifth */
     {
         int lo0, hi0;
         fresh();
         en_set(P_DRIFT, 6);
-        en_set(P_GROOVE, 8);                     /* (Roller, the ladder's top) */
+        en_set(P_GROOVE, 4);                     /* (Roller, the knob's top) */
         en_set(P_FIFTH, 0);
         en_regrow();
         en_play(1);
