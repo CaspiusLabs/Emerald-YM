@@ -95,3 +95,30 @@ expect par64 0
 expect par72 0
 expect par71 >0
 expect par88 1
+# REC held on the Chords page and the Pattern page: the effects grid alone, drawn once (they used to draw over each
+# other, flickering)
+tap EDIT
+wait 300
+expect view 15
+press REC
+wait 400
+expect blits !=-1
+wait 1000
+expect blits <3
+release REC
+wait 300
+expect view 15
+tap EDIT
+tap SEQ
+tap SEQ
+tap SEQ
+wait 300
+expect view 16
+press REC
+wait 400
+expect blits !=-1
+wait 1000
+expect blits <3
+release REC
+wait 300
+tap SEQ

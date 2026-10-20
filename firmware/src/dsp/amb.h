@@ -194,6 +194,11 @@ extern volatile uint8_t en_view_layer;
 extern volatile uint32_t en_hits[5];
 extern volatile float en_hit_vel[5];
 extern volatile float en_echo_pk;               /* the echo's output, its peak since the screen last took it */
+/* the noise's events, for the screen's specks: a ring of the last few (kind: 0 a click, 1 a pop, 2 a dust grain; its
+ * strength as heard, 0..255; its side, 0 left .. 255 right), en_nev_w where the next goes */
+#define EN_NEV_N 16
+extern volatile uint8_t en_nev_k[EN_NEV_N], en_nev_s[EN_NEV_N], en_nev_p[EN_NEV_N];
+extern volatile uint32_t en_nev_w;
 extern volatile uint16_t en_lane[6];           /* this bar as it plays: the stabs, the kick, the hats, the rim, the clap, the bass */
 
 /* the pure parts, for the tests and the screen */

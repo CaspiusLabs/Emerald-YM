@@ -473,6 +473,18 @@ volatile uint8_t en_view_layer;
 volatile uint32_t en_hits[5];
 volatile float en_hit_vel[5];
 volatile float en_echo_pk;
+volatile uint8_t en_nev_k[EN_NEV_N], en_nev_s[EN_NEV_N], en_nev_p[EN_NEV_N];
+volatile uint32_t en_nev_w;
+static void nev(int k, float s, float p)         /* a noise event, for the screen (only the ones that show) */
+{
+    uint32_t w = en_nev_w;
+    if (s < 0.08f)
+        return;
+    en_nev_k[w % EN_NEV_N] = (uint8_t)k;
+    en_nev_s[w % EN_NEV_N] = (uint8_t)(fm_minf(s, 1.0f) * 255.0f);
+    en_nev_p[w % EN_NEV_N] = (uint8_t)(fm_clampf(p, 0.0f, 1.0f) * 255.0f);
+    en_nev_w = w + 1u;
+}
 static void hit(int l, float vel) { en_hit_vel[l] = vel; en_hits[l]++; }
 static float scope_acc, spec_acc;
 static uint32_t scope_ph;
@@ -3083,10 +3095,12 @@ static void render_crackle(uint32_t n)
                 cc = CRU();
                 cc = CRU() < 0.1f ? 0.45f + 0.3f * cc : 0.05f + 0.3f * cc * cc;   /* mostly a dull thump; now and then a tick */
                 a = (0.03f + 0.5f * a * a * a) * (1.8f - 0.8f * cc);
-                if (CRU() < 0.03f)
+                const int pop = CRU() < 0.03f;
+                if (pop)
                     a = 0.5f + 0.4f * CRU(), cc = 0.1f + 0.1f * CRU();
                 cl += a * sg1 * (1.0f - pn);
                 cr += a * sg1 * pn;
+                nev(pop, a * vg * 4.0f, pn);
             }
             fl += cc * (cl - fl);
             fr += cc * (cr - fr);
@@ -3098,6 +3112,7 @@ static void render_crackle(uint32_t n)
                 cnoise = cn;
                 dust_birth();
                 cn = cnoise;
+                nev(2, du_env * gd * 3.0f, du_gr);
                 de = du_env, da = 0.0f, df = du_f, dd = du_dec, dgl = du_gl, dgr = du_gr;
                 dl = du_left;
                 ds1 = ds2 = 0.0f;

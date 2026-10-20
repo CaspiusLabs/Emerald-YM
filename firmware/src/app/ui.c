@@ -1863,6 +1863,56 @@ static int draw_ripples(uint32_t now)           /* 1: something still moves */
     return live;
 }
 
+/* the noise in the ripples: a speck for each click that shows (en_nev_*), somewhere round the middle, on its side,
+ * as big and bright as it sounds, fading fast; a pop brighter and bigger; a dust grain a soft, slower blob */
+#define SPK_N 24
+static struct {
+    uint32_t t0;
+    int16_t x, y;
+    uint8_t k, s;
+} spk[SPK_N];
+static uint32_t spk_r, spk_rng = 12345u;
+static void specks_take(uint32_t now)
+{
+    uint32_t w = en_nev_w;
+    if (w - spk_r > EN_NEV_N)                    /* (too far behind: the newest only) */
+        spk_r = w - EN_NEV_N;
+    for (; spk_r != w; spk_r++) {
+        int i, o = 0;
+        float a, r, p;
+        for (i = 0; i < SPK_N; i++)              /* (into the oldest) */
+            if (spk[i].t0 < spk[o].t0)
+                o = i;
+        spk_rng = spk_rng * 1664525u + 1013904223u;
+        a = (float)(spk_rng >> 8) * (6.2831853f / 16777216.0f);
+        spk_rng = spk_rng * 1664525u + 1013904223u;
+        r = 10.0f + 34.0f * (float)(spk_rng >> 8) * (1.0f / 16777216.0f);
+        p = (float)en_nev_p[spk_r % EN_NEV_N] * (1.0f / 255.0f) - 0.5f;
+        spk[o].t0 = now | 1u;
+        spk[o].x = (int16_t)(CX + (int32_t)(r * fm_cosf(a) + 40.0f * p));
+        spk[o].y = (int16_t)(CY + (int32_t)(r * 0.8f * fm_sinf(a)));
+        spk[o].k = en_nev_k[spk_r % EN_NEV_N];
+        spk[o].s = en_nev_s[spk_r % EN_NEV_N];
+    }
+}
+static int draw_specks(uint32_t now)              /* 1: one still shows */
+{
+    int i, live = 0;
+    for (i = 0; i < SPK_N; i++) {
+        uint32_t age = now - spk[i].t0, life = spk[i].k == 2 ? 700u : spk[i].k == 1 ? 500u : 350u;
+        float s = (float)spk[i].s * (1.0f / 255.0f), f;
+        if (!spk[i].t0 || age >= life)
+            continue;
+        live = 1;
+        f = (0.45f + 0.55f * fm_minf(s * 2.0f, 1.0f)) * (1.0f - (float)age / (float)life);
+        if (spk[i].k == 2)
+            cv_disc(spk[i].x, spk[i].y, 3, mix(K_BG, K_NOISE, q16(f * 0.5f)));
+        else
+            cv_disc(spk[i].x, spk[i].y, spk[i].k == 1 ? 3 : 2, mix(K_BG, spk[i].k == 1 ? K_TEXT : K_NOISE, q16(f)));
+    }
+    return live;
+}
+
 static void draw_orbits(void)                    /* the ping loops, around the ripples: a dot each, going round */
 {
     int i;
@@ -2384,6 +2434,23 @@ static void draw_main(void)
     ripples_take(now);
     if (ui.frame % 3u)                           /* 20 frames a second is plenty */
         return;
+    if (grid_up()) {                             /* REC held: the effects grid (ui_frame draws it, whole;
+                                                  * before the Chords and Pattern pages, which would draw over it) */
+        if (!ui.grid_said && ann_on()) {         /* the grid in words: the white keys' effects, a group at a time */
+            int e;
+            sp_n = 0;
+            sp_buf[0] = 0;
+            sp_cat("EFFECTS GRID. White keys");
+            for (e = 0; e < EN_NFX; e++) {
+                sp_cat(e == 0 ? ": " : (e & 3) ? ", " : "; ");
+                sp_cat(EN_FX_NAME[e]);
+            }
+            ann_say(sp_buf, 0, ANN_NOW);
+            ui.grid_said = 1;
+        }
+        return;
+    }
+    ui.grid_said = 0;
     if (ui.view == V_PAT) {                      /* the Pattern page: the steps */
         h = hash(hash(0x50415454u, ui.lane | (uint32_t)proj.par[P_DMODE] << 4 | (uint32_t)en_drum_pos[0] << 8), en_playing);
         for (i = 0; i < EN_NDRUM; i++)
@@ -2410,22 +2477,6 @@ static void draw_main(void)
         }
         return;
     }
-    if (grid_up()) {                             /* REC held: the effects grid (ui_frame draws it, whole) */
-        if (!ui.grid_said && ann_on()) {         /* the grid in words: the white keys' effects, a group at a time */
-            int e;
-            sp_n = 0;
-            sp_buf[0] = 0;
-            sp_cat("EFFECTS GRID. White keys");
-            for (e = 0; e < EN_NFX; e++) {
-                sp_cat(e == 0 ? ": " : (e & 3) ? ", " : "; ");
-                sp_cat(EN_FX_NAME[e]);
-            }
-            ann_say(sp_buf, 0, ANN_NOW);
-            ui.grid_said = 1;
-        }
-        return;
-    }
-    ui.grid_said = 0;
     for (i = 0; i < EN_NPAD; i++)
         h = hash(h, en_chord[i]);
     for (i = 0; i < 6; i++)
@@ -2463,7 +2514,9 @@ static void draw_main(void)
         draw_spec();
         moving = 1;
     } else {
-        moving = (uint8_t)draw_ripples(now);
+        specks_take(now);
+        moving = rip_src < 0 ? (uint8_t)draw_specks(now) : 0;   /* (the noise, under the rings: on the whole only) */
+        moving |= (uint8_t)draw_ripples(now);
         if (rip_src < 0 || rip_src == 1)         /* (the ping loops: on the whole, and the Pings page) */
             draw_orbits();
     }

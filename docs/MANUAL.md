@@ -268,6 +268,9 @@ page, below), but never shakes.
   hold). Around it the four ping loops each circle as a blue dot, one step a turn's step: its
   place is where the loop is, and it lights up when the loop plays a ping (dim, a ghost, between).
   The loops have different lengths, so the dots drift apart and meet again.
+  Under it all, the noise: a grey speck for each click you can hear, on its side, as bright as it
+  is loud, gone in a moment; a pop a brighter one, a dust grain a soft, slower blob. More Level or
+  Grain, more specks.
 - **ALGORITHM** (on any page but a layer's or the Chords page) changes what the middle shows: the ripples, a **scope** or a
   **spectrum**, and then the ripples again (turned back, the other way round). Each piece keeps its own view, saved with it: Haze on the spectrum, say, and Pressure on the scope. With the
   scope or the spectrum showing, the chord's name moves to the top.

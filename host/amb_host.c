@@ -484,6 +484,13 @@ static int expect(const char *what, const char *val)
                     printf("  too wide: %s\n", hp), got++;
             }
     }
+    else if (!strcmp(what, "nev"))                /* the noise's events that show, so far */
+        got = (int)en_nev_w;
+    else if (!strcmp(what, "blits")) {           /* the screen's draws since the last ask */
+        static uint32_t was;
+        got = (int)(blits - was);
+        was = blits;
+    }
     else if (!strcmp(what, "viewlayer"))          /* what the scope and spectrum listen to (0 the whole, 1.. a layer) */
         got = en_view_layer;
     else if (!strcmp(what, "octring"))            /* the level ring showing: its layer + 1 (0: none) */
