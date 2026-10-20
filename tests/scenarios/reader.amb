@@ -104,7 +104,7 @@ tapkey w0
 said THE ROOT STAYS (HOME, KEY)
 # the encoders: the mode (off the Dub page), the piece (with its key and tempo)
 turn ALGO 1
-said MODE Phrygian
+said MODE Mixolyd
 turn ALGO -1
 said MODE Dorian
 turn PRESET 1

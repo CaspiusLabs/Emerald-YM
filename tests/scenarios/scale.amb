@@ -16,10 +16,11 @@ expect pool 0x6AD
 # key 7 is C4: the root stays
 tapkey 7
 expect pool 0x6AD
-# the next mode: Phrygian (ALGORITHM, off the Dub page)
+# the next mode: Mixolydian (ALGORITHM, off the Dub page; the modes the most common first: Aeolian, Ionian,
+# Dorian, Mixolydian, pentatonic minor and major, Phrygian, Lydian)
 turn ALGO 1
-expect par20 2
-expect pool 0x5AB
+expect par20 4
+expect pool 0x6B5
 turn ALGO -1
 expect par20 1
 expect pool 0x6AD
@@ -29,8 +30,8 @@ expect par19 2
 expect pool 0x6AD
 wait 300
 shot d_dorian.png
-# pentatonic minor, then strip it down to three notes and try a fourth removal
-turn ALGO 6
+# pentatonic minor (two on from Dorian), then strip it down to three notes and try a fourth removal
+turn ALGO 2
 expect par20 7
 expect pool 0x4A9
 # D pent min: D F G A C. Remove F (key 0 = F3) and G (key 2 = G3)

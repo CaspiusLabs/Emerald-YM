@@ -15,6 +15,7 @@
  *   SAVE           saves (it also saves by itself a few seconds after a change, while resting);
  *                  held 1.5 s: the piece back to its recipe */
 #include "../dsp/fastmath.h"
+enum { PM_HOME, PM_WANDER, PM_FREE, PM_LOOP };   /* the Chords page's Play (amb.h, P_PMODE) */
 
 /* the pages, one a layer (a button each); SELECT steps through them in this order */
 /* (past NPAGES, off SELECT's round and on no button of their own: V_MIX, PERFORM's knobs, the four layers'
@@ -222,6 +223,21 @@ static const char *mode_name(void)
 }
 
 /* ------------------------------------------------------------ values --- */
+/* the modes as they're stepped through (ALGORITHM, the Key page's Mode): the most common first. (The values kept
+ * are the engine's, MODE_*) */
+static const uint8_t MODE_ORDER[EN_NMODES] = {MODE_AEOLIAN, MODE_IONIAN, MODE_DORIAN, MODE_MIXOLYDIAN, MODE_PENT_MIN,
+                                              MODE_PENT_MAJ, MODE_PHRYGIAN, MODE_LYDIAN};
+static int mode_pos(int m)
+{
+    int i;
+    for (i = 0; i < EN_NMODES && MODE_ORDER[i] != m; i++)
+        ;
+    return i < EN_NMODES ? i : 0;
+}
+static int mode_step(int e)                      /* the mode e steps on in that order (round) */
+{
+    return MODE_ORDER[((mode_pos(proj.par[P_MODE]) + e) % EN_NMODES + EN_NMODES) % EN_NMODES];
+}
 /* the Chords page's slots (amb.h): written (a kind), the walk's (no kind, a degree + 1 as the root) or a gap */
 static int slot_is_walk(int i) { return !proj.par[P_CQ0 + i] && proj.par[P_CR0 + i]; }
 static int slot_is_gap(int i) { return !proj.par[P_CQ0 + i] && !proj.par[P_CR0 + i]; }
@@ -272,7 +288,7 @@ static int knob_get(int k)
     if (k >= K_FILTER && k <= K_SPACE)
         return ui.mac[k - K_FILTER];
     if (k == K_MODE)
-        return proj.par[P_MODE];
+        return mode_pos(proj.par[P_MODE]);
     return 0;
 }
 static void knob_range(int k, int *lo, int *hi)
@@ -361,8 +377,11 @@ static void knob_set(int k, int v)
     if (v == knob_get(k))
         return;
     if (k < P_NPARAMS) {
+        int was = proj.par[k];
         proj.par[k] = (int16_t)v;
         en_set(k, v);
+        if (k == P_PMODE && was == PM_LOOP && v != PM_LOOP)
+            en_prog_rotate();                    /* (from Loop, by hand: the slot playing up to slot 1) */
     } else if (k == K_LEDS) {
         proj.leds = (uint8_t)v;
     } else if (k == K_SLOT) {
@@ -386,8 +405,8 @@ static void knob_set(int k, int v)
         ui.mac[k - K_FILTER] = (int8_t)v;
         en_macro(k - K_FILTER, v);
         return;                                  /* (for playing: nothing saved) */
-    } else if (k == K_MODE) {
-        set_mode(v);
+    } else if (k == K_MODE) {                    /* (the knob: the place in MODE_ORDER) */
+        set_mode(MODE_ORDER[v]);
         return;
     }
     mark_dirty();
@@ -942,7 +961,7 @@ static void input(void)
         } else if (vp >= 0)
             set_voice(vp, proj.par[vp] + (int)e);   /* (every detent: a quick turn comes as several at once) */
         else
-            set_mode(proj.par[P_MODE] + (int)e);
+            set_mode(mode_step((int)e));
         ui.turn_t = plat_ms();
     }
     if ((e = plat_enc(EN_PRESET)) != 0) {
@@ -1826,9 +1845,11 @@ static void draw_pattern(void)
  * progression shows that the chord before it goes on */
 static void draw_slots(void)
 {
-    int i, loop = proj.par[P_PMODE], n = loop ? prog_count() : EN_NPROG;
+    static const char *const HEAD[4] = {"HOME: THE WALK WRITES SLOT 8", "WANDER: THE WALK WRITES SLOT 8",
+                                        "FREE: THE WALK WRITES SLOT 8", "LOOP: THE SLOTS IN TURN"};
+    int i, loop = proj.par[P_PMODE] == PM_LOOP, n = loop ? prog_count() : EN_NPROG;
     char nm[16];
-    text_c(120, -1, &FONT_XS, loop ? "LOOP: THE SLOTS IN TURN" : "ENDLESS: THE WALK WRITES SLOT 8", K_ACC);
+    text_c(120, -1, &FONT_XS, HEAD[proj.par[P_PMODE] & 3], K_ACC);
     for (i = 0; i < EN_NPROG; i++) {
         int32_t x = 12 + (i & 3) * 55, y = 18 + (i >> 2) * 42;
         int filled = !slot_is_gap(i), now = en_playing && i == en_prog_pos && n, sel = i == ui.slot;
@@ -1963,7 +1984,7 @@ static void draw_main(void)
         }
         else
             text_c(CX, CY - 6, &FONT_XS, nm, en_frozen ? K_FROST : K_TEXT);
-        if (proj.par[P_PMODE] && en_prog_pos >= 0 && prog_count()) {   /* Loop: where it is ("2/4") */
+        if (proj.par[P_PMODE] == PM_LOOP && en_prog_pos >= 0 && prog_count()) {   /* Loop: where it is ("2/4") */
             char t[8];
             t[0] = (char)('1' + en_prog_pos), t[1] = '/', t[2] = (char)('0' + prog_count()), t[3] = 0;
             text_c(CX, CY + 11, &FONT_XS, t, K_DIM);
@@ -2555,7 +2576,7 @@ static void speak_dump(void)
         }
     }
     for (x = 0; x < EN_NMODES; x++) {
-        msg_text("MODE", EN_MODE_NAME[x], t);
+        msg_text("MODE", EN_MODE_NAME[MODE_ORDER[x]], t);
         sp_print("MSG", t);
     }
     for (x = -2; x <= 2; x++) {

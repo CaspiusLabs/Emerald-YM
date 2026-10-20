@@ -67,8 +67,9 @@ enum {
     /* the chords (EDIT's page): eight slots. A slot is one of three: a chord written (a kind, EN_CQ_*, not 0: its root
      * 0..11, absolute, and its type, EN_CX_*); the walk's (kind 0, root 1..7: a degree of the scale, plus one, so it
      * follows the key and the mode; type: its voicing, 0 or 1); or a gap (kind 0, root 0: the chord before it held).
-     * Play: Endless (0: the chord playing is slot 1; on, all move up a slot and the walk writes slot 8) or Loop (1:
-     * the slots in turn, to the last that isn't a gap; nothing new) */
+     * Play: Endless, the walk Home (0), Wander (1) or Free (2), each more varied (the chord playing is slot 1; on, all
+     * move up a slot and the walk writes slot 8), or Loop (3: the slots in turn, to the last that isn't a gap; nothing
+     * new) */
     P_CR0, P_CR1, P_CR2, P_CR3, P_CR4, P_CR5, P_CR6, P_CR7,
     P_CQ0, P_CQ1, P_CQ2, P_CQ3, P_CQ4, P_CQ5, P_CQ6, P_CQ7,
     P_CX0, P_CX1, P_CX2, P_CX3, P_CX4, P_CX5, P_CX6, P_CX7,
@@ -207,6 +208,7 @@ extern volatile int8_t en_prog_slot[EN_NPROG][3];
 extern volatile uint32_t en_prog_gen;
 /* a walk slot's chord as written (to edit it): its root (absolute), kind and type, from the scale's degree */
 void en_walk_chord(uint32_t pool, int root, int deg, int *r, int *q, int *x);
+void en_prog_rotate(void);                     /* Loop to Endless (by hand): the slot playing up to slot 1 */
 extern volatile int8_t en_chord_slot;          /* the slot whose chord sounds, -1: a chord of the scale */
 int en_deg_of(uint32_t pool, int rel);         /* the scale degree for a note above the root (nearest in the pool) */
 void en_chord_iv(int kind, int type, int *iv); /* a slot's voicing: four intervals above its root, ascending */

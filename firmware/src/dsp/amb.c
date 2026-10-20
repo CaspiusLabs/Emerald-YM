@@ -47,7 +47,7 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     {"Kind 5", 0, EN_NCQ - 1, 0}, {"Kind 6", 0, EN_NCQ - 1, 0}, {"Kind 7", 0, EN_NCQ - 1, 0}, {"Kind 8", 0, EN_NCQ - 1, 0},
     {"Type 1", 0, EN_NCX - 1, 0}, {"Type 2", 0, EN_NCX - 1, 0}, {"Type 3", 0, EN_NCX - 1, 0}, {"Type 4", 0, EN_NCX - 1, 0},
     {"Type 5", 0, EN_NCX - 1, 0}, {"Type 6", 0, EN_NCX - 1, 0}, {"Type 7", 0, EN_NCX - 1, 0}, {"Type 8", 0, EN_NCX - 1, 0},
-    {"Play", 0, 1, 0},
+    {"Play", 0, 3, 1},
     {"Kick steps", -32768, 32767, 0}, {"Shaker steps", -32768, 32767, 0}, {"Open steps", -32768, 32767, 0},
     {"Rim steps", -32768, 32767, 0},  {"Clap steps", -32768, 32767, 0},
     {"Kick acc", -32768, 32767, 0},   {"Shaker acc", -32768, 32767, 0},   {"Open acc", -32768, 32767, 0},
@@ -73,49 +73,49 @@ static const struct {
                     0, 0, 1, 20, 10, 50, 30, 35, 50, 55, 30, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0}},
     {"Chamber",    {75, 20, 55, 55, 20, 45, 6, 40, 70, 1, 45, 75, 35, 55, 30, 60, 0, 1, 118, 9, 5, 0,
                     2, 0, 0, 10, 0, 40, 15, 45, 45, 70, 45, 2, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0}},
     {"Steppers",   {60, 35, 70, 70, 35, 40, 3, 60, 50, 3, 30, 55, 55, 25, 50, 45, 0, 1, 126, 2, 1, 0,
                     0, 0, 2, 35, 15, 60, 45, 25, 60, 50, 20, 1, 1, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0}},
     {"Fog",        {70, 40, 50, 45, 40, 55, 5, 30, 75, 2, 55, 80, 30, 70, 25, 70, 0, 1, 112, 7, 5, 0,
                     1, -1, 0, 15, 0, 30, 20, 60, 35, 80, 60, 0, 0, 3,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0}},
     {"Concrete",   {65, 25, 65, 75, 25, 35, 4, 75, 50, 1, 25, 60, 60, 20, 60, 40, 0, 1, 130, 0, 7, 0,
                     6, 0, 3, 30, 20, 75, 50, 20, 65, 45, 15, 3, 3, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0}},
     {"Night Drive", {65, 45, 60, 65, 45, 50, 3, 55, 60, 4, 35, 65, 50, 40, 45, 55, 0, 1, 124, 10, 1, 0,
                     1, 0, 4, 25, 25, 55, 35, 30, 50, 60, 35, 4, 4, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0}},
     {"Pressure",   {70, 20, 75, 80, 20, 30, 6, 65, 45, 1, 20, 55, 40, 30, 35, 35, 0, 1, 128, 4, 2, 0,
                     5, 0, 1, 10, 5, 65, 25, 15, 70, 40, 20, 3, 4, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0}},
     {"Haze",       {62, 50, 45, 40, 50, 60, 4, 35, 80, 3, 60, 85, 35, 80, 30, 80, 0, 1, 116, 3, 0, 1,
                     3, 0, 0, 20, 10, 35, 30, 70, 30, 85, 70, 2, 0, 4,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0}},
 };
 
@@ -187,7 +187,7 @@ void en_param_text(int i, int v, char *b)
     else if (i >= P_CX0 && i <= P_CX7)
         s = EN_CX_NAME[(unsigned)v < EN_NCX ? v : 0];
     else if (i == P_PMODE)
-        s = v ? "Loop" : "Endless";
+        s = v == 3 ? "Loop" : v == 2 ? "Free" : v == 1 ? "Wander" : "Home";
     else if (i == P_DMODE)
         s = v ? "Pattern" : "Auto";
     else if (i == P_GROOVE)
@@ -379,7 +379,7 @@ const char *en_chord_name(const int *pcs, int n, char *buf)
 }
 
 /* ------------------------------------------------------------ commands --- */
-enum { C_SET, C_POOL, C_PLAY, C_NEXT, C_FREEZE, C_SEED, C_PANIC, C_CLOCK, C_REGROW, C_MUTE, C_PERF, C_FX, C_PINGS, C_MACRO };
+enum { C_SET, C_POOL, C_PLAY, C_NEXT, C_FREEZE, C_SEED, C_PANIC, C_CLOCK, C_REGROW, C_MUTE, C_PERF, C_FX, C_PINGS, C_MACRO, C_PROT };
 #define QN 256u                                 /* (a piece is every parameter at once: room for four) */
 _Static_assert(QN >= 2u * (P_NPARAMS + 8), "the command queue can't hold a piece's parameters twice over");
 static uint32_t q[QN];
@@ -406,6 +406,7 @@ void en_mute(uint32_t m) { post(C_MUTE, (int)(m & 0xFFu), 0); }
 void en_perf(uint32_t f) { post(C_PERF, (int)(f & 0xFFu), 0); }
 void en_fx(uint32_t m) { post(C_FX, 0, (int)(m & 0xFFFFu)); }
 void en_macro(int i, int v) { post(C_MACRO, i, v + 50); }   /* (sent as 0..100) */
+void en_prog_rotate(void) { post(C_PROT, 0, 0); }
 const char *const EN_FX_NAME[EN_NFX] = {"Throw", "Time x2", "Tape stop", "Swell", "Low-pass", "High-pass", "Wah",
                                         "Phone", "Verb", "Crash", "Freeze", "Wash", "Stutter", "Gate", "Siren", "Riser"};
 
@@ -952,20 +953,31 @@ static int prog_pos = -1;
 
 /* to another degree: home most of all, then the subdominant, the seventh, the dominant; away from home,
  * home again more often than not. Never a diminished fifth (a half-diminished chord is no dub chord) */
-/* the walk: the next degree after d. Away from home, mostly back (65%); else a weighted choice (in seven notes, the
- * IV most, then the VII and the V), never the same, never a diminished one */
+/* the walk: the next degree after d (and before it, d2), in Play's character (0 Home, 1 Wander, 2 Free; Loop: as
+ * Home). Away from home, back (Home 65%, Wander 35%, Free 15%); else a weighted choice, never the same degree,
+ * never a diminished one: Home leans on the IV, then the VII and the V; Wander spreads wider; Free is even. Wander
+ * and Free rarely step straight back to d2 (no ping-pong) */
+enum { PM_HOME, PM_WANDER, PM_FREE, PM_LOOP };
 static int walk_shape;                          /* the walk's voicing, now and then the other (Evolve) */
+static int walk_prev;                           /* the degree before the walk's last */
 static int walk_from(int d)
 {
-    static const float W7[7] = {0.0f, 0.4f, 1.0f, 3.0f, 1.5f, 1.5f, 2.0f};
+    static const float W7[3][7] = {{0.0f, 0.4f, 1.0f, 3.0f, 1.5f, 1.5f, 2.0f},
+                                   {0.0f, 1.2f, 1.2f, 2.0f, 1.6f, 1.8f, 1.4f},
+                                   {0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}};
+    static const float HOME[3] = {0.65f, 0.35f, 0.15f}, BACK[3] = {1.0f, 0.3f, 0.15f};
+    const int st = par[P_PMODE] < PM_LOOP ? par[P_PMODE] : PM_HOME, d2 = walk_prev;
     float w[12], sum = 0.0f, r;
     int i;
-    if (d != 0 && frand() < 0.65f) {
+    walk_prev = d;
+    if (d != 0 && frand() < HOME[st] * (d2 == 0 && st ? 0.6f : 1.0f)) {   /* (just back from home: less often again) */
         i = 0;
     } else {
         for (i = 0; i < nsteps; i++) {
             int t[3], n = stack(pool, 0, i, t, 3);
-            w[i] = i == d || i == 0 ? 0.0f : nsteps == 7 ? W7[i] : 1.0f;
+            w[i] = i == d || i == 0 ? 0.0f : nsteps == 7 ? W7[st][i] : 1.0f;
+            if (i == d2)
+                w[i] *= BACK[st];
             if (n >= 3 && (t[2] - t[0] + 12) % 12 == 6)
                 w[i] = 0.0f;
             sum += w[i];
@@ -997,6 +1009,7 @@ static void walk_fill(void)                     /* Endless with every slot a gap
     for (k = 0; k < EN_NPROG; k++)
         if (!slot_gap(k))
             return;
+    walk_prev = 0;
     slot_walk_set(0, 0);
     for (k = 1; k < EN_NPROG; k++) {
         d = walk_from(d);
@@ -1021,7 +1034,7 @@ static void slot_play(int k)                    /* slot k sounds: its chord as w
 static void chord_change(void)
 {
     int k;
-    if (par[P_PMODE]) {                         /* Loop: the slots in turn, a gap holding the chord before it */
+    if (par[P_PMODE] == PM_LOOP) {              /* Loop: the slots in turn, a gap holding the chord before it */
         int n = prog_len();
         if (n) {
             prog_pos = (prog_pos + 1) % n;
@@ -2117,23 +2130,11 @@ static void apply(int p, int v)
             slot_play(prog_pos);                 /* the slot playing, edited: heard at once */
         prog_publish();
         break;
-    case P_PMODE: {
-        int k;
-        if (v) {                                 /* to Loop: the eight as they are, on from the one playing */
+    case P_PMODE:                                /* (Home, Wander, Free: the walk's character; Loop: none) */
+        if (v == PM_LOOP) {                      /* to Loop: the eight as they are, on from the one playing */
             if (prog_pos < 0 && prog_len())
                 prog_pos = 0;
-        } else if (prog_pos > 0) {               /* to Endless: the one playing up to slot 1 (all turned round) */
-            int16_t t[3][EN_NPROG];
-            int j;
-            for (k = 0; k < EN_NPROG; k++)
-                for (j = 0; j < 3; j++)
-                    t[j][k] = par[P_CR0 + 8 * j + (k + prog_pos) % EN_NPROG];
-            for (k = 0; k < EN_NPROG; k++)
-                for (j = 0; j < 3; j++)
-                    par[P_CR0 + 8 * j + k] = t[j][k];
-            prog_pos = 0;
-        }
-        if (!v) {
+        } else {                                 /* Endless (from Loop, the UI turns them round: C_PROT) */
             walk_fill();
             if (prog_pos < 0)
                 prog_pos = 0, slot_play(0);
@@ -2141,7 +2142,6 @@ static void apply(int p, int v)
         en_prog_pos = (int8_t)prog_pos;
         prog_publish();
         break;
-    }
     case P_KIT: kit = (unsigned)v < EN_NKIT ? v : 0; break;
     case P_POCT:                                 /* let it be heard now: a ping from the first loop */
         if (en_playing && nsteps) {
@@ -2185,12 +2185,12 @@ static void pool_set(uint32_t p)
     int k, prev = 0, moved = 0;
     pool = (p | 1u) & 0xFFFu;
     scale_set();
-    /* the walk's slots follow the scale, as degrees; one that lands on a diminished chord (which the walk never
-     * plays) is walked again from the one before */
+    /* the walk's slots follow the scale, as degrees; one the new scale has no room for, or that lands on a
+     * diminished chord (which the walk never plays), or repeats the slot before, is walked again from that one */
     for (k = 0; k < EN_NPROG && nsteps; k++)
         if (slot_walk(k)) {
-            int d = (par[P_CR0 + k] - 1) % nsteps;
-            if (deg_dim(d)) {
+            int raw = par[P_CR0 + k] - 1, d = raw % nsteps;
+            if (raw >= nsteps || deg_dim(d) || (k > 0 && slot_walk(k - 1) && d == prev)) {
                 d = walk_from(prev);
                 slot_walk_set(k, d);
                 moved = 1;
@@ -2217,12 +2217,12 @@ static void regrow(void)                        /* a new piece: fresh loops, hom
     deg = 0;
     shape = cvoice == CV_KEYS || cvoice == CV_PAD || cvoice == CV_BELL;   /* these like the 9th; the rest the open 7th */
     walk_shape = shape;
-    if (!par[P_PMODE])                           /* Endless: a fresh piece's eight, from the walk */
+    if (par[P_PMODE] != PM_LOOP)                 /* Endless: a fresh piece's eight, from the walk */
         walk_fill();
     /* the slots: Endless from slot 1, Loop from the first that isn't a gap (none: home) */
     for (prog_pos = 0; prog_pos < EN_NPROG && slot_gap(prog_pos); prog_pos++)
         ;
-    if (prog_pos >= EN_NPROG || !par[P_PMODE])
+    if (prog_pos >= EN_NPROG || par[P_PMODE] != PM_LOOP)
         prog_pos = prog_pos >= EN_NPROG ? -1 : 0;
     en_prog_pos = (int8_t)prog_pos;
     for (walk_last = 0, k = 0; k < EN_NPROG; k++)   /* (the walk goes on from its last) */
@@ -2443,6 +2443,21 @@ static void drain(void)
         case C_MUTE: mutes = (uint32_t)a; lanes(); break;
         case C_PERF: perf = (uint32_t)a; lanes(); break;
         case C_FX: fxm = c & 0xFFFFu; break;
+        case C_PROT:                             /* Loop to Endless: the one playing up to slot 1, all turned round */
+            if (prog_pos > 0) {
+                int16_t t[3][EN_NPROG];
+                int j, k;
+                for (k = 0; k < EN_NPROG; k++)
+                    for (j = 0; j < 3; j++)
+                        t[j][k] = par[P_CR0 + 8 * j + (k + prog_pos) % EN_NPROG];
+                for (k = 0; k < EN_NPROG; k++)
+                    for (j = 0; j < 3; j++)
+                        par[P_CR0 + 8 * j + k] = t[j][k];
+                prog_pos = 0;
+                en_prog_pos = 0;
+                prog_publish();
+            }
+            break;
         case C_MACRO:
             if (a < EN_NMAC && (unsigned)b <= 100u)
                 macro(a, b - 50);

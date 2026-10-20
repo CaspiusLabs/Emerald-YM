@@ -1,14 +1,14 @@
 # the Chords page (EDIT tapped): eight slots. Play Endless (the default): the walk's eight, slot 1 playing; on a
 # change all move up a slot (a gap stays a gap) and the walk writes slot 8. KNOB 1 the slot, the keys its root (a
-# walk's chord keeps its kind and type), KNOB 2 its kind (Empty: a gap), KNOB 3 its type, KNOB 4 Play: Endless or
-# Loop (the slots in turn, nothing new). EDIT again: back; EDIT held: the next chord; kept by the piece
+# walk's chord keeps its kind and type), KNOB 2 its kind (Empty: a gap), KNOB 3 its type, KNOB 4 Play: Home, Wander or Free
+# (the walk, more varied each), or Loop (the slots in turn, nothing new). EDIT again: back; EDIT held: the next chord; kept by the piece
 listen
 wait 3000
 tap EDIT
 wait 400
 expect view 15
 # slot 1: the walk's home chord, Fm7 in F Dorian, as it would be written
-said Chords page: Slot 1, Chord Minor, Type 7, Play Endless
+said Chords page: Slot 1, Chord Minor, Type 7, Play Wander
 expect par64 1
 expect par72 0
 expect progpos 0
@@ -36,15 +36,19 @@ wait 200
 said Chord Empty
 expect par73 0
 expect par65 0
-# Play: Loop, and back
+# Play: the walk Free, Loop, and back to Wander
+spin K4 1
+wait 200
+said Play Free
+expect par88 2
 spin K4 1
 wait 200
 said Play Loop
-expect par88 1
-spin K4 -1
+expect par88 3
+spin K4 -2
 wait 200
-said Play Endless
-expect par88 0
+said Play Wander
+expect par88 1
 tap EDIT
 wait 300
 expect view 0
@@ -69,4 +73,4 @@ wait 1000
 expect par64 0
 expect par72 0
 expect par71 >0
-expect par88 0
+expect par88 1

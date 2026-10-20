@@ -121,6 +121,7 @@ static void gaps9(int16_t *par)                  /* before 10: an empty slot is 
     for (i = 0; i < EN_NPROG; i++)
         if (!par[P_CQ0 + i])
             par[P_CR0 + i] = 0, par[P_CX0 + i] = 0;
+    par[P_PMODE] = par[P_PMODE] ? 3 : 1;         /* Prog: Loop; Random: the walk, now Wander */
 }
 
 int project_load(void)

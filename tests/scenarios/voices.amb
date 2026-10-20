@@ -34,8 +34,8 @@ tap FX
 wait 300
 turn ALGO 1
 wait 300
-said MODE Phrygian
-expect par20 2
+said MODE Mixolyd
+expect par20 4
 # a piece keeps its voices: away and back
 turn PRESET 1
 wait 500

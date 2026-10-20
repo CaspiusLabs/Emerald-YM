@@ -563,6 +563,13 @@ today switches between Random and the slots.
   otherwise a weighted choice, IV favoured, then VII and V, never the current degree or a diminished one; now and
   then the other voicing). Slots are stored as absolute roots, kinds and types (P_CR*, P_CQ*, P_CX*); the walk would
   need to write those, or slots would store a degree.
+- Added (the user, 2026-10-20): the walk's character on KNOB 4 (Home, Wander, Free, then Loop; Wander the default;
+  the Dorian test: A-B-A bounces in 64 changes 22 / 2 / 5, at home 24 / 16 / 11); the modes stepped the most common
+  first (Aeolian, Ionian, Dorian, Mixolydian, pentatonic minor and major, Phrygian, Lydian; the values kept as they
+  were).
+- **Two music theory videos** (the user, 2026-10-20), with the chord machine's: **the modes** (the eight scales
+  DUB-1 has, how each sounds over the same groove, why dub techno lives in the minor ones) and **the chords** (a
+  scale's chords, stacked thirds, kinds and types, the voicings DUB-1 uses).
 - **Then a video, "The chord machine"** (4–5 min, Serena's voice):
   1. a scale's seven chords;
   2. the walk's rules (home, the pull back, the favoured degrees, voicings);

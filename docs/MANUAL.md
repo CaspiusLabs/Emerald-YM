@@ -100,7 +100,7 @@ The drawing at the top shows them all; here they are in more detail.
 | ENV · ARP · LFO · SEQ | The layers' pages: Chord, Texture (the pings and the crackle), Bass, Drums. |
 | FX · GLO | The Space page; the Setup page, for what holds for every piece. The lit button shows the page. |
 | SELECT | The previous or next page. Hold HOME and turn it for the tempo, from any page. |
-| ALGORITHM | On the Dub page: the middle of the screen, as ripples, a scope or a spectrum (see [The screen](#4-the-screen)). On a layer's page (Chord, Texture, Bass, Drums): that layer's **voice** (see [The voices](#the-voices)). On the other pages: the mode, Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, pentatonic major and minor; it loads the mode's scale, and editing it with the keys makes it Custom. |
+| ALGORITHM | On the Dub page: the middle of the screen, as ripples, a scope or a spectrum (see [The screen](#4-the-screen)). On a layer's page (Chord, Texture, Bass, Drums): that layer's **voice** (see [The voices](#the-voices)). On the other pages: the mode, Aeolian (minor), Ionian (major), Dorian, Mixolydian, pentatonic minor and major, Phrygian, Lydian (the most common first); it loads the mode's scale, and editing it with the keys makes it Custom. |
 | PRESETS | The piece (see [The pieces](#7-the-pieces)). |
 | KNOB 1–4 | The four values on the screen. A few clicks are always single steps; a quick turn speeds up, so half a turn sweeps the range. |
 | OCT− / OCT+ | The pings' octave, two down to two up, from any page. While playing, a ping sounds at once in the new octave. |
@@ -177,9 +177,14 @@ slot is one of three:
 | Keys | its root, any note (lit on the keys). A walk's chord becomes yours, keeping its kind and type; a gap becomes a minor chord on it |
 | KNOB 2 · Chord | its kind: Empty (a gap), Major, Minor, Sus2, Sus4, Dim, Aug. Turning a walk's chord makes it yours |
 | KNOB 3 · Type | Triad, 6, 7, Maj7, 9, 11, Add9 |
-| KNOB 4 · Play | **Endless** or **Loop** |
+| KNOB 4 · Play | the walk **Home**, **Wander** or **Free** (Endless), or **Loop** |
 
-**Endless** (the default): a new piece starts with eight chords from the walk, from home. The chord
+**Home, Wander, Free** (Endless; Wander is the default) set how the walk moves, from the most settled to the
+most varied. **Home** goes back to the home chord often (about two times in three) and leans on the IV, the
+way DUB-1 has always moved. **Wander** goes home less, spreads over more of the scale's chords and rarely
+bounces straight back to the chord before last. **Free** goes home least and treats the other chords evenly.
+
+**Endless:** a new piece starts with eight chords from the walk, from home. The chord
 playing is always slot 1. When it moves on (every Drift bars, or EDIT held), every slot moves up one:
 a gap stays a gap, your chords stay yours. The walk then writes a new chord into slot 8, so you see
 the chords coming and can change them before they arrive.
@@ -462,7 +467,7 @@ again goes back to the Dub page.
 
 - **Tempo:** 90 to 140. Also HOME + SELECT, from any page.
 - **Root:** the key's root note. The scale moves with it, and the chord at once.
-- **Mode:** Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, pentatonic major and minor; it
+- **Mode:** Aeolian (minor), Ionian (major), Dorian, Mixolydian, pentatonic minor and major, Phrygian, Lydian (the most common first); it
   loads the mode's scale (as ALGORITHM does off the Dub page). Editing the scale with the keys
   makes it Custom.
 - **Swing:** the off sixteenths late, 50% to 70%: everything on them, the stabs, the bass, the pings and the drums, together (the same as on the Drums page).

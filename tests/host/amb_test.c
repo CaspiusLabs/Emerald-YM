@@ -429,7 +429,7 @@ int main(void)
         en_set(P_CR3, 0), en_set(P_CQ3, EN_CQ_MAJOR), en_set(P_CX3, EN_CX_6);
         for (k = 4; k < EN_NPROG; k++)
             en_set(P_CR0 + k, 0), en_set(P_CQ0 + k, EN_CQ_EMPTY), en_set(P_CX0 + k, 0);
-        en_set(P_PMODE, 1);
+        en_set(P_PMODE, 3);                      /* (Loop) */
         en_regrow();
         en_play(1);
         for (k = 0; k < 900 && ns < 16; k++) {
@@ -450,7 +450,8 @@ int main(void)
         en_set(P_CR0, 7);                        /* the slot playing, edited: G minor 7 now */
         run(0.05f);
         CHECK(en_chord_root == 7, "the slot playing, edited: root %d", en_chord_root);
-        en_set(P_PMODE, 0);                      /* to Endless: slot 1 plays (it was), the gaps stay, the walk goes on */
+        en_set(P_PMODE, 1);                      /* to Endless (Wander, by hand: turned round): slot 1 plays, the gaps */
+        en_prog_rotate();                        /* stay, the walk goes on */
         run(0.05f);
         CHECK(en_prog_pos == 0 && en_prog_slot[0][1] == EN_CQ_MINOR && en_prog_slot[0][0] == 7,
               "to Endless: slot 1 %d/%d/%d at %d", en_prog_slot[0][0], en_prog_slot[0][1], en_prog_slot[0][2], en_prog_pos);
@@ -494,6 +495,34 @@ int main(void)
             CHECK(en_prog_slot[4][1] == EN_CQ_MAJOR && en_prog_slot[4][2] == EN_CX_7, "Endless: the written C7 moved");
             CHECK(en_prog_slot[7][1] == 0 && en_prog_slot[7][0] >= 1, "Endless: the walk didn't write slot 8");
             CHECK(en_prog_pos == 0, "Endless: slot %d plays", en_prog_pos);
+        }
+        {   /* the walk's character: Home, Wander, Free, each more varied (fewer A-B-A bounces, home less often) */
+            int st, pp[3] = {0}, hm[3] = {0};
+            for (st = 0; st < 3; st++) {
+                int r[64], nr = 0, j, last = -1;
+                fresh();
+                en_set(P_ROOT, 5);
+                en_pool(EN_MODE_POOL[MODE_DORIAN]);
+                en_set(P_DRIFT, 0);
+                en_set(P_PMODE, st);
+                for (j = 0; j < EN_NPROG; j++)
+                    en_set(P_CR0 + j, 0), en_set(P_CQ0 + j, EN_CQ_EMPTY), en_set(P_CX0 + j, 0);
+                en_regrow();
+                en_play(1);
+                for (j = 0; j < 6000 && nr < 64; j++) {
+                    run(0.05f);
+                    if (en_chord_root != last || j == 0)
+                        last = en_chord_root, r[nr++] = last;
+                }
+                for (j = 2; j < nr; j++)
+                    pp[st] += r[j] == r[j - 2];
+                for (j = 0; j < nr; j++)
+                    hm[st] += r[j] == 5;
+                printf("  the walk, %s: %d changes, %d bounces (A-B-A), %d at home\n", st == 0 ? "Home" : st == 1 ? "Wander" : "Free",
+                       nr, pp[st], hm[st]);
+            }
+            CHECK(pp[1] < pp[0] && pp[2] < pp[0], "the walk: Wander (%d) and Free (%d) bounce less than Home (%d)", pp[1], pp[2], pp[0]);
+            CHECK(hm[2] < hm[0], "the walk: Free (%d) at home less than Home (%d)", hm[2], hm[0]);
         }
         for (k = 0; k < EN_NCQ * EN_NCX; k++) {   /* every voicing: four rising notes, within two octaves */
             int iv[4];
