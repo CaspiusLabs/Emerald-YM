@@ -49,7 +49,7 @@ expect par88 1
 # ALGORITHM: the walk Free, its chords walked again; slot 1 (yours, Fm9) and slot 2 (a gap) kept; back to Wander
 turn ALGO 1
 wait 200
-said WALK Free
+said WALK Free: goes anywhere
 expect par88 2
 expect par64 5
 expect par72 2
@@ -58,7 +58,7 @@ expect par65 0
 expect par73 0
 turn ALGO -1
 wait 200
-said WALK Wander
+said WALK Wander: roams wider
 expect par88 1
 tap EDIT
 wait 300

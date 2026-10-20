@@ -9,7 +9,7 @@
  *                  on the white keys while they're held             OCT- / OCT+   the pings' octave
  *   SEL            PERFORM: the keys mute (white 1-5) and solo (black 1-5) the layers and, held, make the dub moves
  *                  (white 7-11); the knobs the master actions (Filter, Dub, Energy, Space), with white 6 held the mix
- *   SELECT         the pages (with HOME held: the tempo)   ALGORITHM the voice, the screen (Dub), the mode   PRESETS the piece
+ *   SELECT         the pages (with HOME held: the tempo)   ALGORITHM the voice, the walk (Chords), else the screen   PRESETS the piece
  *   HOME ENV ARP LFO SEQ FX GLO   the pages: DUB, CHORD, TEXTURE, BASS, DRUMS, SPACE, SETUP
  *   KNOB 1-4       the page's four values
  *   SAVE           saves (it also saves by itself a few seconds after a change, while resting);
@@ -233,10 +233,6 @@ static int mode_pos(int m)
     for (i = 0; i < EN_NMODES && MODE_ORDER[i] != m; i++)
         ;
     return i < EN_NMODES ? i : 0;
-}
-static int mode_step(int e)                      /* the mode e steps on in that order (round) */
-{
-    return MODE_ORDER[((mode_pos(proj.par[P_MODE]) + e) % EN_NMODES + EN_NMODES) % EN_NMODES];
 }
 /* the Chords page's slots (amb.h): written (a kind), the walk's (no kind, a degree + 1 as the root) or a gap */
 static int slot_is_walk(int i) { return !proj.par[P_CQ0 + i] && proj.par[P_CR0 + i]; }
@@ -960,22 +956,26 @@ static void input(void)
         }
         ui.turn_t = plat_ms();
     }
-    if ((e = plat_enc(EN_ALGO)) != 0) {         /* on a layer's page: its voice; on Dub: the screen; elsewhere: the mode */
+    if ((e = plat_enc(EN_ALGO)) != 0) {         /* a layer's page: its voice; the Chords page: the walk; elsewhere: the screen */
         int vp = view_voice(ui.view);
-        if (ui.view == V_DUB) {                  /* the middle of the screen: the ripples, a scope, a spectrum */
+        if (ui.view == V_CHORDS) {               /* the walk's character: its chords walked again, at once */
+            int w = (((proj.par[P_PMODE] & 3) + (int)(e % EN_NWALK)) % EN_NWALK + EN_NWALK) % EN_NWALK;
+            knob_set(P_PMODE, (proj.par[P_PMODE] & EN_PLOOP) | w);
+            en_prog_rewalk();
+            {   /* the character, and what it does */
+                static const char *const WHAT[EN_NWALK] = {"Home: stays near home", "Wander: roams wider",
+                                                         "Free: goes anywhere"};
+                say("WALK", WHAT[w]);
+            }
+        } else if (vp >= 0) {
+            set_voice(vp, proj.par[vp] + (int)e);   /* (every detent: a quick turn comes as several at once) */
+        } else {                                 /* the middle of the screen: the ripples, a scope, a spectrum (the mode,
+                                                  * a piece's choice, is on the Key page) */
             static const char *const SCREEN_NAME[3] = {"RIPPLES", "SCOPE", "SPECTRUM"};
             proj.screen = (uint8_t)(((int)proj.screen + (int)(e % 3) + 3) % 3);
             mark_dirty();
             say("SCREEN", SCREEN_NAME[proj.screen]);
-        } else if (ui.view == V_CHORDS) {        /* the walk's character: its chords walked again, at once */
-            int w = (((proj.par[P_PMODE] & 3) + (int)(e % EN_NWALK)) % EN_NWALK + EN_NWALK) % EN_NWALK;
-            knob_set(P_PMODE, (proj.par[P_PMODE] & EN_PLOOP) | w);
-            en_prog_rewalk();
-            say("WALK", EN_WALK_NAME[w]);
-        } else if (vp >= 0)
-            set_voice(vp, proj.par[vp] + (int)e);   /* (every detent: a quick turn comes as several at once) */
-        else
-            set_mode(mode_step((int)e));
+        }
         ui.turn_t = plat_ms();
     }
     if ((e = plat_enc(EN_PRESET)) != 0) {

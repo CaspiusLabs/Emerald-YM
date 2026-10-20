@@ -100,7 +100,7 @@ The drawing at the top shows them all; here they are in more detail.
 | ENV · ARP · LFO · SEQ | The layers' pages: Chord, Texture (the pings and the crackle), Bass, Drums. |
 | FX · GLO | The Space page; the Setup page, for what holds for every piece. The lit button shows the page. |
 | SELECT | The previous or next page. Hold HOME and turn it for the tempo, from any page. |
-| ALGORITHM | On the Dub page: the middle of the screen, as ripples, a scope or a spectrum (see [The screen](#4-the-screen)). On a layer's page (Chord, Texture, Bass, Drums): that layer's **voice** (see [The voices](#the-voices)). On the other pages: the mode, **Minor** (Aeolian), **Major** (Ionian), Dorian, Mixolydian, pentatonic minor and major, Phrygian, Lydian (the most common first; the screen shows Aeolian as Minor and Ionian as Major); it loads the mode's scale, and editing it with the keys makes it Custom. |
+| ALGORITHM | On a layer's page (Chord, Texture, Bass, Drums): that layer's **voice** (see [The voices](#the-voices)). On the Chords page: the walk's character (Home, Wander, Free). Anywhere else: the middle of the screen, as ripples, a scope or a spectrum (see [The screen](#4-the-screen)). The mode, a piece's choice, is on the Key page (HOME again). |
 | PRESETS | The piece (see [The pieces](#7-the-pieces)). |
 | KNOB 1–4 | The four values on the screen. A few clicks are always single steps; a quick turn speeds up, so half a turn sweeps the range. |
 | OCT− / OCT+ | The pings' octave, two down to two up, from any page. While playing, a ping sounds at once in the new octave. |
@@ -243,7 +243,7 @@ another button puts the card away; letting go after it does nothing else.
   holds. The chord's name is in the middle (red in dub hold). Around it the four ping loops each
   circle as a blue dot, one step at a time, and light up as they play. The loops have different
   lengths, so the dots drift apart and meet again.
-- **ALGORITHM** (on the Dub page) changes what the middle shows: the ripples, a **scope** or a
+- **ALGORITHM** (on any page but a layer's or the Chords page) changes what the middle shows: the ripples, a **scope** or a
   **spectrum**, and then the ripples again (turned back, the other way round). Each piece keeps its own view, saved with it (SAVE): Haze on the spectrum, say, and Pressure on the scope. With the
   scope or the spectrum showing, the chord's name moves to the top.
   - The **scope** draws the output (left and right mixed) as a thick line. Each trace starts on a
@@ -266,8 +266,8 @@ another button puts the card away; letting go after it does nothing else.
   a dial (or, for a switch, its positions) and the value. The one you're turning lights up.
 
 ![The Space page with FEEDBACK lit as it turns, set to 87%; ECHO 55, ECHO TIME 1/8., REVERB 35](img/screen-turning.png "Turning Feedback on the Space page")
-![The scope: the output as a thick teal line over a dotted centre line, the two traces before it fading behind; Fm7 at the top](img/screen-scope.png "ALGORITHM on the Dub page: the scope")
-![The spectrum: eighteen columns of teal and brass segments, a white cap over each; Fm7 at the top](img/screen-spectrum.png "ALGORITHM on the Dub page: the spectrum")
+![The scope: the output as a thick teal line over a dotted centre line, the two traces before it fading behind; Fm7 at the top](img/screen-scope.png "ALGORITHM: the scope")
+![The spectrum: eighteen columns of teal and brass segments, a white cap over each; Fm7 at the top](img/screen-spectrum.png "ALGORITHM: the spectrum")
 ![Dub hold: red rings, the chord's name and "hold" in red](img/screen-hold.png "Dub hold")
 ![PERFORM with THROW held: PERFORM top right, every stab a double ring](img/screen-perform.png "PERFORM, throwing")
 
@@ -444,7 +444,7 @@ voice's length times its own: an Organ or a Pad rings longer than Saws at the sa
 
 ![The Dub page: FILTER Off, EVOLVE 40, MOTION 50, DRIFT 32 bars](img/screen-main.png "The Dub page")
 
-The song as it plays. **ALGORITHM** on this page: the middle of the screen as ripples, scope or
+The song as it plays. **ALGORITHM** (here and on any page but a layer's): the middle of the screen as ripples, scope or
 spectrum (see [The screen](#4-the-screen)). **HOME** again: the Key page (below).
 
 - **Filter:** the DJ filter on the whole music but the kick. Down (Shut 1–100), a low-pass that
@@ -470,7 +470,7 @@ again goes back to the Dub page.
 - **Tempo:** 90 to 140. Also HOME + SELECT, from any page.
 - **Root:** the key's root note. The scale moves with it, and the chord at once.
 - **Mode:** **Minor** (Aeolian), **Major** (Ionian), Dorian, Mixolydian, pentatonic minor and major, Phrygian, Lydian (the most common first; the screen shows Aeolian as Minor and Ionian as Major); it
-  loads the mode's scale (as ALGORITHM does off the Dub page). Editing the scale with the keys
+  loads the mode's scale. Editing the scale with the keys
   makes it Custom.
 - **Swing:** the off sixteenths late, 50% to 70%: everything on them, the stabs, the bass, the pings and the drums, together (the same as on the Drums page).
 
@@ -710,8 +710,8 @@ The defaults are Basic's; each piece has its own.
 | Setup | MIDI out | Off, On | On |
 | Setup | Lights | Off, On, Keys | On |
 | Perform | Filter, Dub, Energy, Space | −100 – 0 – +100 (Filter: Shut, Off, Open); for playing, not saved | 0 |
-| ALGORITHM | Screen (Dub page) | Ripples, Scope, Spectrum | Ripples |
-| ALGORITHM | Mode (Key, Space, Setup, Perform, Mix pages) | 8 modes, or Custom | Dorian |
+| ALGORITHM | Screen (all pages but a layer's and the Chords page) | Ripples, Scope, Spectrum | Ripples |
+| ALGORITHM | The walk (Chords page) | Home, Wander, Free | Wander |
 | ALGORITHM | Chord voice (Chord page) | 7 voices | Saws |
 | ALGORITHM | Ping voice (Texture page) | 5 voices | Blip |
 | ALGORITHM | Bass voice (Bass page) | 4 voices | Sub |

@@ -1,4 +1,4 @@
-# the voices: ALGORITHM on a layer's page steps through its voices (round); on Dub, the screen; elsewhere, the mode
+# the voices: ALGORITHM on a layer's page steps through its voices (round); elsewhere (but the Chords page), the screen
 listen
 wait 3000
 tap ENV
@@ -34,8 +34,11 @@ tap FX
 wait 300
 turn ALGO 1
 wait 300
-said MODE Mixolyd
-expect par20 4
+said SCREEN SCOPE
+expect screen 1
+expect par20 1
+turn ALGO -1
+wait 300
 # a piece keeps its voices: away and back
 turn PRESET 1
 wait 500

@@ -102,11 +102,15 @@ tapkey b3
 said REMOVED C#
 tapkey w0
 said THE ROOT STAYS (HOME, KEY)
-# the encoders: the mode (off the Dub page), the piece (with its key and tempo)
-turn ALGO 1
+# the mode (the Key page's KNOB 3, the most common first), ALGORITHM (off a layer's page: the screen), the piece
+spin K3 1
 said MODE Mixolyd
-turn ALGO -1
+spin K3 -1
 said MODE Dorian
+turn ALGO 1
+said SCREEN SCOPE
+turn ALGO -1
+said SCREEN RIPPLES
 turn PRESET 1
 said PIECE Chamber, A Minor, tempo 
 wait 300
@@ -153,8 +157,126 @@ wait 100
 # the chord moving by itself (every two bars now): queued (said after what is being said)
 wait 8000
 said Chord
-# a MIDI clock arriving, and start / stop from it
+# a MIDI clock arriving (a second and more of it: said after what is queued), and start / stop from it
 midi FA 00 00
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
+midi F8 00 00
+wait 20
 midi F8 00 00
 wait 20
 said Tempo EXT
