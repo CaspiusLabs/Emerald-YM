@@ -70,13 +70,13 @@ static const struct {
     const char *name;
     int16_t v[P_NPARAMS];
 } PIECES[EN_NPIECES] = {
-    {"Basic",      {70, 30, 60, 65, 30, 40, 4, 50, 55, 1, 35, 60, 45, 35, 40, 50, 0, 1, 122, 5, 1, 0,
+    {"Basic",      {76, 30, 60, 65, 30, 40, 4, 50, 55, 1, 35, 60, 45, 35, 40, 50, 0, 1, 122, 5, 1, 0,
                     0, 0, 1, 20, 10, 50, 30, 35, 50, 55, 30, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0}},
-    {"Chamber",    {75, 20, 55, 55, 20, 45, 6, 40, 70, 1, 45, 75, 35, 55, 30, 60, 0, 1, 118, 9, 5, 0,
+    {"Chamber",    {68, 20, 55, 60, 20, 45, 6, 40, 70, 1, 45, 75, 50, 55, 30, 60, 0, 1, 118, 9, 5, 0,
                     2, 0, 0, 10, 0, 40, 15, 45, 45, 70, 45, 2, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -88,7 +88,7 @@ static const struct {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0}},
-    {"Fog",        {70, 40, 50, 45, 40, 55, 5, 30, 75, 2, 55, 80, 30, 70, 25, 70, 0, 1, 112, 7, 5, 0,
+    {"Fog",        {64, 34, 50, 50, 40, 55, 5, 30, 75, 2, 55, 80, 46, 70, 25, 70, 0, 1, 112, 7, 5, 0,
                     1, -1, 0, 15, 0, 30, 20, 60, 35, 80, 60, 0, 0, 3,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -106,14 +106,14 @@ static const struct {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0}},
-    {"Pressure",   {70, 20, 75, 80, 20, 30, 6, 65, 45, 1, 20, 55, 40, 30, 35, 35, 0, 1, 128, 4, 2, 0,
-                    5, 0, 1, 10, 5, 65, 25, 15, 70, 40, 20, 3, 4, 1,
+    {"Pressure",   {78, 20, 54, 74, 20, 30, 6, 65, 45, 1, 20, 55, 48, 30, 35, 35, 0, 1, 128, 4, 2, 0,
+                    5, 0, 1, 10, 5, 65, 25, 32, 70, 40, 20, 3, 4, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0}},
-    {"Haze",       {62, 50, 45, 40, 50, 60, 4, 35, 80, 3, 60, 85, 35, 80, 30, 80, 0, 1, 116, 3, 0, 1,
-                    3, 0, 0, 20, 10, 35, 30, 70, 30, 85, 70, 2, 0, 4,
+    {"Haze",       {56, 42, 52, 45, 50, 60, 4, 35, 80, 3, 60, 85, 45, 80, 25, 80, 0, 1, 116, 3, 0, 1,
+                    3, 0, 0, 20, 10, 35, 30, 62, 30, 85, 70, 2, 0, 4,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
@@ -139,9 +139,13 @@ const char *const EN_CX_NAME[EN_NCX] = {"Triad", "6", "7", "Maj7", "9", "11", "A
 static const char *const ETIME_NAME[6] = {"1/8", "1/8.", "1/4", "1/4.", "1/2", "1 bar"};
 static const float ETIME_BEATS[6] = {0.5f, 0.75f, 1.0f, 1.5f, 2.0f, 4.0f};
 static const char *const GROOVE_NAME[5] = {"Drone", "Offbeat", "Dotted", "Roller", "Sync"};
-/* the bass's grooves (bit i: a note on sixteenth i) and how long each note holds, in sixteenths */
+/* the bass's grooves (bit i: a note on sixteenth i) and how long each note holds, in sixteenths (Offbeat's
+ * held past the next kick, and Roller's nearly to its next note: the kick lands on a bass the duck shapes, not
+ * in silence) */
 static const uint16_t GROOVE[5] = {0x0001u, 0x4444u, 0x0909u, 0x4949u, 0x0481u};
-static const float GROOVE_GATE[5] = {15.0f, 1.2f, 2.2f, 1.5f, 2.6f};
+static const float GROOVE_GATE[5] = {15.0f, 3.25f, 2.2f, 1.8f, 2.6f};
+static const float GROOVE_LVL[5] = {1.0f, 0.5f, 1.0f, 0.9f, 1.0f};   /* (the longer ones lower: Offbeat's held more
+                                                                      * than twice as long, and under the kick) */
 static const uint8_t DRIFT_BARS[7] = {2, 4, 8, 16, 32, 64, 0};
 
 uint32_t en_groove(int g) { return GROOVE[(unsigned)g < 5u ? g : 0]; }
@@ -670,9 +674,9 @@ typedef struct {
 static stab_t stab[EN_NPAD];
 static float chord_vol, cut_base = 800.0f, st_dec = 0.9995f, st_fdec = 0.99f, st_t60 = 0.3f;
 static float st_env, st_amp, st_fenv, st_throw, throw_dec;
-static float st_s[4], st_c[4];
+static float st_s[4], st_c[4], st_h[2];
 static int32_t st_midi_left;
-static int shape, root_note = 53;               /* the voicing's shape, the chord's root as voiced (MIDI) */
+static int shape, root_note = 55;               /* the voicing's shape, the chord's root as voiced (MIDI) */
 static const float STAB_PAN[EN_NPAD] = {-0.5f, -0.15f, 0.2f, 0.55f};
 static float stab_gl[EN_NPAD], stab_gr[EN_NPAD];
 static int32_t gate_ctr;                        /* samples since the sixteenth began (the grid's Gate) */
@@ -685,14 +689,15 @@ enum { CV_SAWS, CV_KEYS, CV_ORGAN, CV_PAD, CV_BELL, CV_WHEEL, CV_NOISE };
 static const struct {
     float att, dec, fenv, ratio, idx_hi, idx_lo, gain;
 } CV[EN_NCV] = {
-    {0.035f, 1.0f, 1.7f, 0.0f, 0.0f, 0.0f, 1.0f},        /* Saws: two saws a voice, 7 cents apart */
-    {0.035f, 1.3f, 1.0f, 1.0f, 0.41f, 0.06f, 1.23f},     /* Keys: FM at the carrier's pitch, an electric piano */
-    {0.02f, 2.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.75f},        /* Organ: four drawbars (1, 2, 3, 4) */
-    {0.00012f, 4.0f, 0.4f, 0.0f, 0.0f, 0.0f, 0.72f},     /* Pad: the saws, swelling in, long */
-    {0.05f, 1.8f, 0.8f, 3.5f, 0.35f, 0.05f, 1.17f},      /* Bell: FM at 3.5, the clang dying first */
-    {0.03f, 3.0f, 0.3f, 0.0f, 0.0f, 0.0f, 0.67f},        /* Tonewheel: drawbars, a percussion and a click at the
+    /* (1.3.0: each strike opens further, and closes sooner) */
+    {0.035f, 1.0f, 2.5f, 0.0f, 0.0f, 0.0f, 1.0f},        /* Saws: two saws a voice, 7 cents apart */
+    {0.035f, 1.3f, 1.4f, 1.0f, 0.41f, 0.06f, 1.23f},     /* Keys: FM at the carrier's pitch, an electric piano */
+    {0.02f, 2.5f, 0.7f, 0.0f, 0.0f, 0.0f, 0.75f},        /* Organ: four drawbars (1, 2, 3, 4) */
+    {0.00012f, 4.0f, 0.6f, 0.0f, 0.0f, 0.0f, 0.72f},     /* Pad: the saws, swelling in, long */
+    {0.05f, 1.8f, 1.1f, 3.5f, 0.35f, 0.05f, 1.17f},      /* Bell: FM at 3.5, the clang dying first */
+    {0.03f, 3.0f, 0.4f, 0.0f, 0.0f, 0.0f, 0.67f},        /* Tonewheel: drawbars, a percussion and a click at the
                                                           * strike, a rotary speaker turning (left against right) */
-    {0.05f, 0.6f, 2.0f, 0.0f, 0.0f, 0.0f, 3.6f},         /* Noise: noise and a little saw, the filter's pitch */
+    {0.05f, 0.6f, 2.6f, 0.0f, 0.0f, 0.0f, 3.6f},         /* Noise: noise and a little saw, the filter's pitch */
 };
 static int cvoice;                              /* the chord's voice now */
 static fmvoice_t cfm[EN_NPAD];                  /* its FM voices' operators */
@@ -734,7 +739,7 @@ static const float RATIO[5] = {1.0f, 2.0f, 3.0f, 3.5f, 4.77f};
 
 /* ----------------------------------------------------------------- drums --- */
 typedef struct {
-    float ph, inc, inc_end, amp, adec, x1, x2, att, mph[4], pend, clk;
+    float ph, inc, inc_end, amp, adec, x1, x2, att, mph[4], pend, clk, lp[2];   /* (lp: a hat's low-pass) */
     int32_t wait;                               /* swing: samples until a hit that waits (pend: its velocity) */
     uint8_t on, note;
 } drum_t;
@@ -751,16 +756,20 @@ static uint8_t hat_order[12];
 static const uint8_t HAT_ORDER[12] = {3, 11, 7, 15, 1, 9, 5, 13, 0, 8, 4, 12};
 static int hat_k, hat_kb;
 static float duck_x, duck_d, duck_depth, duck_rel;
+static float duck_xb, duck_db, duck_relb;       /* the bass's duck: deeper, and slower to let go (it pumps) */
 /* the kits: the kick (its pitch at the strike, times its note; how quickly it falls; its length; its click;
  * its drive) and the hats (their high-pass, times Hats'; how much noise against the metal; their length) */
 static const struct {
     float start, fall, t60, click, drive, hat_f, noise, hat_t, gain;
 } KIT[EN_NKIT] = {
-    {5.0f, 0.0016f, 0.42f, 0.5f, 1.5f, 1.0f, 0.7f, 1.0f, 1.0f},    /* Tight */
-    {3.0f, 0.0008f, 0.9f, 0.2f, 1.3f, 0.92f, 0.7f, 1.2f, 0.67f},   /* Deep: long, 808-ish */
-    {7.0f, 0.003f, 0.25f, 0.9f, 2.5f, 1.05f, 0.6f, 0.8f, 1.35f},   /* Punch: short and hard */
-    {2.5f, 0.0012f, 0.5f, 0.0f, 1.0f, 0.82f, 0.85f, 1.3f, 0.86f},  /* Soft: a muffled thump */
-    {4.5f, 0.0016f, 0.4f, 0.35f, 1.8f, 0.75f, 1.0f, 1.1f, 1.0f},   /* Dusty: darker, noisier hats */
+    /* (1.3.0's sound pass: each kick from lower, longer, with half the click; a soft, rolling pulse, the
+     * thump down from 100-200 Hz into the sub) */
+    {2.75f, 0.0016f, 0.63f, 0.25f, 1.5f, 1.0f, 0.7f, 1.0f, 1.0f},  /* Tight */
+    {2.0f, 0.0008f, 0.7f, 0.1f, 1.3f, 0.92f, 0.7f, 1.2f, 0.6f},    /* Deep: long, 808-ish (shorter and softer than
+                                                                    * it was: over a bass that holds now) */
+    {4.0f, 0.003f, 0.38f, 0.45f, 2.5f, 1.05f, 0.6f, 0.8f, 1.35f},  /* Punch: short and hard */
+    {1.8f, 0.0012f, 0.75f, 0.0f, 1.0f, 0.82f, 0.85f, 1.3f, 0.86f}, /* Soft: a muffled thump */
+    {2.6f, 0.0016f, 0.6f, 0.18f, 1.8f, 0.75f, 1.0f, 1.1f, 1.0f},   /* Dusty: darker, noisier hats */
 };
 static int kit;
 
@@ -771,6 +780,7 @@ static float fx_em = 1.0f, fx_ek = 0.001f, fx_ts = 1.0f;   /* the grid on the ec
 static float rev_in_gain = 1.0f;                /* falls to 0 while frozen */
 static float tape_lpc = 0.55f, tape_hpc = 0.08f; /* the echo's feedback band-pass */
 static float crackle_vol, cloud_amt;
+static float cr_wd, cr_ww, cr_wr;               /* Crackle's dust, wind and rumble: their share, by the knob */
 
 /* ------------------------------------------------------- the arrangement --- */
 static uint32_t sixteenth, bar, chord_bars;    /* bars since the start, since the chord moved */
@@ -798,7 +808,7 @@ static int bell_note(int l, int off)            /* a loop slot's note, from the 
 }
 
 /* the chord to the four voices: the voicing on the degree, its root moved the least from the last one,
- * in F#2..F3 (as a chord memory: the shape kept, transposed whole) */
+ * in C3..B3 (as a chord memory: the shape kept, transposed whole; 1.3.0 up from F#2..F3, out of the low-mids) */
 static int chord_slot = -1;                     /* the slot whose chord sounds (-1: one of the scale) */
 static void voice_chord(void)
 {
@@ -827,9 +837,9 @@ static void voice_chord(void)
     n = root_note + ((pc - root_note) % 12 + 12) % 12;
     if (n - root_note > 6)
         n -= 12;
-    while (n < 42)
+    while (n < 48)
         n += 12;
-    while (n > 53)
+    while (n > 59)
         n -= 12;
     root_note = n;
     for (i = 0; i < EN_NPAD; i++) {
@@ -1410,12 +1420,12 @@ static void drum_fire(int d, float vel)
         v->inc_end = f * (1.0f / EN_SR);
         v->adec = fm_expf(-6.9f / (KIT[kit].t60 * fm_exp2f(1.2f * rel(P_KLEN)) * EN_SR));
         v->clk = KIT[kit].click * 2.0f * fm_maxf(1.0f + pu, 0.0f);   /* (Tight: 1, as before) */
-        duck_x = 1.0f;
+        duck_x = duck_xb = 1.0f;
         break;
     }
     case 1:                                     /* the shaker: short; it chokes the open hat */
         v->note = DRUM_GM[1];
-        v->adec = fm_expf(-6.9f / (0.045f * KIT[kit].hat_t * EN_SR));
+        v->adec = fm_expf(-6.9f / (0.07f * KIT[kit].hat_t * EN_SR));   /* (1.3.0: 45 ms to 70: a shaker) */
         drum[2].adec = fm_expf(-6.9f / (0.03f * EN_SR));
         break;
     case 2:                                     /* open hat: the "tss" off the beat */
@@ -1837,10 +1847,11 @@ static void heads_step(uint32_t n)
     vmax = 0.008f / fm_maxf(echo_len, 100.0f);
     want = fm_clampf((head2_t - head2) * (1.0f / (2.0f * TAPE_SR)), -vmax, vmax);
     head2_v += (want - head2_v) * fm_minf((float)n * (1.0f / EN_SR), 1.0f);
-    /* the band-pass: ~60..500 Hz below, ~1.1..2.6 kHz above, moving up together */
+    /* the band-pass: ~165..700 Hz below (1.3.0: from ~60..500, so the repeats thin), ~1.1..2.6 kHz above, moving
+     * up together */
     dub_up = fm_maxf((float)mac[EN_MAC_DUB], 0.0f) * (1.0f / 50.0f);
     sw = fm_clampf(0.45f + 0.35f * arcm + 0.3f * perf_sw + 0.35f * motion * mod[5].v - 0.3f * dub_up, 0.0f, 1.0f);   /* (Dub up: darker) */
-    tape_hpc = 0.035f + 0.24f * sw * sw;
+    tape_hpc = 0.09f + 0.24f * sw * sw;
     tape_lpc = 0.58f + 0.3f * sw;
 }
 
@@ -2037,7 +2048,7 @@ void en_env_shape(int layer, float *lvl, float *aux, int n, float *secs)
         float xa = rel(P_CATT);
         a = fm_clampf(CV[cvoice].att * fm_exp2f(-(xa > 0.0f ? 9.0f : 3.0f) * xa), 0.00004f, 0.3f);
         t60 = st_t60;
-        ft = 0.4f * st_t60 + 0.03f;
+        ft = 0.25f * st_t60 + 0.02f;
         fe = fm_clampf(CV[cvoice].fenv * fm_maxf(1.0f + rel(P_CENV), 0.0f) / 3.4f, 0.0f, 1.0f);
         T = fm_clampf(t60 * 1.2f, 0.25f, 4.0f);
         break;
@@ -2060,7 +2071,7 @@ void en_env_shape(int layer, float *lvl, float *aux, int n, float *secs)
     }
     default: {                                  /* the kick: its decay; its pitch falling */
         t60 = KIT[kit].t60 * fm_exp2f(1.2f * rel(P_KLEN));
-        a = 0.2f;
+        a = 0.05f;
         ft = 1.0f / (KIT[kit].fall * EN_SR);
         fe = fm_clampf(KIT[kit].start * fm_exp2f(0.8f * rel(P_KPUNCH)) / 10.0f, 0.0f, 1.0f);
         T = fm_clampf(t60 * 1.2f, 0.25f, 2.0f);
@@ -2105,7 +2116,7 @@ static void apply(int p, int v)
     case P_SWING: swing = (float)v * 0.004f; break;      /* the off sixteenths up to 0.4 of a step late */
     case P_HATS: case P_HTONE: {                 /* the piece's colour, moved by the sound page's Hats */
         float h = fm_clampf((float)(pe(P_HATS) + par[P_HTONE]), 0.0f, 100.0f);
-        hat_f = 0.55f + 0.0070f * h;                      /* the high-pass: ~4 kHz dark .. ~10 kHz bright */
+        hat_f = 0.25f + 0.0045f * h;                      /* the high-pass: ~1.8 kHz dark .. ~5 kHz bright */
         hat_open = 0.4f - 0.0025f * h;                    /* the open hat: long and soft .. short and crisp */
         break;
     }
@@ -2119,12 +2130,18 @@ static void apply(int p, int v)
         cvoice = (unsigned)par[P_CVOICE] < EN_NCV ? par[P_CVOICE] : 0;
         st_t60 = 0.06f * fm_exp2f((float)pe(P_DECAY) * 0.0464f) * CV[cvoice].dec;
         st_dec = fm_expf(-6.9f / (st_t60 * EN_SR));
-        st_fdec = fm_expf(-6.9f * 32.0f / ((0.4f * st_t60 + 0.03f) * EN_SR));
+        st_fdec = fm_expf(-6.9f * 32.0f / ((0.25f * st_t60 + 0.02f) * EN_SR));   /* (1.3.0: a shorter strike) */
         break;
     case P_PTONE: case P_PTON: btone = fm_clampf((float)(par[P_PTONE] + par[P_PTON]), 0.0f, 100.0f) * 0.01f; break;
     case P_MOTION: motion = (float)v * 0.01f; break;
     case P_EVOLVE: evolve = (float)v * 0.01f; break;
-    case P_CRACKLE: crackle_vol = (float)(v * v) * 0.0001f; break;
+    case P_CRACKLE:                              /* (1.3.0: straight, not squared: a bed at 15 too; 35 as before,
+                                                  * 100 -9 dB; the palette widening as it turns up) */
+        crackle_vol = (float)v * 0.0035f;
+        cr_wd = fm_clampf(((float)v - 20.0f) * (1.0f / 40.0f), 0.0f, 1.0f);
+        cr_ww = fm_clampf(((float)v - 35.0f) * (1.0f / 40.0f), 0.0f, 1.0f);
+        cr_wr = fm_clampf(((float)v - 25.0f) * (1.0f / 50.0f), 0.0f, 1.0f);
+        break;
     case P_DUCK: duck_depth = (float)v * 0.0075f; break;   /* to -12 dB */
     case P_CLOUD: cloud_amt = (float)v * 0.01f; break;
     case P_CR0: case P_CR1: case P_CR2: case P_CR3: case P_CR4: case P_CR5: case P_CR6: case P_CR7:
@@ -2298,6 +2315,7 @@ void en_init(void)
         stab[i].ph[1] = 0.37f + 0.21f * (float)i;
     }
     duck_rel = fm_expf(-1.0f / (0.13f * EN_SR));
+    duck_relb = fm_expf(-1.0f / (0.25f * EN_SR));
     throw_dec = fm_expf(-1.0f / (0.5f * EN_SR));
     bite_dec = fm_expf(-1.0f / (0.07f * EN_SR));
     gate_dec = fm_expf(-6.9f / (1.5f * EN_SR));
@@ -2494,7 +2512,8 @@ static void drain(void)
 
 /* --------------------------------------------------------------- render --- */
 #define BLK 256
-static float mixl[BLK], mixr[BLK], rsend[BLK], esend[BLK], kickb[BLK], crl[BLK], crr[BLK];
+static float mixl[BLK], mixr[BLK], rsend[BLK], esend[BLK], kickb[BLK], bassb[BLK], crl[BLK], crr[BLK];
+/* (bassb: the bass, mono, on its own so the duck takes it deeper than the rest) */
 
 static void render_stabs(uint32_t n)
 {
@@ -2505,7 +2524,7 @@ static void render_stabs(uint32_t n)
      * drawbars, the noise against the saw), Resonance, Env (how far each stab opens the filter) */
     const float xa = rel(P_CATT), xc = rel(P_CCOL), up = fm_clampf(1.0f + xc, 0.0f, 2.0f), fx = fm_exp2f(1.5f * xc);
     const float g = chord_vol * 0.5f * CV[cv].gain,
-                k = fm_clampf(1.25f - 0.6f * fm_clampf(0.5f + 0.5f * arcm, 0.0f, 1.0f) - 0.55f * rel(P_CRES) -
+                k = fm_clampf(1.1f - 0.6f * fm_clampf(0.5f + 0.5f * arcm, 0.0f, 1.0f) - 0.55f * rel(P_CRES) -
                                  0.22f * fm_maxf(perf_sw, 0.0f), 0.12f, 2.0f);   /* (Open: it sings) */
     const float att = fm_clampf(CV[cv].att * fm_exp2f(-(xa > 0.0f ? 9.0f : 3.0f) * xa), 0.00004f, 0.3f),
                 fe = CV[cv].fenv * fm_maxf(1.0f + rel(P_CENV), 0.0f);
@@ -2515,6 +2534,7 @@ static void render_stabs(uint32_t n)
     const int alg = pt ? fm_alg_of(P_CALG, pt) : 0;
     const float cfb = pt ? fm_fb(P_CFB, pt) : 0.0f;
     float s0 = st_s[0], s1 = st_s[1], s2 = st_s[2], s3 = st_s[3], env = st_env, amp = st_amp, thr = st_throw;
+    float hl = st_h[0], hr = st_h[1];
     if (st_midi_left > 0 && (st_midi_left -= (int32_t)n) <= 0)
         for (i = 0; i < EN_NPAD; i++)
             midi(0x80, stab[i].midi_note, 0);
@@ -2604,6 +2624,10 @@ static void render_stabs(uint32_t n)
         e = amp * g;
         yl = sat(yl * e * 3.0f) * 0.4f;
         yr = sat(yr * e * 3.0f) * 0.4f;
+        hl += 0.0225f * (yl - hl);               /* a gentle high-pass, ~160 Hz: the stabs out of the low-mids */
+        hr += 0.0225f * (yr - hr);
+        yl -= hl;
+        yr -= hr;
         if (fx_gate > 0.001f) {                  /* the grid's Gate: the chord in sixteenths */
             float gt = (float)(gate_ctr + j) < 0.5f * step_len ? 1.0f : 0.0f, gg;
             gate_g += (gt - gate_g) * 0.05f;
@@ -2622,6 +2646,8 @@ static void render_stabs(uint32_t n)
     st_s[1] = fm_flush(s1);
     st_s[2] = fm_flush(s2);
     st_s[3] = fm_flush(s3);
+    st_h[0] = fm_flush(hl);
+    st_h[1] = fm_flush(hr);
     st_env = env;
     st_amp = amp;
     st_throw = thr;
@@ -2637,7 +2663,8 @@ static void render_bass(uint32_t n)
 {
     uint32_t j;
     const int bv = (unsigned)par[P_BVOICE] < EN_NBV ? par[P_BVOICE] : 0;
-    const float g = bass_vol * 0.5f * BV_GAIN[bv], xb = rel(P_BBITE), xs = rel(P_BSHAPE),
+    const float g = bass_vol * 0.5f * BV_GAIN[bv] * GROOVE_LVL[(unsigned)par[P_GROOVE] < 5u ? par[P_GROOVE] : 0],
+                xb = rel(P_BBITE), xs = rel(P_BSHAPE),
                 drv = 1.2f * fm_exp2f(1.2f * xb), bi = fm_maxf(1.0f + xb, 0.0f);   /* Bite: the drive, the FM bite */
     const int balg = BV_PATCH[bv] ? fm_alg_of(P_BALG, BV_PATCH[bv]) : 0;
     const float bfb = BV_PATCH[bv] ? fm_fb(P_BFB, BV_PATCH[bv]) : 0.0f;
@@ -2679,8 +2706,7 @@ static void render_bass(uint32_t n)
         if (ph >= 1.0f)
             ph -= 1.0f;
         x = sat(x * drv) * env * g * (1.2f / drv + 0.0f) * (0.6f + 0.4f * fm_minf(drv / 1.2f, 1.6f));
-        mixl[j] += x;
-        mixr[j] += x;
+        bassb[j] += x;
         rsend[j] += x * 0.04f;
     }
     bass.ph = ph;
@@ -2715,8 +2741,8 @@ static void render_bells(uint32_t n)
             if (!(j & 31u))
                 fm_ctl(&v->fm, &v->pt, alg, 1.0f);
             x = fm_sample(&v->fm, alg, fb, 1.0f + v->drop) * amp * att * g;
-            mixl[j] += x * v->gl;
-            mixr[j] += x * v->gr;
+            mixl[j] += x * v->gl * 0.5f;    /* (1.3.0: the dry -6 dB, the sends kept: more ghost) */
+            mixr[j] += x * v->gr * 0.5f;
             rsend[j] += x * 0.4f;
             esend[j] += x * 1.1f;
             v->drop *= 0.9993f;                  /* (Drop: ~35 ms to fall) */
@@ -2732,15 +2758,17 @@ static void render_bells(uint32_t n)
     }
 }
 
-/* a hat: the metal and noise, high-passed (Chamberlin SVF, ~4 to 10 kHz by Hats); no pitch, little echo */
-static void render_hat(drum_t *v, uint32_t n, float g, float pl, float pr, float es)
+/* a hat: the metal and noise, high-passed (Chamberlin SVF, ~1.8 to 5 kHz by Hats) and low-passed (~8 kHz):
+ * in the references' 2-8 kHz, not the air above (1.3.0); no pitch; into the echo (metal: the square's share,
+ * at: the attack's smoothing) */
+static void render_hat(drum_t *v, uint32_t n, float g, float pl, float pr, float es, float metal, float at)
 {
     uint32_t j;
     int k;
-    float x1, x2, amp, att, hf = fm_minf(hat_f * KIT[kit].hat_f, 1.2f);
+    float x1, x2, amp, att, lp, lp2, hf = fm_minf(hat_f * KIT[kit].hat_f, 1.2f);
     if (!v->on)
         return;
-    x1 = v->x1, x2 = v->x2, amp = v->amp, att = v->att;
+    x1 = v->x1, x2 = v->x2, amp = v->amp, att = v->att, lp = v->lp[0], lp2 = v->lp[1];
     for (j = 0; j < n; j++) {
         float in = 0.0f, hp, x;
         for (k = 0; k < 4; k++) {
@@ -2750,20 +2778,24 @@ static void render_hat(drum_t *v, uint32_t n, float g, float pl, float pr, float
             in += v->mph[k] < 0.5f ? 0.25f : -0.25f;
         }
         noise = noise * 1664525u + 1013904223u;
-        in = (1.1f - KIT[kit].noise) * in + KIT[kit].noise * (float)(int32_t)noise * (1.0f / 2147483648.0f);
+        in = metal * (1.1f - KIT[kit].noise) * in + KIT[kit].noise * (float)(int32_t)noise * (1.0f / 2147483648.0f);
         hp = in - x2 - 0.8f * x1;
         x1 += hf * hp;
         x2 += hf * x1;
-        x = hp * amp * att * g;
+        lp += 0.65f * (hp - lp);
+        lp2 += 0.65f * (lp - lp2);
+        x = lp2 * amp * att * g;
         mixl[j] += x * pl;
         mixr[j] += x * pr;
         rsend[j] += x * 0.15f;
         esend[j] += x * es;
         amp *= v->adec;
-        att += (1.0f - att) * 0.3f;
+        att += (1.0f - att) * at;
     }
     v->x1 = fm_flush(x1);
     v->x2 = fm_flush(x2);
+    v->lp[0] = fm_flush(lp);
+    v->lp[1] = fm_flush(lp2);
     v->amp = amp;
     v->att = att;
     v->on = amp > 0.0005f;
@@ -2781,13 +2813,13 @@ static void render_drums(uint32_t n)
             noise = noise * 1664525u + 1013904223u;
             cl += 0.5f * ((float)(int32_t)noise * (1.0f / 2147483648.0f) - cl);   /* the click: noise, softened */
             x = (sine(ph) * att + 0.5f * cl * clk) * amp;
-            kickb[j] += sat(x * drive) * g * (1.125f / drive + 0.0f);
+            kickb[j] += sat(x * drive) * g * (0.63f / drive);   /* (-5 dB in 1.3.0: the drums as spice) */
             ph += inc;
             if (ph >= 1.0f)
                 ph -= 1.0f;
             inc += (v->inc_end - inc) * fall;
             amp *= v->adec;
-            att += (1.0f - att) * 0.2f;
+            att += (1.0f - att) * 0.05f;          /* (in over ~0.5 ms: softer) */
             clk *= 0.985f;
         }
         v->ph = ph;
@@ -2800,8 +2832,8 @@ static void render_drums(uint32_t n)
     }
     {   /* (Energy: the hats -6 dB down to +6 dB up) */
         const float hl = fm_exp2f((float)mac[EN_MAC_ENERGY] * (1.0f / 50.0f));
-        render_hat(&drum[1], n, g * 0.16f * hl, 0.6f, 1.0f, 0.03f);   /* shaker: a little right */
-        render_hat(&drum[2], n, g * 0.15f * hl, 1.0f, 0.7f, 0.12f);   /* open: a little left, a little echo */
+        render_hat(&drum[1], n, g * 0.16f * hl, 0.6f, 1.0f, 0.2f, 0.6f, 0.02f);   /* shaker: a little right, soft, into the echo */
+        render_hat(&drum[2], n, g * 0.17f * hl, 1.0f, 0.7f, 0.2f, 1.0f, 0.3f);   /* open: a little left, some echo */
     }
     v = &drum[3];                                /* the rim: two tones (~520 Hz, ~1.7 kHz) and a click of noise */
     if (v->on) {
@@ -2863,13 +2895,65 @@ static void render_drums(uint32_t n)
     }
 }
 
-/* the vinyl: a hiss (noise, band-passed ~1..7 kHz) and crackle (clicks at random, mostly small, now
- * and then a pop; each its own side). It plays while the music plays, fading in and out over a second */
-static float cr_lp, cr_hp, cr_cl, cr_cr, cr_fl, cr_fr, cr_gate;
+/* Crackle: a small palette of noises, each mono, each drifting on its own over minutes (its level, and the
+ * hiss its colour), so the bed never settles into one static noise (1.3.0; it was a garnish of hiss and clicks):
+ *   the hiss: the tape's floor, flat over 2-8 kHz and dark above, its band moving slowly (an auto-filter on a
+ *     random LFO);
+ *   the vinyl: clicks at random, mostly small, now and then a pop, each its own colour (dull to sharp) and its
+ *     own side; how many drifts, so the transients slow down and space out now and then;
+ *   the dust: soft grains of band-passed noise (1.5-6 kHz, 10-50 ms), a few a beat at random, partly into the
+ *     echo: a texture between the hits;
+ *   the rumble: a room's, a deck's, under 60 Hz and mono, very quiet;
+ *   the wind: a breath of noise through a narrow band (~250 Hz-2 kHz), swept slowly by the drift and Motion's arc.
+ * The Crackle knob is the level of all of it; turned up, more of the palette comes in (the hiss and the vinyl
+ * from the start, the dust from ~20, the rumble from ~25, the wind from ~35). In a Break or Thin, the hiss and
+ * the dust come forward (+2.5 dB), to carry the groove. It plays while the music plays, fading in and out over
+ * a second; a little of it into the plate.
+ * Four controls shape it, each -1..+1 around the piece's own (0), and a character (a preset of the mix): ready
+ * for a Noise page, all at rest for now (nctl: zero) */
+typedef struct {
+    float colour, grain, room, drift;           /* dark .. bright; smooth .. granular; dry .. roomy; steady .. restless */
+    uint8_t character;                          /* NCHAR[] */
+} noise_ctl_t;
+static noise_ctl_t nctl;
+#define EN_NNCHAR 5
+static const struct {                           /* each source's level (x the default's), and the controls' offsets */
+    float hiss, vinyl, dust, wind, rumble, colour, grain, room, drift;
+} NCHAR[EN_NNCHAR] = {
+    {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},       /* Vinyl: the default, as tuned */
+    {1.4f, 0.35f, 0.5f, 1.0f, 0.7f, -0.3f, -0.6f, 0.0f, -0.3f},   /* Tape: the hiss, dark and steady */
+    {0.7f, 0.8f, 1.8f, 0.6f, 0.5f, 0.3f, 0.5f, -0.2f, 0.2f},      /* Dust: the grains forward, brighter */
+    {0.8f, 0.5f, 0.8f, 1.8f, 2.5f, -0.2f, 0.0f, 0.6f, 0.0f},      /* Room: the wind and the rumble, a space */
+    {0.9f, 1.2f, 1.4f, 0.8f, 2.0f, -0.4f, 0.6f, 0.5f, 0.4f},      /* Machine: darker, coarser, restless (its clank
+                                                                   * and hum want the resonator: later) */
+};
+#define CR_ND 6                                 /* the drifts: hiss level, hiss colour, vinyl density, dust, wind, rumble */
+static float cr_lp, cr_lp2, cr_hp, cr_cl, cr_cr, cr_fl, cr_fr, cr_cc = 0.45f, cr_gate, cr_sg = 1.0f;
+static float cr_dv[CR_ND] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, cr_dt[CR_ND] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
+static const float CR_DRANGE[CR_ND] = {0.66f, 0.5f, 2.0f, 1.33f, 1.33f, 1.33f};   /* (octaves of each drift's span) */
+static float du_env, du_att, du_dec, du_f, du_s1, du_s2, du_gl, du_gr, wi_f, wi_s1, wi_s2, ru1, ru2, ru3;
+static int32_t cr_dleft, du_left;
+static float du_fk = 1.0f, du_lk = 1.0f, ch_h, ch_v, ch_d, ch_w, ch_r;        /* the dust's band and length, as Colour and Grain have them */
+static float cr_u(void)                          /* the noises' own randomness: the music's choices left be */
+{
+    cnoise = cnoise * 1664525u + 1013904223u;
+    return (float)(cnoise >> 8) * (1.0f / 16777216.0f);
+}
+static void dust_birth(void)                    /* a dust grain: its band, size, length, side, and the wait to the next */
+{
+    float fc = fm_minf(1500.0f * fm_exp2f(2.0f * cr_u()) * du_fk, 9000.0f);
+    du_f = 2.0f * fm_sinf(FM_PI * fc / EN_SR);
+    du_env = 0.3f + 0.7f * cr_u();
+    du_dec = fm_expf(-6.9f / ((0.01f + 0.04f * cr_u()) * du_lk * EN_SR));
+    du_gl = cr_u();
+    du_gr = 1.0f - du_gl;
+    du_left = (int32_t)((0.5f + 2.0f * cr_u()) * step_len);
+}
 static void render_crackle(uint32_t n)
 {
     uint32_t j, thr;
-    float g;
+    int i;
+    float g, gh, lpc, k, sg, gd, gw, gr, vg, nc, ng, nr, nd;
     cr_gate += ((en_playing ? 1.0f : 0.0f) - cr_gate) * fm_minf((float)n / (0.5f * EN_SR), 1.0f);
     if (cr_gate < 1e-4f)
         cr_gate = 0.0f;
@@ -2879,32 +2963,121 @@ static void render_crackle(uint32_t n)
             crl[j] = crr[j] = 0.0f;
         return;
     }
-    thr = (uint32_t)((8.0f + 30.0f * g) * (4294967296.0f / EN_SR));   /* clicks a second */
-    for (j = 0; j < n; j++) {
-        float w, h;
-        cnoise = cnoise * 1664525u + 1013904223u;
-        w = (float)(int32_t)cnoise * (1.0f / 2147483648.0f);
-        cr_lp += 0.6f * (w - cr_lp);
-        cr_hp += 0.15f * (cr_lp - cr_hp);
-        h = (cr_lp - cr_hp) * 0.012f;
-        cnoise = cnoise * 1664525u + 1013904223u;
-        if (cnoise < thr) {
-            float a = frand(), s = frand() < 0.5f ? -1.0f : 1.0f, p = frand();
-            a = (0.03f + 0.5f * a * a * a) * s;
-            cr_cl += a * (1.0f - p);
-            cr_cr += a * p;
-        }
-        cr_fl += 0.45f * (cr_cl - cr_fl);
-        cr_fr += 0.45f * (cr_cr - cr_fr);
-        cr_cl *= 0.55f;
-        cr_cr *= 0.55f;
-        crl[j] = (h + cr_fl) * g;
-        crr[j] = (h * 0.9f + cr_fr) * g;
+    {
+        const unsigned c = nctl.character < EN_NNCHAR ? nctl.character : 0u;
+        nc = fm_clampf(nctl.colour + NCHAR[c].colour, -1.0f, 1.0f);
+        ng = fm_clampf(nctl.grain + NCHAR[c].grain, -1.0f, 1.0f);
+        nr = fm_clampf(nctl.room + NCHAR[c].room, -1.0f, 1.0f);
+        nd = fm_clampf(nctl.drift + NCHAR[c].drift, -1.0f, 1.0f);
+        ch_h = NCHAR[c].hiss, ch_v = NCHAR[c].vinyl, ch_d = NCHAR[c].dust, ch_w = NCHAR[c].wind, ch_r = NCHAR[c].rumble;
     }
-    cr_lp = fm_flush(cr_lp);
-    cr_hp = fm_flush(cr_hp);
-    cr_fl = fm_flush(cr_fl);
-    cr_fr = fm_flush(cr_fr);
+    if ((cr_dleft -= (int32_t)n) <= 0) {        /* the drifts: new targets every 2-6 s, eased over ~3 s (Drift: wider
+                                                  * and quicker, or narrower and slower) */
+        float sp = fm_exp2f(nd);
+        for (i = 0; i < CR_ND; i++)
+            cr_dt[i] = fm_exp2f((cr_u() - 0.5f) * CR_DRANGE[i] * sp);
+        cr_dleft = (int32_t)((2.0f + 4.0f * cr_u()) * EN_SR / sp);
+    }
+    k = fm_minf((float)n * fm_exp2f(nd) / (3.0f * EN_SR), 1.0f);
+    for (i = 0; i < CR_ND; i++)
+        cr_dv[i] += (cr_dt[i] - cr_dv[i]) * k;
+    cr_sg += ((sec == SEC_BREAK || sec == SEC_THIN ? 1.33f : 1.0f) - cr_sg) * fm_minf((float)n / (2.0f * EN_SR), 1.0f);
+    sg = cr_sg;
+    /* Colour: the hiss's band, the dust's, the wind's; Grain: the hiss against the vinyl and the dust (more,
+     * bigger, longer); Room: the rumble and the wind */
+    gh = 0.06f * cr_dv[0] * sg * ch_h * fm_exp2f(-0.5f * ng);
+    lpc = fm_clampf(0.62f * cr_dv[1] * fm_exp2f(0.5f * nc), 0.25f, 0.9f);   /* the hiss's band: ~3.3-6 kHz at its top */
+    vg = 2.2f * ch_v * fm_exp2f(0.7f * ng);
+    gd = 0.7f * cr_wd * cr_dv[3] * sg * ch_d * fm_exp2f(1.2f * ng);
+    gw = 0.04f * cr_ww * cr_dv[4] * ch_w * fm_exp2f(nr);
+    gr = 0.4f * cr_wr * cr_dv[5] * ch_r * fm_exp2f(2.0f * nr);
+    du_fk = fm_exp2f(nc);
+    du_lk = fm_exp2f(0.7f * ng);
+    wi_f = fm_minf(2.0f * FM_PI * 600.0f / EN_SR * fm_exp2f(1.6f * (cr_dv[1] - 1.0f) + 1.2f * arcm + 0.6f * (cr_dv[4] - 1.0f) +
+                                                          0.8f * nc), 0.3f);
+    thr = (uint32_t)((8.0f + 30.0f * g) * cr_dv[2] * fm_exp2f(ng) * (4294967296.0f / EN_SR));   /* clicks a second */
+    gh *= g, vg *= g, gd *= g, gw *= g, gr *= g;  /* (the knob's level folded in) */
+    {   /* (the state in locals: the compiler keeps it in registers, past the sends' stores) */
+        uint32_t cn = cnoise;
+        float lp1 = cr_lp, lp2 = cr_lp2, hp1 = cr_hp, cl = cr_cl, cr = cr_cr, fl = cr_fl, fr = cr_fr, cc = cr_cc;
+        float de = du_env, da = du_att, ds1 = du_s1, ds2 = du_s2, ws1 = wi_s1, ws2 = wi_s2, r1 = ru1, r2 = ru2, r3 = ru3;
+        float df = du_f, dd = du_dec, dgl = du_gl, dgr = du_gr;
+        const float wf = wi_f;
+        const int wind = gw > 0.0f, rum = gr > 0.0f;
+        int32_t dl = du_left;
+#define CRU() (cn = cn * 1664525u + 1013904223u, (float)(cn >> 8) * (1.0f / 16777216.0f))
+        for (j = 0; j < n; j++) {
+            float w, w2, h, d = 0.0f, x, l, r;
+            cn = cn * 1664525u + 1013904223u;
+            w = (float)(int32_t)cn * (1.0f / 2147483648.0f);
+            lp1 += lpc * (w - lp1);              /* the hiss */
+            lp2 += lpc * (lp1 - lp2);
+            hp1 += 0.15f * (lp2 - hp1);
+            h = (lp2 - hp1) * gh;
+            cn = cn * 1664525u + 1013904223u;
+            w2 = (float)(int32_t)cn * (1.0f / 2147483648.0f);
+            if (cn < thr) {                      /* the vinyl: a click (its size, side, colour), now and then a pop */
+                float a = CRU(), sg1 = CRU() < 0.5f ? -1.0f : 1.0f, pn = CRU();
+                cc = 0.12f + 0.75f * CRU();
+                a = (0.03f + 0.5f * a * a * a) * (1.5f - 0.6f * cc);
+                if (CRU() < 0.03f)
+                    a = 0.5f + 0.4f * CRU(), cc = 0.1f + 0.1f * CRU();
+                cl += a * sg1 * (1.0f - pn);
+                cr += a * sg1 * pn;
+            }
+            fl += cc * (cl - fl);
+            fr += cc * (cr - fr);
+            cl *= 0.55f;
+            cr *= 0.55f;
+            l = h + vg * fl;
+            r = 0.9f * h + vg * fr;
+            if (--dl <= 0) {                     /* the dust: a grain, every 1/2 to 2 1/2 sixteenths */
+                cnoise = cn;
+                dust_birth();
+                cn = cnoise;
+                de = du_env, da = 0.0f, df = du_f, dd = du_dec, dgl = du_gl, dgr = du_gr;
+                dl = du_left;
+                ds1 = ds2 = 0.0f;
+            }
+            if (de > 0.001f) {
+                float hp = w2 - ds2 - 0.5f * ds1;   /* (a Chamberlin band-pass, fairly wide) */
+                ds1 += df * hp;
+                ds2 += df * ds1;
+                da += (1.0f - da) * 0.01f;
+                d = ds1 * de * da * gd;
+                de *= dd;
+                l += d * dgl;
+                r += d * dgr;
+                esend[j] += d * 0.6f;
+            }
+            if (wind) {                          /* the wind: a narrow band, slowly swept */
+                float b;
+                x = w2 - ws2 - 0.3f * ws1;
+                ws1 += wf * x;
+                ws2 += wf * ws1;
+                b = ws1 * gw;
+                l += 0.8f * b;
+                r += b;
+            }
+            rsend[j] += (l + r) * 0.4f;
+            if (rum) {                           /* the rumble: under ~60 Hz, its own sub-sonic cut */
+                r1 += 0.008f * (w - r1);
+                r2 += 0.008f * (r1 - r2);
+                r3 += 0.0036f * (r2 - r3);
+                x = (r2 - r3) * gr;
+                l += x;
+                r += x;
+            }
+            crl[j] = l;
+            crr[j] = r;
+        }
+#undef CRU
+        cnoise = cn;
+        cr_lp = fm_flush(lp1), cr_lp2 = fm_flush(lp2), cr_hp = fm_flush(hp1);
+        cr_cl = fm_flush(cl), cr_cr = fm_flush(cr), cr_fl = fm_flush(fl), cr_fr = fm_flush(fr), cr_cc = cc;
+        du_env = fm_flush(de), du_att = da, du_s1 = fm_flush(ds1), du_s2 = fm_flush(ds2), du_left = dl;
+        wi_s1 = fm_flush(ws1), wi_s2 = fm_flush(ws2), ru1 = fm_flush(r1), ru2 = fm_flush(r2), ru3 = fm_flush(r3);
+    }
 }
 
 /* -------------------------------------------------------- the effects grid --- */
@@ -3035,6 +3208,7 @@ static inline float mfx(float x, float *s)
     return x;
 }
 
+static float ms_lp1, ms_lp2;                     /* the side's lows (mono below ~150 Hz) */
 static void render_chunk(int32_t *out, uint32_t n, float gain)
 {
     uint32_t j;
@@ -3053,7 +3227,7 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
     else
         mb_s[0] = mb_s[1] = mb_s[2] = mb_s[3] = 0.0f;
     for (j = 0; j < n; j++)
-        mixl[j] = mixr[j] = rsend[j] = esend[j] = kickb[j] = 0.0f;
+        mixl[j] = mixr[j] = rsend[j] = esend[j] = kickb[j] = bassb[j] = 0.0f;
     render_stabs(n);
     render_bass(n);
     render_bells(n);
@@ -3063,14 +3237,17 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
         render_fx(n);
     eg += (1.0f - eg) * fx_wash;                 /* Wash: everything into the echo */
     for (j = 0; j < n; j++) {
-        float wl, wr, l, r, el, er, xl, xr, dg, rin, cl, cr, dry = 1.0f - 0.75f * fx_wash;
+        float wl, wr, l, r, el, er, xl, xr, dg, dgb, rin, cl, cr, sd, dry = 1.0f - 0.75f * fx_wash;
         duck_d += (duck_x - duck_d) * 0.08f;
         duck_x *= duck_rel;
-        dg = 1.0f - duck_depth * duck_d;
+        dg = 1.0f - 0.3f * duck_depth * duck_d;  /* the duck split: the wash ducked lightly, the bass deep (it pumps) */
+        duck_db += (duck_xb - duck_db) * 0.08f;
+        duck_xb *= duck_relb;
+        dgb = 1.0f - fm_minf(2.0f * duck_depth, 0.9f) * duck_db;
         echoes(esend[j] * eg, &el, &er, &xl, &xr);
         rin = (rsend[j] * rg + (el + er) * 0.25f * rev_send) * 0.8f;
         if (fx_vt + fx_wash > 0.001f || crash > 0.001f) {   /* Verb, Wash: the dry into the plate; Crash: a burst */
-            rin += (mixl[j] + mixr[j]) * (0.35f * fx_vt + 0.3f * fx_wash);
+            rin += (mixl[j] + mixr[j] + 2.0f * bassb[j]) * (0.35f * fx_vt + 0.3f * fx_wash);
             if (crash > 0.001f) {
                 fx_noise = fx_noise * 1664525u + 1013904223u;
                 rin += (float)(int32_t)fx_noise * (1.0f / 2147483648.0f) * crash * 2.0f;
@@ -3083,8 +3260,16 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
         pl_back = 0.5f * (wl + wr);
         cl *= 1.0f + 9.0f * fx_cf;               /* (Freeze: the held cloud brought forward) */
         cr *= 1.0f + 9.0f * fx_cf;
-        l = (mixl[j] * dry + 1.2f * el + 0.25f * xl + 1.1f * wl + 1.4f * cl) * dg;
-        r = (mixr[j] * dry + 1.2f * er + 0.25f * xr + 1.1f * wr + 1.4f * cr) * dg;
+        l = mixl[j] * dry + 1.2f * el + 0.25f * xl + 1.1f * wl + 1.4f * cl;
+        r = mixr[j] * dry + 1.2f * er + 0.25f * xr + 1.1f * wr + 1.4f * cr;
+        sd = 0.5f * (l - r);                     /* mono below ~150 Hz: the side's lows taken out (two poles), so the
+                                                  * stabs' and pings' low partials, the echo's and the plate's, sit in
+                                                  * the middle with the bass */
+        ms_lp1 += 0.0211f * (sd - ms_lp1);
+        ms_lp2 += 0.0211f * (sd - ms_lp1 - ms_lp2);
+        sd = ms_lp1 + ms_lp2;
+        l = (l - sd) * dg + bassb[j] * dry * dgb;
+        r = (r + sd) * dg + bassb[j] * dry * dgb;
         if (shut > 0.01f) {
             float bp;
             l = svf_lp(mb_c, mb_s, l, &bp);
@@ -3095,8 +3280,9 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
             lp = svf_lp(mb_c, mb_s + 2, r, &bp);
             r -= lp + mb_c[3] * bp;
         }
-        l = (l + kickb[j] * (1.0f - 0.5f * fx_wash) + crl[j]) * 0.5f * gain;
-        r = (r + kickb[j] * (1.0f - 0.5f * fx_wash) + crr[j]) * 0.5f * gain;
+        l = (l + kickb[j] * (1.0f - 0.5f * fx_wash) + crl[j]) * 0.595f * gain;   /* (1.3.0: +1.5 dB, what the
+                                                                                    * re-balance took, from the headroom) */
+        r = (r + kickb[j] * (1.0f - 0.5f * fx_wash) + crr[j]) * 0.595f * gain;
         if (mf_lp < 14.15f || mf_hp > 4.35f || mf_wah > 0.001f) {   /* the master filter */
             l = mfx(l, mf_s);
             r = mfx(r, mf_s + 6);
@@ -3139,6 +3325,10 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
     }
     duck_x = fm_flush(duck_x);
     duck_d = fm_flush(duck_d);
+    duck_xb = fm_flush(duck_xb);
+    duck_db = fm_flush(duck_db);
+    ms_lp1 = fm_flush(ms_lp1);
+    ms_lp2 = fm_flush(ms_lp2);
 }
 
 static void control(uint32_t n)                 /* once a chunk: the slow things */

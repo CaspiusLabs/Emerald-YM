@@ -739,11 +739,13 @@ int main(void)
         run(180.0f);
         p1 = peak;
         rms = sqrtf(sum2 / (180.0f * 44100.0f * 2.0f));
-        CHECK(!bad && peak < 0.97f, "Feedback 100: peak %f", (double)peak);
+        /* (0.98, from 0.97 in 1.3.0: the master +1.5 dB and the noise bed into the echo put the soft clip a little
+         * higher, 0.969 here; the echo is as bounded as it was) */
+        CHECK(!bad && peak < 0.98f, "Feedback 100: peak %f", (double)peak);
         en_freeze(1);
         peak = 0.0f;
         run(30.0f);
-        CHECK(!bad && peak < 0.97f, "Feedback 100 frozen: peak %f", (double)peak);
+        CHECK(!bad && peak < 0.98f, "Feedback 100 frozen: peak %f", (double)peak);
         en_freeze(0);
         en_set(P_CRACKLE, 0);
         en_play(0);
