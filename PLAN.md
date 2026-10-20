@@ -538,7 +538,7 @@ would fit.
 - MIDI CC out for the filter and the echo send, to drive other gear
 - Keys as live mutes, or a held key as a manual throw
 
-## Release 1.3.0: the chord machine, visible (the user's idea, 2026-10-20; built, to try; was 1.2.5)
+## Release 1.3.0, the musical release: the chord machine, visible, and a sound pass (2026-10-20; the chords built, to try; was 1.2.5)
 
 At launch the firmware generates a full eight-chord progression (the random walk writes it into the eight slots), and
 the Chords page (EDIT) shows it. Proposed: both of the user's behaviours, as KNOB 4 (Play) on the Chords page, which
@@ -559,7 +559,9 @@ today switches between Random and the slots.
   (`en_prog_slot`, `en_prog_gen`, `prog_take`). A walk slot that becomes diminished after a change of scale is
   walked again. Tests: tests/host/amb_test.c (Loop, Endless), tests/scenarios/chords.amb.
 - [ ] The user tries it (build/dub-1.3.0-test2.fwsc); then the release, and the SMK branch
-- [ ] Maybe a sound pass in the same release ("the music" release: the chord machine and the sounds), as the user likes
+- [ ] **The sound pass, in 1.3.0** (decided by the user, 2026-10-20: the musical release, the chord machine and the
+      sounds together): "Nail the sounds" and the sound design round below (the voices too alike, the kick, the bass,
+      the hats, the echo's colour, the cloud, the crackle), by ear
 - The engine: `chord_change()` already has the walk (from a degree other than home, back home 65% of the time;
   otherwise a weighted choice, IV favoured, then VII and V, never the current degree or a diminished one; now and
   then the other voicing). Slots are stored as absolute roots, kinds and types (P_CR*, P_CQ*, P_CX*); the walk would
