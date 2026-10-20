@@ -11,7 +11,8 @@
 #define BARRIER() __asm__ volatile("" ::: "memory")
 
 const char *const EN_NOTE_NAME[12] = {"C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"};
-const char *const EN_MODE_NAME[EN_NMODES] = {"Ionian", "Dorian", "Phrygian", "Lydian", "Mixolyd.", "Aeolian",
+/* (Ionian and Aeolian shown as Major and Minor) */
+const char *const EN_MODE_NAME[EN_NMODES] = {"Major", "Dorian", "Phrygian", "Lydian", "Mixolyd.", "Minor",
                                              "Pent maj", "Pent min"};
 #define B(a, b, c, d, e, f, g) (1u << (a) | 1u << (b) | 1u << (c) | 1u << (d) | 1u << (e) | 1u << (f) | 1u << (g))
 const uint16_t EN_MODE_POOL[EN_NMODES] = {
@@ -47,7 +48,7 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     {"Kind 5", 0, EN_NCQ - 1, 0}, {"Kind 6", 0, EN_NCQ - 1, 0}, {"Kind 7", 0, EN_NCQ - 1, 0}, {"Kind 8", 0, EN_NCQ - 1, 0},
     {"Type 1", 0, EN_NCX - 1, 0}, {"Type 2", 0, EN_NCX - 1, 0}, {"Type 3", 0, EN_NCX - 1, 0}, {"Type 4", 0, EN_NCX - 1, 0},
     {"Type 5", 0, EN_NCX - 1, 0}, {"Type 6", 0, EN_NCX - 1, 0}, {"Type 7", 0, EN_NCX - 1, 0}, {"Type 8", 0, EN_NCX - 1, 0},
-    {"Play", 0, 3, 1},
+    {"Play", 0, 6, 1},
     {"Kick steps", -32768, 32767, 0}, {"Shaker steps", -32768, 32767, 0}, {"Open steps", -32768, 32767, 0},
     {"Rim steps", -32768, 32767, 0},  {"Clap steps", -32768, 32767, 0},
     {"Kick acc", -32768, 32767, 0},   {"Shaker acc", -32768, 32767, 0},   {"Open acc", -32768, 32767, 0},
@@ -187,7 +188,7 @@ void en_param_text(int i, int v, char *b)
     else if (i >= P_CX0 && i <= P_CX7)
         s = EN_CX_NAME[(unsigned)v < EN_NCX ? v : 0];
     else if (i == P_PMODE)
-        s = v == 3 ? "Loop" : v == 2 ? "Free" : v == 1 ? "Wander" : "Home";
+        s = v & EN_PLOOP ? "Loop" : "Endless";
     else if (i == P_DMODE)
         s = v ? "Pattern" : "Auto";
     else if (i == P_GROOVE)
@@ -379,7 +380,7 @@ const char *en_chord_name(const int *pcs, int n, char *buf)
 }
 
 /* ------------------------------------------------------------ commands --- */
-enum { C_SET, C_POOL, C_PLAY, C_NEXT, C_FREEZE, C_SEED, C_PANIC, C_CLOCK, C_REGROW, C_MUTE, C_PERF, C_FX, C_PINGS, C_MACRO, C_PROT };
+enum { C_SET, C_POOL, C_PLAY, C_NEXT, C_FREEZE, C_SEED, C_PANIC, C_CLOCK, C_REGROW, C_MUTE, C_PERF, C_FX, C_PINGS, C_MACRO, C_PROT, C_REWALK };
 #define QN 256u                                 /* (a piece is every parameter at once: room for four) */
 _Static_assert(QN >= 2u * (P_NPARAMS + 8), "the command queue can't hold a piece's parameters twice over");
 static uint32_t q[QN];
@@ -407,6 +408,7 @@ void en_perf(uint32_t f) { post(C_PERF, (int)(f & 0xFFu), 0); }
 void en_fx(uint32_t m) { post(C_FX, 0, (int)(m & 0xFFFFu)); }
 void en_macro(int i, int v) { post(C_MACRO, i, v + 50); }   /* (sent as 0..100) */
 void en_prog_rotate(void) { post(C_PROT, 0, 0); }
+void en_prog_rewalk(void) { post(C_REWALK, 0, 0); }
 const char *const EN_FX_NAME[EN_NFX] = {"Throw", "Time x2", "Tape stop", "Swell", "Low-pass", "High-pass", "Wah",
                                         "Phone", "Verb", "Crash", "Freeze", "Wash", "Stutter", "Gate", "Siren", "Riser"};
 
@@ -957,7 +959,8 @@ static int prog_pos = -1;
  * Home). Away from home, back (Home 65%, Wander 35%, Free 15%); else a weighted choice, never the same degree,
  * never a diminished one: Home leans on the IV, then the VII and the V; Wander spreads wider; Free is even. Wander
  * and Free rarely step straight back to d2 (no ping-pong) */
-enum { PM_HOME, PM_WANDER, PM_FREE, PM_LOOP };
+const char *const EN_WALK_NAME[EN_NWALK] = {"Home", "Wander", "Free"};
+#define PLAY_LOOP (par[P_PMODE] & EN_PLOOP)
 static int walk_shape;                          /* the walk's voicing, now and then the other (Evolve) */
 static int walk_prev;                           /* the degree before the walk's last */
 static int walk_from(int d)
@@ -966,7 +969,7 @@ static int walk_from(int d)
                                    {0.0f, 1.2f, 1.2f, 2.0f, 1.6f, 1.8f, 1.4f},
                                    {0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}};
     static const float HOME[3] = {0.65f, 0.35f, 0.15f}, BACK[3] = {1.0f, 0.3f, 0.15f};
-    const int st = par[P_PMODE] < PM_LOOP ? par[P_PMODE] : PM_HOME, d2 = walk_prev;
+    const int st = (par[P_PMODE] & 3) < EN_NWALK ? par[P_PMODE] & 3 : EN_WALK_WANDER, d2 = walk_prev;
     float w[12], sum = 0.0f, r;
     int i;
     walk_prev = d;
@@ -1034,7 +1037,7 @@ static void slot_play(int k)                    /* slot k sounds: its chord as w
 static void chord_change(void)
 {
     int k;
-    if (par[P_PMODE] == PM_LOOP) {              /* Loop: the slots in turn, a gap holding the chord before it */
+    if (PLAY_LOOP) {                            /* Loop: the slots in turn, a gap holding the chord before it */
         int n = prog_len();
         if (n) {
             prog_pos = (prog_pos + 1) % n;
@@ -2130,8 +2133,8 @@ static void apply(int p, int v)
             slot_play(prog_pos);                 /* the slot playing, edited: heard at once */
         prog_publish();
         break;
-    case P_PMODE:                                /* (Home, Wander, Free: the walk's character; Loop: none) */
-        if (v == PM_LOOP) {                      /* to Loop: the eight as they are, on from the one playing */
+    case P_PMODE:                                /* (the walk's character, turned by hand: C_REWALK) */
+        if (v & EN_PLOOP) {                      /* to Loop: the eight as they are, on from the one playing */
             if (prog_pos < 0 && prog_len())
                 prog_pos = 0;
         } else {                                 /* Endless (from Loop, the UI turns them round: C_PROT) */
@@ -2217,12 +2220,12 @@ static void regrow(void)                        /* a new piece: fresh loops, hom
     deg = 0;
     shape = cvoice == CV_KEYS || cvoice == CV_PAD || cvoice == CV_BELL;   /* these like the 9th; the rest the open 7th */
     walk_shape = shape;
-    if (par[P_PMODE] != PM_LOOP)                 /* Endless: a fresh piece's eight, from the walk */
+    if (!PLAY_LOOP)                              /* Endless: a fresh piece's eight, from the walk */
         walk_fill();
     /* the slots: Endless from slot 1, Loop from the first that isn't a gap (none: home) */
     for (prog_pos = 0; prog_pos < EN_NPROG && slot_gap(prog_pos); prog_pos++)
         ;
-    if (prog_pos >= EN_NPROG || par[P_PMODE] != PM_LOOP)
+    if (prog_pos >= EN_NPROG || !PLAY_LOOP)
         prog_pos = prog_pos >= EN_NPROG ? -1 : 0;
     en_prog_pos = (int8_t)prog_pos;
     for (walk_last = 0, k = 0; k < EN_NPROG; k++)   /* (the walk goes on from its last) */
@@ -2443,6 +2446,22 @@ static void drain(void)
         case C_MUTE: mutes = (uint32_t)a; lanes(); break;
         case C_PERF: perf = (uint32_t)a; lanes(); break;
         case C_FX: fxm = c & 0xFFFFu; break;
+        case C_REWALK: {                         /* the walk's slots walked again, all but the one playing, each from
+                                                  * the slot before (yours and the gaps kept) */
+            int k, prev = deg;
+            for (k = 0; k < EN_NPROG && nsteps; k++) {
+                if (k != prog_pos && slot_walk(k)) {
+                    slot_walk_set(k, walk_from(prev));
+                    prev = par[P_CR0 + k] - 1;
+                } else if (slot_walk(k)) {
+                    prev = (par[P_CR0 + k] - 1) % nsteps;
+                } else if (par[P_CQ0 + k]) {
+                    prev = en_deg_of(pool, (par[P_CR0 + k] - par[P_ROOT] + 12) % 12);
+                }
+            }
+            prog_publish();
+            break;
+        }
         case C_PROT:                             /* Loop to Endless: the one playing up to slot 1, all turned round */
             if (prog_pos > 0) {
                 int16_t t[3][EN_NPROG];

@@ -100,7 +100,7 @@ The drawing at the top shows them all; here they are in more detail.
 | ENV · ARP · LFO · SEQ | The layers' pages: Chord, Texture (the pings and the crackle), Bass, Drums. |
 | FX · GLO | The Space page; the Setup page, for what holds for every piece. The lit button shows the page. |
 | SELECT | The previous or next page. Hold HOME and turn it for the tempo, from any page. |
-| ALGORITHM | On the Dub page: the middle of the screen, as ripples, a scope or a spectrum (see [The screen](#4-the-screen)). On a layer's page (Chord, Texture, Bass, Drums): that layer's **voice** (see [The voices](#the-voices)). On the other pages: the mode, Aeolian (minor), Ionian (major), Dorian, Mixolydian, pentatonic minor and major, Phrygian, Lydian (the most common first); it loads the mode's scale, and editing it with the keys makes it Custom. |
+| ALGORITHM | On the Dub page: the middle of the screen, as ripples, a scope or a spectrum (see [The screen](#4-the-screen)). On a layer's page (Chord, Texture, Bass, Drums): that layer's **voice** (see [The voices](#the-voices)). On the other pages: the mode, **Minor** (Aeolian), **Major** (Ionian), Dorian, Mixolydian, pentatonic minor and major, Phrygian, Lydian (the most common first; the screen shows Aeolian as Minor and Ionian as Major); it loads the mode's scale, and editing it with the keys makes it Custom. |
 | PRESETS | The piece (see [The pieces](#7-the-pieces)). |
 | KNOB 1–4 | The four values on the screen. A few clicks are always single steps; a quick turn speeds up, so half a turn sweeps the range. |
 | OCT− / OCT+ | The pings' octave, two down to two up, from any page. While playing, a ping sounds at once in the new octave. |
@@ -177,10 +177,12 @@ slot is one of three:
 | Keys | its root, any note (lit on the keys). A walk's chord becomes yours, keeping its kind and type; a gap becomes a minor chord on it |
 | KNOB 2 · Chord | its kind: Empty (a gap), Major, Minor, Sus2, Sus4, Dim, Aug. Turning a walk's chord makes it yours |
 | KNOB 3 · Type | Triad, 6, 7, Maj7, 9, 11, Add9 |
-| KNOB 4 · Play | the walk **Home**, **Wander** or **Free** (Endless), or **Loop** |
+| KNOB 4 · Play | **Endless** or **Loop** |
+| ALGORITHM | the walk's character: **Home**, **Wander** or **Free**. Its chords (the teal ones) are walked again at once, all but the one playing; yours and the gaps stay. The character shows at the left of the knob row |
 
-**Home, Wander, Free** (Endless; Wander is the default) set how the walk moves, from the most settled to the
-most varied. **Home** goes back to the home chord often (about two times in three) and leans on the IV, the
+**Home, Wander, Free** (ALGORITHM; Wander is the default) set how the walk moves, from the most settled to the
+most varied. Turning ALGORITHM rewrites the walk's chords on the page straight away, so you see and hear the
+change; in Loop it rolls a new loop from the teal slots (turn until you like it, then leave it). **Home** goes back to the home chord often (about two times in three) and leans on the IV, the
 way DUB-1 has always moved. **Wander** goes home less, spreads over more of the scale's chords and rarely
 bounces straight back to the chord before last. **Free** goes home least and treats the other chords evenly.
 
@@ -365,13 +367,13 @@ Tune, MIDI out and Lights are the same for all.
 | Piece | What it is |
 |---|---|
 | **Basic** | F Dorian, 122: the reference. Saw stabs into a dotted-eighth echo, an offbeat sub, a new chord every 32 bars. |
-| **Chamber** | A Aeolian, 118: one chord that never moves (Drift on Hold), longer and darker stabs, deep feedback and more echo, a drone bass, straight time, fewer hits. |
+| **Chamber** | A minor, 118: one chord that never moves (Drift on Hold), longer and darker stabs, deep feedback and more echo, a drone bass, straight time, fewer hits. |
 | **Steppers** | D Dorian, 126: shorter, brighter, busier stabs, a dotted bass, a dotted-quarter echo, a new chord every 16 bars. |
-| **Fog** | G Aeolian, 112: FM keys, long dark stabs lost in a quarter-note echo and a big plate, a drone bass an octave down, soft drums, more crackle; the chord moves every 64 bars. |
+| **Fog** | G minor, 112: FM keys, long dark stabs lost in a quarter-note echo and a big plate, a drone bass an octave down, soft drums, more crackle; the chord moves every 64 bars. |
 | **Concrete** | C pentatonic minor, 130: the fastest. Chords stacked in fourths, short bright stabs, a rolling bass, the drums forward with many shaker hits and bright hats, more swing. |
 | **Night Drive** | Bb Dorian, 124: FM keys, more pings, a half-note echo, a syncopated bass, the most swing; a new chord every 16 bars. |
 | **Pressure** | E Phrygian, 128: the kick and the bass forward and the heaviest ducking, one chord held (Drift on Hold), little reverb or crackle, the least movement. |
-| **Haze** | Eb Ionian, 116: FM keys with the longest stabs, the most echo and feedback, pings an octave up and the most of them, the most crackle, and the most Motion: it leaves Full most often. |
+| **Haze** | Eb major, 116: FM keys with the longest stabs, the most echo and feedback, pings an octave up and the most of them, the most crackle, and the most Motion: it leaves Full most often. |
 
 ---
 
@@ -467,7 +469,7 @@ again goes back to the Dub page.
 
 - **Tempo:** 90 to 140. Also HOME + SELECT, from any page.
 - **Root:** the key's root note. The scale moves with it, and the chord at once.
-- **Mode:** Aeolian (minor), Ionian (major), Dorian, Mixolydian, pentatonic minor and major, Phrygian, Lydian (the most common first); it
+- **Mode:** **Minor** (Aeolian), **Major** (Ionian), Dorian, Mixolydian, pentatonic minor and major, Phrygian, Lydian (the most common first; the screen shows Aeolian as Minor and Ionian as Major); it
   loads the mode's scale (as ALGORITHM does off the Dub page). Editing the scale with the keys
   makes it Custom.
 - **Swing:** the off sixteenths late, 50% to 70%: everything on them, the stabs, the bass, the pings and the drums, together (the same as on the Drums page).

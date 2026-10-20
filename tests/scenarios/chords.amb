@@ -1,14 +1,15 @@
-# the Chords page (EDIT tapped): eight slots. Play Endless (the default): the walk's eight, slot 1 playing; on a
-# change all move up a slot (a gap stays a gap) and the walk writes slot 8. KNOB 1 the slot, the keys its root (a
-# walk's chord keeps its kind and type), KNOB 2 its kind (Empty: a gap), KNOB 3 its type, KNOB 4 Play: Home, Wander or Free
-# (the walk, more varied each), or Loop (the slots in turn, nothing new). EDIT again: back; EDIT held: the next chord; kept by the piece
+# the Chords page (EDIT tapped): eight slots. Endless (the default): the walk's eight, slot 1 playing; on a change all
+# move up a slot (a gap stays a gap) and the walk writes slot 8. KNOB 1 the slot, the keys its root (a walk's chord
+# keeps its kind and type), KNOB 2 its kind (Empty: a gap), KNOB 3 its type, KNOB 4 Play: Endless or Loop (the slots
+# in turn, nothing new); ALGORITHM the walk's character (Home, Wander, Free), its chords walked again at once (yours
+# and the gaps kept). EDIT again: back; EDIT held: the next chord; kept by the piece
 listen
 wait 3000
 tap EDIT
 wait 400
 expect view 15
 # slot 1: the walk's home chord, Fm7 in F Dorian, as it would be written
-said Chords page: Slot 1, Chord Minor, Type 7, Play Wander
+said Chords page, walk Wander: Slot 1, Chord Minor, Type 7, Play Endless
 expect par64 1
 expect par72 0
 expect progpos 0
@@ -36,18 +37,28 @@ wait 200
 said Chord Empty
 expect par73 0
 expect par65 0
-# Play: the walk Free, Loop, and back to Wander
-spin K4 1
-wait 200
-said Play Free
-expect par88 2
+# Play: Loop and back (the walk's character kept)
 spin K4 1
 wait 200
 said Play Loop
-expect par88 3
-spin K4 -2
+expect par88 5
+spin K4 -1
 wait 200
-said Play Wander
+said Play Endless
+expect par88 1
+# ALGORITHM: the walk Free, its chords walked again; slot 1 (yours, Fm9) and slot 2 (a gap) kept; back to Wander
+turn ALGO 1
+wait 200
+said WALK Free
+expect par88 2
+expect par64 5
+expect par72 2
+expect par80 4
+expect par65 0
+expect par73 0
+turn ALGO -1
+wait 200
+said WALK Wander
 expect par88 1
 tap EDIT
 wait 300

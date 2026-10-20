@@ -108,7 +108,7 @@ said MODE Mixolyd
 turn ALGO -1
 said MODE Dorian
 turn PRESET 1
-said PIECE Chamber, A Aeolian, tempo 
+said PIECE Chamber, A Minor, tempo 
 wait 300
 said_none Level
 turn PRESET -1

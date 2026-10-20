@@ -429,7 +429,7 @@ int main(void)
         en_set(P_CR3, 0), en_set(P_CQ3, EN_CQ_MAJOR), en_set(P_CX3, EN_CX_6);
         for (k = 4; k < EN_NPROG; k++)
             en_set(P_CR0 + k, 0), en_set(P_CQ0 + k, EN_CQ_EMPTY), en_set(P_CX0 + k, 0);
-        en_set(P_PMODE, 3);                      /* (Loop) */
+        en_set(P_PMODE, EN_PLOOP);               /* (Loop) */
         en_regrow();
         en_play(1);
         for (k = 0; k < 900 && ns < 16; k++) {
@@ -495,6 +495,28 @@ int main(void)
             CHECK(en_prog_slot[4][1] == EN_CQ_MAJOR && en_prog_slot[4][2] == EN_CX_7, "Endless: the written C7 moved");
             CHECK(en_prog_slot[7][1] == 0 && en_prog_slot[7][0] >= 1, "Endless: the walk didn't write slot 8");
             CHECK(en_prog_pos == 0, "Endless: slot %d plays", en_prog_pos);
+            {   /* the walk's character turned by hand: its slots walked again (not the one playing); yours and the
+                 * gaps kept */
+                int diff = 0, keep = 1, p0[3];
+                for (j = 0; j < 3; j++)
+                    p0[j] = en_prog_slot[0][j];
+                for (j = 0; j < EN_NPROG; j++)
+                    for (k = 0; k < 3; k++)
+                        before[j][k] = en_prog_slot[j][k];
+                for (k = 0; k < 4 && !diff; k++) {   /* (a few tries: the walk may write the same by chance) */
+                    en_set(P_PMODE, EN_WALK_FREE);
+                    en_prog_rewalk();
+                    run(0.02f);
+                    for (j = 1; j < EN_NPROG; j++)
+                        diff += before[j][1] == 0 && before[j][0] && en_prog_slot[j][0] != before[j][0];
+                }
+                for (j = 0; j < EN_NPROG; j++)
+                    if (before[j][1] || !before[j][0])
+                        keep &= en_prog_slot[j][0] == before[j][0] && en_prog_slot[j][1] == before[j][1];
+                CHECK(diff > 0, "re-walk: the walk's slots didn't change");
+                CHECK(keep, "re-walk: a written slot or a gap changed");
+                CHECK(en_prog_slot[0][0] == p0[0] && en_prog_slot[0][1] == p0[1], "re-walk: the slot playing changed");
+            }
         }
         {   /* the walk's character: Home, Wander, Free, each more varied (fewer A-B-A bounces, home less often) */
             int st, pp[3] = {0}, hm[3] = {0};

@@ -15,7 +15,6 @@
  *   SAVE           saves (it also saves by itself a few seconds after a change, while resting);
  *                  held 1.5 s: the piece back to its recipe */
 #include "../dsp/fastmath.h"
-enum { PM_HOME, PM_WANDER, PM_FREE, PM_LOOP };   /* the Chords page's Play (amb.h, P_PMODE) */
 
 /* the pages, one a layer (a button each); SELECT steps through them in this order */
 /* (past NPAGES, off SELECT's round and on no button of their own: V_MIX, PERFORM's knobs, the four layers'
@@ -43,7 +42,8 @@ static int page_of(int v) { return v == V_KEY ? V_DUB : parent_of(v) >= 0 ? pare
 enum { K_LEDS = 200, K_CPU, K_NONE, K_SLOT, K_CQ, K_CX,    /* (the Chords page: the slot, and its kind and type) */
        K_LANE, K_LCH,                                        /* (the Pattern page: the lane, and its chance) */
        K_FILTER, K_DUB, K_ENERGY, K_SPACE,                   /* the master actions (EN_MAC_*), in that order */
-       K_MODE };                                             /* (the Key page: the mode, as ALGORITHM sets it) */
+       K_MODE,                                               /* (the Key page: the mode, as ALGORITHM sets it) */
+       K_PLAY };                                             /* (the Chords page: Endless or Loop, P_PMODE's bit 2) */
 static const char *const LANE_NAME[EN_NDRUM] = {"Kick", "Shaker", "Open", "Rim", "Clap"};
 _Static_assert(P_NPARAMS <= K_LEDS, "the knobs' own codes must come after the parameters");
 static const uint16_t VIEW_KNOB[NVIEWS][4] = {
@@ -62,7 +62,7 @@ static const uint16_t VIEW_KNOB[NVIEWS][4] = {
     {P_CALG, P_CFRAT, P_CFB, P_CFDEC},
     {P_PALG, P_PFRAT, P_PFB, P_PFDEC},
     {P_BALG, P_BFRAT, P_BFB, P_BFDEC},
-    {K_SLOT, K_CQ, K_CX, P_PMODE},
+    {K_SLOT, K_CQ, K_CX, K_PLAY},
     {K_LANE, P_DACCENT, K_LCH, P_DMODE},
     {K_FILTER, K_DUB, K_ENERGY, K_SPACE},
     {P_TEMPO, P_ROOT, K_MODE, P_SWING},
@@ -289,6 +289,8 @@ static int knob_get(int k)
         return ui.mac[k - K_FILTER];
     if (k == K_MODE)
         return mode_pos(proj.par[P_MODE]);
+    if (k == K_PLAY)
+        return proj.par[P_PMODE] & EN_PLOOP ? 1 : 0;
     return 0;
 }
 static void knob_range(int k, int *lo, int *hi)
@@ -301,7 +303,7 @@ static void knob_range(int k, int *lo, int *hi)
         *hi = 50;
     } else {
         *lo = 0;
-        *hi = k == K_MODE ? EN_NMODES - 1 : k == K_LEDS ? 2 : k == K_CPU ? 100 : k == K_SLOT ? EN_NPROG - 1 : k == K_CQ ? EN_NCQ - 1 : k == K_CX ? EN_NCX - 1
+        *hi = k == K_PLAY ? 1 : k == K_MODE ? EN_NMODES - 1 : k == K_LEDS ? 2 : k == K_CPU ? 100 : k == K_SLOT ? EN_NPROG - 1 : k == K_CQ ? EN_NCQ - 1 : k == K_CX ? EN_NCX - 1
             : k == K_LANE ? EN_NDRUM - 1 : k == K_LCH ? 100 : 0;
     }
 }
@@ -311,7 +313,7 @@ static const char *knob_name(int k)
         return en_param_info(k)->name;
     return k == K_LEDS ? "Lights" : k == K_CPU ? "CPU" : k == K_SLOT ? "Slot" : k == K_CQ ? "Chord" : k == K_CX ? "Type"
          : k == K_LANE ? "Lane" : k == K_LCH ? "Chance" : k == K_FILTER ? "Filter" : k == K_DUB ? "Dub"
-         : k == K_ENERGY ? "Energy" : k == K_SPACE ? "Space" : k == K_MODE ? "Mode" : "";
+         : k == K_ENERGY ? "Energy" : k == K_SPACE ? "Space" : k == K_MODE ? "Mode" : k == K_PLAY ? "Play" : "";
 }
 static void knob_text(int k, char *b)
 {
@@ -361,6 +363,10 @@ static void knob_text(int k, char *b)
         const char *n = mode_name();
         while ((*b++ = *n++))
             ;
+    } else if (k == K_PLAY) {
+        const char *n = v ? "Loop" : "Endless";
+        while ((*b++ = *n++))
+            ;
     } else {
         b[0] = 0;
     }
@@ -380,7 +386,7 @@ static void knob_set(int k, int v)
         int was = proj.par[k];
         proj.par[k] = (int16_t)v;
         en_set(k, v);
-        if (k == P_PMODE && was == PM_LOOP && v != PM_LOOP)
+        if (k == P_PMODE && (was & EN_PLOOP) && !(v & EN_PLOOP))
             en_prog_rotate();                    /* (from Loop, by hand: the slot playing up to slot 1) */
     } else if (k == K_LEDS) {
         proj.leds = (uint8_t)v;
@@ -407,6 +413,9 @@ static void knob_set(int k, int v)
         return;                                  /* (for playing: nothing saved) */
     } else if (k == K_MODE) {                    /* (the knob: the place in MODE_ORDER) */
         set_mode(MODE_ORDER[v]);
+        return;
+    } else if (k == K_PLAY) {                    /* (the walk's character kept) */
+        knob_set(P_PMODE, (proj.par[P_PMODE] & 3) | (v ? EN_PLOOP : 0));
         return;
     }
     mark_dirty();
@@ -958,6 +967,11 @@ static void input(void)
             proj.screen = (uint8_t)(((int)proj.screen + (int)(e % 3) + 3) % 3);
             mark_dirty();
             say("SCREEN", SCREEN_NAME[proj.screen]);
+        } else if (ui.view == V_CHORDS) {        /* the walk's character: its chords walked again, at once */
+            int w = (((proj.par[P_PMODE] & 3) + (int)(e % EN_NWALK)) % EN_NWALK + EN_NWALK) % EN_NWALK;
+            knob_set(P_PMODE, (proj.par[P_PMODE] & EN_PLOOP) | w);
+            en_prog_rewalk();
+            say("WALK", EN_WALK_NAME[w]);
         } else if (vp >= 0)
             set_voice(vp, proj.par[vp] + (int)e);   /* (every detent: a quick turn comes as several at once) */
         else
@@ -1740,7 +1754,7 @@ static int help_lines(int b, const char *l[HELP_LINES])
     case B_SEQ: L("THE DRUMS"); L("LEVEL, HITS, SWING, DUCK"); L("ALGORITHM: THE KIT"); L("AGAIN: SOUND; AGAIN: PATTERN"); break;
     case B_FX: L("THE SPACE"); L("ECHO, ECHO TIME, FEEDBACK,"); L("REVERB"); break;
     case B_GLO: L("SETUP (FOR EVERY PIECE)"); L("TUNE, MIDI OUT, LIGHTS"); break;
-    case B_EDIT: L("TAP: THE CHORDS COMING (8:"); L(" ENDLESS OR LOOP; KEYS: A ROOT)"); L("HOLD: THE NEXT CHORD"); break;
+    case B_EDIT: L("TAP: THE CHORDS COMING (8:"); L(" KEYS: A ROOT; ALGORITHM:"); L(" THE WALK; KNOB 4: LOOP)"); L("HOLD: THE NEXT CHORD"); break;
     case B_SEL: L("FILTER, DUB, ENERGY, SPACE;"); L(" WHITE 6 HELD: THE MIX"); L("WHITE 1-5 MUTE, BLACK 1-5 SOLO:"); L(" CHORD PINGS BASS KICK HATS"); L("WHITE 7-11: THROW OPEN SHUT DROP ECHO"); break;
     case B_REC: L("TAP: DUB HOLD (THE ECHO"); L(" REPEATS WHAT IT HOLDS)"); L("HOLD: THE EFFECTS GRID,"); L(" PLAYED ON THE WHITE KEYS"); break;
     case B_OCTDN: L("THE PINGS AN OCTAVE DOWN"); L("WITH OCT+, 5 S: UPDATE MODE"); break;
@@ -1847,9 +1861,9 @@ static void draw_slots(void)
 {
     static const char *const HEAD[4] = {"HOME: THE WALK WRITES SLOT 8", "WANDER: THE WALK WRITES SLOT 8",
                                         "FREE: THE WALK WRITES SLOT 8", "LOOP: THE SLOTS IN TURN"};
-    int i, loop = proj.par[P_PMODE] == PM_LOOP, n = loop ? prog_count() : EN_NPROG;
+    int i, loop = (proj.par[P_PMODE] & EN_PLOOP) != 0, n = loop ? prog_count() : EN_NPROG;
     char nm[16];
-    text_c(120, -1, &FONT_XS, HEAD[proj.par[P_PMODE] & 3], K_ACC);
+    text_c(120, -1, &FONT_XS, HEAD[loop ? 3 : (proj.par[P_PMODE] & 3) % EN_NWALK], K_ACC);
     for (i = 0; i < EN_NPROG; i++) {
         int32_t x = 12 + (i & 3) * 55, y = 18 + (i >> 2) * 42;
         int filled = !slot_is_gap(i), now = en_playing && i == en_prog_pos && n, sel = i == ui.slot;
@@ -1869,7 +1883,8 @@ static void draw_slots(void)
             text_c(x + 25, y + 13, &FONT_XS, "(HOLDS)", now ? K_BG : K_DIM);
         }
     }
-    text_c(120, 104, &FONT_XS, "KEYS: THE SLOT'S ROOT   KIND EMPTY: A GAP", K_DIM);
+    text_c(120, 102, &FONT_XS, "KEYS: THE SLOT'S ROOT   KIND EMPTY: A GAP", K_DIM);
+    text_c(120, 116, &FONT_XS, "ALGORITHM: THE WALK   KNOB 4: LOOP", K_DIM);
 }
 
 static void draw_main(void)
@@ -1984,7 +1999,7 @@ static void draw_main(void)
         }
         else
             text_c(CX, CY - 6, &FONT_XS, nm, en_frozen ? K_FROST : K_TEXT);
-        if (proj.par[P_PMODE] == PM_LOOP && en_prog_pos >= 0 && prog_count()) {   /* Loop: where it is ("2/4") */
+        if ((proj.par[P_PMODE] & EN_PLOOP) && en_prog_pos >= 0 && prog_count()) {   /* Loop: where it is ("2/4") */
             char t[8];
             t[0] = (char)('1' + en_prog_pos), t[1] = '/', t[2] = (char)('0' + prog_count()), t[3] = 0;
             text_c(CX, CY + 11, &FONT_XS, t, K_DIM);
@@ -2025,6 +2040,8 @@ static void draw_knobs(void)
     uint32_t h = hash(2166136261u, ui.view | (uint32_t)ui.touched << 8), i;
     if (view_voice(ui.view) >= 0)
         h = hash(h, (uint32_t)proj.par[view_voice(ui.view)]);
+    if (ui.view == V_CHORDS)
+        h = hash(h, (uint32_t)proj.par[P_PMODE]);
     int now_touch = plat_ms() < ui.touch_until;
     for (i = 0; i < 4; i++)
         h = hash(h, (uint32_t)knob_get(VIEW_KNOB[ui.view][i]));
@@ -2038,9 +2055,18 @@ static void draw_knobs(void)
         int k;
         int32_t xd = 237 - NPAGES * 6, xt;
         int32_t x0 = 4;
-        if (view_voice(ui.view) >= 0) {          /* a layer's page: its voice, at the rule's start */
+        if (view_voice(ui.view) >= 0 || ui.view == V_CHORDS) {   /* a layer's page: its voice, at the rule's start;
+                                                                   * the Chords page: the walk's */
             char vn[12];
-            en_param_text(view_voice(ui.view), proj.par[view_voice(ui.view)], vn);
+            if (ui.view == V_CHORDS) {
+                const char *w = EN_WALK_NAME[(proj.par[P_PMODE] & 3) % EN_NWALK];
+                int j;
+                for (j = 0; j < 11 && w[j]; j++)
+                    vn[j] = w[j];
+                vn[j] = 0;
+            } else {
+                en_param_text(view_voice(ui.view), proj.par[view_voice(ui.view)], vn);
+            }
             caps(t, vn, sizeof t);
             x0 = cv_text(6, -1, &FONT_XS, t, K_DIM) + 5;
         }
@@ -2235,6 +2261,10 @@ static void sp_page(int all)
         en_param_text(view_voice(ui.view), proj.par[view_voice(ui.view)], vn);
         sp_cat(view_voice(ui.view) == P_KIT ? ", kit " : ", voice ");
         sp_cat(vn);
+    }
+    if (ui.view == V_CHORDS) {
+        sp_cat(", walk ");
+        sp_cat(EN_WALK_NAME[(proj.par[P_PMODE] & 3) % EN_NWALK]);
     }
     for (i = 0; i < 4; i++) {
         if (VIEW_KNOB[ui.view][i] == K_NONE)
