@@ -12,7 +12,7 @@ said % of the way. Section Full, bar 1. Scale F, G, Ab, Bb, C, D, Eb
 # a page settles before it is said
 tap ENV
 wait 300
-said Chord page, voice Saws: Throws 50, Stabs 
+said Chord page, voice Saws: Density 30, Throws 
 tap GLO
 wait 300
 said Setup page: Tune 0, MIDI out On, Lights On
@@ -60,7 +60,7 @@ said Reverb 0
 # the page again, as now set
 tap SEQ
 wait 300
-said Drums page, kit Tight: Hats 50, Hits 
+said Drums page, kit Tight: Density 100, Hits 
 tap FX
 wait 300
 said Space page: Echo 0, Echo time 1 bar, Feedback 45%, Reverb 0
@@ -137,7 +137,7 @@ said_none RESTING
 # OCT- / OCT+ on a layer's page: its level (here the pings', on the Pings page)
 tap ARP
 wait 300
-said Pings page, voice Blip: Ghost 50, Density 30, Cloud 30, Octave 0
+said Pings page, voice Blip: Density 30, Ghost 50, Cloud 30, Octave 0
 tap OCT+
 said PINGS 35
 tap OCT-

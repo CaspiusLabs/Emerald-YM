@@ -55,20 +55,26 @@ turn SELECT -1 100
 expect view 19
 tap SEL
 wait 300
-# the new knobs: Chord's Throws, Pings' Ghost and Octave, Bass's Notes (and Groove's five), Drums' Hats, Noise's Level
+# the knobs: Density first on every layer's page; Chord's Throws and Ghost, Pings' Ghost and Octave, Bass's Density (and
+# Groove's five), Drums' Density (the kick) and Hats, Noise's Density and Level
 tap ENV
 wait 300
-said Chord page, voice Saws: Throws 50, Stabs 30, Decay 35, Cutoff 45
+said Chord page, voice Saws: Density 30, Throws 50, Ghost 50, Cutoff 45
 shot chord_page.png
-spin K1 10
+spin K2 10
 wait 300
 said Throws 60
 expect par111 60
+spin K3 10
+wait 300
+said Ghost 60
+expect par115 60
+spin K3 -10
 tap ARP
 wait 300
-said Pings page, voice Blip: Ghost 50, Density 30, Cloud 30, Octave 0
+said Pings page, voice Blip: Density 30, Ghost 50, Cloud 30, Octave 0
 shot pings_page.png
-spin K1 -10
+spin K2 -10
 wait 300
 said Ghost 40
 expect par112 40
@@ -79,11 +85,11 @@ expect par21 1
 spin K4 -1
 tap LFO
 wait 300
-said Bass page, voice Sub: Notes 100, Octave 0, Groove Offbeat, Fifth 20
+said Bass page, voice Sub: Density 100, Octave 0, Groove Offbeat, Fifth 20
 shot bass_page.png
 spin K1 -40
 wait 300
-said Notes 60
+said Density 60
 expect par113 60
 spin K3 3
 wait 300
@@ -100,15 +106,20 @@ expect par24 1
 spin K1 40
 tap SEQ
 wait 300
-said Drums page, kit Tight: Hats 50, Hits 50, Swing 52%, Duck 50
+said Drums page, kit Tight: Density 100, Hits 50, Hats 50, Duck 50
 shot drums_page.png
-spin K1 10
+spin K3 10
 wait 300
 said Hats 60
 expect par114 60
+spin K1 -10
+wait 300
+said Density 90
+expect par116 90
+spin K1 10
 tap SAVE
 wait 300
-said Noise page, character Vinyl: Level 35, Colour 0, Grain 0, Drift 0
+said Noise page, character Vinyl: Density 0, Level 35, Colour 0, Tune 50
 shot noise_page.png
 tap SAVE
 # OCT- / OCT+ on each layer's page: its level, 5 a tap (said in the header); held: on, every 100 ms after 400 ms
@@ -335,7 +346,7 @@ wait 300
 store12 5
 reboot
 wait 1000
-expect format 13
+expect format 14
 expect piece 0
 expect par24 3
 expect par113 65
@@ -351,3 +362,19 @@ turn PRESET -2
 wait 300
 expect par24 3
 expect par113 65
+# a 1.3.0 pages project (format 13): everything kept, the chord's Ghost .. the shimmer's Tune from the recipes
+tap ARP
+wait 300
+expect view 2
+spin K2 10
+wait 300
+expect par112 60
+store13
+reboot
+wait 1000
+expect format 14
+expect par112 60
+expect par115 50
+expect par116 100
+expect par117 50
+expect par120 50

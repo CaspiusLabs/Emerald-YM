@@ -1,5 +1,5 @@
-# the Noise page (SAVE: a tap, the page; again, back): Level (the crackle), Colour, Grain and Drift (-50..+50 around
-# the piece's own; Room off the page, the recipes' and characters'), ALGORITHM its character (Vinyl, Tape, Dust, Room, Machine); the spectrum in the middle; SAVE held nudges it,
+# the Noise page (SAVE: a tap, the page; again, back): Density (the grain, -50..+50 around the piece's own), Level
+# (the crackle), Colour (-50..+50) and Tune (the shimmer; Room and Drift off the page, the recipes' and characters'), ALGORITHM its character (Vinyl, Tape, Dust, Room, Machine); the spectrum in the middle; SAVE held nudges it,
 # held on shakes it (another character); kept by the piece; saving on GLO held and Setup's KNOB 4; a 1.2.0 project
 # (format 10) read, the noise from the recipes
 listen
@@ -7,20 +7,24 @@ wait 2000
 tap SAVE
 wait 400
 expect view 19
-said Noise page, character Vinyl: Level 35, Colour 0, Grain 0, Drift 0
+said Noise page, character Vinyl: Density 0, Level 35, Colour 0, Tune 50
 shot noise.png
-spin K2 20
+spin K3 20
 wait 300
 said Colour +20
 expect par106 20
 spin K4 -15
 wait 300
-said Drift -15
-expect par109 -15
-spin K1 -5
+said Tune 35
+expect par120 35
+spin K2 -5
 wait 300
 said Level 30
 expect par29 30
+spin K1 10
+wait 300
+said Density +10
+expect par107 10
 turn ALGO 1
 wait 300
 said NOISE Tape
@@ -67,7 +71,7 @@ wait 600
 release GLO
 reboot
 wait 1000
-expect format 13
+expect format 14
 expect par110 1
 expect par106 20
 # a 1.2.0 project (format 10): read, everything kept (Basic's chord level, set to 50 here), the noise from the
@@ -82,7 +86,7 @@ expect par0 50
 store10
 reboot
 wait 1000
-expect format 13
+expect format 14
 expect par111 50
 expect par113 100
 expect par0 50

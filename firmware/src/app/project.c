@@ -65,6 +65,24 @@ typedef struct {
     slot12_t slot[NPIECES];
     uint8_t rsv[16];
 } project12_t;
+/* DUB-1 1.3.0's pages (format 13): today's, without the chord's Ghost, the kick's density, the echo's Blur, Tone and
+ * Width, the shimmer's Tune */
+#define NPAR13 P_CGHOST
+_Static_assert(NPAR13 == 115, "format 13 had 115 parameters");
+typedef struct {
+    int16_t par[NPAR13];
+    uint16_t pool;
+    uint8_t pings[EN_PINGS_N];
+    uint8_t pings_ok, screen;
+} slot13_t;
+typedef struct {
+    uint32_t magic, format;
+    int16_t par[NPAR13];
+    uint16_t pool;
+    uint8_t leds, piece, screen, rsv0;
+    slot13_t slot[NPIECES];
+    uint8_t rsv[16];
+} project13_t;
 _Static_assert(sizeof(project_t) <= 3840u, "the project must fit one storage sector's payload");
 
 static void take(const slot_t *s)                /* a piece's settings into play, the globals kept */
@@ -182,6 +200,23 @@ static void from12(const project12_t *o)        /* 1.3.0's noise and ladder (11,
         proj.slot[i].screen = o->slot[i].screen;
     }
 }
+static void from13(const project13_t *o)        /* 1.3.0's pages (13): everything kept */
+{
+    int i;
+    memset(&proj, 0, sizeof proj);
+    proj.magic = o->magic;
+    proj.format = PROJ_FORMAT;
+    memcpy(proj.par, o->par, sizeof o->par);
+    proj.pool = o->pool;
+    proj.leds = o->leds, proj.piece = o->piece, proj.screen = o->screen;
+    for (i = 0; i < NPIECES; i++) {
+        memcpy(proj.slot[i].par, o->slot[i].par, sizeof o->slot[i].par);
+        proj.slot[i].pool = o->slot[i].pool;
+        memcpy(proj.slot[i].pings, o->slot[i].pings, sizeof proj.slot[i].pings);
+        proj.slot[i].pings_ok = o->slot[i].pings_ok;
+        proj.slot[i].screen = o->slot[i].screen;
+    }
+}
 static void groove11(int16_t *par)              /* before 12: the groove a pattern (0..4: Drone, Offbeat, Dotted,
                                                  * Roller, Sync), now the knob's (Drone, Offbeat, Dotted, Sync, Roller) */
 {
@@ -199,17 +234,17 @@ static void groove12(int16_t *par)              /* 12: the groove a ladder (0 Dr
     par[P_GROOVE] = PAT[g];
     par[P_BNOTES] = DENS[g];
 }
-static void new13(void)                         /* before 13: Throws, Ghost, Notes, Hats level, from the recipes */
+static void newpar(int from)                     /* the parameters a format lacked (from on), from the recipes */
 {
     int16_t rec[P_NPARAMS];
     uint16_t pool;
     int i, p;
     for (i = 0; i < NPIECES; i++) {
         en_piece(i, rec, &pool);
-        for (p = NPAR12; p < P_NPARAMS; p++)
+        for (p = from; p < P_NPARAMS; p++)
             proj.slot[i].par[p] = rec[p];
     }
-    for (p = NPAR12; p < P_NPARAMS; p++)
+    for (p = from; p < P_NPARAMS; p++)
         proj.par[p] = proj.slot[proj.piece < NPIECES ? proj.piece : 0].par[p];
 }
 static void noise10(void)                       /* before 11: each piece's noise as its recipe has it */
@@ -253,11 +288,14 @@ int project_load(void)
                n >= (int)sizeof(project12_t)) {
         old = (int)buf.format;
         from12((const project12_t *)(const void *)&buf);
+    } else if (n >= 8 && buf.magic == PROJ_MAGIC && buf.format == 13u && n >= (int)sizeof(project13_t)) {
+        old = 13;
+        from13((const project13_t *)(const void *)&buf);
     } else {
         proj = buf;
     }
-    if (old)                                     /* (before 13: the four new ones, from the recipes) */
-        new13();
+    if (old)                                     /* (the new ones, from the recipes: 13's six, before it ten) */
+        newpar(old == 13 ? NPAR13 : NPAR12);
     if (old == 9) {                              /* (8 and 9: the chords' slots as 10 has them) */
         gaps9(proj.par);
         for (i = 0; i < NPIECES; i++)

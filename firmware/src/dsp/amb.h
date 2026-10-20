@@ -90,6 +90,11 @@ enum {
      * note; less, left out at random, the bar's first kept); the shaker and open hat against the kick (50: x1,
      * about +-12 dB at the ends) */
     P_CTHROW, P_PGHOST, P_BNOTES, P_HATSLVL,
+    /* 1.3.0's echo and density (format 14), 0..100: the chord's dry against its sends (as the pings' Ghost; 50: -6 dB,
+     * its echo x1.5); the kick's density (its shapes by phrase: 0 none .. 100 four on the floor, always); the echo's
+     * blur (0 clean copies .. 50 each repeat a little more dissolved .. 100 a wash), its tone (darker .. brighter),
+     * its width (0 mono .. 100 wide); the shimmer's tune (0 plain air .. 100 clearly on the key) */
+    P_CGHOST, P_KDENS, P_EBLUR, P_ETONE, P_EWIDTH, P_NTUNE,
     P_NPARAMS
 };
 typedef struct {

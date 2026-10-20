@@ -59,6 +59,8 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     {"Noise colour", -50, 50, 0}, {"Grain", -50, 50, 0}, {"Room", -50, 50, 0}, {"Noise drift", -50, 50, 0},
     {"Noise", 0, EN_NNCHAR - 1, 0},
     {"Throws", 0, 100, 50},   {"Ghost", 0, 100, 50},    {"Notes", 0, 100, 100},   {"Hats level", 0, 100, 50},
+    {"Chord ghost", 0, 100, 50}, {"Kick density", 0, 100, 100}, {"Blur", 0, 100, 50}, {"Echo tone", 0, 100, 50},
+    {"Width", 0, 100, 50},    {"Shimmer", 0, 100, 50},
 };
 const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PARAMS[i] : &PARAMS[0]; }
 
@@ -67,7 +69,8 @@ const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PAR
 /*                  Cho Pin Bas Dru  Den Evo Dri Hit  Ech ET Rev Fdb  Cut Dec PTo Mot  Tun MI Tem Rt Md Oc
  *                  CV BO Grv Fif Swi Hat  Stb Crk Dck Siz  Clo PV BV Kit
  *                  then the sound pages' sixteen, all 0: the voices as they are; then the noise's five (its controls, its character);
- *                  then Throws, Ghost, Notes, Hats level (50, 50, 100, 50: the pieces as they were)
+ *                  then Throws, Ghost, Notes, Hats level (50, 50, 100, 50: the pieces as they were);
+ *                  then the chord's Ghost, the kick's density, the echo's Blur, Tone and Width, the shimmer's Tune
  * (Dri: Drift, 2 4 8 16 32 64 bars or Hold; ET: Echo time, 1/8 1/8. 1/4 1/4. 1/2 1 bar; Grv: the knob's, Drone,
  *  Offbeat, Dotted, Sync, Roller (GROOVE_NAME); CV, PV, BV, Kit: the voices, EN_CV_NAME ...) */
 static const struct {
@@ -81,7 +84,8 @@ static const struct {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     0, 0, 0, 0, 0,
-                    50, 50, 100, 50}},
+                    50, 50, 100, 50,
+                    50, 100, 50, 50, 50, 50}},
     {"Chamber",    {68, 20, 55, 60, 20, 45, 6, 40, 70, 1, 45, 75, 50, 55, 30, 60, 0, 1, 118, 9, 5, 0,
                     2, 0, 0, 10, 0, 40, 15, 45, 45, 70, 45, 2, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -89,7 +93,8 @@ static const struct {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     -5, -10, 10, 0, 3,
-                    50, 50, 100, 50}},
+                    50, 50, 100, 50,
+                    50, 100, 50, 50, 50, 50}},
     {"Steppers",   {60, 35, 70, 70, 35, 40, 3, 60, 50, 3, 30, 55, 55, 25, 50, 45, 0, 1, 126, 2, 1, 0,
                     0, 0, 2, 35, 15, 60, 45, 25, 60, 50, 20, 1, 1, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -97,7 +102,8 @@ static const struct {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     5, 10, -10, 0, 0,
-                    50, 50, 100, 50}},
+                    50, 50, 100, 50,
+                    50, 100, 50, 50, 50, 50}},
     {"Fog",        {64, 34, 50, 50, 40, 55, 5, 30, 75, 2, 55, 80, 46, 70, 25, 70, 0, 1, 112, 7, 5, 0,
                     1, -1, 0, 15, 0, 30, 20, 60, 35, 80, 60, 0, 0, 3,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -105,7 +111,8 @@ static const struct {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     -10, 0, 15, 10, 1,
-                    50, 50, 100, 50}},
+                    50, 50, 100, 50,
+                    50, 100, 50, 50, 50, 50}},
     {"Concrete",   {65, 25, 65, 75, 25, 35, 4, 75, 50, 1, 25, 60, 60, 20, 60, 40, 0, 1, 130, 0, 7, 0,
                     6, 0, 4, 30, 20, 75, 50, 20, 65, 45, 15, 3, 3, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -113,7 +120,8 @@ static const struct {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     0, 15, 0, 10, 4,
-                    50, 50, 100, 50}},
+                    50, 50, 100, 50,
+                    50, 100, 50, 50, 50, 50}},
     {"Night Drive", {65, 45, 60, 65, 45, 50, 3, 55, 60, 4, 35, 65, 50, 40, 45, 55, 0, 1, 124, 10, 1, 0,
                     1, 0, 3, 25, 25, 55, 35, 30, 50, 60, 35, 4, 4, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -121,7 +129,8 @@ static const struct {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     0, -10, 0, 0, 1,
-                    50, 50, 100, 50}},
+                    50, 50, 100, 50,
+                    50, 100, 50, 50, 50, 50}},
     {"Pressure",   {78, 20, 54, 74, 20, 30, 6, 65, 45, 1, 20, 55, 48, 30, 35, 35, 0, 1, 128, 4, 2, 0,
                     5, 0, 1, 10, 5, 65, 25, 32, 70, 40, 20, 3, 4, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -129,7 +138,8 @@ static const struct {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     -10, -20, -25, -10, 0,
-                    50, 50, 100, 50}},
+                    50, 50, 100, 50,
+                    50, 100, 50, 50, 50, 50}},
     {"Haze",       {56, 42, 52, 45, 50, 60, 4, 35, 80, 3, 60, 85, 45, 80, 25, 80, 0, 1, 116, 3, 0, 1,
                     3, 0, 0, 20, 10, 35, 30, 62, 30, 85, 70, 2, 0, 4,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -137,7 +147,8 @@ static const struct {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     5, 10, 10, 15, 2,
-                    50, 50, 100, 50}},
+                    50, 50, 100, 50,
+                    50, 100, 50, 50, 50, 50}},
 };
 
 const char *en_piece_name(int i) { return PIECES[(unsigned)i < EN_NPIECES ? i : 0].name; }
@@ -413,7 +424,7 @@ const char *en_chord_name(const int *pcs, int n, char *buf)
 
 /* ------------------------------------------------------------ commands --- */
 enum { C_SET, C_POOL, C_PLAY, C_NEXT, C_FREEZE, C_SEED, C_PANIC, C_CLOCK, C_REGROW, C_MUTE, C_PERF, C_FX, C_PINGS, C_MACRO, C_PROT, C_REWALK, C_PNUDGE };
-#define QN 256u                                 /* (a piece is every parameter at once: room for four) */
+#define QN 512u                                 /* (a piece is every parameter at once: room for twice over and more) */
 _Static_assert(QN >= 2u * (P_NPARAMS + 8), "the command queue can't hold a piece's parameters twice over");
 static uint32_t q[QN];
 static volatile uint32_t q_w, q_r;
@@ -499,6 +510,8 @@ typedef struct {
 } noise_ctl_t;
 static noise_ctl_t nctl;
 static float throw_mul = 1.0f, ping_dry = 0.5f, hats_lvl = 1.0f;   /* Throws, Ghost, Hats level (apply) */
+static float chord_dry = 0.5f, chord_snd = 1.5f;   /* the chord's Ghost: its dry, its sends (apply) */
+static float ec_g = 0.6f, ec_lpc = 0.68f, ec_wide = 1.0f, sh_fb = 0.86f;   /* the echo's Blur, Tone, Width; the shimmer's Tune */
 static int gpat(void) { return GROOVE_PAT[(unsigned)par[P_GROOVE] < NGROOVE ? par[P_GROOVE] : 0]; }   /* the pattern */
 static int8_t mac[EN_NMAC];                     /* the master actions, -50..50 */
 static int8_t pofs[P_NPARAMS];
@@ -730,7 +743,7 @@ static float st_env, st_amp, st_fenv, st_throw, throw_dec;
 static float st_s[4], st_c[4], st_h[2];
 static int32_t st_midi_left;
 static int shape, root_note = 55;               /* the voicing's shape, the chord's root as voiced (MIDI) */
-static const float STAB_PAN[EN_NPAD] = {-0.5f, -0.15f, 0.2f, 0.55f};
+static const float STAB_PAN[EN_NPAD] = {-0.3f, -0.09f, 0.12f, 0.33f};   /* (1.3.0: 60% of the spread) */
 static float stab_gl[EN_NPAD], stab_gr[EN_NPAD];
 static int32_t gate_ctr;                        /* samples since the sixteenth began (the grid's Gate) */
 static float fx_gate, gate_g, gate_dec;
@@ -787,7 +800,7 @@ static float bell_vol, btone;
 static int8_t loop_note[EN_NLOOP][EN_LOOP_MAX];
 static uint8_t loop_vel[EN_NLOOP][EN_LOOP_MAX], loop_pos[EN_NLOOP];
 static const uint8_t LOOP_BASE[EN_NLOOP] = {72, 67, 79, 62};     /* each loop's register */
-static const float LOOP_PAN[EN_NLOOP] = {-0.6f, 0.35f, 0.7f, -0.25f};
+static const float LOOP_PAN[EN_NLOOP] = {-0.36f, 0.21f, 0.42f, -0.15f};   /* (1.3.0: 60% of the spread) */
 static const float RATIO[5] = {1.0f, 2.0f, 3.0f, 3.5f, 4.77f};
 
 /* ----------------------------------------------------------------- drums --- */
@@ -1894,7 +1907,9 @@ static void heads_step(uint32_t n)
     float p, want, vmax, sw;
     int i;
     for (i = 0; i < 2; i++) {
-        p = fm_clampf((i ? 0.8f : -0.8f) + 0.5f * motion * mod[6 + i].v, -1.0f, 1.0f);
+        /* (1.3.0: the first head near the middle, drifting with Motion; the second, on throws, to the right; Width
+         * spreads them: 0 mono, 2 as wide as before) */
+        p = fm_clampf(ec_wide * ((i ? 0.4f : 0.0f) + (i ? 0.2f : 0.25f) * (0.4f + 0.6f * motion) * mod[6 + i].v), -1.0f, 1.0f);
         p = (p + 1.0f) * (FM_PI / 4.0f);
         hg[2 * i] = fm_cosf(p);
         hg[2 * i + 1] = fm_sinf(p);
@@ -1919,6 +1934,35 @@ static void heads_step(uint32_t n)
 }
 
 /* one sample of both: the input (a mono send) to the tape's heads (el, er) and the Echoplex (xl, xr) */
+/* 1.3.0, the echo dissolving (build/research/dubtechno/REPORT2.md, variant D): what enters the tape band-limited (Tone)
+ * and through five allpasses, and each repeat through three more in the feedback (Blur: their gain), so a repeat comes
+ * back softer and darker than the last instead of a clean copy; one head (the second only while a throw rings), the
+ * Echoplex's short taps out of the mix. At the tape's rate; the feedback's allpasses' delay taken off the head's */
+#define EAP_IN 1002                              /* (36 + 95 + 154 + 276 + 441: 3 to 40 ms) */
+#define EAP_FB 277                               /* (37 + 89 + 151) */
+static int16_t eap[EAP_IN + EAP_FB] EN_POOL;    /* (int16 at 1/8000: +-4) */
+static int eap_i[8];
+static float ec_lp, ec_hp;
+static inline float eapf(int k, int off, int n, float x)
+{
+    int16_t *b = eap + off;
+    float d = (float)b[eap_i[k]] * (1.0f / 8000.0f), y = d - ec_g * x, t = (x + ec_g * y) * 8000.0f;
+    b[eap_i[k]] = (int16_t)(t > 32767.0f ? 32767.0f : t < -32767.0f ? -32767.0f : t);
+    if (++eap_i[k] >= n)
+        eap_i[k] = 0;
+    return y;
+}
+static inline float ec_in(float x)
+{
+    ec_lp += ec_lpc * (x - ec_lp);
+    ec_hp += 0.133f * (ec_lp - ec_hp);           /* (~250 Hz) */
+    return eapf(7, 561, 441, eapf(3, 285, 276, eapf(2, 131, 154, eapf(1, 36, 95, eapf(0, 0, 36, ec_lp - ec_hp)))));
+}
+static inline float ec_fb(float x)
+{
+    return eapf(6, EAP_IN + 126, 151, eapf(5, EAP_IN + 37, 89, eapf(4, EAP_IN, 37, x)));
+}
+
 static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
 {
     float y = (float)plex[plex_w] * (1.0f / 12000.0f);
@@ -1934,7 +1978,7 @@ static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
         *xl = plex_lp;
         *xr = plex_lp2;
     }
-    tape_acc += in + 0.2f * plex_lp;
+    tape_acc += in;
     if (++tape_ph >= 4) {                        /* the tape, a quarter of the time */
         float d, h1, h2, fb, w;
         tape_ph = 0;
@@ -1943,7 +1987,7 @@ static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
                                                   * the hold below reads echo_len itself. Reported by genkigenki) */
             echo_len = (float)(TAPE_N - 8);
         head2 += head2_v;
-        d = echo_len * (1.0f + 0.002f * motion * mod[5].v);   /* wow */
+        d = echo_len * (1.0f + 0.002f * motion * mod[5].v) - (float)EAP_FB;   /* wow; (the diffusers' delay) */
         if (d > (float)(TAPE_N - 4))
             d = (float)(TAPE_N - 4);
         h1 = tape_read(d);
@@ -1956,10 +2000,10 @@ static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
             tape[tape_w] = s;
         } else {
             float g = fm_minf(echo_fb + 0.15f * st_throw + 0.12f * perf_echo + 0.1f * dub_up, fb_cap);   /* (Dub: past the knob) */
-            tape_lp += tape_lpc * (h1 + fb_lean * (h2 - h1) - tape_lp);   /* each time round: thinner, darker */
+            tape_lp += tape_lpc * (h1 + fb_lean * st_throw * (h2 - h1) - tape_lp);   /* each time round: thinner, darker */
             tape_hp += tape_hpc * (tape_lp - tape_hp);
-            fb = tape_lp - tape_hp;
-            w = tape_acc * 0.25f + 0.7f * sat(fb * g * (1.0f / 0.7f));
+            fb = ec_fb(tape_lp - tape_hp);       /* (and more dissolved) */
+            w = ec_in(tape_acc * 0.25f) + 0.7f * sat(fb * g * (1.0f / 0.7f));
             if (++tape_w >= TAPE_N)
                 tape_w = 0;
             tape[tape_w] = s16(w);
@@ -1973,8 +2017,8 @@ static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
     {   /* between the tape's samples: a line from the last to the next; then to the field */
         float f = (float)tape_ph * 0.25f;
         float h1 = tape_p1 + (tape_c1 - tape_p1) * f, h2 = tape_p2 + (tape_c2 - tape_p2) * f;
-        *el = hg[0] * h1 + hg[2] * h2;
-        *er = hg[1] * h1 + hg[3] * h2;
+        *el = hg[0] * h1 + hg[2] * h2 * st_throw;   /* (the second head: only while a throw rings) */
+        *er = hg[1] * h1 + hg[3] * h2 * st_throw;
     }
 }
 
@@ -2238,6 +2282,18 @@ static void apply(int p, int v)
         ping_dry = 0.5f * fm_exp2f((v <= 50 ? 6.0f * (float)(50 - v) : -14.0f * (float)(v - 50)) * 0.02f * 0.16609640f);
         break;
     case P_HATSLVL: hats_lvl = fm_exp2f((float)(v - 50) * 0.04f); break;   /* x1 at 50, -12 .. +12 dB */
+    case P_CGHOST:                               /* the chord's dry: 0 dB (0), -6 dB (50), -20 dB (100); its sends x1 .. x2 */
+        chord_dry = 0.5f * fm_exp2f((v <= 50 ? 6.0f * (float)(50 - v) : -14.0f * (float)(v - 50)) * 0.02f * 0.16609640f);
+        chord_snd = 1.0f + (float)v * 0.01f;
+        break;
+    case P_EBLUR:                                /* the diffusers' gain: 0.15 (clean copies) .. 0.6 (50) .. 0.75 */
+        ec_g = v <= 50 ? 0.15f + 0.009f * (float)v : 0.6f + 0.003f * (float)(v - 50);
+        break;
+    case P_ETONE:                                /* what enters the tape: a low-pass ~2 kHz at 50, an octave a quarter */
+        ec_lpc = 1.0f - fm_expf(-2.0f * FM_PI * fm_clampf(2000.0f * fm_exp2f((float)(v - 50) * 0.04f), 400.0f, 5000.0f) / TAPE_SR);
+        break;
+    case P_EWIDTH: ec_wide = (float)v * 0.02f; break;   /* the heads' spread: 0 mono, 1 (50), 2 wide */
+    case P_NTUNE: sh_fb = fm_minf((float)v * 0.0172f, 0.95f); break;   /* the comb: 0 plain air, 0.86 (50), 0.95 */
     case P_POCT:                                 /* let it be heard now: a ping from the first loop */
         if (en_playing && nsteps) {
             int l, k;
@@ -2710,9 +2766,9 @@ static void render_stabs(uint32_t n)
             yl *= gg;
             yr *= gg;
         }
-        mixl[j] += yl;
-        mixr[j] += yr;
-        esend[j] += (yl + yr) * (0.8f + 2.5f * thr);
+        mixl[j] += yl * chord_dry;           /* (Ghost: the dry against the sends) */
+        mixr[j] += yr * chord_dry;
+        esend[j] += (yl + yr) * (0.8f + 2.5f * thr) * chord_snd;
         rsend[j] += (yl + yr) * 0.35f;
         thr *= throw_dec;
     }
@@ -3000,6 +3056,18 @@ static const struct {                           /* each source's level (x the de
 #define CR_ND 6                                 /* the drifts: hiss level, hiss colour, vinyl density, dust, wind, rumble */
 static float cr_lp, cr_lp2, cr_hp, cr_cl, cr_cr, cr_fl, cr_fr, cr_cc = 0.45f, cr_gate, cr_sg = 1.0f;
 static float cr_wl1, cr_wl2, cr_wr1, cr_wr2;     /* the wear: the whole noise through a worn cartridge (render_crackle) */
+/* the shimmer: the hiss through a comb tuned to the key's root (E3..Eb4), its harmonics sung in 2-6 kHz, mostly into
+ * the echo and the plate (REPORT.md's phase 2) */
+#ifndef EN_SHIM
+#define EN_SHIM 0.7f                             /* (low-soft, the user's pick) */
+#endif
+#ifndef EN_SHOCT
+#define EN_SHOCT 28                              /* (the comb's lowest note: E1; 52 is E3) */
+#endif
+#define SH_N 1100                               /* (E1, 41 Hz: 1072 samples) */
+static int16_t sh_buf[SH_N];
+static int sh_w;
+static float sh_lp, sh_hp, sh_bl;
 static float cr_dv[CR_ND] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, cr_dt[CR_ND] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
 static const float CR_DRANGE[CR_ND] = {0.66f, 0.5f, 2.0f, 1.33f, 1.33f, 1.33f};   /* (octaves of each drift's span) */
 static float du_env, du_att, du_dec, du_f, du_s1, du_s2, du_gl, du_gr, wi_f, wi_s1, wi_s2, ru1, ru2, ru3;
@@ -3076,6 +3144,11 @@ static void render_crackle(uint32_t n)
         float de = du_env, da = du_att, ds1 = du_s1, ds2 = du_s2, ws1 = wi_s1, ws2 = wi_s2, r1 = ru1, r2 = ru2, r3 = ru3;
         float df = du_f, dd = du_dec, dgl = du_gl, dgr = du_gr;
         float wl1 = cr_wl1, wl2 = cr_wl2, wr1 = cr_wr1, wr2 = cr_wr2;
+        /* (the shimmer: the comb's length the root's period; its level the noise's, more in Breaks, drifting) */
+        const int shd = (int)(EN_SR / mtof((float)(EN_SHOCT + (par[P_ROOT] + 8) % 12)) + 0.5f);
+        const float shg = EN_SHIM * 1.0f * g * sg * cr_dv[0], shfb = fm_minf(sh_fb + 0.06f * fm_clampf(nr, -1.0f, 1.0f), 0.95f);
+        float slp = sh_lp, shp = sh_hp, sbl = sh_bl;
+        int sw = sh_w;
         const float wf = wi_f;
         const int wind = gw > 0.0f, rum = gr > 0.0f;
         int32_t dl = du_left;
@@ -3145,6 +3218,23 @@ static void render_crackle(uint32_t n)
                                                   * the music) */
             r = 1.9f * wr2;
             rsend[j] += (l + r) * 0.8f;
+            if (shg > 0.0f) {                    /* the shimmer: y = noise + fb * LP(y[n - D]); then 2-6 kHz */
+                int rd = sw - shd;
+                float y, b;
+                slp += 0.62f * ((float)sh_buf[rd < 0 ? rd + SH_N : rd] * (1.0f / 12000.0f) - slp);
+                y = w * 0.25f + shfb * slp;
+                sh_buf[sw] = s16(y);
+                if (++sw >= SH_N)
+                    sw = 0;
+                shp += 0.25f * (y - shp);            /* (a high-pass at ~2 kHz) */
+                b = y - shp;
+                sbl += 0.55f * (b - sbl);            /* (a low-pass at ~6 kHz) */
+                b = sbl * shg;
+                l += 0.3f * b;
+                r += 0.3f * b;
+                esend[j] += b * 0.8f;
+                rsend[j] += b * 1.2f;
+            }
             if (rum) {                           /* the rumble: under ~60 Hz, its own sub-sonic cut */
                 r1 += 0.008f * (w - r1);
                 r2 += 0.008f * (r1 - r2);
@@ -3163,6 +3253,7 @@ static void render_crackle(uint32_t n)
         du_env = fm_flush(de), du_att = da, du_s1 = fm_flush(ds1), du_s2 = fm_flush(ds2), du_left = dl;
         wi_s1 = fm_flush(ws1), wi_s2 = fm_flush(ws2), ru1 = fm_flush(r1), ru2 = fm_flush(r2), ru3 = fm_flush(r3);
         cr_wl1 = fm_flush(wl1), cr_wl2 = fm_flush(wl2), cr_wr1 = fm_flush(wr1), cr_wr2 = fm_flush(wr2);
+        sh_lp = fm_flush(slp), sh_hp = fm_flush(shp), sh_bl = fm_flush(sbl), sh_w = sw;
     }
 }
 
@@ -3373,8 +3464,8 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
         pl_back = 0.5f * (wl + wr);
         cl *= 1.0f + 9.0f * fx_cf;               /* (Freeze: the held cloud brought forward) */
         cr *= 1.0f + 9.0f * fx_cf;
-        l = mixl[j] * dry + 1.2f * el + 0.25f * xl + 1.1f * wl + 1.4f * cl;
-        r = mixr[j] * dry + 1.2f * er + 0.25f * xr + 1.1f * wr + 1.4f * cr;
+        l = mixl[j] * dry + 1.2f * el + 1.1f * wl + 1.4f * cl;   /* (1.3.0: the Echoplex's taps out) */
+        r = mixr[j] * dry + 1.2f * er + 1.1f * wr + 1.4f * cr;
         sd = 0.5f * (l - r);                     /* mono below ~150 Hz: the side's lows taken out (two poles), so the
                                                   * stabs' and pings' low partials, the echo's and the plate's, sit in
                                                   * the middle with the bass */

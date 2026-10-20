@@ -10,7 +10,10 @@
 #define EN_VERSION "DEV"
 #endif
 #define PROJ_MAGIC 0x31425544u           /* "DUB1": AMB-1's projects ("ENO1") give the recipes */
-#define PROJ_FORMAT 13u                  /* 13: Throws, Ghost, Notes, Hats level (P_CTHROW..P_HATSLVL), the groove five
+#define PROJ_FORMAT 14u                  /* 14: the chord's Ghost, the kick's density, the echo's Blur, Tone and
+                                         * Width, the shimmer's Tune (P_CGHOST..P_NTUNE; 8-13 read, the new ones from the
+                                         * recipes);
+                                         * 13: Throws, Ghost, Notes, Hats level (P_CTHROW..P_HATSLVL), the groove five
                                          * patterns again with Notes (12's ladder converted; 8-12 read, the new ones
                                          * from the recipes);
                                          * 12: the groove a ladder (0 Drone .. 8 Roller; 8-11 read, converted);

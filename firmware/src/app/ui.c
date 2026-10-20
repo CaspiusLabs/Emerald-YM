@@ -24,15 +24,16 @@
 /* (past NPAGES, on no button of their own: V_MIX, PERFORM's knobs, the four layers' levels; the layers' sound
  * pages, the layer's button pressed again) */
 enum { V_DUB, V_CHORD, V_TEXTURE, V_BASS, V_DRUMS, V_SPACE, V_SETUP, NPAGES, V_MIX = NPAGES, V_CSND, V_PSND, V_BSND,
-       V_DSND, V_CFM, V_PFM, V_BFM, V_CHORDS, V_PAT, V_PERF, V_KEY, V_NSND, NVIEWS };
+       V_DSND, V_CFM, V_PFM, V_BFM, V_CHORDS, V_PAT, V_PERF, V_KEY, V_NSND, V_ESND, NVIEWS };
 /* (V_PERF: PERFORM's knobs, the master actions; V_MIX while white 6 is held. V_KEY: HOME again, the key and the
  * tempo, the Dub page's second) */
 static const char *const VIEW_NAME[NVIEWS] = {"Dub", "Chord", "Pings", "Bass", "Drums", "Space", "Setup", "Mix",
                                               "Chord sound", "Ping sound", "Bass sound", "Drum sound",
-                                              "Chord FM", "Ping FM", "Bass FM", "Chords", "Pattern", "Perform", "Key", "Noise"};
+                                              "Chord FM", "Ping FM", "Bass FM", "Chords", "Pattern", "Perform", "Key", "Noise",
+                                              "Echo"};
 #define B_NONE 0xFFu
 static const uint8_t VIEW_BTN[NVIEWS] = {B_HOME, B_ENV, B_ARP, B_LFO, B_SEQ, B_FX, B_GLO, B_NONE, B_NONE, B_NONE, B_NONE,
-                                         B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_SAVE};
+                                         B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_SAVE, B_NONE};
 static int sound_of(int v) { return v == V_CHORD ? V_CSND : v == V_TEXTURE ? V_PSND : v == V_BASS ? V_BSND : v == V_DRUMS ? V_DSND : -1; }
 static int fm_of(int v) { return v == V_CHORD ? V_CFM : v == V_TEXTURE ? V_PFM : v == V_BASS ? V_BFM : -1; }
 static int parent_of(int v)
@@ -42,7 +43,10 @@ static int parent_of(int v)
 }
 static int layer_of(int v) { v = parent_of(v) >= 0 ? parent_of(v) : v; return v == V_CHORD ? 0 : v == V_TEXTURE ? 1 : v == V_BASS ? 2 : 3; }
 static int fm_off(int v) { return v >= V_CFM && v <= V_BFM && !en_voice_fm(v - V_CFM); }   /* an FM page, not FM */
-static int page_of(int v) { return v == V_KEY ? V_DUB : parent_of(v) >= 0 ? parent_of(v) : v; }   /* a sound page: its layer's */
+static int page_of(int v)                        /* a sound page: its layer's; the Echo page: Space's */
+{
+    return v == V_KEY ? V_DUB : v == V_ESND ? V_SPACE : parent_of(v) >= 0 ? parent_of(v) : v;
+}
 /* SELECT's round and the dots, as the buttons sit on the panel: FX ENV LFO GLO, then HOME SAVE ARP SEQ */
 #define NROUND 8
 static const uint8_t PAGE_ORDER[NROUND] = {V_SPACE, V_CHORD, V_BASS, V_SETUP, V_DUB, V_NSND, V_TEXTURE, V_DRUMS};
@@ -73,14 +77,14 @@ static const char *const LANE_NAME[EN_NDRUM] = {"Kick", "Shaker", "Open", "Rim",
 _Static_assert(P_NPARAMS <= K_LEDS, "the knobs' own codes must come after the parameters");
 static const uint16_t VIEW_KNOB[NVIEWS][4] = {
     {K_FILTER, P_EVOLVE, P_MOTION, P_DRIFT},
-    {P_CTHROW, P_STABS, P_DECAY, P_CUTOFF},
-    {P_PGHOST, P_DENSITY, P_CLOUD, P_POCT},
+    {P_STABS, P_CTHROW, P_CGHOST, P_CUTOFF},
+    {P_DENSITY, P_PGHOST, P_CLOUD, P_POCT},
     {P_BNOTES, P_BASSOCT, P_GROOVE, P_FIFTH},
-    {P_HATSLVL, P_HITS, P_SWING, P_DUCK},
+    {P_KDENS, P_HITS, P_HATSLVL, P_DUCK},
     {P_ECHO, P_ETIME, P_FEEDBACK, P_REVERB},
     {P_TUNE, P_MIDI, K_LEDS, K_SAVE},
     {P_CHORD, P_PINGS, P_BASS, P_DRUMS},
-    {P_CATT, P_CCOL, P_CRES, P_CENV},
+    {P_CATT, P_CCOL, P_CRES, P_DECAY},           /* (Env, P_CENV, off the page: the voices and the recipes set it) */
     {P_PTON, P_PRAT, P_PLEN, P_PBEND},
     {P_BBITE, P_BSHAPE, P_BLEN, P_BSLIDE},
     {P_KTUNE, P_KLEN, P_KPUNCH, P_HTONE},
@@ -91,18 +95,19 @@ static const uint16_t VIEW_KNOB[NVIEWS][4] = {
     {K_LANE, P_DACCENT, K_LCH, P_DMODE},
     {K_FILTER, K_DUB, K_ENERGY, K_SPACE},
     {P_TEMPO, P_ROOT, K_MODE, P_SWING},
-    {P_CRACKLE, P_NCOL, P_NGRAIN, P_NDRIFT},   /* (Room, P_NROOM, off the page: the recipes and characters set it) */
+    {P_NGRAIN, P_CRACKLE, P_NCOL, P_NTUNE},   /* (Room and Drift off the page: the recipes and characters set them) */
+    {P_EBLUR, P_ETONE, P_EWIDTH, P_SIZE},
 };
 static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Filter", "Evolve", "Motion", "Drift"},
-    {"Throws", "Stabs", "Decay", "Cutoff"},
-    {"Ghost", "Density", "Cloud", "Octave"},
-    {"Notes", "Octave", "Groove", "Fifth"},
-    {"Hats", "Hits", "Swing", "Duck"},
+    {"Density", "Throws", "Ghost", "Cutoff"},
+    {"Density", "Ghost", "Cloud", "Octave"},
+    {"Density", "Octave", "Groove", "Fifth"},
+    {"Density", "Hits", "Hats", "Duck"},
     {"Echo", "Echo time", "Feedback", "Reverb"},
     {"Tune", "MIDI out", "Lights", "Save"},
     {"Chord", "Pings", "Bass", "Drums"},
-    {"Attack", "Colour", "Reso", "Env"},
+    {"Attack", "Colour", "Reso", "Decay"},
     {"Tone", "Ratio", "Length", "Bend"},
     {"Bite", "Shape", "Length", "Slide"},
     {"Kick tune", "Kick len", "Punch", "Hat tone"},
@@ -113,28 +118,29 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Lane", "Accent", "Chance", "Play"},
     {"Filter", "Dub", "Energy", "Space"},
     {"Tempo", "Root", "Mode", "Swing"},
-    {"Level", "Colour", "Grain", "Drift"},
+    {"Density", "Level", "Colour", "Tune"},
+    {"Blur", "Tone", "Width", "Size"},
 };
 /* what each knob does, a line: on the rule above the knobs while it's being turned (in capitals; each fits the
  * rule's 228 px: the host's expect helpfit) */
 static const char *const KNOB_HELP[NVIEWS][4] = {
     {"Sweeps the whole mix but the kick", "How restless: stabs come and go", "How often it leaves Full, and sweeps",
      "Bars before the chord moves on"},
-    {"How often a stab is thrown to the echo", "Stabs a bar, one to six", "How long each stab rings",
+    {"Stabs a bar, one to six", "How often a stab is thrown to the echo", "The stab dry, against its echo",
      "The stabs' low-pass: dark to bright"},
-    {"The pings dry, against their echo", "How many notes each loop holds", "The reverb through the grain cloud",
+    {"How many notes each loop holds", "The pings dry, against their echo", "The reverb through the grain cloud",
      "The pings two octaves down to two up"},
     {"How many of the groove's notes play", "The bass an octave down or up", "The pattern, from sparse to busy",
      "How often the fifth, not the root"},
-    {"The hats' level against the kick", "How busy the hats are", "Off sixteenths late: the whole groove",
-     "How far the kick pushes the rest down"},
+    {"The kick: none, one, half, four", "How busy the hats are", "The hats' level against the kick",
+     "How far each beat pushes the rest down"},
     {"How much goes into the echo", "The tape loop's length, in beats", "How long the repeats go on",
      "How much goes into the plate"},
     {"Fine tuning, in cents", "Notes and clock out over MIDI", "The keys' and buttons' lights",
      "A turn saves all eight pieces"},
     {"The chord's level", "The pings' level", "The bass's level", "The drums' level"},
     {"The strike: a snap, to a swell", "The voice's own colour", "The filter's resonance",
-     "How far each stab opens the filter"},
+     "How long each stab rings"},
     {"The ping, round to metallic", "The modulator: harmonic to clangy", "How long each ping rings",
      "The pitch falling at the strike"},
     {"Drive: clean to growling", "A pure sine, to a square", "How long each note holds", "The glide between notes"},
@@ -153,8 +159,10 @@ static const char *const KNOB_HELP[NVIEWS][4] = {
     {"Shut: under water. Open: thin", "Dry and tight, to a runaway echo", "Sparse and dry, to busy and bright",
      "Drier, or wider: reverb and cloud"},
     {"Beats a minute", "The key's root note", "The scale: Minor, Dorian, ...", "Off sixteenths late: the whole groove"},
-    {"How loud the noise is", "Dark and muffled, to bright", "A smooth hiss, to crackle and dust",
-     "Steady, to restless noises"},
+    {"A smooth hiss, to crackle and dust", "How loud the noise is", "Dark and muffled, to bright",
+     "The shimmer: plain air, to the key"},
+    {"Clean repeats, to a dissolving wash", "The repeats darker, or brighter", "The echo mono, to wide",
+     "How long the plate rings"},
 };
 
 /* the screen's colours: a dark room, as a dub techno sleeve (grey on black, a cold blue). The chord and
@@ -866,6 +874,10 @@ static void button(int b)
             set_view(V_PAT);                     /* the drums: their pattern */
         else
             set_view(pv);
+        return;
+    }
+    if (b == B_FX && (ui.view == V_SPACE || ui.view == V_ESND)) {   /* FX again: the Echo page; again: back */
+        set_view(ui.view == V_SPACE ? V_ESND : V_SPACE);
         return;
     }
     if (b == B_HOME && ui.view == V_DUB) {       /* HOME again: the Key page (the key and the tempo); again: back */
@@ -2666,7 +2678,7 @@ static void draw_knobs(void)
 static void leds(void)
 {
     uint32_t b = 0, k = 0, i, ap = pool_abs();
-    if (VIEW_BTN[page_of(ui.view)] != B_NONE && ((parent_of(ui.view) < 0 && ui.view != V_KEY) || (plat_ms() / 300u) & 1u))
+    if (VIEW_BTN[page_of(ui.view)] != B_NONE && ((parent_of(ui.view) < 0 && ui.view != V_KEY && ui.view != V_ESND) || (plat_ms() / 300u) & 1u))
         b |= 1u << VIEW_BTN[page_of(ui.view)];   /* (a sound page, or Key: its button blinks) */
     if (en_playing)
         b |= 1u << B_PLAY;

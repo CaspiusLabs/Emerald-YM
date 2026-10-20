@@ -16,22 +16,22 @@ expect frozen 1
 tap REC
 wait 200
 expect frozen 0
-# the Chord page's Throws (KNOB 1), from a known value
+# the Chord page's Throws (KNOB 2), from a known value
 tap ENV
-spin K1 -100
-spin K1 60
+spin K2 -100
+spin K2 60
 expect par111 60
 wait 500
-turn K1 3 10
+turn K2 3 10
 expect par111 63
 wait 500
-turn K1 -3 30
+turn K2 -3 30
 expect par111 60
 wait 500
-turn K1 -12 10
+turn K2 -12 10
 expect par111 0
 wait 500
-turn K1 2 100
+turn K2 2 100
 expect par111 2
 wait 1500
 press GLO

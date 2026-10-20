@@ -5,7 +5,7 @@ tap ENV
 wait 300
 tap ENV
 wait 400
-said Chord sound page, voice Saws: Attack 0, Colour 0, Reso 0, Env 0
+said Chord sound page, voice Saws: Attack 0, Colour 0, Reso 0, Decay 35
 expect view 8
 spin K2 30
 wait 200
@@ -51,3 +51,18 @@ release GLO
 wait 300
 expect par37 0
 expect par48 0
+# FX again: the Echo page (Blur, Tone, Width, Size); again, back to Space
+tap FX
+wait 300
+expect view 5
+tap FX
+wait 300
+expect view 20
+said Echo page: Blur 50, Tone 50, Width 50, Size 
+spin K1 -20
+wait 300
+said Blur 30
+expect par117 30
+tap FX
+wait 300
+expect view 5

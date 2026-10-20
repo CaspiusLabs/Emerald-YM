@@ -3,7 +3,7 @@ wait 500
 expect piece 0
 # Basic's throws down to nothing and its cutoff wide open (the Chord page: ENV)
 tap ENV
-spin K1 -100
+spin K2 -100
 expect par111 0
 spin K4 100
 expect par12 100
@@ -48,8 +48,8 @@ expect par12 <99
 expect store_writes 0
 # a tweak, saved, survives a reboot, on the piece it was made on (the Pings page: ARP, its Ghost)
 tap ARP
-spin K1 -100
-spin K1 70
+spin K2 -100
+spin K2 70
 expect par112 70
 turn PRESET 6
 expect piece 6
