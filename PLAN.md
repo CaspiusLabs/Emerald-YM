@@ -538,7 +538,7 @@ would fit.
 - MIDI CC out for the filter and the echo send, to drive other gear
 - Keys as live mutes, or a held key as a manual throw
 
-## Release 1.3.0, the musical release: the chord machine, visible, and a sound pass (2026-10-20; the chords built, to try; was 1.2.5)
+## Release 1.3.0, the musical release: the chord machine, visible, and a sound pass (2026-10-20; ready to publish)
 
 At launch the firmware generates a full eight-chord progression (the random walk writes it into the eight slots), and
 the Chords page (EDIT) shows it. Proposed: both of the user's behaviours, as KNOB 4 (Play) on the Chords page, which
@@ -558,8 +558,9 @@ today switches between Random and the slots.
   engine holds the slots and writes the walk's (`walk_from`, `walk_fill`, `chord_change`); the UI mirrors them
   (`en_prog_slot`, `en_prog_gen`, `prog_take`). A walk slot that becomes diminished after a change of scale is
   walked again. Tests: tests/host/amb_test.c (Loop, Endless), tests/scenarios/chords.amb.
-- [ ] The user tries it (build/dub-1.3.0-test2.fwsc); then the release, and the SMK branch
-- [ ] **The sound pass, in 1.3.0** (decided by the user, 2026-10-20: the musical release, the chord machine and the
+- [x] The user tried it on the FM-1 (the builds up to build/dub-1.3.0-specks1.fwsc): "it feels more mature now"
+- [ ] Publish (the user's go): push main, `tools/publish_pages.sh 1.3.0`, `gh release create v1.3.0`; then the SMK branch
+- [x] **The sound pass, in 1.3.0** (decided by the user, 2026-10-20: the musical release, the chord machine and the
       sounds together): "Nail the sounds" and the sound design round below (the voices too alike, the kick, the bass,
       the hats, the echo's colour, the cloud, the crackle), by ear
 - The engine: `chord_change()` already has the walk (from a degree other than home, back home 65% of the time;
@@ -578,6 +579,12 @@ today switches between Random and the slots.
       its shake moves it to a neighbour; Evolve above 60 moves it now and then by itself, back towards the piece's
       (the user's earlier idea of slow groove changes within a song). Evolve above 40 nudges by itself on a phrase's first
       bar (1-2 values, half steps; never a shake). The help cards removed to make room for the hold.
+- [x] **The pages and controls** (the user, 2026-10-20): the round in the panel's order; the levels in PERFORM's mix only,
+      the freed knobs Throws, Ghost, Notes, Hats; OCT− / OCT+ a layer's level and mute (a level ring in the middle);
+      format 13. The noise muddier (a worn cartridge). The screen: a layer's page shows that layer alone (ripples,
+      scope, spectrum, its lanes in colour, the rest grey); the ripples' outlines the wave, the echo's repeats measured,
+      the noise's clicks as specks; a knob's help line while it turns. Fixed: the grid flickering over the Chords and
+      Pattern pages; line() overshooting a short slope (an endless loop).
 - The videos for it: see "Videos to make" below.
 
 ## Videos to make (the channel's full plan: build/film/channel/CHANNEL.md)
