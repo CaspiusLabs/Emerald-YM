@@ -1,13 +1,10 @@
-# the Noise page (ARP: Texture, again the ping sound, again the ping FM, again Noise, again back): Colour, Grain,
-# Room and Drift (-50..+50 around the piece's own), ALGORITHM its character (Vinyl, Tape, Dust, Room, Machine);
-# the spectrum in the middle; ARP held nudges it too; kept by the piece; a 1.2.0 project (format 10) read, the
-# noise from the recipes
+# the Noise page (SAVE: a tap, the page; again, back): Colour, Grain, Room and Drift (-50..+50 around the piece's
+# own), ALGORITHM its character (Vinyl, Tape, Dust, Room, Machine); the spectrum in the middle; SAVE held nudges it,
+# held on shakes it (another character); kept by the piece; saving on GLO held and Setup's KNOB 4; a 1.2.0 project
+# (format 10) read, the noise from the recipes
 listen
 wait 2000
-tap ARP
-tap ARP
-tap ARP
-tap ARP
+tap SAVE
 wait 400
 expect view 19
 said Noise page, character Vinyl: Colour 0, Grain 0, Room 0, Drift 0
@@ -25,27 +22,44 @@ said NOISE Tape
 expect par110 1
 wait 3000
 expect peak_db_max -0.5
-tap ARP
+tap SAVE
 wait 300
-expect view 2
+expect view 0
 # Fog's recipe: Tape, a darker, roomier, more restless noise
 turn PRESET 3
 wait 500
 expect par110 1
 expect par106 -10
 expect par108 15
-# the shake on ARP: another character too
-press ARP
+# SAVE held: a nudge to the noise; held on, a shake (another character); ARP's touch only the pings
+press SAVE
+wait 700
+release SAVE
+wait 300
+said NOISE NUDGE
+expect view 19
+press SAVE
 wait 1800
+release SAVE
+wait 300
+said NOISE SHAKE
+expect par110 !=1
+tap SAVE
+wait 300
+press ARP
+wait 700
 release ARP
 wait 300
-said PINGS SHAKE
-# kept by SAVE
+said PINGS NUDGE
+said_none NOISE
+# kept by a save (GLO held); Setup's KNOB 4 saves too
 turn PRESET -3
 wait 500
 expect par110 1
 expect par106 20
-tap SAVE
+press GLO
+wait 600
+release GLO
 reboot
 wait 1000
 expect format 11
@@ -69,3 +83,14 @@ turn PRESET 3
 wait 500
 expect par110 1
 expect par106 -10
+# Setup's KNOB 4: Save, a turn saves (Saved once done)
+tap GLO
+wait 300
+expect view 6
+spin K2 1
+wait 300
+expect dirty 1
+spin K4 1
+wait 300
+said SAVED
+expect dirty 0

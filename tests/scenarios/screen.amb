@@ -20,7 +20,9 @@ tap HOME
 wait 200
 expect view 0
 expect screen 2
-tap SAVE
+press GLO
+wait 600
+release GLO
 reboot
 wait 1500
 expect screen 2
@@ -58,7 +60,9 @@ expect screen 2
 turn PRESET 1
 wait 300
 expect screen 1
-tap SAVE
+press GLO
+wait 600
+release GLO
 reboot
 wait 1500
 expect piece 1

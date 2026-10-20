@@ -40,9 +40,9 @@ expect par12 0
 turn PRESET -2
 expect par12 99
 # SAVE held: Basic's recipe again (not saved by that)
-press SAVE
+press GLO
 wait 1700
-release SAVE
+release GLO
 expect par0 >0
 expect par12 <99
 expect store_writes 0
@@ -53,7 +53,9 @@ spin K1 70
 expect par1 70
 turn PRESET 6
 expect piece 6
-tap SAVE
+press GLO
+wait 600
+release GLO
 expect store_writes 1
 reboot
 wait 300

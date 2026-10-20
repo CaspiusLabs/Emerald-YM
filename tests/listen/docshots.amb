@@ -23,7 +23,7 @@ wait 300
 shot screen-turning.png
 tap HOME
 wait 2000
-press SAVE
+press GLO
 wait 1100
 shot screen-help.png
-release SAVE
+release GLO

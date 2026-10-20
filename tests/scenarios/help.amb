@@ -32,11 +32,11 @@ wait 500
 turn K1 2 100
 expect par0 2
 wait 1500
-press SAVE
+press GLO
 wait 1000
 shot help_save.png
 wait 700
-release SAVE
+release GLO
 wait 200
 # the recipe's level again (not the 2 it was left at)
 expect par0 >20

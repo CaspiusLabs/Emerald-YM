@@ -28,13 +28,13 @@ static const char *const VIEW_NAME[NVIEWS] = {"Dub", "Chord", "Texture", "Bass",
                                               "Chord FM", "Ping FM", "Bass FM", "Chords", "Pattern", "Perform", "Key", "Noise"};
 #define B_NONE 0xFFu
 static const uint8_t VIEW_BTN[NVIEWS] = {B_HOME, B_ENV, B_ARP, B_LFO, B_SEQ, B_FX, B_GLO, B_NONE, B_NONE, B_NONE, B_NONE,
-                                         B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE};
+                                         B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_SAVE};
 static int sound_of(int v) { return v == V_CHORD ? V_CSND : v == V_TEXTURE ? V_PSND : v == V_BASS ? V_BSND : v == V_DRUMS ? V_DSND : -1; }
 static int fm_of(int v) { return v == V_CHORD ? V_CFM : v == V_TEXTURE ? V_PFM : v == V_BASS ? V_BFM : -1; }
 static int parent_of(int v)
 {
     return v == V_CSND || v == V_CFM ? V_CHORD : v == V_PSND || v == V_PFM ? V_TEXTURE : v == V_BSND || v == V_BFM ? V_BASS
-         : v == V_DSND || v == V_PAT ? V_DRUMS : v == V_NSND ? V_TEXTURE : -1;
+         : v == V_DSND || v == V_PAT ? V_DRUMS : -1;
 }
 static int layer_of(int v) { v = parent_of(v) >= 0 ? parent_of(v) : v; return v == V_CHORD ? 0 : v == V_TEXTURE ? 1 : v == V_BASS ? 2 : 3; }
 static int fm_off(int v) { return v >= V_CFM && v <= V_BFM && !en_voice_fm(v - V_CFM); }   /* an FM page, not FM */
@@ -44,7 +44,8 @@ enum { K_LEDS = 200, K_CPU, K_NONE, K_SLOT, K_CQ, K_CX,    /* (the Chords page: 
        K_LANE, K_LCH,                                        /* (the Pattern page: the lane, and its chance) */
        K_FILTER, K_DUB, K_ENERGY, K_SPACE,                   /* the master actions (EN_MAC_*), in that order */
        K_MODE,                                               /* (the Key page: the mode, as ALGORITHM sets it) */
-       K_PLAY };                                             /* (the Chords page: Endless or Loop, P_PMODE's bit 2) */
+       K_PLAY,                                               /* (the Chords page: Endless or Loop, P_PMODE's bit 2) */
+       K_SAVE };                                             /* (Setup: a turn saves; it shows whether it's saved) */
 static const char *const LANE_NAME[EN_NDRUM] = {"Kick", "Shaker", "Open", "Rim", "Clap"};
 _Static_assert(P_NPARAMS <= K_LEDS, "the knobs' own codes must come after the parameters");
 static const uint16_t VIEW_KNOB[NVIEWS][4] = {
@@ -54,7 +55,7 @@ static const uint16_t VIEW_KNOB[NVIEWS][4] = {
     {P_BASS, P_BASSOCT, P_GROOVE, P_FIFTH},
     {P_DRUMS, P_HITS, P_SWING, P_DUCK},
     {P_ECHO, P_ETIME, P_FEEDBACK, P_REVERB},
-    {P_TUNE, P_MIDI, K_LEDS, K_NONE},
+    {P_TUNE, P_MIDI, K_LEDS, K_SAVE},
     {P_CHORD, P_PINGS, P_BASS, P_DRUMS},
     {P_CATT, P_CCOL, P_CRES, P_CENV},
     {P_PTON, P_PRAT, P_PLEN, P_PBEND},
@@ -76,7 +77,7 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Level", "Octave", "Groove", "Fifth"},
     {"Level", "Hits", "Swing", "Duck"},
     {"Echo", "Echo time", "Feedback", "Reverb"},
-    {"Tune", "MIDI out", "Lights", ""},
+    {"Tune", "MIDI out", "Lights", "Save"},
     {"Chord", "Pings", "Bass", "Drums"},
     {"Attack", "Colour", "Reso", "Env"},
     {"Tone", "Ratio", "Length", "Bend"},
@@ -125,6 +126,7 @@ static struct {
     int8_t mac[EN_NMAC];               /* the master actions (HOME's Filter, PERFORM's knobs): -50..50, never saved */
     uint32_t fx;                       /* the effects held (EN_FX_*), REC's grid */
     uint8_t slot, chords_from;         /* the Chords page: the slot edited; the page it was opened from */
+    uint8_t noise_from;                /* the Noise page (SAVE): the page it was opened from */
     uint32_t prog_gen;                 /* the engine's slots, as last taken (en_prog_gen) */
     uint8_t lane;                      /* the Pattern page: the lane edited */
     uint8_t grid_said;
@@ -289,6 +291,8 @@ static int knob_get(int k)
         return mode_pos(proj.par[P_MODE]);
     if (k == K_PLAY)
         return proj.par[P_PMODE] & EN_PLOOP ? 1 : 0;
+    if (k == K_SAVE)
+        return ui.dirty ? 1 : 0;
     return 0;
 }
 static void knob_range(int k, int *lo, int *hi)
@@ -311,7 +315,7 @@ static const char *knob_name(int k)
         return en_param_info(k)->name;
     return k == K_LEDS ? "Lights" : k == K_CPU ? "CPU" : k == K_SLOT ? "Slot" : k == K_CQ ? "Chord" : k == K_CX ? "Type"
          : k == K_LANE ? "Lane" : k == K_LCH ? "Chance" : k == K_FILTER ? "Filter" : k == K_DUB ? "Dub"
-         : k == K_ENERGY ? "Energy" : k == K_SPACE ? "Space" : k == K_MODE ? "Mode" : k == K_PLAY ? "Play" : "";
+         : k == K_ENERGY ? "Energy" : k == K_SPACE ? "Space" : k == K_MODE ? "Mode" : k == K_PLAY ? "Play" : k == K_SAVE ? "Save" : "";
 }
 static void knob_text(int k, char *b)
 {
@@ -365,12 +369,25 @@ static void knob_text(int k, char *b)
         const char *n = v ? "Loop" : "Endless";
         while ((*b++ = *n++))
             ;
+    } else if (k == K_SAVE) {                    /* changed since the last save: "Save" (turn it); else "Saved" */
+        const char *n = v ? "Save" : "Saved";
+        while ((*b++ = *n++))
+            ;
     } else {
         b[0] = 0;
     }
 }
 
 static void set_mode(int m);
+static void do_save(void)                       /* GLO held, or Setup's KNOB 4 turned */
+{
+    if (project_save() == 0) {
+        ui.dirty = 0;
+        say("SAVED", 0);
+    } else {
+        warn("NOT SAVED", "FLASH ERROR");
+    }
+}
 static void knob_set(int k, int v)
 {
     int lo, hi;
@@ -445,6 +462,10 @@ static void turn(int role, int k, int32_t e)
     int lo, hi;
     if (!e || k == K_NONE || k == K_CPU)
         return;
+    if (k == K_SAVE) {                           /* a turn, either way: saved */
+        do_save();
+        return;
+    }
     knob_range(k, &lo, &hi);
     if (k >= K_FILTER && k <= K_SPACE) {         /* the master actions stop at the middle on the way through */
         int v = knob_get(k), n = v + accel(role, e, hi - lo);
@@ -791,8 +812,6 @@ static void button(int b)
             set_view(fm_of(pv));
         else if (ui.view == sound_of(pv) && pv == V_DRUMS)
             set_view(V_PAT);                     /* the drums: their pattern */
-        else if (ui.view == fm_of(pv) && pv == V_TEXTURE)
-            set_view(V_NSND);                    /* the pings' FM page again: the noise */
         else
             set_view(pv);
         return;
@@ -838,12 +857,12 @@ static void button(int b)
             say("PING OCTAVE", t);
         }
         break;
-    case B_SAVE:
-        if (project_save() == 0) {
-            ui.dirty = 0;
-            say("SAVED", 0);
+    case B_SAVE:                                 /* the Noise page, or back from it (saving: GLO held, Setup's KNOB 4) */
+        if (ui.view == V_NSND) {
+            set_view(ui.noise_from);
         } else {
-            warn("NOT SAVED", "FLASH ERROR");
+            ui.noise_from = (uint8_t)ui.view;
+            set_view(V_NSND);
         }
         break;
     default: break;
@@ -874,15 +893,16 @@ static void midi_in(void)
  * first bar, one layer, a smaller step (nudge_tick) */
 #define NUDGE_HOLD 500u
 #define SHAKE_HOLD 1500u                  /* held on: a shake (a new voice, every value a big step) */
-#define NNUDGE 5
-static const uint8_t NUDGE_BTN[NNUDGE] = {B_ENV, B_ARP, B_LFO, B_SEQ, B_FX};
-static const char *const NUDGE_NAME[NNUDGE] = {"CHORD", "PINGS", "BASS", "DRUMS", "SPACE"};
+#define NNUDGE 6
+static const uint8_t NUDGE_BTN[NNUDGE] = {B_ENV, B_ARP, B_LFO, B_SEQ, B_FX, B_SAVE};
+static const char *const NUDGE_NAME[NNUDGE] = {"CHORD", "PINGS", "BASS", "DRUMS", "SPACE", "NOISE"};
 static const uint8_t NUDGE_PAR[NNUDGE][8] = {   /* (the FM ones, the last two of the first three, on an FM voice only) */
     {P_CATT, P_CCOL, P_CRES, P_CENV, P_DECAY, P_CUTOFF, P_CFRAT, P_CFB},
     {P_PTON, P_PRAT, P_PLEN, P_PBEND, P_PTON, P_PLEN, P_PFRAT, P_PFB},
     {P_BBITE, P_BSHAPE, P_BLEN, P_BSLIDE, P_FIFTH, P_BLEN, P_BFRAT, P_BFB},
     {P_KTUNE, P_KLEN, P_KPUNCH, P_HTONE, P_KLEN, P_KPUNCH, P_HTONE, P_KTUNE},
     {P_ECHO, P_FEEDBACK, P_REVERB, P_SIZE, P_CLOUD, P_ECHO, P_ECHO, P_ECHO},   /* (the space: FX; its shake, a new echo time) */
+    {P_NCOL, P_NGRAIN, P_NROOM, P_NDRIFT, P_NCOL, P_NGRAIN, P_NCOL, P_NGRAIN},   /* (the noise: SAVE; its shake, a new character) */
 };
 static uint32_t nudge_seed = 0x9E3779B9u;
 static int nrand(int n)
@@ -908,8 +928,8 @@ enum { NUDGE_EVOLVE, NUDGE_HAND, NUDGE_SHAKE };
  * the range away */
 static void nudge(int layer, int how)
 {
-    static const uint8_t SND[NNUDGE] = {V_CSND, V_PSND, V_BSND, V_DSND, V_SPACE};
-    static const uint8_t VOICE[NNUDGE] = {P_CVOICE, P_PVOICE, P_BVOICE, P_KIT, P_ETIME};
+    static const uint8_t SND[NNUDGE] = {V_CSND, V_PSND, V_BSND, V_DSND, V_SPACE, V_NSND};
+    static const uint8_t VOICE[NNUDGE] = {P_CVOICE, P_PVOICE, P_BVOICE, P_KIT, P_ETIME, P_NCHAR};
     int16_t rec[P_NPARAMS];
     uint16_t pool;
     int j, best = -1, bd = 0, fm, n, np = 0;
@@ -985,23 +1005,6 @@ static void nudge(int layer, int how)
     }
     if (layer == 1 && (how == NUDGE_SHAKE || nrand(2)))   /* the pings: now and then a note of one loop, another */
         en_ping_nudge();
-    if (layer == 1) {                            /* ARP: the noise too, one or two of its four (a shake: all, and
-                                                  * another character) */
-        static const uint8_t NP[4] = {P_NCOL, P_NGRAIN, P_NROOM, P_NDRIFT};
-        int k, m = how == NUDGE_SHAKE ? 4 : 1 + nrand(2);
-        if (how == NUDGE_SHAKE)
-            knob_set(P_NCHAR, (proj.par[P_NCHAR] + 1 + nrand(EN_NNCHAR - 1)) % EN_NNCHAR);
-        for (k = 0; k < m; k++) {
-            int p = NP[how == NUDGE_SHAKE ? k : nrand(4)], v = proj.par[p], st = how == NUDGE_SHAKE ? 18 : how == NUDGE_HAND ? 12 : 6;
-            int d = 1 + nrand(st);
-            if (v != rec[p] && nrand(100) < 4 * (v > rec[p] ? v - rec[p] : rec[p] - v))
-                d = v > rec[p] ? -d : d;
-            else if (nrand(2))
-                d = -d;
-            v += d;
-            knob_set(p, v < -50 ? -50 : v > 50 ? 50 : v);
-        }
-    }
     if (how == NUDGE_EVOLVE)
         return;
     {   /* said: "CHORD NUDGE  Colour +9", "CHORD SHAKE  Keys" */
@@ -1026,6 +1029,8 @@ static void nudge(int layer, int how)
         say(head, t);
     }
     if (!ui.perf) {
+        if (SND[layer] == V_NSND && ui.view != V_NSND)
+            ui.noise_from = (uint8_t)ui.view;   /* (SAVE again goes back there) */
         set_view(SND[layer]);
         for (j = 0; j < 4; j++)
             if (VIEW_KNOB[ui.view][j] == best && how == NUDGE_HAND) {
@@ -1067,12 +1072,14 @@ static void input(void)
         if (btn & m) {
             ui.btn_used &= ~m;
             ui.down_t[i] = plat_ms();
-            if (i == B_SAVE)
+            if (i == B_GLO)
                 ui.reset_done = 0;
             if (i == B_PLAY)                   /* transport on the press */
                 button((int)i);
         } else if (i == B_EDIT) {               /* EDIT: the Chords page (a tap), the next chord (held) */
             edit_released(plat_ms() - ui.down_t[B_EDIT]);
+        } else if (i == B_GLO && !(ui.btn_used & m) && plat_ms() - ui.down_t[B_GLO] >= NUDGE_HOLD) {
+            do_save();                           /* GLO held and let go: saved (held on: the reset, below, unsaved) */
         } else if (!(ui.btn_used & m) && i != B_PLAY) {
             button((int)i);
         }
@@ -1145,6 +1152,8 @@ static void input(void)
                 v = (int)ui.perf_from + (e > 0 ? 1 : -1);
             if (ui.view == V_CHORDS)
                 v = (int)ui.chords_from + (e > 0 ? 1 : -1);
+            if (ui.view == V_NSND)
+                v = (int)ui.noise_from + (e > 0 ? 1 : -1);
             if (v >= 0 && v < NPAGES)
                 set_view(v);
         }
@@ -1180,9 +1189,9 @@ static void input(void)
         set_piece(proj.piece + (int)e);
         ui.turn_t = plat_ms();
     }
-    if ((btn >> B_SAVE & 1u) && !ui.reset_done && plat_ms() - ui.down_t[B_SAVE] > RESET_HOLD) {
-        ui.reset_done = 1;                     /* held: the piece back to its recipe (not saved) */
-        ui.btn_used |= 1u << B_SAVE;
+    if ((btn >> B_GLO & 1u) && !ui.reset_done && plat_ms() - ui.down_t[B_GLO] > RESET_HOLD) {
+        ui.reset_done = 1;                     /* held on: the piece back to its recipe (not saved) */
+        ui.btn_used |= 1u << B_GLO;
         project_piece_reset();
         project_apply();
         en_regrow();
@@ -2248,7 +2257,9 @@ static void draw_knobs(void)
         v = off ? 0 : knob_get(k);
         caps(t, KNOB_LABEL[ui.view][i], sizeof t);
         text_c(cx, 12, &FONT_XS, t, hot ? K_TEXT : K_DIM);
-        if (k != K_CPU && hi - lo < 6) {         /* a switch: its positions as pips */
+        if (k == K_SAVE) {                       /* (Save: a dot, lit while there's something to save) */
+            cv_disc(cx, 37, 5, v ? K_ACC : K_LINE);
+        } else if (k != K_CPU && hi - lo < 6) {  /* a switch: its positions as pips */
             int n = hi - lo + 1, j, pw = n > 4 ? 6 : 9, gap = 3, w0 = n * (pw + gap) - gap;
             for (j = 0; j < n; j++)
                 cv_round(cx - w0 / 2 + j * (pw + gap), 33, pw, 8, 2, j == v - lo ? fill : K_LINE);

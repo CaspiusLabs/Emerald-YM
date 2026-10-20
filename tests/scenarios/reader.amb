@@ -147,7 +147,9 @@ press LFO
 wait 700
 release LFO
 said BASS NUDGE
-tap SAVE
+press GLO
+wait 600
+release GLO
 said SAVED
 press REC
 wait 1000

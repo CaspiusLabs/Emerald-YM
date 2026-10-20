@@ -505,6 +505,15 @@ static int expect(const char *what, const char *val)
         printf("FAIL unknown expect %s\n", what);
         return 1;
     }
+    if (val[0] == '!' && val[1] == '=') {        /* (!=N: anything but N) */
+        int no = (int)strtol(val + 2, 0, 0);
+        if (got == no) {
+            printf("FAIL expect %s %s, got %d\n", what, val, got);
+            return 1;
+        }
+        printf("  ok %s == %d (%s)\n", what, got, val);
+        return 0;
+    }
     if (val[0] == '<' || val[0] == '>') {
         int lim = (int)strtol(val + 1, 0, 0);
         if (val[0] == '<' ? got >= lim : got <= lim) {

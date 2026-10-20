@@ -45,9 +45,9 @@ turn PRESET -1
 wait 400
 expect par37 30
 expect par48 5
-press SAVE
+press GLO
 wait 1700
-release SAVE
+release GLO
 wait 300
 expect par37 0
 expect par48 0

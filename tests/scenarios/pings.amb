@@ -8,7 +8,9 @@ wait 16000
 pingmark
 wait 40000
 expect pingsame 1
-tap SAVE
+press GLO
+wait 600
+release GLO
 reboot
 wait 1500
 expect par5 0

@@ -79,7 +79,7 @@ DUB-1 starts playing as soon as it's on. A few minutes with it:
 7. **Rest.** Press PLAY: the music stops and the echo and reverb ring away. PLAY again and it
    starts from the top of a phrase.
 
-What you change is kept with the piece. DUB-1 saves it by itself while resting, or press SAVE.
+What you change is kept with the piece. DUB-1 saves it by itself while resting, or hold GLO for half a second (or turn Setup's KNOB 4).
 
 Want a new colour? Hold a layer's button (ENV, ARP, LFO or SEQ) for half a second: its sound takes a small step somewhere new.
 
@@ -98,14 +98,14 @@ The drawing at the top shows them all; here they are in more detail.
 | SEL | **PERFORM**: the knobs become the master actions (Filter, Dub, Energy, Space) and the keys stop being the scale: they mute and solo the layers, make the dub moves, and white 6 held puts the mix on the knobs (see below). Press again to go back; lit while on. Held: the key map. |
 | HOME | The Dub page: the Filter and the machine's movement. Again: the Key page (tempo, root, mode, swing), and again back to Dub; HOME blinks on the Key page. |
 | ENV · ARP · LFO · SEQ | The layers' pages: Chord, Texture (the pings and the crackle), Bass, Drums. Held (half a second): a **nudge** to the layer's sound; held on (1.5 s): a **shake** (below). |
-| FX · GLO | The Space page; the Setup page, for what holds for every piece. The lit button shows the page. FX held: a nudge to the space; held on: a shake (a new echo time). |
+| FX · GLO | The Space page; the Setup page, for what holds for every piece. The lit button shows the page. FX held: a nudge to the space; held on: a shake (a new echo time). **GLO held** (half a second, then let go): **saves** all eight pieces; held on (1.5 s): the piece back to its recipe. |
 | SELECT | The previous or next page. Hold HOME and turn it for the tempo, from any page. |
 | ALGORITHM | On a layer's page (Chord, Texture, Bass, Drums): that layer's **voice** (see [The voices](#the-voices)). On the Chords page: the walk's character (Home, Wander, Free). Anywhere else: the middle of the screen, as ripples, a scope or a spectrum (see [The screen](#4-the-screen)). The mode, a piece's choice, is on the Key page (HOME again). |
 | PRESETS | The piece (see [The pieces](#7-the-pieces)). |
 | KNOB 1–4 | The four values on the screen. A few clicks are always single steps; a quick turn speeds up, so half a turn sweeps the range. |
 | OCT− / OCT+ | The pings' octave, two down to two up, from any page. While playing, a ping sounds at once in the new octave. |
 | MASTER | Volume. |
-| SAVE | Saves all eight pieces. Held for 1.5 s: puts the piece back to its recipe. |
+| SAVE | The **Noise page** (below); again, back. Held: a nudge to the noise; held on (1.5 s): a shake (another noise character). Saving is on GLO. |
 
 **PERFORM** (SEL). The knobs become the **Perform** page, the master actions, each acting on the
 whole music. They are 0 in the middle (the piece as it is), and on the way through the knob stops at
@@ -234,7 +234,7 @@ Colour +5"), and the layer's sound page comes up with that knob lit (in PERFORM,
 | SEQ | the drums: the kick's tune, length and punch, the hats' tone |
 | FX | the space: the echo's send and feedback (smaller steps), the reverb, the plate's size, the cloud; its shake: a new echo time |
 
-SAVE keeps what you like; SAVE held puts the piece back to its recipe. Evolve nudges by itself too (the Dub
+Saving (GLO held) keeps what you like; GLO held on (1.5 s) puts the piece back to its recipe. Evolve nudges by itself too (the Dub
 page, below), but never shakes.
 
 ![A nudge: CHORD NUDGE in the header, the Chord sound page with the changed knob lit](img/screen-nudge.png "A nudge")
@@ -263,7 +263,7 @@ page, below), but never shakes.
   circle as a blue dot, one step at a time, and light up as they play. The loops have different
   lengths, so the dots drift apart and meet again.
 - **ALGORITHM** (on any page but a layer's or the Chords page) changes what the middle shows: the ripples, a **scope** or a
-  **spectrum**, and then the ripples again (turned back, the other way round). Each piece keeps its own view, saved with it (SAVE): Haze on the spectrum, say, and Pressure on the scope. With the
+  **spectrum**, and then the ripples again (turned back, the other way round). Each piece keeps its own view, saved with it: Haze on the spectrum, say, and Pressure on the scope. With the
   scope or the spectrum showing, the chord's name moves to the top.
   - The **scope** draws the output (left and right mixed) as a thick line. Each trace starts on a
     rising zero crossing so the picture stands still, and the two traces before it fade behind.
@@ -380,7 +380,7 @@ band-pass, thins the pings in the dark and takes a little off the reverb when it
 
 PRESETS chooses one of eight pieces. Each is a recipe for the whole machine: the layers, the
 sounds, tempo, key and mode, the groove, the space, how busy it is and how far it moves. Each
-remembers how you left it. Hold SAVE for 1.5 s to put the piece you're on back to its recipe.
+remembers how you left it. Hold GLO for 1.5 s to put the piece you're on back to its recipe.
 Tune, MIDI out and Lights are the same for all.
 
 | Piece | What it is |
@@ -445,7 +445,7 @@ there; press it again to go back, or go anywhere else as usual. ALGORITHM still 
 
 Each knob is **relative to the voice as it is**: 0, the middle, is the preset; turning moves away
 from it, to −50 or +50. Your turns stay when you change the voice, so a chord made slower and
-brighter stays slower and brighter on the next voice. Holding SAVE (the piece back to its recipe)
+brighter stays slower and brighter on the next voice. Holding GLO 1.5 s (the piece back to its recipe)
 puts them back to 0. Each piece keeps its own.
 
 In place of the ripples, the screen draws the layer's envelope as it will sound, and how long it
@@ -530,7 +530,7 @@ The stab's sound, saws or FM keys, comes with the piece.
 
 OCT− and OCT+ set the pings' octave, two down to two up.
 
-**The Noise page** (ARP a fourth time: after the pings' sound and FM pages; again, back to Texture). Each knob is 0
+**The Noise page** (SAVE, a tap; again, back to where you were). Each knob is 0
 in the middle, the piece's own noise:
 
 ![The Noise page: VINYL, COLOUR 0, GRAIN 0, ROOM 0, DRIFT 0, the spectrum in the middle](img/screen-noise.png "The Noise page")
@@ -609,7 +609,7 @@ How long the plate rings comes with the piece.
 
 ### GLO: Setup
 
-![The Setup page: TUNE 0, MIDI OUT On, LIGHTS On](img/screen-setup.png "The Setup page")
+![The Setup page: TUNE 0, MIDI OUT On, LIGHTS On, SAVE](img/screen-setup.png "The Setup page")
 
 What holds for every piece and the whole machine (the root is the piece's: on the Key page).
 
@@ -617,6 +617,8 @@ What holds for every piece and the whole machine (the root is the piece's: on th
 - **MIDI out:** on or off.
 - **Lights:** On: the keys light the scale, and the unlit buttons glow dimly so they can be read
   on the black FM-1. Keys: the key lights only. Off.
+- **Save:** a turn saves all eight pieces. It shows **Save**, its dot lit, while there are unsaved
+  changes, and **Saved** after. (GLO held does the same.)
 
 On this page the top right shows the machine instead of the tempo. **CPU 35/61** is how much of
 the FM-1's time the sound takes: 35% now (smoothed), and 61% at the heaviest moment of the last
@@ -661,8 +663,10 @@ mode, the root, the tempo and the pings' octave, plus Tune, MIDI out and Lights.
 - **By itself:** a few seconds after a change, but only while resting and once the stabs have
   died away. Writing to the memory interrupts the sound for a moment, so it never happens while
   the music plays. A dot at the top of the screen means there are unsaved changes.
-- **SAVE:** saves now, playing or not.
-- **Hold SAVE** for 1.5 s: the piece goes back to its recipe ("RESET"). That isn't saved until the
+- **GLO held** for half a second, then let go: saves now, playing or not ("SAVED").
+- **Setup's KNOB 4 (Save):** shows **Save**, its dot lit, while there are unsaved changes, and
+  **Saved** once there aren't; a turn saves.
+- **Hold GLO** on for 1.5 s: the piece goes back to its recipe ("RESET"). That isn't saved until the
   next save, so switching off before then brings your version back.
 
 Projects saved by AMB-1 aren't read by DUB-1: the first start after installing it begins with the

@@ -72,7 +72,9 @@ said_none NUDGE
 tap HOME
 wait 300
 expect view 0
-tap SAVE
+press GLO
+wait 600
+release GLO
 wait 300
 expect dirty 0
 wait 120000
@@ -81,7 +83,9 @@ expect dirty 0
 spin K2 60
 wait 200
 expect par5 100
-tap SAVE
+press GLO
+wait 600
+release GLO
 wait 300
 expect dirty 0
 wait 120000

@@ -36,7 +36,8 @@ installer can reach.
 | ALGORITHM | On the Dub page, the screen (ripples, scope, spectrum); on a layer's page, its voice (7 chord, 5 ping, 5 bass voices, 5 kits); elsewhere, the mode. An FM voice's layer button a third time: its FM page (the algorithm, ratio, feedback, modulators' decay) |
 | PRESETS | The piece (eight of them) |
 | OCT− / OCT+ | The pings' octave |
-| SAVE | Saves; held, puts the piece back to its recipe |
+| SAVE | The Noise page (Colour, Grain, Room, Drift; ALGORITHM its character); held, a nudge to the noise |
+| GLO | The Setup page; held, saves (held on, the piece back to its recipe) |
 
 Hold a layer's button (ENV, ARP, LFO, SEQ) for a nudge: its sound a small step somewhere new.
 
