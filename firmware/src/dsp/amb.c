@@ -2987,6 +2987,7 @@ static const struct {                           /* each source's level (x the de
 };
 #define CR_ND 6                                 /* the drifts: hiss level, hiss colour, vinyl density, dust, wind, rumble */
 static float cr_lp, cr_lp2, cr_hp, cr_cl, cr_cr, cr_fl, cr_fr, cr_cc = 0.45f, cr_gate, cr_sg = 1.0f;
+static float cr_wl1, cr_wl2, cr_wr1, cr_wr2;     /* the wear: the whole noise through a worn cartridge (render_crackle) */
 static float cr_dv[CR_ND] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, cr_dt[CR_ND] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
 static const float CR_DRANGE[CR_ND] = {0.66f, 0.5f, 2.0f, 1.33f, 1.33f, 1.33f};   /* (octaves of each drift's span) */
 static float du_env, du_att, du_dec, du_f, du_s1, du_s2, du_gl, du_gr, wi_f, wi_s1, wi_s2, ru1, ru2, ru3;
@@ -3011,7 +3012,7 @@ static void render_crackle(uint32_t n)
 {
     uint32_t j, thr;
     int i;
-    float g, gh, lpc, k, sg, gd, gw, gr, vg, nc, ng, nr, nd;
+    float g, gh, lpc, k, sg, gd, gw, gr, vg, nc, ng, nr, nd, wc;
     cr_gate += ((en_playing ? 1.0f : 0.0f) - cr_gate) * fm_minf((float)n / (0.5f * EN_SR), 1.0f);
     if (cr_gate < 1e-4f)
         cr_gate = 0.0f;
@@ -3043,8 +3044,10 @@ static void render_crackle(uint32_t n)
     sg = cr_sg;
     /* Colour: the hiss's band, the dust's, the wind's; Grain: the hiss against the vinyl and the dust (more,
      * bigger, longer); Room: the rumble and the wind */
-    gh = 0.06f * cr_dv[0] * sg * ch_h * fm_exp2f(-0.5f * ng);
-    lpc = fm_clampf(0.62f * cr_dv[1] * fm_exp2f(0.5f * nc), 0.25f, 0.9f);   /* the hiss's band: ~3.3-6 kHz at its top */
+    gh = 0.085f * cr_dv[0] * sg * ch_h * fm_exp2f(-0.5f * ng);   /* (1.3.0: +3 dB, for what the wear takes) */
+    lpc = fm_clampf(0.4f * cr_dv[1] * fm_exp2f(0.5f * nc), 0.15f, 0.8f);   /* the hiss's band: ~2-4 kHz at its top */
+    /* 1.3.0, muddier: the wear, two poles at ~2.8 kHz (Colour: ~1.2 kHz down, ~6.5 kHz up) on the whole noise */
+    wc = 1.0f - fm_expf(-2.0f * FM_PI * fm_clampf(2800.0f * fm_exp2f(1.2f * nc), 900.0f, 9000.0f) / EN_SR);
     vg = 2.2f * ch_v * fm_exp2f(0.7f * ng);
     gd = 0.7f * cr_wd * cr_dv[3] * sg * ch_d * fm_exp2f(1.2f * ng);
     gw = 0.04f * cr_ww * cr_dv[4] * ch_w * fm_exp2f(nr);
@@ -3060,6 +3063,7 @@ static void render_crackle(uint32_t n)
         float lp1 = cr_lp, lp2 = cr_lp2, hp1 = cr_hp, cl = cr_cl, cr = cr_cr, fl = cr_fl, fr = cr_fr, cc = cr_cc;
         float de = du_env, da = du_att, ds1 = du_s1, ds2 = du_s2, ws1 = wi_s1, ws2 = wi_s2, r1 = ru1, r2 = ru2, r3 = ru3;
         float df = du_f, dd = du_dec, dgl = du_gl, dgr = du_gr;
+        float wl1 = cr_wl1, wl2 = cr_wl2, wr1 = cr_wr1, wr2 = cr_wr2;
         const float wf = wi_f;
         const int wind = gw > 0.0f, rum = gr > 0.0f;
         int32_t dl = du_left;
@@ -3075,9 +3079,10 @@ static void render_crackle(uint32_t n)
             cn = cn * 1664525u + 1013904223u;
             w2 = (float)(int32_t)cn * (1.0f / 2147483648.0f);
             if (cn < thr) {                      /* the vinyl: a click (its size, side, colour), now and then a pop */
-                float a = CRU(), sg1 = CRU() < 0.5f ? -1.0f : 1.0f, pn = CRU();
-                cc = 0.12f + 0.75f * CRU();
-                a = (0.03f + 0.5f * a * a * a) * (1.5f - 0.6f * cc);
+                float a = CRU(), sg1 = CRU() < 0.5f ? -1.0f : 1.0f, pn = 0.25f + 0.5f * CRU();   /* (nearer the middle) */
+                cc = CRU();
+                cc = CRU() < 0.1f ? 0.45f + 0.3f * cc : 0.05f + 0.3f * cc * cc;   /* mostly a dull thump; now and then a tick */
+                a = (0.03f + 0.5f * a * a * a) * (1.8f - 0.8f * cc);
                 if (CRU() < 0.03f)
                     a = 0.5f + 0.4f * CRU(), cc = 0.1f + 0.1f * CRU();
                 cl += a * sg1 * (1.0f - pn);
@@ -3117,7 +3122,14 @@ static void render_crackle(uint32_t n)
                 l += 0.8f * b;
                 r += b;
             }
-            rsend[j] += (l + r) * 0.4f;
+            wl1 += wc * (l - wl1);               /* the wear */
+            wl2 += wc * (wl1 - wl2);
+            wr1 += wc * (r - wr1);
+            wr2 += wc * (wr1 - wr2);
+            l = 1.9f * wl2;                      /* (as loud as before the wear, more of it into the room: behind
+                                                  * the music) */
+            r = 1.9f * wr2;
+            rsend[j] += (l + r) * 0.8f;
             if (rum) {                           /* the rumble: under ~60 Hz, its own sub-sonic cut */
                 r1 += 0.008f * (w - r1);
                 r2 += 0.008f * (r1 - r2);
@@ -3135,6 +3147,7 @@ static void render_crackle(uint32_t n)
         cr_cl = fm_flush(cl), cr_cr = fm_flush(cr), cr_fl = fm_flush(fl), cr_fr = fm_flush(fr), cr_cc = cc;
         du_env = fm_flush(de), du_att = da, du_s1 = fm_flush(ds1), du_s2 = fm_flush(ds2), du_left = dl;
         wi_s1 = fm_flush(ws1), wi_s2 = fm_flush(ws2), ru1 = fm_flush(r1), ru2 = fm_flush(r2), ru3 = fm_flush(r3);
+        cr_wl1 = fm_flush(wl1), cr_wl2 = fm_flush(wl2), cr_wr1 = fm_flush(wr1), cr_wr2 = fm_flush(wr2);
     }
 }
 
