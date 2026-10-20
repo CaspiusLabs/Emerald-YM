@@ -148,6 +148,11 @@ static void from10(const project10_t *o)        /* 1.1.0 to 1.3.0's chords: ever
         proj.slot[i].screen = o->slot[i].screen;
     }
 }
+static void groove11(int16_t *par)              /* before 12: the groove a pattern (0..4), now a ladder step */
+{
+    static const int8_t TO[5] = {0, 2, 4, 8, 6};   /* Drone, Offbeat, Dotted, Roller, Sync */
+    par[P_GROOVE] = TO[(unsigned)par[P_GROOVE] < 5u ? par[P_GROOVE] : 1];
+}
 static void noise10(void)                       /* before 11: each piece's noise as its recipe has it */
 {
     int16_t rec[P_NPARAMS];
@@ -187,14 +192,21 @@ int project_load(void)
         from10((const project10_t *)(const void *)&buf);
     } else {
         proj = buf;
+        if (n >= 8 && proj.magic == PROJ_MAGIC && proj.format == 11u)
+            old = 11, proj.format = PROJ_FORMAT;   /* (the same layout) */
     }
     if (old == 9) {                              /* (8 and 9: the chords' slots as 10 has them) */
         gaps9(proj.par);
         for (i = 0; i < NPIECES; i++)
             gaps9(proj.slot[i].par);
     }
-    if (old)                                     /* (before 11: the noise's own, from the recipes) */
+    if (old && old <= 10)                        /* (before 11: the noise's own, from the recipes) */
         noise10();
+    if (old) {                                   /* (before 12: the groove a ladder step) */
+        groove11(proj.par);
+        for (i = 0; i < NPIECES; i++)
+            groove11(proj.slot[i].par);
+    }
     if (n >= 8 && project_valid())
         return 0;
     project_defaults();

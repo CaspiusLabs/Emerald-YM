@@ -196,7 +196,8 @@ int main(void)
     /* texts */
     {
         char t[12];
-        static const char *const GRV[5] = {"Drone", "Offbeat", "Dotted", "Roller", "Sync"};
+        static const char *const GRV[9] = {"Drone", "Thin off", "Offbeat", "Thin dot", "Dotted", "Thin sync", "Sync",
+                                           "Thin roll", "Roller"};   /* (the Groove knob: a ladder, 1.3.0) */
         en_param_text(P_DRIFT, 6, t);
         CHECK(!strcmp(t, "Hold"), "drift 6: %s", t);
         en_param_text(P_DRIFT, 4, t);
@@ -207,7 +208,7 @@ int main(void)
         CHECK(!strcmp(t, "1/8."), "etime 1: %s", t);
         en_param_text(P_ETIME, 5, t);
         CHECK(!strcmp(t, "1 bar"), "etime 5: %s", t);
-        for (i = 0; i < 5; i++) {
+        for (i = 0; i < 9; i++) {
             en_param_text(P_GROOVE, i, t);
             CHECK(!strcmp(t, GRV[i]), "groove %d: %s", i, t);
         }
@@ -376,7 +377,7 @@ int main(void)
         int lo0, hi0;
         fresh();
         en_set(P_DRIFT, 6);
-        en_set(P_GROOVE, 3);
+        en_set(P_GROOVE, 8);                     /* (Roller, the ladder's top) */
         en_set(P_FIFTH, 0);
         en_regrow();
         en_play(1);

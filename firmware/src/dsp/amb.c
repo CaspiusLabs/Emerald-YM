@@ -30,7 +30,7 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     {"Cutoff", 0, 100, 45},   {"Decay", 0, 100, 35},    {"Ping tone", 0, 100, 40}, {"Motion", 0, 100, 50},
     {"Tune", -50, 50, 0},     {"MIDI out", 0, 1, 1},    {"Tempo", 90, 140, 122},  {"Root", 0, 11, 5},
     {"Mode", 0, EN_NMODES - 1, MODE_DORIAN}, {"Ping oct", -2, 2, 0}, {"Chord voice", 0, EN_NCV - 1, 0},
-    {"Bass oct", -1, 1, 0},   {"Groove", 0, 4, 1},      {"Fifth", 0, 100, 20},
+    {"Bass oct", -1, 1, 0},   {"Groove", 0, 8, 2},      {"Fifth", 0, 100, 20},
     {"Swing", 0, 100, 10},    {"Hats", 0, 100, 50},
     {"Stabs", 0, 100, 30},    {"Crackle", 0, 100, 35},  {"Duck", 0, 100, 50},     {"Size", 0, 100, 55},
     {"Cloud", 0, 100, 30},
@@ -67,13 +67,13 @@ const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PAR
  *                  CV BO Grv Fif Swi Hat  Stb Crk Dck Siz  Clo PV BV Kit
  *                  then the sound pages' sixteen, all 0: the voices as they are; then the noise's five (its controls, its character)
  * (Dri: Drift, 2 4 8 16 32 64 bars or Hold; ET: Echo time, 1/8 1/8. 1/4 1/4. 1/2 1 bar; Grv: Drone, Offbeat,
- *  Dotted, Roller, Sync; CV, PV, BV, Kit: the voices, EN_CV_NAME ...) */
+ *  Dotted, Roller, Sync, now the ladder LADDER_NAME: 0 Drone .. 8 Roller; CV, PV, BV, Kit: the voices, EN_CV_NAME ...) */
 static const struct {
     const char *name;
     int16_t v[P_NPARAMS];
 } PIECES[EN_NPIECES] = {
     {"Basic",      {76, 30, 60, 65, 30, 40, 4, 50, 55, 1, 35, 60, 45, 35, 40, 50, 0, 1, 122, 5, 1, 0,
-                    0, 0, 1, 20, 10, 50, 30, 35, 50, 55, 30, 0, 0, 0,
+                    0, 0, 2, 20, 10, 50, 30, 35, 50, 55, 30, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
@@ -87,7 +87,7 @@ static const struct {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     -5, -10, 10, 0, 3}},
     {"Steppers",   {60, 35, 70, 70, 35, 40, 3, 60, 50, 3, 30, 55, 55, 25, 50, 45, 0, 1, 126, 2, 1, 0,
-                    0, 0, 2, 35, 15, 60, 45, 25, 60, 50, 20, 1, 1, 2,
+                    0, 0, 4, 35, 15, 60, 45, 25, 60, 50, 20, 1, 1, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
@@ -101,21 +101,21 @@ static const struct {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     -10, 0, 15, 10, 1}},
     {"Concrete",   {65, 25, 65, 75, 25, 35, 4, 75, 50, 1, 25, 60, 60, 20, 60, 40, 0, 1, 130, 0, 7, 0,
-                    6, 0, 3, 30, 20, 75, 50, 20, 65, 45, 15, 3, 3, 2,
+                    6, 0, 8, 30, 20, 75, 50, 20, 65, 45, 15, 3, 3, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     0, 15, 0, 10, 4}},
     {"Night Drive", {65, 45, 60, 65, 45, 50, 3, 55, 60, 4, 35, 65, 50, 40, 45, 55, 0, 1, 124, 10, 1, 0,
-                    1, 0, 4, 25, 25, 55, 35, 30, 50, 60, 35, 4, 4, 0,
+                    1, 0, 6, 25, 25, 55, 35, 30, 50, 60, 35, 4, 4, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     0, -10, 0, 0, 1}},
     {"Pressure",   {78, 20, 54, 74, 20, 30, 6, 65, 45, 1, 20, 55, 48, 30, 35, 35, 0, 1, 128, 4, 2, 0,
-                    5, 0, 1, 10, 5, 65, 25, 32, 70, 40, 20, 3, 4, 1,
+                    5, 0, 2, 10, 5, 65, 25, 32, 70, 40, 20, 3, 4, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
@@ -148,7 +148,13 @@ const char *const EN_CQ_NAME[EN_NCQ] = {"Empty", "Major", "Minor", "Sus2", "Sus4
 const char *const EN_CX_NAME[EN_NCX] = {"Triad", "6", "7", "Maj7", "9", "11", "Add9"};
 static const char *const ETIME_NAME[6] = {"1/8", "1/8.", "1/4", "1/4.", "1/2", "1 bar"};
 static const float ETIME_BEATS[6] = {0.5f, 0.75f, 1.0f, 1.5f, 2.0f, 4.0f};
-static const char *const GROOVE_NAME[5] = {"Drone", "Offbeat", "Dotted", "Roller", "Sync"};
+/* the Groove knob (P_GROOVE): a ladder from sparse to busy, each step a pattern (GROOVE) and how many of its notes
+ * play (the rest left out at random, bar by bar); Energy (PERFORM) thins it further, or fills a thin one */
+#define NLADDER 9
+static const uint8_t LADDER_PAT[NLADDER] = {0, 1, 1, 2, 2, 4, 4, 3, 3};
+static const uint8_t LADDER_DENS[NLADDER] = {100, 55, 100, 60, 100, 65, 100, 60, 100};
+static const char *const LADDER_NAME[NLADDER] = {"Drone", "Thin off", "Offbeat", "Thin dot", "Dotted", "Thin sync", "Sync",
+                                                 "Thin roll", "Roller"};
 /* the bass's grooves (bit i: a note on sixteenth i) and how long each note holds, in sixteenths (Offbeat's
  * held past the next kick, and Roller's nearly to its next note: the kick lands on a bass the duck shapes, not
  * in silence) */
@@ -208,7 +214,7 @@ void en_param_text(int i, int v, char *b)
     else if (i == P_DMODE)
         s = v ? "Pattern" : "Auto";
     else if (i == P_GROOVE)
-        s = GROOVE_NAME[(unsigned)v < 5u ? v : 0];
+        s = LADDER_NAME[(unsigned)v < NLADDER ? v : 0];
     else if (i == P_MODE)
         s = EN_MODE_NAME[(unsigned)v < EN_NMODES ? v : 0];
     else if (i == P_ROOT)
@@ -465,6 +471,7 @@ typedef struct {
     uint8_t character;                          /* NCHAR[] */
 } noise_ctl_t;
 static noise_ctl_t nctl;
+static int gpat(void) { return LADDER_PAT[(unsigned)par[P_GROOVE] < NLADDER ? par[P_GROOVE] : 0]; }   /* the pattern */
 static int8_t mac[EN_NMAC];                     /* the master actions, -50..50 */
 static int8_t pofs[P_NPARAMS];
 static float dub_up;                            /* Dub turned up, 0..1: the echo darker, feeding back past its knob */                  /* what they add to the piece's parameters */
@@ -1512,7 +1519,7 @@ static void bass_hit(int first)
     bass.target = (float)n;
     if (bass.gate > 0 || bass.midi_note)
         midi(0x82, bass.midi_note, 0);
-    bass.gate = (int32_t)(fm_minf(GROOVE_GATE[(unsigned)g < 5u ? g : 0] * fm_exp2f(rel(P_BLEN)), 15.8f) * step_len);
+    bass.gate = (int32_t)(fm_minf(GROOVE_GATE[gpat()] * fm_exp2f(rel(P_BLEN)), 15.8f) * step_len);
     bass_bite = 1.0f;
     {
         int bv = (unsigned)par[P_BVOICE] < EN_NBV ? par[P_BVOICE] : 0;
@@ -1615,7 +1622,7 @@ static void lanes(void)
     en_lane[2] = (uint16_t)(hats ? (lay_hats ? dpat(1) : 0u) | (lay_open || fill ? dpat(2) : 0u) : 0u);
     en_lane[3] = (uint16_t)(hats && lay_hats ? dpat(3) : 0u);
     en_lane[4] = (uint16_t)(hats && (sec == SEC_FULL || sec == SEC_GROOVE || par[P_DMODE]) ? dpat(4) : 0u);
-    en_lane[5] = (uint16_t)(lay_bass && !(mutes & EN_M_BASS) && !(perf & EN_PF_KICKDROP) && par[P_BASS] > 0 ? en_groove(par[P_GROOVE]) : 0u);
+    en_lane[5] = (uint16_t)(lay_bass && !(mutes & EN_M_BASS) && !(perf & EN_PF_KICKDROP) && par[P_BASS] > 0 ? en_groove(gpat()) : 0u);
 }
 
 /* a pattern's hit: its chance (Play: Pattern only, so Auto's music stays as it was), its accent */
@@ -1656,8 +1663,14 @@ static void tick(void)
                 drum_hit(4, v4, 0);
         }
     }
-    if (lay_bass && !(mutes & EN_M_BASS) && !(perf & EN_PF_KICKDROP) && en_groove(par[P_GROOVE]) >> st & 1u)
-        bass_hit(st == 0);
+    if (lay_bass && !(mutes & EN_M_BASS) && !(perf & EN_PF_KICKDROP) && en_groove(gpat()) >> st & 1u) {
+        /* the ladder's density, and Energy: down thins it (to 0.4 of it), up fills a thin one; the first note of a
+         * bar always plays (the random draw only while thinned: a full groove draws nothing, as before) */
+        const float e = (float)mac[EN_MAC_ENERGY] * (1.0f / 50.0f), d0 = (float)LADDER_DENS[(unsigned)par[P_GROOVE] < NLADDER ? par[P_GROOVE] : 0] * 0.01f;
+        const float d = fm_clampf(e < 0.0f ? d0 * (1.0f + 0.6f * e) : d0 + (1.0f - d0) * e, 0.0f, 1.0f);
+        if (d >= 0.999f || st == 0 || frand() < d)
+            bass_hit(st == 0);
+    }
     if (en_stab_pat >> st & 1u) {               /* (the random draws made muted or not: the music goes on the same) */
         uint32_t later = en_stab_pat >> (st + 1);
         int last = !later, thr = (fill && last) || frand() < 0.075f * evolve * (sec == SEC_BREAK ? 2.5f : 1.0f);
@@ -2081,8 +2094,7 @@ void en_env_shape(int layer, float *lvl, float *aux, int n, float *secs)
         break;
     }
     case 2: {                                   /* the bass: in, held for its gate, out */
-        int g = par[P_GROOVE];
-        hold = fm_minf(GROOVE_GATE[(unsigned)g < 5u ? g : 0] * fm_exp2f(rel(P_BLEN)), 15.8f) * step_len / EN_SR;
+        hold = fm_minf(GROOVE_GATE[gpat()] * fm_exp2f(rel(P_BLEN)), 15.8f) * step_len / EN_SR;
         a = 0.02f;
         T = fm_clampf(hold * 1.5f + 0.1f, 0.25f, 4.0f);
         break;
@@ -2686,7 +2698,7 @@ static void render_bass(uint32_t n)
 {
     uint32_t j;
     const int bv = (unsigned)par[P_BVOICE] < EN_NBV ? par[P_BVOICE] : 0;
-    const float g = bass_vol * 0.5f * BV_GAIN[bv] * GROOVE_LVL[(unsigned)par[P_GROOVE] < 5u ? par[P_GROOVE] : 0],
+    const float g = bass_vol * 0.5f * BV_GAIN[bv] * GROOVE_LVL[gpat()],
                 xb = rel(P_BBITE), xs = rel(P_BSHAPE),
                 drv = 1.2f * fm_exp2f(1.2f * xb), bi = fm_maxf(1.0f + xb, 0.0f);   /* Bite: the drive, the FM bite */
     const int balg = BV_PATCH[bv] ? fm_alg_of(P_BALG, BV_PATCH[bv]) : 0;

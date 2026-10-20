@@ -62,7 +62,7 @@ wait 600
 release GLO
 reboot
 wait 1000
-expect format 11
+expect format 12
 expect par110 1
 expect par106 20
 # a 1.2.0 project (format 10): read, everything kept (Basic's chord level, set to 50 here), the noise from the
@@ -75,7 +75,7 @@ expect par0 50
 store10
 reboot
 wait 1000
-expect format 11
+expect format 12
 expect par0 50
 expect par110 0
 expect par106 0

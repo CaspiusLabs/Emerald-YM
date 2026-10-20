@@ -10,7 +10,8 @@
 #define EN_VERSION "DEV"
 #endif
 #define PROJ_MAGIC 0x31425544u           /* "DUB1": AMB-1's projects ("ENO1") give the recipes */
-#define PROJ_FORMAT 11u                  /* 11: the noise's five (P_NCOL..P_NCHAR; 8-10 read, the noise from the recipes);
+#define PROJ_FORMAT 12u                  /* 12: the groove a ladder (0 Drone .. 8 Roller; 8-11 read, converted);
+                                         * 11: the noise's five (P_NCOL..P_NCHAR; 8-10 read, the noise from the recipes);
                                          * 10: the chords' slots as yours, the walk's or gaps (9's and 8's read, an empty
                                          * slot a gap); 9: each piece's ping loops (8, DUB-1 1.0.0's, read and kept;
                                          * older projects give the recipes) */

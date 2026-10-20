@@ -115,7 +115,7 @@ the middle, so it's easy to find:
 |---|---|---|
 | KNOB 1 · **Filter** | Shut 1–100: a low-pass on the music, down to about 230 Hz: under water | Open 1–100: a resonant high-pass, up to about 400 Hz: thin and bright |
 | KNOB 2 · **Dub** | less echo: a lower send and shorter feedback, dry and tight | more echo: a higher send, feeding back longer, towards a runaway |
-| KNOB 3 · **Energy** | sparser and drier: fewer and quieter pings, fewer and quieter hats, fewer and shorter stabs; past halfway, the next phrases go Thin (no bass, no shaker) | busier and brighter: more of each, louder hats, longer stabs; past halfway, the phrases stay Full, with a fill into each |
+| KNOB 3 · **Energy** | sparser and drier: fewer and quieter pings, fewer and quieter hats, fewer and shorter stabs, a thinner bass line; past halfway, the next phrases go Thin (no bass, no shaker) | busier and brighter: more of each, louder hats, longer stabs, a thin bass filled back in; past halfway, the phrases stay Full, with a fill into each |
 | KNOB 4 · **Space** | drier: less reverb and cloud, a smaller plate | wider: more reverb and cloud, a longer plate |
 
 The Filter is the same as KNOB 1 on the Dub page (one value, on both pages); the kick is always
@@ -555,9 +555,13 @@ darker Vinyl.
 - **Octave:** −1, 0 or +1. At 0 the bass sits between E1 and Eb2 (41 to 78 Hz); at +1 an octave
   higher; at −1 an octave lower, E0 to Eb1 (21 to 39 Hz): felt more than heard, and lost on small
   speakers.
-- **Groove:** Drone (one note a bar, held almost to the next), Offbeat (the four off-beat
-  eighths), Dotted (two notes a dotted eighth apart, twice a bar), Roller (six notes a bar,
-  rolling) or Sync (three notes, syncopated).
+- **Groove:** a ladder from sparse to busy. The patterns: Drone (one note a bar, held almost to the
+  next), Offbeat (the four off-beat eighths), Dotted (two notes a dotted eighth apart, twice a bar),
+  Sync (three notes, syncopated) and Roller (six notes a bar, rolling). Between them, a **thin**
+  version of each one ("Thin off", "Thin dot", "Thin sync", "Thin roll"): the same pattern with
+  some of its notes left out at random, about half, the bar's first note always kept. So the knob
+  runs Drone, Thin off, Offbeat, Thin dot, Dotted, Thin sync, Sync, Thin roll, Roller. **Energy**
+  (PERFORM) thins it further, or fills a thin one back to its full pattern.
 - **Fifth:** how often a note is the chord's fifth instead of its root. A note on the bar's first
   sixteenth is the root, except with Drone: there Fifth sets how often a whole bar is the fifth.
 
@@ -745,7 +749,7 @@ The defaults are Basic's; each piece has its own.
 | Noise | Character (ALGORITHM) | Vinyl, Tape, Dust, Room, Machine | Vinyl |
 | Bass | Level | 0–100 | 60 |
 | Bass | Octave | −1 – +1 | 0 |
-| Bass | Groove | Drone, Offbeat, Dotted, Roller, Sync | Offbeat |
+| Bass | Groove | Drone, Thin off, Offbeat, Thin dot, Dotted, Thin sync, Sync, Thin roll, Roller | Offbeat |
 | Bass | Fifth | 0–100 | 20 |
 | Key | Tempo | 90–140 | 122 |
 | Key | Root | C – B | F |

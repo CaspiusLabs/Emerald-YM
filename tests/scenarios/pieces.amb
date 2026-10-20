@@ -20,7 +20,7 @@ shot chamber.png
 # and Steppers: a groove of its own, the grid running at its tempo
 turn PRESET 1
 expect piece 2
-expect par24 2
+expect par24 4
 wait 20000
 shot steppers.png
 expect sixteenths >150
