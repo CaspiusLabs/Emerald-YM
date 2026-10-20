@@ -115,6 +115,47 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Tempo", "Root", "Mode", "Swing"},
     {"Level", "Colour", "Grain", "Drift"},
 };
+/* what each knob does, a line: on the rule above the knobs while it's being turned (in capitals; each fits the
+ * rule's 228 px: the host's expect helpfit) */
+static const char *const KNOB_HELP[NVIEWS][4] = {
+    {"Sweeps the whole mix but the kick", "How restless: stabs come and go", "How often it leaves Full, and sweeps",
+     "Bars before the chord moves on"},
+    {"How often a stab is thrown to the echo", "Stabs a bar, one to six", "How long each stab rings",
+     "The stabs' low-pass: dark to bright"},
+    {"The pings dry, against their echo", "How many notes each loop holds", "The reverb through the grain cloud",
+     "The pings two octaves down to two up"},
+    {"How many of the groove's notes play", "The bass an octave down or up", "The pattern, from sparse to busy",
+     "How often the fifth, not the root"},
+    {"The hats' level against the kick", "How busy the hats are", "Off sixteenths late: the whole groove",
+     "How far the kick pushes the rest down"},
+    {"How much goes into the echo", "The tape loop's length, in beats", "How long the repeats go on",
+     "How much goes into the plate"},
+    {"Fine tuning, in cents", "Notes and clock out over MIDI", "The keys' and buttons' lights",
+     "A turn saves all eight pieces"},
+    {"The chord's level", "The pings' level", "The bass's level", "The drums' level"},
+    {"The strike: a snap, to a swell", "The voice's own colour", "The filter's resonance",
+     "How far each stab opens the filter"},
+    {"The ping, round to metallic", "The modulator: harmonic to clangy", "How long each ping rings",
+     "The pitch falling at the strike"},
+    {"Drive: clean to growling", "A pure sine, to a square", "How long each note holds", "The glide between notes"},
+    {"The kick's pitch, in semitones", "How long the kick booms", "The kick's click and start pitch",
+     "The hats, dark to bright"},
+    {"Which operators modulate which", "Operators 3 and 4's pitch", "Op 4 on itself: pure to gritty",
+     "How fast each note's brightness fades"},
+    {"Which operators modulate which", "Operators 3 and 4's pitch", "Op 4 on itself: pure to gritty",
+     "How fast each note's brightness fades"},
+    {"Which operators modulate which", "Operators 3 and 4's pitch", "Op 4 on itself: pure to gritty",
+     "How fast each note's brightness fades"},
+    {"The slot you're writing", "Its kind (Empty: a gap)", "Triad, 6, 7, Maj7, 9, 11, Add9",
+     "Endless, or the slots in a loop"},
+    {"The lane you're writing", "How much quieter the other steps", "How likely the lane's steps play",
+     "Auto patterns, or your own"},
+    {"Shut: under water. Open: thin", "Dry and tight, to a runaway echo", "Sparse and dry, to busy and bright",
+     "Drier, or wider: reverb and cloud"},
+    {"Beats a minute", "The key's root note", "The scale: Minor, Dorian, ...", "Off sixteenths late: the whole groove"},
+    {"How loud the noise is", "Dark and muffled, to bright", "A smooth hiss, to crackle and dust",
+     "Steady, to restless noises"},
+};
 
 /* the screen's colours: a dark room, as a dub techno sleeve (grey on black, a cold blue). The chord and
  * the scale in teal, the pings in a paler blue, the bass in brass, the drums in amber; dub hold in red.
@@ -2520,12 +2561,22 @@ static void draw_knobs(void)
             caps(t, vn, sizeof t);
             x0 = cv_text(6, -1, &FONT_XS, t, K_DIM) + 5;
         }
-        caps(t, VIEW_NAME[ui.view], sizeof t);
-        xt = xd - 5 - text_w(&FONT_XS, t);
-        cv_rect(x0, 5, xt - 5 - x0, 1, K_LINE);
-        cv_text(xt, -1, &FONT_XS, t, K_ACC);
-        for (k = 0; k < NROUND; k++)             /* (the panel's order: FX ENV LFO GLO HOME SAVE ARP SEQ) */
-            cv_round(xd + k * 6, 3, 4, 4, 2, PAGE_ORDER[k] == page_of(ui.view) ? K_ACC : K_LINE);
+        if (now_touch && ui.touched >= 0 && ui.touched < 4 && !off) {   /* a knob turning: what it does, the rule's
+                                                                          * whole width */
+            char hp[48];
+            caps(hp, KNOB_HELP[ui.view][ui.touched], sizeof hp);
+            cv_rect(0, 0, 240, 12, K_BG);
+            xt = cv_text(6, -1, &FONT_XS, hp, K_TEXT) + 5;
+            if (xt < 234)
+                cv_rect(xt, 5, 234 - xt, 1, K_LINE);
+        } else {
+            caps(t, VIEW_NAME[ui.view], sizeof t);
+            xt = xd - 5 - text_w(&FONT_XS, t);
+            cv_rect(x0, 5, xt - 5 - x0, 1, K_LINE);
+            cv_text(xt, -1, &FONT_XS, t, K_ACC);
+            for (k = 0; k < NROUND; k++)         /* (the panel's order: FX ENV LFO GLO HOME SAVE ARP SEQ) */
+                cv_round(xd + k * 6, 3, 4, 4, 2, PAGE_ORDER[k] == page_of(ui.view) ? K_ACC : K_LINE);
+        }
     }
     for (i = 0; i < 4; i++) {
         int k = VIEW_KNOB[ui.view][i], lo, hi, v, hot = now_touch && ui.touched == (int)i && !off;

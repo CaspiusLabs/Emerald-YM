@@ -292,10 +292,12 @@ page, below), but never shakes.
   is lit. A layer that's out (in a Break, muted in PERFORM, or at level 0) has an empty lane at once.
   In the stabs' lane, rings show where the echo's repeats land, fainter for each, as the echo's
   time and Feedback have them; each flashes white as the playhead reaches it.
-- **Bottom:** the page's name and seven dots, one a page, then its four values, one for each knob:
-  a dial (or, for a switch, its positions) and the value. The one you're turning lights up.
+- **Bottom:** the page's name and eight dots, one a page, then its four values, one for each knob:
+  a dial (or, for a switch, its positions) and the value. The one you're turning lights up, and
+  while it turns, the line above says what it does ("HOW LONG THE REPEATS GO ON"); a moment after,
+  the page's name and dots are back.
 
-![The Space page with FEEDBACK lit as it turns, set to 87%; ECHO 55, ECHO TIME 1/8., REVERB 35](img/screen-turning.png "Turning Feedback on the Space page")
+![The Space page with FEEDBACK lit as it turns, set to 87%, the line above it saying HOW LONG THE REPEATS GO ON; ECHO 55, ECHO TIME 1/8., REVERB 35](img/screen-turning.png "Turning Feedback on the Space page")
 ![The scope: the output as a thick teal line over a dotted centre line, the two traces before it fading behind; Fm7 at the top](img/screen-scope.png "ALGORITHM: the scope")
 ![The spectrum: eighteen columns of teal and brass segments, a white cap over each; Fm7 at the top](img/screen-spectrum.png "ALGORITHM: the spectrum")
 ![Dub hold: red rings, the chord's name and "hold" in red](img/screen-hold.png "Dub hold")

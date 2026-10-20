@@ -473,6 +473,17 @@ static int expect(const char *what, const char *val)
         for (i = 0; i < EN_SCOPE_N; i++)
             got = abs(en_scope[i]) > got ? abs(en_scope[i]) : got;
     }
+    else if (!strcmp(what, "helpfit")) {          /* the knobs' help lines too wide for the rule (0: all fit) */
+        int v, k;
+        char hp[48];
+        got = 0;
+        for (v = 0; v < NVIEWS; v++)
+            for (k = 0; k < 4; k++) {
+                caps(hp, KNOB_HELP[v][k], sizeof hp);
+                if (text_w(&FONT_XS, hp) > 222 || strlen(KNOB_HELP[v][k]) >= sizeof hp)
+                    printf("  too wide: %s\n", hp), got++;
+            }
+    }
     else if (!strcmp(what, "viewlayer"))          /* what the scope and spectrum listen to (0 the whole, 1.. a layer) */
         got = en_view_layer;
     else if (!strcmp(what, "octring"))            /* the level ring showing: its layer + 1 (0: none) */

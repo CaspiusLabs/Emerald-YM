@@ -1,6 +1,8 @@
 # held buttons and the knobs (X0X's ways): a held button does nothing on its release (no cards since 1.3.0); SAVE
 # held on goes back to the recipe; a few quick clicks are exact, a quick spin sweeps
 wait 300
+# each knob's help line fits the rule above the knobs (it shows there while the knob turns)
+expect helpfit 0
 press REC
 wait 1000
 shot help_rec.png
