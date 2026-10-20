@@ -30,6 +30,13 @@ tap ENV
 tap ENV
 wait 300
 expect view 12
+# (Saws isn't FM: the page's knobs grey at 0, and turning them changes nothing; Keys' feedback, 40, kept)
+spin K3 -40
+spin K1 3
+wait 300
+expect par54 40
+expect par52 1
+shot fm_off.png
 tap ENV
 wait 300
 expect view 1

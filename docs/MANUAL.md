@@ -422,7 +422,8 @@ Keys and Bell (chord), every ping voice, and Punch, Rubber, Pluck and Growl (bas
 voices**: sine operators modulating each other, as in the FM-1's own firmware and the 4-operator FM
 synths. On those, the layer's button pressed a third time (after the sound page) opens its **FM
 page**. On a voice that isn't FM (Saws, Organ, Pad, Tonewheel, Noise; Sub) the page says so and
-names the FM ones: turn ALGORITHM there to pick one.
+names the FM ones: turn ALGORITHM there to pick one. Until you do, the page's knobs are grey, at 0, and do
+nothing when turned (what you set on an FM voice is kept for when you come back to one).
 
 - **Algo:** which operators modulate which. *Voice* (the voice's own), or one of the classic eight
   4-operator algorithms (1: a stack of four; 5: two pairs; 8: four sines side by side), or 2-op

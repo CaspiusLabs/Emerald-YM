@@ -37,6 +37,7 @@ static int parent_of(int v)
          : v == V_DSND || v == V_PAT ? V_DRUMS : -1;
 }
 static int layer_of(int v) { v = parent_of(v) >= 0 ? parent_of(v) : v; return v == V_CHORD ? 0 : v == V_TEXTURE ? 1 : v == V_BASS ? 2 : 3; }
+static int fm_off(int v) { return v >= V_CFM && v <= V_BFM && !en_voice_fm(v - V_CFM); }   /* an FM page, not FM */
 static int page_of(int v) { return v == V_KEY ? V_DUB : parent_of(v) >= 0 ? parent_of(v) : v; }   /* a sound page: its layer's */
 /* the four knobs of each page: a parameter, or one of these; and what the knob is called there */
 enum { K_LEDS = 200, K_CPU, K_NONE, K_SLOT, K_CQ, K_CX,    /* (the Chords page: the slot, and its kind and type) */
@@ -1167,6 +1168,8 @@ static void input(void)
         if ((e = plat_enc(EN_K1 + (int)i)) != 0) {
             if (grid_up())
                 continue;                        /* (the grid on the screen: the knobs rest) */
+            if (fm_off(ui.view))
+                continue;                        /* (an FM page on a voice that isn't FM: the knobs rest, greyed) */
             turn(EN_K1 + (int)i, VIEW_KNOB[ui.view][i], e);
             ui.touched = (int8_t)i;
             ui.touch_until = plat_ms() + 1200u;
@@ -2157,6 +2160,7 @@ static void draw_main(void)
  * square root and an arctangent per pixel). */
 static void draw_knobs(void)
 {
+    const int off = fm_off(ui.view);             /* an FM page, the voice not FM: the knobs grey, at 0 */
     uint32_t h = hash(2166136261u, ui.view | (uint32_t)ui.touched << 8), i;
     if (view_voice(ui.view) >= 0)
         h = hash(h, (uint32_t)proj.par[view_voice(ui.view)]);
@@ -2198,11 +2202,11 @@ static void draw_knobs(void)
             cv_round(xd + k * 6, 3, 4, 4, 2, k == page_of(ui.view) ? K_ACC : K_LINE);
     }
     for (i = 0; i < 4; i++) {
-        int k = VIEW_KNOB[ui.view][i], lo, hi, v, hot = now_touch && ui.touched == (int)i;
+        int k = VIEW_KNOB[ui.view][i], lo, hi, v, hot = now_touch && ui.touched == (int)i && !off;
         int32_t x = (int32_t)i * 60, cx = x + 30;
         char t[16];
         static const uint16_t MIXC[4] = {K_PAD, K_BELL, K_BASS, K_PULSE};   /* (the Mix page: the layers' colours) */
-        uint16_t bg = hot ? K_PANEL : K_BG, fill = ui.view == V_MIX ? MIXC[i] : hot ? K_ACC : K_PAD;
+        uint16_t bg = hot ? K_PANEL : K_BG, fill = off ? K_LINE : ui.view == V_MIX ? MIXC[i] : hot ? K_ACC : K_PAD;
         if (k == K_NONE)
             continue;
         if (i)
@@ -2210,7 +2214,7 @@ static void draw_knobs(void)
         if (hot)
             cv_round(x + 3, 11, 54, 57, 6, K_PANEL);
         knob_range(k, &lo, &hi);
-        v = knob_get(k);
+        v = off ? 0 : knob_get(k);
         caps(t, KNOB_LABEL[ui.view][i], sizeof t);
         text_c(cx, 12, &FONT_XS, t, hot ? K_TEXT : K_DIM);
         if (k != K_CPU && hi - lo < 6) {         /* a switch: its positions as pips */
@@ -2220,8 +2224,11 @@ static void draw_knobs(void)
         } else if (k != K_CPU) {
             arc(cx, 37, 12, hi > lo ? (float)(v - lo) / (float)(hi - lo) : 0.0f, K_LINE, fill, bg, lo < 0);
         }
-        knob_text(k, t);
-        text_c(cx, 50, &FONT_B, t, hot ? K_ACC : K_TEXT);
+        if (off && k < P_NPARAMS)
+            en_param_text(k, 0, t);
+        else
+            knob_text(k, t);
+        text_c(cx, 50, &FONT_B, t, off ? K_DIM : hot ? K_ACC : K_TEXT);
     }
     cv_blit(0, KNB_Y);
 }
