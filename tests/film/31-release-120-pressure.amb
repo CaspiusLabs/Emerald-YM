@@ -8,8 +8,8 @@
 # (The 72 ms first: choosing the piece seeds its generators with the time, and this seed keeps Pressure Full every
 # phrase to the piece change, and Chamber Full to the end, checked on the screen's section name bar by bar, so no
 # Thin, Groove or Break phrase hides a move; 48 ms, Night Drive's wait, turned Pressure's bars 8-15 Groove.
-# Of the all-Full seeds from 10 to 140 ms, 72 plays the fewest stabs.)
-# Pressure has few stabs, and the take keeps them few: Energy up only to +30 and for 2 bars, Energy down held 4;
+# Of the all-Full seeds from 10 to 160 ms, 72 has few stabs and a clear Dub build; 11 had fewer, but its Dub barely built.)
+# Pressure has few stabs, and the take keeps them few: Energy up only to +30 and for 3 bars, Energy down held 4;
 # the finale carries Energy down (-30) across the change, not up (+20 doubled Chamber's stabs).
 wait 72
 turn PRESET 6 5
