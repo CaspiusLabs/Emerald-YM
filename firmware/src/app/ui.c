@@ -865,6 +865,7 @@ static void midi_in(void)
  * change said, and the layer's sound page shown, that knob lit. Evolve nudges by itself: now and then on a phrase's
  * first bar, one layer, a smaller step (nudge_tick) */
 #define NUDGE_HOLD 500u
+#define SHAKE_HOLD 1500u                  /* held on: a shake (a new voice, every value a big step) */
 static const uint8_t NUDGE_BTN[4] = {B_ENV, B_ARP, B_LFO, B_SEQ};
 static const char *const NUDGE_NAME[4] = {"CHORD", "PINGS", "BASS", "DRUMS"};
 static const uint8_t NUDGE_PAR[4][8] = {   /* (the FM ones, the last two of the first three, on an FM voice only) */
@@ -879,14 +880,31 @@ static int nrand(int n)
     nudge_seed = nudge_seed * 1664525u + 1013904223u;
     return n > 0 ? (int)((nudge_seed >> 8) % (uint32_t)n) : 0;
 }
-static void nudge(int layer, int small)          /* small: Evolve's, one value, half the step, nothing said */
+enum { NUDGE_EVOLVE, NUDGE_HAND, NUDGE_SHAKE };
+/* how a nudge goes: EVOLVE (Evolve's, 1-2 values, half steps, nothing said), HAND (the button held: 3-4 values, steps
+ * up to an eighth of the range), SHAKE (held on: a new voice or kit, and every value a big step). Each value walks
+ * from where it is, pulled back to the recipe: back as likely as it is far from it, always back from a quarter of
+ * the range away */
+static void nudge(int layer, int how)
 {
     static const uint8_t SND[4] = {V_CSND, V_PSND, V_BSND, V_DSND};
+    static const uint8_t VOICE[4] = {P_CVOICE, P_PVOICE, P_BVOICE, P_KIT};
     int16_t rec[P_NPARAMS];
     uint16_t pool;
-    int n = small ? 1 : 2 + nrand(2), j, best = -1, bd = 0, fm = layer < 3 && en_voice_fm(layer);
+    int j, best = -1, bd = 0, fm, n, np = 0;
     uint8_t pick[8];
-    int np = 0;
+    char vn[12] = "";
+    if (how == NUDGE_SHAKE) {                    /* a new voice (another than this), first: the values then fit it */
+        const en_param_t *pi = en_param_info(VOICE[layer]);
+        int nv = pi->hi - pi->lo + 1 - (layer == 0), cur = proj.par[VOICE[layer]], v;
+        v = (cur + 1 + nrand(nv > 1 ? nv - 1 : 1)) % nv;   /* (the chord's: not Noise, the last, an effect more
+                                                             * than a colour; ALGORITHM still has it) */
+        if (v == cur)
+            v = (v + 1) % nv;
+        set_voice(VOICE[layer], v);
+        en_param_text(VOICE[layer], proj.par[VOICE[layer]], vn);
+    }
+    fm = layer < 3 && en_voice_fm(layer);
     en_piece(proj.piece, rec, &pool);
     for (j = 0; j < (fm ? 8 : 6); j++) {         /* (the values to choose from, each once) */
         int q, dup = 0;
@@ -895,17 +913,22 @@ static void nudge(int layer, int small)          /* small: Evolve's, one value, 
         if (!dup)
             pick[np++] = NUDGE_PAR[layer][j];
     }
+    n = how == NUDGE_SHAKE ? np : how == NUDGE_HAND ? 3 + nrand(2) : 1 + nrand(2);
     for (j = 0; j < n && np; j++) {
         int w = nrand(np), p = pick[w], lo = en_param_info(p)->lo, hi = en_param_info(p)->hi;
+        int st = (hi - lo) / (p == P_DECAY || p == P_CUTOFF ? 16 : 8), v = proj.par[p], d;
         pick[w] = pick[--np];                    /* (not twice in one nudge) */
-        int st = (hi - lo) / (p == P_DECAY || p == P_CUTOFF ? 32 : 16), v = proj.par[p], d;
-        if (small)
+        if (p == P_KTUNE)
+            st = 2;                              /* (the kick's tune: semitones) */
+        if (how == NUDGE_EVOLVE)
             st = (st + 1) / 2;
+        else if (how == NUDGE_SHAKE)
+            st = st * 3 / 2;
         if (st < 1)
             st = 1;
         d = 1 + nrand(st);                       /* a step of 1..st; back towards the recipe as likely as it is far
-                                                  * from it (a sixth of the range away: always back), else either way */
-        if (v != rec[p] && nrand(hi - lo) < 6 * (v > rec[p] ? v - rec[p] : rec[p] - v))
+                                                  * from it (a quarter of the range away: always back), else either way */
+        if (v != rec[p] && nrand(hi - lo) < 4 * (v > rec[p] ? v - rec[p] : rec[p] - v))
             d = v > rec[p] ? -d : d;
         else if (nrand(2))
             d = -d;
@@ -918,37 +941,35 @@ static void nudge(int layer, int small)          /* small: Evolve's, one value, 
         if (d * d > bd * bd)
             best = p, bd = d;
     }
-    if (layer == 1 && nrand(2))                  /* the pings: now and then a note of one loop, another */
+    if (layer == 1 && (how == NUDGE_SHAKE || nrand(2)))   /* the pings: now and then a note of one loop, another */
         en_ping_nudge();
-    if (small || best < 0)
+    if (how == NUDGE_EVOLVE)
         return;
-    {   /* said: the layer, and its biggest change ("CHORD NUDGE  Colour +6"); its sound page, that knob lit */
-        char t[24], v[8];
-        const char *nm = en_param_info(best)->name;
+    {   /* said: "CHORD NUDGE  Colour +9", "CHORD SHAKE  Keys" */
+        char t[24], head[16], v[8];
+        const char *nm = how == NUDGE_SHAKE ? vn : best >= 0 ? en_param_info(best)->name : "";
         int k = 0, i;
         while (*nm && k < 14)
             t[k++] = *nm++;
-        t[k++] = ' ';
-        t[k++] = bd > 0 ? '+' : '-';
-        itoa_u((uint32_t)(bd > 0 ? bd : -bd), v);
-        for (i = 0; v[i] && k < 23; i++)
-            t[k++] = v[i];
-        t[k] = 0;
-        {
-            char head[16];
-            for (i = 0; NUDGE_NAME[layer][i]; i++)
-                head[i] = NUDGE_NAME[layer][i];
-            head[i] = 0;
-            for (k = 0; " NUDGE"[k] && i < 15; k++)
-                head[i++] = " NUDGE"[k];
-            head[i] = 0;
-            say(head, t);
+        if (how == NUDGE_HAND && best >= 0) {
+            t[k++] = ' ';
+            t[k++] = bd > 0 ? '+' : '-';
+            itoa_u((uint32_t)(bd > 0 ? bd : -bd), v);
+            for (i = 0; v[i] && k < 23; i++)
+                t[k++] = v[i];
         }
+        t[k] = 0;
+        for (i = 0; NUDGE_NAME[layer][i]; i++)
+            head[i] = NUDGE_NAME[layer][i];
+        for (k = 0; (how == NUDGE_SHAKE ? " SHAKE" : " NUDGE")[k] && i < 15; k++)
+            head[i++] = (how == NUDGE_SHAKE ? " SHAKE" : " NUDGE")[k];
+        head[i] = 0;
+        say(head, t);
     }
     if (!ui.perf) {
         set_view(SND[layer]);
         for (j = 0; j < 4; j++)
-            if (VIEW_KNOB[ui.view][j] == best) {
+            if (VIEW_KNOB[ui.view][j] == best && how == NUDGE_HAND) {
                 ui.touched = (int8_t)j;
                 ui.touch_until = plat_ms() + 1500u;
             }
@@ -965,7 +986,7 @@ static void nudge_tick(void)                     /* Evolve's nudges: on a phrase
     if (pb != 0 || !en_playing || en_frozen || ev <= 40)
         return;
     if (nrand(100) < (ev - 40) * 2 / 3)          /* (Evolve 100: 40% of the phrases; 70: 20%; 40 and under: none) */
-        nudge(nrand(4), 1);
+        nudge(nrand(4), NUDGE_EVOLVE);
 }
 static void input(void)
 {
@@ -990,11 +1011,19 @@ static void input(void)
             button((int)i);
         }
     }
-    for (i = 0; i < 4; i++) {                    /* a layer's button held: a nudge (its release then does nothing) */
-        uint32_t m = 1u << NUDGE_BTN[i];
-        if ((btn & m) && !(ui.btn_used & m) && plat_ms() - ui.down_t[NUDGE_BTN[i]] >= NUDGE_HOLD) {
+    for (i = 0; i < 4; i++) {                    /* a layer's button held: a nudge; held on: a shake (its release
+                                                  * then does nothing) */
+        static uint8_t shaken;
+        uint32_t m = 1u << NUDGE_BTN[i], held = plat_ms() - ui.down_t[NUDGE_BTN[i]];
+        if (!(btn & m)) {
+            shaken &= (uint8_t)~(1u << i);
+        } else if (!(ui.btn_used & m) && held >= NUDGE_HOLD) {
             ui.btn_used |= m;
-            nudge((int)i, 0);
+            nudge((int)i, NUDGE_HAND);
+        } else if ((ui.btn_used & m) && held >= SHAKE_HOLD && !(shaken >> i & 1u) &&
+                   (int32_t)(ui.turn_t - ui.down_t[NUDGE_BTN[i]]) <= 0) {
+            shaken |= (uint8_t)(1u << i);
+            nudge((int)i, NUDGE_SHAKE);
         }
     }
     ch = keys ^ ui.keys;

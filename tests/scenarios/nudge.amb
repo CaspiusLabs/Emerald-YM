@@ -1,5 +1,6 @@
 # the nudge: a layer's button held (ENV the chord, ARP the pings, LFO the bass, SEQ the drums) moves its sound a
-# small step (a walk pulled back to the piece's recipe), says the biggest change and shows the layer's sound page;
+# step (a walk pulled back to the piece's recipe), says the biggest change and shows the layer's sound page; held
+# on, a shake (a new voice or kit, every value a big step);
 # a tap is the page, as ever. Evolve nudges by itself, now and then on a phrase's first bar: at 100 it does, at 40
 # (and under) never
 listen
@@ -28,6 +29,21 @@ release SEQ
 wait 300
 said DRUMS NUDGE
 expect view 11
+# held on (1.5 s): a shake, a new voice (Basic's chord: Saws, 0) and every value a big step
+press ENV
+wait 1800
+release ENV
+wait 300
+said CHORD SHAKE
+expect par22 >0
+expect view 8
+# held on, the drums: another kit
+press SEQ
+wait 1800
+release SEQ
+wait 300
+said DRUMS SHAKE
+expect par35 >0
 # a tap: the page (no nudge)
 tap ENV
 wait 300

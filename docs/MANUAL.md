@@ -215,10 +215,15 @@ A tap on REC alone is still dub hold; held long enough for the grid (or with a k
 release does nothing. Each effect eases in and out. All sixteen at once is the heaviest thing DUB-1
 can do: in a heavy piece it can approach the FM-1's limit (watch the Setup page's CPU).
 
-**The nudge** (ENV, ARP, LFO or SEQ held for half a second). The layer's sound takes a small step somewhere new:
-two or three of its sound values move a few units each, like a random walk. The walk is pulled back to the
-piece's recipe: the further a value has gone, the likelier its next step goes back, so nudging again and again
-explores round the piece's sound and never wanders off. The message says the biggest change ("CHORD NUDGE
+**The nudge** (ENV, ARP, LFO or SEQ held for half a second). The layer's sound takes a step somewhere new:
+three or four of its sound values move, each up to an eighth of its range (up to 12 on a −50…+50 value), like a
+random walk. The walk is pulled back to the piece's recipe: the further a value has gone, the likelier its next
+step goes back (a quarter of the range away, always), so nudging again and again explores round the piece's
+sound and never wanders off.
+
+**The shake** (keep holding, 1.5 s): the wild one. The layer gets **another voice** (the drums another kit;
+the chord's Noise is left to ALGORITHM) and every one of its sound values takes a big step. The message says the
+new voice ("CHORD SHAKE Keys"). The message says the biggest change ("CHORD NUDGE
 Colour +5"), and the layer's sound page comes up with that knob lit (in PERFORM, you stay where you are).
 
 | Held | Nudges |
@@ -229,7 +234,7 @@ Colour +5"), and the layer's sound page comes up with that knob lit (in PERFORM,
 | SEQ | the drums: the kick's tune, length and punch, the hats' tone |
 
 SAVE keeps what you like; SAVE held puts the piece back to its recipe. Evolve nudges by itself too (the Dub
-page, below).
+page, below), but never shakes.
 
 ![A nudge: CHORD NUDGE in the header, the Chord sound page with the changed knob lit](img/screen-nudge.png "A nudge")
 
@@ -468,9 +473,9 @@ spectrum (see [The screen](#4-the-screen)). **HOME** again: the Key page (below)
   dropping out, the shaker's pattern, the pings' notes, loops sitting out, octave jumps in the
   bass, and dub throws (see [The layers](#5-the-layers)). At 0, with Motion at 0 too, it's a strict
   loop: every stab every bar, no throws, no fills (good for playing along with other gear). Above 40
-  it also nudges the sound by itself: now and then, on a phrase's first bar, one layer's sound takes
-  a small step (a smaller one than a nudge by hand), so over a long run the piece slowly changes
-  colour (at 100, about every third phrase; at 40 and under, never).
+  it also nudges the sound by itself: now and then, on a phrase's first bar, one or two of one
+  layer's sound values take a step (half a nudge by hand's), so over a long run the piece slowly
+  changes colour (at 100, about every third phrase; at 40 and under, never). It never shakes.
 - **Motion:** how often the arrangement leaves Full, how far the filter sweeps, how likely a fill
   is, and how much the echo's heads, the filter and the band-pass wander.
 - **Drift:** how many bars a chord lasts before it moves on: 2, 4, 8, 16, 32 or 64 bars, or Hold
