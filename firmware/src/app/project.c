@@ -114,16 +114,34 @@ static void from8(const project8_t *o)          /* 1.0.0's project: everything k
     }
 }
 
+static void gaps9(int16_t *par)                  /* before 10: an empty slot is a gap (its root, left as it was, is not
+                                                  * a degree of the walk's) */
+{
+    int i;
+    for (i = 0; i < EN_NPROG; i++)
+        if (!par[P_CQ0 + i])
+            par[P_CR0 + i] = 0, par[P_CX0 + i] = 0;
+}
+
 int project_load(void)
 {
     static project_t buf;
-    int n;
+    int n, old = 0, i;
     memset(&buf, 0, sizeof buf);
     n = plat_store_load(OBJ_PROJ, &buf, sizeof buf);
-    if (n >= 8 && buf.magic == PROJ_MAGIC && buf.format == 8u && n >= (int)sizeof(project8_t))
+    if (n >= 8 && buf.magic == PROJ_MAGIC && buf.format == 8u && n >= (int)sizeof(project8_t)) {
         from8((const project8_t *)(const void *)&buf);
-    else
+        old = 1;
+    } else {
         proj = buf;
+        if (proj.magic == PROJ_MAGIC && proj.format == 9u)
+            proj.format = PROJ_FORMAT, old = 1;  /* (the same layout) */
+    }
+    if (old) {
+        gaps9(proj.par);
+        for (i = 0; i < NPIECES; i++)
+            gaps9(proj.slot[i].par);
+    }
     if (n >= 8 && project_valid())
         return 0;
     project_defaults();

@@ -538,6 +538,39 @@ would fit.
 - MIDI CC out for the filter and the echo send, to drive other gear
 - Keys as live mutes, or a held key as a manual throw
 
+## Release 1.2.5: the chord machine, visible (the user's idea, 2026-10-20; built, to try)
+
+At launch the firmware generates a full eight-chord progression (the random walk writes it into the eight slots), and
+the Chords page (EDIT) shows it. Proposed: both of the user's behaviours, as KNOB 4 (Play) on the Chords page, which
+today switches between Random and the slots.
+- **Endless** (the default; option 1): the chord playing is always slot 1. When it moves on, all of them advance one
+  slot and the walk writes a new chord in slot 8. You see the future and change it before it comes.
+- **Loop** (option 2): the eight in turn, nothing new generated (the current "slots" mode, pre-filled). Removing the
+  last slots shortens it. Switching from Endless to Loop freezes the eight on screen: catch a run you like.
+- As now:
+  - KNOB 1 picks a slot; the keys set its root, KNOB 2 its kind, KNOB 3 its type;
+  - an empty slot holds the chord before it (a gap: the last one repeated);
+  - Drift sets the bars a chord lasts (Hold: EDIT held moves on).
+- Decided (the user, 2026-10-20): the walk's chords follow a change of key or mode (the user's stay as written);
+  in Endless a gap stays a gap.
+- Built: a slot is written (a kind), the walk's (no kind, the root a degree + 1, the type its voicing) or a gap
+  (both 0), so no new parameters; PROJ_FORMAT 10, the same layout (9's and 8's empty slots read as gaps). The
+  engine holds the slots and writes the walk's (`walk_from`, `walk_fill`, `chord_change`); the UI mirrors them
+  (`en_prog_slot`, `en_prog_gen`, `prog_take`). A walk slot that becomes diminished after a change of scale is
+  walked again. Tests: tests/host/amb_test.c (Loop, Endless), tests/scenarios/chords.amb.
+- [ ] The user tries it (build/dub-1.2.5-test1.fwsc); then the release, and the SMK branch
+- The engine: `chord_change()` already has the walk (from a degree other than home, back home 65% of the time;
+  otherwise a weighted choice, IV favoured, then VII and V, never the current degree or a diminished one; now and
+  then the other voicing). Slots are stored as absolute roots, kinds and types (P_CR*, P_CQ*, P_CX*); the walk would
+  need to write those, or slots would store a degree.
+- **Then a video, "The chord machine"** (4–5 min, Serena's voice):
+  1. a scale's seven chords;
+  2. the walk's rules (home, the pull back, the favoured degrees, voicings);
+  3. Drift;
+  4. Endless on the Chords page, the chords flowing in;
+  5. steering it: edit a coming chord, a gap, catch it in Loop, shorten it;
+  6. what makes it generative: rules, chance, limits you set.
+
 ## Releases after 1.2.0 (the user's ideas, 2026-10-19)
 
 1.2.0 is about live performance. Then, in roughly this order:

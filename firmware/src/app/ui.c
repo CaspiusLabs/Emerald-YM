@@ -4,7 +4,7 @@
  *
  *   keys           the scale: each key adds or removes its note from the pool (the root stays)
  *   PLAY           plays / rests                   EDIT  tapped: the CHORDS page (eight slots: KNOB 1 the slot, the
- *                  keys its root, KNOB 2 its kind, KNOB 3 its type, KNOB 4 Play: Random or the slots); held: the next chord
+ *                  keys its root, KNOB 2 its kind, KNOB 3 its type, KNOB 4 Play: Endless or Loop); held: the next chord
  *   REC            tapped: DUB HOLD (the echo repeats what it holds, the chord holds); held: the EFFECTS grid, played
  *                  on the white keys while they're held             OCT- / OCT+   the pings' octave
  *   SEL            PERFORM: the keys mute (white 1-5) and solo (black 1-5) the layers and, held, make the dub moves
@@ -121,6 +121,7 @@ static struct {
     int8_t mac[EN_NMAC];               /* the master actions (HOME's Filter, PERFORM's knobs): -50..50, never saved */
     uint32_t fx;                       /* the effects held (EN_FX_*), REC's grid */
     uint8_t slot, chords_from;         /* the Chords page: the slot edited; the page it was opened from */
+    uint32_t prog_gen;                 /* the engine's slots, as last taken (en_prog_gen) */
     uint8_t lane;                      /* the Pattern page: the lane edited */
     uint8_t grid_said;
     uint32_t btn, keys, btn_used;
@@ -221,6 +222,31 @@ static const char *mode_name(void)
 }
 
 /* ------------------------------------------------------------ values --- */
+/* the Chords page's slots (amb.h): written (a kind), the walk's (no kind, a degree + 1 as the root) or a gap */
+static int slot_is_walk(int i) { return !proj.par[P_CQ0 + i] && proj.par[P_CR0 + i]; }
+static int slot_is_gap(int i) { return !proj.par[P_CQ0 + i] && !proj.par[P_CR0 + i]; }
+static int scale_steps(void)
+{
+    int n = 0, i;
+    for (i = 0; i < 12; i++)
+        n += (int)(proj.pool >> i & 1u);
+    return n ? n : 1;
+}
+static void walk_written(int i, int *r, int *q, int *x)   /* a walk slot's chord, as it would be written */
+{
+    en_walk_chord(proj.pool, proj.par[P_ROOT], (proj.par[P_CR0 + i] - 1) % scale_steps(), r, q, x);
+}
+static void knob_set(int k, int v);
+static void slot_write(int i)                    /* a walk slot about to be edited: written as it sounds */
+{
+    int r, q, x;
+    if (!slot_is_walk(i))
+        return;
+    walk_written(i, &r, &q, &x);
+    knob_set(P_CR0 + i, r);
+    knob_set(P_CX0 + i, x);
+    knob_set(P_CQ0 + i, q);
+}
 static int knob_get(int k)
 {
     if (k < P_NPARAMS)
@@ -231,8 +257,14 @@ static int knob_get(int k)
         return (int)plat_cpu_pct();
     if (k == K_SLOT)
         return ui.slot;
-    if (k == K_CQ || k == K_CX)
+    if (k == K_CQ || k == K_CX) {
+        if (slot_is_walk(ui.slot)) {             /* the walk's: its chord as it would be written */
+            int r, q, x;
+            walk_written(ui.slot, &r, &q, &x);
+            return k == K_CQ ? q : x;
+        }
         return proj.par[(k == K_CQ ? P_CQ0 : P_CX0) + ui.slot];
+    }
     if (k == K_LANE)
         return ui.lane;
     if (k == K_LCH)
@@ -337,9 +369,12 @@ static void knob_set(int k, int v)
         ui.slot = (uint8_t)v;
         return;                                  /* (only where the page looks: nothing saved) */
     } else if (k == K_CQ || k == K_CX) {
+        slot_write(ui.slot);
         knob_set((k == K_CQ ? P_CQ0 : P_CX0) + ui.slot, v);
-        if (k == K_CQ && v && !proj.par[P_PMODE])
-            knob_set(P_PMODE, 1);                /* a chord written: the slots play */
+        if (k == K_CQ && !v) {                   /* Empty: a gap (the chord before it held) */
+            knob_set(P_CR0 + ui.slot, 0);
+            knob_set(P_CX0 + ui.slot, 0);
+        }
         return;
     } else if (k == K_LANE) {
         ui.lane = (uint8_t)v;
@@ -596,32 +631,54 @@ static int fx_key(uint32_t key, int down)        /* 1: the key was an effect's *
 }
 
 /* ----------------------------------------------------------- the chords --- */
-/* EDIT tapped: the Chords page, eight slots. KNOB 1 the slot, the keys its root (any note: an empty slot
- * becomes a minor chord on it), KNOB 2 its kind, KNOB 3 its type, KNOB 4 Play: Random (the chords chosen as
- * ever) or the slots in turn, a chord every Drift bars. An empty slot between two holds the one before; after
- * the last filled one, round again. EDIT again, or any page's button: back. EDIT held: the next chord */
+/* EDIT tapped: the Chords page, the eight coming: the walk's (teal: degrees, they follow the key), yours (white)
+ * and gaps (the chord before held). KNOB 1 the slot, the keys its root (a walk's chord becomes yours, its kind and
+ * type kept; a gap becomes a minor chord), KNOB 2 its kind (Empty: a gap), KNOB 3 its type, KNOB 4 Play:
+ * Endless (slot 1 playing; on, all move up and the walk writes slot 8) or Loop (the slots in turn, to the last
+ * that isn't a gap). The engine holds them (it writes the walk's): prog_take mirrors them into the project.
+ * EDIT again, or any page's button: back. EDIT held: the next chord */
 #define NEXT_HOLD 500u
-static int prog_count(void)                      /* how far the slots run: to the last filled one */
+static int prog_count(void)                      /* how far the slots run (Loop): to the last that isn't a gap */
 {
     int i, n = 0;
     for (i = 0; i < EN_NPROG; i++)
-        if (proj.par[P_CQ0 + i])
+        if (!slot_is_gap(i))
             n = i + 1;
     return n;
 }
-static const char *slot_label(int i, char *nm)
+static const char *slot_label(int i, char *nm)   /* written: its name; the walk's: the chord the scale gives it */
 {
+    if (slot_is_walk(i)) {
+        int pcs[EN_NPAD + 1], iv[4], t[4], d = (proj.par[P_CR0 + i] - 1) % scale_steps(), k;
+        en_chord_tones(proj.pool, proj.par[P_ROOT], d, t);
+        en_voicing(proj.pool, d, proj.par[P_CX0 + i] & 1, iv);
+        pcs[0] = t[0];
+        for (k = 0; k < EN_NPAD; k++)
+            pcs[k + 1] = (t[0] + iv[k]) % 12;
+        return en_chord_name(pcs, EN_NPAD + 1, nm);
+    }
     return en_chord_label(proj.par[P_CR0 + i], proj.par[P_CQ0 + i], proj.par[P_CX0 + i], nm);
+}
+static void prog_take(void)                      /* the engine's slots (the walk writes them, Endless moves them) */
+{
+    int i;
+    if (en_prog_gen == ui.prog_gen)
+        return;
+    ui.prog_gen = en_prog_gen;
+    for (i = 0; i < EN_NPROG; i++) {
+        proj.par[P_CR0 + i] = en_prog_slot[i][0];
+        proj.par[P_CQ0 + i] = en_prog_slot[i][1];
+        proj.par[P_CX0 + i] = en_prog_slot[i][2];
+    }
 }
 static void set_view(int v);
 static void slot_key(uint32_t key)               /* the Chords page: a key, the slot's root */
 {
     char nm[16];
+    slot_write(ui.slot);                         /* (the walk's: its kind and type kept, the root yours) */
     knob_set(P_CR0 + ui.slot, (int)((5u + key) % 12u));
     if (!proj.par[P_CQ0 + ui.slot])
         knob_set(K_CQ, EN_CQ_MINOR);
-    if (!proj.par[P_PMODE])
-        knob_set(P_PMODE, 1);
     say(slot_label(ui.slot, nm), 0);
 }
 static void edit_released(uint32_t held)
@@ -1664,7 +1721,7 @@ static int help_lines(int b, const char *l[HELP_LINES])
     case B_SEQ: L("THE DRUMS"); L("LEVEL, HITS, SWING, DUCK"); L("ALGORITHM: THE KIT"); L("AGAIN: SOUND; AGAIN: PATTERN"); break;
     case B_FX: L("THE SPACE"); L("ECHO, ECHO TIME, FEEDBACK,"); L("REVERB"); break;
     case B_GLO: L("SETUP (FOR EVERY PIECE)"); L("TUNE, MIDI OUT, LIGHTS"); break;
-    case B_EDIT: L("TAP: THE CHORDS (8 SLOTS:"); L(" THE KEYS, THE SLOT'S ROOT)"); L("HOLD: THE NEXT CHORD"); break;
+    case B_EDIT: L("TAP: THE CHORDS COMING (8:"); L(" ENDLESS OR LOOP; KEYS: A ROOT)"); L("HOLD: THE NEXT CHORD"); break;
     case B_SEL: L("FILTER, DUB, ENERGY, SPACE;"); L(" WHITE 6 HELD: THE MIX"); L("WHITE 1-5 MUTE, BLACK 1-5 SOLO:"); L(" CHORD PINGS BASS KICK HATS"); L("WHITE 7-11: THROW OPEN SHUT DROP ECHO"); break;
     case B_REC: L("TAP: DUB HOLD (THE ECHO"); L(" REPEATS WHAT IT HOLDS)"); L("HOLD: THE EFFECTS GRID,"); L(" PLAYED ON THE WHITE KEYS"); break;
     case B_OCTDN: L("THE PINGS AN OCTAVE DOWN"); L("WITH OCT+, 5 S: UPDATE MODE"); break;
@@ -1769,12 +1826,12 @@ static void draw_pattern(void)
  * progression shows that the chord before it goes on */
 static void draw_slots(void)
 {
-    int i, n = prog_count(), play = proj.par[P_PMODE] && n;
+    int i, loop = proj.par[P_PMODE], n = loop ? prog_count() : EN_NPROG;
     char nm[16];
-    text_c(120, -1, &FONT_XS, play ? "PLAY: THE SLOTS IN TURN" : "PLAY: RANDOM (THE SLOTS WAIT)", play ? K_ACC : K_DIM);
+    text_c(120, -1, &FONT_XS, loop ? "LOOP: THE SLOTS IN TURN" : "ENDLESS: THE WALK WRITES SLOT 8", K_ACC);
     for (i = 0; i < EN_NPROG; i++) {
         int32_t x = 12 + (i & 3) * 55, y = 18 + (i >> 2) * 42;
-        int filled = proj.par[P_CQ0 + i] != 0, now = play && i == en_prog_pos, sel = i == ui.slot;
+        int filled = !slot_is_gap(i), now = en_playing && i == en_prog_pos && n, sel = i == ui.slot;
         if (sel)
             cv_round(x - 2, y - 2, 54, 38, 5, K_ACC);
         cv_round(x, y, 50, 34, 4, now ? K_PAD : filled ? K_PANEL : mix(K_BG, K_PANEL, 6));
@@ -1783,14 +1840,15 @@ static void draw_slots(void)
             d[0] = (char)('1' + i), d[1] = 0;
             cv_text(x + 3, y + 1, &FONT_XS, d, now ? K_BG : K_DIM);
         }
-        if (filled) {
+        if (filled) {                            /* (yours in white; the walk's in the scale's teal) */
             const char *t = slot_label(i, nm);
-            text_c(x + 25, y + 11, text_w(&FONT_B, t) <= 46 ? &FONT_B : &FONT_XS, t, now ? K_BG : K_TEXT);
+            text_c(x + 25, y + 11, text_w(&FONT_B, t) <= 46 ? &FONT_B : &FONT_XS, t,
+                   now ? K_BG : slot_is_walk(i) ? K_PAD : K_TEXT);
         } else if (i < n) {
             text_c(x + 25, y + 13, &FONT_XS, "(HOLDS)", now ? K_BG : K_DIM);
         }
     }
-    text_c(120, 104, &FONT_XS, "KEYS: THE SLOT'S ROOT   EDIT: BACK", K_DIM);
+    text_c(120, 104, &FONT_XS, "KEYS: THE SLOT'S ROOT   KIND EMPTY: A GAP", K_DIM);
 }
 
 static void draw_main(void)
@@ -1905,7 +1963,7 @@ static void draw_main(void)
         }
         else
             text_c(CX, CY - 6, &FONT_XS, nm, en_frozen ? K_FROST : K_TEXT);
-        if (proj.par[P_PMODE] && en_prog_pos >= 0 && prog_count()) {   /* the slots: where they are ("2/4") */
+        if (proj.par[P_PMODE] && en_prog_pos >= 0 && prog_count()) {   /* Loop: where it is ("2/4") */
             char t[8];
             t[0] = (char)('1' + en_prog_pos), t[1] = '/', t[2] = (char)('0' + prog_count()), t[3] = 0;
             text_c(CX, CY + 11, &FONT_XS, t, K_DIM);
@@ -2016,10 +2074,14 @@ static void leds(void)
             if (p >> i & 1u)
                 k |= 1u << STEP_KEY[i];
     } else if (ui.view == V_CHORDS && !ui.perf && !grid_up()) {   /* the Chords page: the slot's root (if it has one) */
-        if (proj.par[P_CQ0 + ui.slot])
+        if (!slot_is_gap(ui.slot)) {
+            int r = proj.par[P_CR0 + ui.slot], q, x;
+            if (slot_is_walk(ui.slot))
+                walk_written(ui.slot, &r, &q, &x);
             for (i = 0; i < NKEYS; i++)
-                if ((5u + i) % 12u == (uint32_t)proj.par[P_CR0 + ui.slot])
+                if ((5u + i) % 12u == (uint32_t)r)
                     k |= 1u << i;
+        }
     } else if (grid_up()) {                      /* the grid: each group's first key, and the effects held */
         for (i = 0; i < EN_NFX; i++)
             if (!(i & 3) || (ui.fx >> i & 1u))
@@ -2534,6 +2596,7 @@ void ui_init(void)
 
 void ui_frame(void)
 {
+    prog_take();
     input();
     autosave();
     if (grid_up()) {                             /* REC held: the effects, the whole screen */

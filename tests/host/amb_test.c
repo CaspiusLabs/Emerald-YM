@@ -412,8 +412,9 @@ int main(void)
         CHECK(en_playing && en_bars > 16u && peak > 0.02f, "a piece's parameters, then PLAY: not playing (%u)", en_bars);
     }
 
-    /* the chords' slots: Fm7, Bb, (empty: Bb holds), C6, played in turn a change every two bars, round again; the
-     * slot playing edited, heard at once; Play at Random, chosen again; the labels */
+    /* the chords' slots, Loop: Fm7, Bb, (a gap: Bb holds), C6, played in turn a change every two bars, round again
+     * (the rest gaps: the loop is four long); the slot playing edited, heard at once; to Endless: the one playing up
+     * to slot 1; the labels */
     {
         static const int WANT[6] = {5, 10, 0, 5, 10, 0};
         int k, seen[16], ns = 0, ok = 1, last = -1, holds = 0;
@@ -424,7 +425,10 @@ int main(void)
         en_set(P_DRIFT, 0);
         en_set(P_CR0, 5), en_set(P_CQ0, EN_CQ_MINOR), en_set(P_CX0, EN_CX_7);
         en_set(P_CR1, 10), en_set(P_CQ1, EN_CQ_MAJOR);
+        en_set(P_CR2, 0), en_set(P_CQ2, EN_CQ_EMPTY), en_set(P_CX2, 0);
         en_set(P_CR3, 0), en_set(P_CQ3, EN_CQ_MAJOR), en_set(P_CX3, EN_CX_6);
+        for (k = 4; k < EN_NPROG; k++)
+            en_set(P_CR0 + k, 0), en_set(P_CQ0 + k, EN_CQ_EMPTY), en_set(P_CX0 + k, 0);
         en_set(P_PMODE, 1);
         en_regrow();
         en_play(1);
@@ -446,13 +450,51 @@ int main(void)
         en_set(P_CR0, 7);                        /* the slot playing, edited: G minor 7 now */
         run(0.05f);
         CHECK(en_chord_root == 7, "the slot playing, edited: root %d", en_chord_root);
-        en_set(P_PMODE, 0);
+        en_set(P_PMODE, 0);                      /* to Endless: slot 1 plays (it was), the gaps stay, the walk goes on */
         run(0.05f);
-        CHECK(en_prog_pos == -1 && en_chord_slot == -1, "Play at Random: still the slots (%d, %d)", en_prog_pos, en_chord_slot);
+        CHECK(en_prog_pos == 0 && en_prog_slot[0][1] == EN_CQ_MINOR && en_prog_slot[0][0] == 7,
+              "to Endless: slot 1 %d/%d/%d at %d", en_prog_slot[0][0], en_prog_slot[0][1], en_prog_slot[0][2], en_prog_pos);
+        CHECK(en_prog_slot[2][1] == 0 && en_prog_slot[2][0] == 0, "to Endless: the gap filled");
         CHECK(!strcmp(en_chord_label(5, EN_CQ_MINOR, EN_CX_7, nm), "Fm7"), "label %s", nm);
         CHECK(!strcmp(en_chord_label(0, EN_CQ_SUS4, EN_CX_7, nm), "C7sus4"), "label %s", nm);
         CHECK(!strcmp(en_chord_label(10, EN_CQ_MAJOR, EN_CX_MAJ7, nm), "BbM7"), "label %s", nm);
         CHECK(!strcmp(en_chord_label(3, EN_CQ_EMPTY, 0, nm), "-"), "label %s", nm);
+        {   /* Endless from a fresh piece: eight from the walk; on a change, all up one, the walk writes slot 8; a gap
+             * stays a gap; the walk's follow the key */
+            int j, before[EN_NPROG][3], walk = 1, up = 1;
+            fresh();
+            en_set(P_ROOT, 5);
+            en_pool(EN_MODE_POOL[MODE_DORIAN]);
+            en_set(P_DRIFT, 0);
+            en_set(P_PMODE, 0);
+            for (j = 0; j < EN_NPROG; j++)
+                en_set(P_CR0 + j, 0), en_set(P_CQ0 + j, EN_CQ_EMPTY), en_set(P_CX0 + j, 0);
+            en_regrow();
+            run(0.05f);
+            for (j = 0; j < EN_NPROG; j++)
+                walk &= en_prog_slot[j][1] == 0 && en_prog_slot[j][0] >= 1 && en_prog_slot[j][0] <= 7;
+            CHECK(walk && en_prog_slot[0][0] == 1, "Endless: a fresh piece's eight from the walk, from home (%d)", en_prog_slot[0][0]);
+            en_set(P_CR3, 0), en_set(P_CQ3, EN_CQ_EMPTY);   /* a gap at slot 4 */
+            en_set(P_CR5, 0), en_set(P_CQ5, EN_CQ_MAJOR), en_set(P_CX5, EN_CX_7);   /* a C7 written at slot 6 */
+            run(0.05f);
+            for (j = 0; j < EN_NPROG; j++)
+                for (k = 0; k < 3; k++)
+                    before[j][k] = en_prog_slot[j][k];
+            en_play(1);
+            {
+                uint32_t g = en_prog_gen;
+                for (k = 0; k < 200 && en_prog_gen == g; k++)
+                    run(0.05f);
+            }
+            for (j = 0; j < EN_NPROG - 1; j++)
+                for (k = 0; k < 3; k++)
+                    up &= en_prog_slot[j][k] == before[j + 1][k];
+            CHECK(up, "Endless: the slots didn't move up one");
+            CHECK(en_prog_slot[2][0] == 0 && en_prog_slot[2][1] == 0, "Endless: the gap didn't stay a gap");
+            CHECK(en_prog_slot[4][1] == EN_CQ_MAJOR && en_prog_slot[4][2] == EN_CX_7, "Endless: the written C7 moved");
+            CHECK(en_prog_slot[7][1] == 0 && en_prog_slot[7][0] >= 1, "Endless: the walk didn't write slot 8");
+            CHECK(en_prog_pos == 0, "Endless: slot %d plays", en_prog_pos);
+        }
         for (k = 0; k < EN_NCQ * EN_NCX; k++) {   /* every voicing: four rising notes, within two octaves */
             int iv[4];
             en_chord_iv(k / EN_NCX, k % EN_NCX, iv);
@@ -620,6 +662,9 @@ int main(void)
         uint32_t pent = EN_MODE_POOL[MODE_PENT_MIN];
         en_set(P_ROOT, 2);
         en_pool(pent);
+        en_set(P_PMODE, 0);                      /* (a fresh piece: every slot a gap, so the walk starts from home) */
+        for (i = 0; i < EN_NPROG; i++)
+            en_set(P_CR0 + i, 0), en_set(P_CQ0 + i, EN_CQ_EMPTY), en_set(P_CX0 + i, 0);
         en_regrow();
         run(0.1f);
         for (i = 0; i < EN_NPAD; i++) {

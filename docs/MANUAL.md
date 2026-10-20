@@ -94,7 +94,7 @@ The drawing at the top shows them all; here they are in more detail.
 | Keys | The scale. Each key adds its note to the scale or takes it out; the keys light up for the notes in it. Every octave of a note is the same key. The root stays ("THE ROOT STAYS"), and the scale keeps at least three notes ("3 NOTES AT LEAST"). |
 | PLAY | Play / rest. DUB-1 starts playing by itself when it's switched on. At rest, the echo's feedback eases under 90% so its tails die away, the reverb rings out and the crackle fades. Playing again starts from the first bar of a phrase. Lit while playing. |
 | REC | A tap: **dub hold**: the echo stops listening and repeats what it holds, sample for sample, for ever; the reverb stops listening too and rings on; the chord doesn't move. The stabs, pings and drums go on, dry, above it. Tap again to let go. Lit while held. Held: the **effects grid** (below). |
-| EDIT | A tap: the **Chords page** (below): eight slots to write the chords. Held (half a second): the next chord, at the start of the next bar (at once while resting; in dub hold, once you let go). |
+| EDIT | A tap: the **Chords page** (below): the eight chords coming, to see and change. Held (half a second): the next chord, at the start of the next bar (at once while resting; in dub hold, once you let go). |
 | SEL | **PERFORM**: the knobs become the master actions (Filter, Dub, Energy, Space) and the keys stop being the scale: they mute and solo the layers, make the dub moves, and white 6 held puts the mix on the knobs (see below). Press again to go back; lit while on. Held: the key map. |
 | HOME | The Dub page: the Filter and the machine's movement. Again: the Key page (tempo, root, mode, swing), and again back to Dub; HOME blinks on the Key page. |
 | ENV · ARP · LFO · SEQ | The layers' pages: Chord, Texture (the pings and the crackle), Bass, Drums. |
@@ -163,23 +163,35 @@ The first five black keys (F♯ G♯ A♯, C♯ D♯) sit above the five mutes, 
   - Each sweeps in over about half a second; letting go eases back (to where the Filter knob is).
 - The other keys do nothing in PERFORM; MIDI notes in still change the scale.
 
-**The Chords page** (EDIT tapped). Eight slots, to write the chords yourself:
+**The Chords page** (EDIT tapped): the chord machine, in view. The progression is eight slots. Each
+slot is one of three:
+- a chord from **the walk**, in teal: the random walk over the scale's degrees (see
+  [The arrangement](#6-the-arrangement)). It's a degree of the scale, so it follows the key and the
+  mode when you change them;
+- a chord **you wrote**, in white: as written, whatever the key;
+- a **gap**, "(HOLDS)": the chord before it goes on.
 
 | | |
 |---|---|
 | KNOB 1 · Slot | the slot you're editing (1–8), outlined on the screen |
-| Keys | its root, any note (lit on the keys); an empty slot becomes a minor chord on it |
-| KNOB 2 · Chord | its kind: Empty, Major, Minor, Sus2, Sus4, Dim, Aug |
+| Keys | its root, any note (lit on the keys). A walk's chord becomes yours, keeping its kind and type; a gap becomes a minor chord on it |
+| KNOB 2 · Chord | its kind: Empty (a gap), Major, Minor, Sus2, Sus4, Dim, Aug. Turning a walk's chord makes it yours |
 | KNOB 3 · Type | Triad, 6, 7, Maj7, 9, 11, Add9 |
-| KNOB 4 · Play | Random (the chords chosen as described in [The arrangement](#6-the-arrangement); the slots wait) or Prog (the slots in turn) |
+| KNOB 4 · Play | **Endless** or **Loop** |
 
-With Play on Prog the slots play from the first, starting on the next bar, a chord every Drift bars
-(with Drift on Hold, only when you hold EDIT), round again after the last filled slot. An **empty
-slot between two** chords holds the one before it for one more turn (it shows "(HOLDS)"). Writing a
-chord in a slot switches Play to Prog; editing the slot that's playing is heard at once. The screen
-shows the slot playing lit, and "2/4" under the chord's name on the other pages. EDIT again, or any
-page's button, leaves the page; **EDIT held** (half a second), anywhere, moves to the next chord.
-The slots are kept with the piece.
+**Endless** (the default): a new piece starts with eight chords from the walk, from home. The chord
+playing is always slot 1. When it moves on (every Drift bars, or EDIT held), every slot moves up one:
+a gap stays a gap, your chords stay yours. The walk then writes a new chord into slot 8, so you see
+the chords coming and can change them before they arrive.
+
+**Loop:** the eight in turn, from the one playing, a chord every Drift bars, round again after the
+last that isn't a gap. Nothing new is written. Gaps at the end make the loop shorter. Switching from
+Endless to Loop keeps the eight you see, to catch a progression you like as it goes by. Back to
+Endless, the one playing moves up to slot 1 and the walk goes on.
+
+Editing the slot that's playing is heard at once. The slot playing is lit; in Loop the other pages
+show "2/4" under the chord's name. EDIT again, or any page's button, leaves the page; **EDIT held**
+(half a second), anywhere, moves to the next chord. The slots are kept with the piece.
 
 **The effects grid** (REC held). After a moment the whole screen shows sixteen effects, four rows of four (the knobs do nothing while it's up);
 the white keys from the lowest play them, each as long as its key is held (even after you let go of

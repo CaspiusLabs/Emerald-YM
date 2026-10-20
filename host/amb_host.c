@@ -477,6 +477,8 @@ static int expect(const char *what, const char *val)
         got = (int)(en_bass_level * 100.0f);
     else if (!strcmp(what, "chordroot"))
         got = en_chord_root;
+    else if (!strcmp(what, "progpos"))            /* the slot the progression is on (Endless: 0; -1: none) */
+        got = en_prog_pos;
     else if (!strncmp(what, "chord", 5))          /* chordN: pad voice N's note */
         got = en_chord[atoi(what + 5) & 3];
     else if (!strcmp(what, "loopnotes")) {        /* the notes in all the loops */

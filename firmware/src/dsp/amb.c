@@ -187,7 +187,7 @@ void en_param_text(int i, int v, char *b)
     else if (i >= P_CX0 && i <= P_CX7)
         s = EN_CX_NAME[(unsigned)v < EN_NCX ? v : 0];
     else if (i == P_PMODE)
-        s = v ? "Prog" : "Random";
+        s = v ? "Loop" : "Endless";
     else if (i == P_DMODE)
         s = v ? "Pattern" : "Auto";
     else if (i == P_GROOVE)
@@ -845,15 +845,27 @@ static int bass_note(int pc)                    /* E1..Eb2, an octave up or down
  * slot's chord built from its kind and type, and a degree for a note above the root (the pings take the
  * scale's notes around it: nearest in the pool, the lower on a tie) */
 volatile int8_t en_prog_pos = -1, en_chord_slot = -1;
-static int prog_len(void)
+volatile int8_t en_prog_slot[EN_NPROG][3];
+volatile uint32_t en_prog_gen;
+static int slot_gap(int i) { return !par[P_CQ0 + i] && !par[P_CR0 + i]; }
+static int slot_walk(int i) { return !par[P_CQ0 + i] && par[P_CR0 + i]; }
+static int prog_len(void)                       /* Loop: to the last slot that isn't a gap (0: none) */
 {
     int i, n = 0;
-    if (!par[P_PMODE])
-        return 0;
     for (i = 0; i < EN_NPROG; i++)
-        if (par[P_CQ0 + i])
+        if (!slot_gap(i))
             n = i + 1;
     return n;
+}
+static void prog_publish(void)                  /* the slots, for the UI to take */
+{
+    int i;
+    for (i = 0; i < EN_NPROG; i++) {
+        en_prog_slot[i][0] = (int8_t)par[P_CR0 + i];
+        en_prog_slot[i][1] = (int8_t)par[P_CQ0 + i];
+        en_prog_slot[i][2] = (int8_t)par[P_CX0 + i];
+    }
+    en_prog_gen++;
 }
 void en_chord_iv(int q, int x, int *iv)
 {
@@ -882,6 +894,17 @@ void en_chord_iv(int q, int x, int *iv)
     for (i = 1; i < 4; i++)
         while (iv[i] <= iv[i - 1])
             iv[i] += 12;
+}
+void en_walk_chord(uint32_t pool, int root, int deg, int *r, int *q, int *x)
+{
+    int pcs[4], n = en_chord_tones(pool, root, deg, pcs), t, f, s;
+    t = (pcs[1] - pcs[0] + 12) % 12;
+    f = (pcs[2 < n ? 2 : 0] - pcs[0] + 12) % 12;
+    s = n >= 4 ? (pcs[3] - pcs[0] + 12) % 12 : -1;
+    *r = pcs[0];
+    *q = t == 2 ? EN_CQ_SUS2 : t == 5 ? EN_CQ_SUS4 : t == 3 ? (f == 6 ? EN_CQ_DIM : EN_CQ_MINOR)
+       : (f == 8 ? EN_CQ_AUG : EN_CQ_MAJOR);
+    *x = s == 10 || (s == 9 && *q == EN_CQ_DIM) ? EN_CX_7 : s == 11 ? EN_CX_MAJ7 : s == 9 ? EN_CX_6 : EN_CX_TRIAD;
 }
 const char *en_chord_label(int root, int q, int x, char *b)
 {
@@ -929,29 +952,20 @@ static int prog_pos = -1;
 
 /* to another degree: home most of all, then the subdominant, the seventh, the dominant; away from home,
  * home again more often than not. Never a diminished fifth (a half-diminished chord is no dub chord) */
-static void chord_change(void)
+/* the walk: the next degree after d. Away from home, mostly back (65%); else a weighted choice (in seven notes, the
+ * IV most, then the VII and the V), never the same, never a diminished one */
+static int walk_shape;                          /* the walk's voicing, now and then the other (Evolve) */
+static int walk_from(int d)
 {
     static const float W7[7] = {0.0f, 0.4f, 1.0f, 3.0f, 1.5f, 1.5f, 2.0f};
     float w[12], sum = 0.0f, r;
-    int i, n = prog_len();
-    if (n) {                                    /* the slots in turn: an empty one holds the chord before it */
-        prog_pos = (prog_pos + 1) % n;
-        en_prog_pos = (int8_t)prog_pos;
-        if (par[P_CQ0 + prog_pos]) {
-            chord_slot = prog_pos;
-            voice_chord();
-        }
-        chord_bars = 0;
-        return;
-    }
-    en_prog_pos = -1;
-    chord_slot = -1;
-    if (deg != 0 && frand() < 0.65f) {
+    int i;
+    if (d != 0 && frand() < 0.65f) {
         i = 0;
     } else {
         for (i = 0; i < nsteps; i++) {
             int t[3], n = stack(pool, 0, i, t, 3);
-            w[i] = i == deg || i == 0 ? 0.0f : nsteps == 7 ? W7[i] : 1.0f;
+            w[i] = i == d || i == 0 ? 0.0f : nsteps == 7 ? W7[i] : 1.0f;
             if (n >= 3 && (t[2] - t[0] + 12) % 12 == 6)
                 w[i] = 0.0f;
             sum += w[i];
@@ -965,11 +979,69 @@ static void chord_change(void)
         if (i >= nsteps)
             i = nsteps > 1 ? 1 : 0;
     }
-    deg = i;
     if (frand() < evolve * 0.1f)
-        shape ^= 1;                              /* now and then, the other voicing */
-    voice_chord();
+        walk_shape ^= 1;                         /* now and then, the other voicing */
+    return i;
+}
+static int walk_last;                           /* the degree the walk wrote last (it goes on from there) */
+static void slot_walk_set(int k, int d)         /* slot k: the walk's degree d */
+{
+    par[P_CQ0 + k] = 0;
+    par[P_CR0 + k] = (int16_t)(d + 1);
+    par[P_CX0 + k] = (int16_t)walk_shape;
+    walk_last = d;
+}
+static void walk_fill(void)                     /* Endless with every slot a gap (a fresh piece): eight from home */
+{
+    int k, d = 0;
+    for (k = 0; k < EN_NPROG; k++)
+        if (!slot_gap(k))
+            return;
+    slot_walk_set(0, 0);
+    for (k = 1; k < EN_NPROG; k++) {
+        d = walk_from(d);
+        slot_walk_set(k, d);
+    }
+    prog_publish();
+}
+static void slot_play(int k)                    /* slot k sounds: its chord as written, the walk's, or (a gap) held */
+{
+    if (par[P_CQ0 + k]) {
+        chord_slot = k;
+        voice_chord();
+    } else if (par[P_CR0 + k]) {
+        chord_slot = -1;
+        deg = (par[P_CR0 + k] - 1) % (nsteps ? nsteps : 1);
+        shape = par[P_CX0 + k] & 1;
+        voice_chord();
+    }
     chord_bars = 0;
+}
+
+static void chord_change(void)
+{
+    int k;
+    if (par[P_PMODE]) {                         /* Loop: the slots in turn, a gap holding the chord before it */
+        int n = prog_len();
+        if (n) {
+            prog_pos = (prog_pos + 1) % n;
+            en_prog_pos = (int8_t)prog_pos;
+            slot_play(prog_pos);
+        }
+        chord_bars = 0;
+        return;
+    }
+    /* Endless: all up a slot (a gap stays a gap), the walk writes slot 8; slot 1 sounds */
+    for (k = 0; k < EN_NPROG - 1; k++) {
+        par[P_CR0 + k] = par[P_CR0 + k + 1];
+        par[P_CQ0 + k] = par[P_CQ0 + k + 1];
+        par[P_CX0 + k] = par[P_CX0 + k + 1];
+    }
+    slot_walk_set(EN_NPROG - 1, walk_from(walk_last));
+    prog_pos = 0;
+    en_prog_pos = 0;
+    prog_publish();
+    slot_play(0);
 }
 
 /* ------------------------------------------------------------- the loops --- */
@@ -2041,20 +2113,35 @@ static void apply(int p, int v)
     case P_CR0: case P_CR1: case P_CR2: case P_CR3: case P_CR4: case P_CR5: case P_CR6: case P_CR7:
     case P_CQ0: case P_CQ1: case P_CQ2: case P_CQ3: case P_CQ4: case P_CQ5: case P_CQ6: case P_CQ7:
     case P_CX0: case P_CX1: case P_CX2: case P_CX3: case P_CX4: case P_CX5: case P_CX6: case P_CX7:
-        if (nsteps && chord_slot >= 0 && (p - P_CR0) % 8 == chord_slot)
-            voice_chord();                       /* the slot playing, edited: heard at once */
+        if (nsteps && prog_pos >= 0 && (p - P_CR0) % 8 == prog_pos)
+            slot_play(prog_pos);                 /* the slot playing, edited: heard at once */
+        prog_publish();
         break;
-    case P_PMODE:                                /* Play: the slots from the first, on the next bar; or random again */
-        prog_pos = -1;
-        if (v && en_playing)
-            change_pending = 1;
-        if (!v && chord_slot >= 0) {
-            chord_slot = -1;
-            if (nsteps)
-                voice_chord();
+    case P_PMODE: {
+        int k;
+        if (v) {                                 /* to Loop: the eight as they are, on from the one playing */
+            if (prog_pos < 0 && prog_len())
+                prog_pos = 0;
+        } else if (prog_pos > 0) {               /* to Endless: the one playing up to slot 1 (all turned round) */
+            int16_t t[3][EN_NPROG];
+            int j;
+            for (k = 0; k < EN_NPROG; k++)
+                for (j = 0; j < 3; j++)
+                    t[j][k] = par[P_CR0 + 8 * j + (k + prog_pos) % EN_NPROG];
+            for (k = 0; k < EN_NPROG; k++)
+                for (j = 0; j < 3; j++)
+                    par[P_CR0 + 8 * j + k] = t[j][k];
+            prog_pos = 0;
         }
-        en_prog_pos = -1;
+        if (!v) {
+            walk_fill();
+            if (prog_pos < 0)
+                prog_pos = 0, slot_play(0);
+        }
+        en_prog_pos = (int8_t)prog_pos;
+        prog_publish();
         break;
+    }
     case P_KIT: kit = (unsigned)v < EN_NKIT ? v : 0; break;
     case P_POCT:                                 /* let it be heard now: a ping from the first loop */
         if (en_playing && nsteps) {
@@ -2088,10 +2175,32 @@ static void apply(int p, int v)
     }
 }
 
+static int deg_dim(int d)                       /* the scale's chord on degree d has a diminished fifth */
+{
+    int t[3], n = stack(pool, 0, d, t, 3);
+    return n >= 3 && (t[2] - t[0] + 12) % 12 == 6;
+}
 static void pool_set(uint32_t p)
 {
+    int k, prev = 0, moved = 0;
     pool = (p | 1u) & 0xFFFu;
     scale_set();
+    /* the walk's slots follow the scale, as degrees; one that lands on a diminished chord (which the walk never
+     * plays) is walked again from the one before */
+    for (k = 0; k < EN_NPROG && nsteps; k++)
+        if (slot_walk(k)) {
+            int d = (par[P_CR0 + k] - 1) % nsteps;
+            if (deg_dim(d)) {
+                d = walk_from(prev);
+                slot_walk_set(k, d);
+                moved = 1;
+            }
+            prev = walk_last = d;
+            if (k == prog_pos)
+                deg = d;
+        }
+    if (moved)
+        prog_publish();
     if (deg >= nsteps)
         deg = 0;
     voice_chord();
@@ -2099,23 +2208,31 @@ static void pool_set(uint32_t p)
 
 static void regrow(void)                        /* a new piece: fresh loops, home chord, patterns home */
 {
-    int l;
+    int l, k;
     for (l = 0; l < EN_NLOOP; l++) {
         loop_regrow(l);
         loop_rest[l] = 0;
     }
-    prog_pos = -1;                               /* the slots: from the first filled one */
     chord_slot = -1;
-    if (prog_len())
-        for (prog_pos = 0; prog_pos < EN_NPROG && !par[P_CQ0 + prog_pos]; prog_pos++)
-            ;
-    if (prog_pos >= EN_NPROG)
-        prog_pos = -1;
-    chord_slot = prog_pos;
-    en_prog_pos = (int8_t)prog_pos;
     deg = 0;
     shape = cvoice == CV_KEYS || cvoice == CV_PAD || cvoice == CV_BELL;   /* these like the 9th; the rest the open 7th */
-    voice_chord();
+    walk_shape = shape;
+    if (!par[P_PMODE])                           /* Endless: a fresh piece's eight, from the walk */
+        walk_fill();
+    /* the slots: Endless from slot 1, Loop from the first that isn't a gap (none: home) */
+    for (prog_pos = 0; prog_pos < EN_NPROG && slot_gap(prog_pos); prog_pos++)
+        ;
+    if (prog_pos >= EN_NPROG || !par[P_PMODE])
+        prog_pos = prog_pos >= EN_NPROG ? -1 : 0;
+    en_prog_pos = (int8_t)prog_pos;
+    for (walk_last = 0, k = 0; k < EN_NPROG; k++)   /* (the walk goes on from its last) */
+        if (slot_walk(k))
+            walk_last = (par[P_CR0 + k] - 1) % (nsteps ? nsteps : 1);
+    if (prog_pos >= 0)
+        slot_play(prog_pos);
+    if (chord_slot < 0 && (prog_pos < 0 || !slot_walk(prog_pos)))
+        voice_chord();
+    prog_publish();
     stabs_home();
     hats_home();
     section_set(SEC_FULL);
