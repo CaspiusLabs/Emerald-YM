@@ -1,4 +1,4 @@
-# help cards and the knobs (X0X's ways): a held button shows its card and then does nothing; SAVE
+# held buttons and the knobs (X0X's ways): a held button does nothing on its release (no cards since 1.3.0); SAVE
 # held on goes back to the recipe; a few quick clicks are exact, a quick spin sweeps
 wait 300
 press REC

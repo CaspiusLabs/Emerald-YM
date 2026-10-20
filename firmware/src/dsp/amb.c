@@ -380,7 +380,7 @@ const char *en_chord_name(const int *pcs, int n, char *buf)
 }
 
 /* ------------------------------------------------------------ commands --- */
-enum { C_SET, C_POOL, C_PLAY, C_NEXT, C_FREEZE, C_SEED, C_PANIC, C_CLOCK, C_REGROW, C_MUTE, C_PERF, C_FX, C_PINGS, C_MACRO, C_PROT, C_REWALK };
+enum { C_SET, C_POOL, C_PLAY, C_NEXT, C_FREEZE, C_SEED, C_PANIC, C_CLOCK, C_REGROW, C_MUTE, C_PERF, C_FX, C_PINGS, C_MACRO, C_PROT, C_REWALK, C_PNUDGE };
 #define QN 256u                                 /* (a piece is every parameter at once: room for four) */
 _Static_assert(QN >= 2u * (P_NPARAMS + 8), "the command queue can't hold a piece's parameters twice over");
 static uint32_t q[QN];
@@ -409,6 +409,7 @@ void en_fx(uint32_t m) { post(C_FX, 0, (int)(m & 0xFFFFu)); }
 void en_macro(int i, int v) { post(C_MACRO, i, v + 50); }   /* (sent as 0..100) */
 void en_prog_rotate(void) { post(C_PROT, 0, 0); }
 void en_prog_rewalk(void) { post(C_REWALK, 0, 0); }
+void en_ping_nudge(void) { post(C_PNUDGE, 0, 0); }
 const char *const EN_FX_NAME[EN_NFX] = {"Throw", "Time x2", "Tape stop", "Swell", "Low-pass", "High-pass", "Wah",
                                         "Phone", "Verb", "Crash", "Freeze", "Wash", "Stutter", "Gate", "Siren", "Riser"};
 
@@ -2460,6 +2461,12 @@ static void drain(void)
                 }
             }
             prog_publish();
+            break;
+        }
+        case C_PNUDGE: {                         /* a nudge on the pings: one note of one loop, another */
+            int l = irand(EN_NLOOP), k = loop_pick(l);
+            if (k >= 0)
+                loop_note[l][k] = (int8_t)rand_offset();
             break;
         }
         case C_PROT:                             /* Loop to Endless: the one playing up to slot 1, all turned round */

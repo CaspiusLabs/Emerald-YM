@@ -1,0 +1,53 @@
+# the nudge: a layer's button held (ENV the chord, ARP the pings, LFO the bass, SEQ the drums) moves its sound a
+# small step (a walk pulled back to the piece's recipe), says the biggest change and shows the layer's sound page;
+# a tap is the page, as ever. Evolve nudges by itself, now and then on a phrase's first bar: at 100 it does, at 40
+# (and under) never
+listen
+wait 2000
+press ENV
+wait 700
+release ENV
+wait 300
+said CHORD NUDGE
+expect view 8
+press ARP
+wait 700
+release ARP
+wait 300
+said PINGS NUDGE
+expect view 9
+press LFO
+wait 700
+release LFO
+wait 300
+said BASS NUDGE
+expect view 10
+press SEQ
+wait 700
+release SEQ
+wait 300
+said DRUMS NUDGE
+expect view 11
+# a tap: the page (no nudge)
+tap ENV
+wait 300
+expect view 1
+said_none NUDGE
+# Evolve 40 (Basic's): two minutes playing, nothing nudged (saved, then still saved)
+tap HOME
+wait 300
+expect view 0
+tap SAVE
+wait 300
+expect dirty 0
+wait 120000
+expect dirty 0
+# Evolve 100: two minutes, the sound nudged (the project changed)
+spin K2 60
+wait 200
+expect par5 100
+tap SAVE
+wait 300
+expect dirty 0
+wait 120000
+expect dirty 1

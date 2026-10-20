@@ -1,10 +1,12 @@
 # the manual's screenshots (docs/img/, but the launch screen): build/host/amb_host tests/listen/shots.amb build/shots
 wait 9000
 shot screen-main.png
-press SAVE
-wait 1500
-shot screen-help.png
-release SAVE
+press ENV
+wait 700
+shot screen-nudge.png
+release ENV
+wait 300
+tap HOME
 wait 300
 turn ALGO 1
 wait 2000

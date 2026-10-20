@@ -81,7 +81,7 @@ DUB-1 starts playing as soon as it's on. A few minutes with it:
 
 What you change is kept with the piece. DUB-1 saves it by itself while resting, or press SAVE.
 
-Not sure what a button does? Hold it for a second: a card says. Let go and nothing happens.
+Want a new colour? Hold a layer's button (ENV, ARP, LFO or SEQ) for half a second: its sound takes a small step somewhere new.
 
 ---
 
@@ -97,7 +97,7 @@ The drawing at the top shows them all; here they are in more detail.
 | EDIT | A tap: the **Chords page** (below): the eight chords coming, to see and change. Held (half a second): the next chord, at the start of the next bar (at once while resting; in dub hold, once you let go). |
 | SEL | **PERFORM**: the knobs become the master actions (Filter, Dub, Energy, Space) and the keys stop being the scale: they mute and solo the layers, make the dub moves, and white 6 held puts the mix on the knobs (see below). Press again to go back; lit while on. Held: the key map. |
 | HOME | The Dub page: the Filter and the machine's movement. Again: the Key page (tempo, root, mode, swing), and again back to Dub; HOME blinks on the Key page. |
-| ENV · ARP · LFO · SEQ | The layers' pages: Chord, Texture (the pings and the crackle), Bass, Drums. |
+| ENV · ARP · LFO · SEQ | The layers' pages: Chord, Texture (the pings and the crackle), Bass, Drums. Held (half a second): a **nudge** to the layer's sound (below). |
 | FX · GLO | The Space page; the Setup page, for what holds for every piece. The lit button shows the page. |
 | SELECT | The previous or next page. Hold HOME and turn it for the tempo, from any page. |
 | ALGORITHM | On a layer's page (Chord, Texture, Bass, Drums): that layer's **voice** (see [The voices](#the-voices)). On the Chords page: the walk's character (Home, Wander, Free). Anywhere else: the middle of the screen, as ripples, a scope or a spectrum (see [The screen](#4-the-screen)). The mode, a piece's choice, is on the Key page (HOME again). |
@@ -215,10 +215,23 @@ A tap on REC alone is still dub hold; held long enough for the grid (or with a k
 release does nothing. Each effect eases in and out. All sixteen at once is the heaviest thing DUB-1
 can do: in a heavy piece it can approach the FM-1's limit (watch the Setup page's CPU).
 
-**Help:** hold any button but PLAY and REC for a second and a card says what it does. A key, a knob or
-another button puts the card away; letting go after it does nothing else.
+**The nudge** (ENV, ARP, LFO or SEQ held for half a second). The layer's sound takes a small step somewhere new:
+two or three of its sound values move a few units each, like a random walk. The walk is pulled back to the
+piece's recipe: the further a value has gone, the likelier its next step goes back, so nudging again and again
+explores round the piece's sound and never wanders off. The message says the biggest change ("CHORD NUDGE
+Colour +5"), and the layer's sound page comes up with that knob lit (in PERFORM, you stay where you are).
 
-![SAVE's card over the main screen: SAVES ALL EIGHT PIECES. KEEP HOLDING: THE PIECE BACK TO ITS RECIPE](img/screen-help.png "SAVE's card")
+| Held | Nudges |
+|---|---|
+| ENV | the chord: Attack, Colour, Reso, Env, its Decay and Cutoff a little; on an FM voice, its ratio and feedback |
+| ARP | the pings: Tone, Ratio, Length, Bend (an FM voice: its ratio and feedback); now and then one note of one loop |
+| LFO | the bass: Bite, Shape, Length, Slide, the Fifth (an FM voice: its ratio and feedback) |
+| SEQ | the drums: the kick's tune, length and punch, the hats' tone |
+
+SAVE keeps what you like; SAVE held puts the piece back to its recipe. Evolve nudges by itself too (the Dub
+page, below).
+
+![A nudge: CHORD NUDGE in the header, the Chord sound page with the changed knob lit](img/screen-nudge.png "A nudge")
 
 ---
 
@@ -454,7 +467,10 @@ spectrum (see [The screen](#4-the-screen)). **HOME** again: the Key page (below)
 - **Evolve:** how restless it is: the stab pattern turning and gaining or losing stabs, stabs
   dropping out, the shaker's pattern, the pings' notes, loops sitting out, octave jumps in the
   bass, and dub throws (see [The layers](#5-the-layers)). At 0, with Motion at 0 too, it's a strict
-  loop: every stab every bar, no throws, no fills (good for playing along with other gear).
+  loop: every stab every bar, no throws, no fills (good for playing along with other gear). Above 40
+  it also nudges the sound by itself: now and then, on a phrase's first bar, one layer's sound takes
+  a small step (a smaller one than a nudge by hand), so over a long run the piece slowly changes
+  colour (at 100, about every third phrase; at 40 and under, never).
 - **Motion:** how often the arrangement leaves Full, how far the filter sweeps, how likely a fill
   is, and how much the echo's heads, the filter and the band-pass wander.
 - **Drift:** how many bars a chord lasts before it moves on: 2, 4, 8, 16, 32 or 64 bars, or Hold
@@ -596,7 +612,7 @@ MIDI comes in over USB and the TRS jack, and goes out over USB.
 DUB-1 can tell a screen reader what its screen shows. Connect the FM-1 by USB, open the
 [FM-1 Screen Reader](https://charlesvestal.github.io/fm1-reader/) in Chrome or Edge, and click
 Connect. It reads out the page you're on and its knobs, a knob's value as you turn it, the piece
-and its key, the notes you add or take out, help cards, every message, and the chord each time it
+and its key, the notes you add or take out, every message, and the chord each time it
 moves. Press W to hear the whole screen again: the page, the piece, the chord, the section and its
 bar, and the scale. The FM-1 says nothing until the page connects, so a DAW on the same cable
 never sees it.

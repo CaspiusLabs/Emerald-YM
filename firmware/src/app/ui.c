@@ -130,7 +130,6 @@ static struct {
     uint8_t enc_run[NE];               /* detents in the current quick run, per knob (accel) */
     uint32_t down_t[NB];               /* when each button went down */
     uint32_t turn_t;                   /* the last knob turn */
-    uint8_t help;                      /* a button's card is up: the button + 1 */
     uint8_t reset_done;                /* SAVE held: the piece went back to its recipe this hold */
     uint8_t dirty;                     /* the project changed since the last save */
     uint32_t act_t, saved_t;
@@ -857,31 +856,117 @@ static void midi_in(void)
     }
 }
 
-/* HELP CARDS (X0X's): hold one button alone for HELP_HOLD and a card says what it does. A key, a
- * turn or another button puts it away; letting go after its card does nothing else. PLAY acts on
- * its press, and SEL has no job here: neither has a card. */
-#define HELP_HOLD 900u
-#define RESET_HOLD 1500u
-static void help_tick(uint32_t btn, uint32_t keys)
-{
-    uint32_t now = plat_ms();
-    int i;
-    if (ui.help) {
-        uint32_t m = 1u << (ui.help - 1);
-        if (btn != m || keys || (int32_t)(ui.turn_t - ui.down_t[ui.help - 1]) > 0)
-            ui.help = 0;
-        return;
-    }
-    if (!btn || (btn & (btn - 1u)) || keys)
-        return;
-    for (i = 0; i < NB; i++)
-        if (btn == 1u << i && i != B_PLAY && i != B_REC && i != B_EDIT && !(ui.btn_used & btn) && now - ui.down_t[i] >= HELP_HOLD &&
-            (int32_t)(ui.turn_t - ui.down_t[i]) <= 0) {
-            ui.help = (uint8_t)(i + 1);
-            ui.btn_used |= btn;                  /* its release now does nothing */
-        }
-}
 
+#define RESET_HOLD 1500u                 /* SAVE held: the piece back to its recipe */
+
+/* NUDGE: a layer's button held (ENV the chord, ARP the pings, LFO the bass, SEQ the drums): its sound a small step
+ * further, a few of its values each a few units, a walk pulled back to the piece's recipe (the further a value has
+ * gone, the likelier it steps back), so nudges explore round the piece's sound and never wander off. The biggest
+ * change said, and the layer's sound page shown, that knob lit. Evolve nudges by itself: now and then on a phrase's
+ * first bar, one layer, a smaller step (nudge_tick) */
+#define NUDGE_HOLD 500u
+static const uint8_t NUDGE_BTN[4] = {B_ENV, B_ARP, B_LFO, B_SEQ};
+static const char *const NUDGE_NAME[4] = {"CHORD", "PINGS", "BASS", "DRUMS"};
+static const uint8_t NUDGE_PAR[4][8] = {   /* (the FM ones, the last two of the first three, on an FM voice only) */
+    {P_CATT, P_CCOL, P_CRES, P_CENV, P_DECAY, P_CUTOFF, P_CFRAT, P_CFB},
+    {P_PTON, P_PRAT, P_PLEN, P_PBEND, P_PTON, P_PLEN, P_PFRAT, P_PFB},
+    {P_BBITE, P_BSHAPE, P_BLEN, P_BSLIDE, P_FIFTH, P_BLEN, P_BFRAT, P_BFB},
+    {P_KTUNE, P_KLEN, P_KPUNCH, P_HTONE, P_KLEN, P_KPUNCH, P_HTONE, P_KTUNE},
+};
+static uint32_t nudge_seed = 0x9E3779B9u;
+static int nrand(int n)
+{
+    nudge_seed = nudge_seed * 1664525u + 1013904223u;
+    return n > 0 ? (int)((nudge_seed >> 8) % (uint32_t)n) : 0;
+}
+static void nudge(int layer, int small)          /* small: Evolve's, one value, half the step, nothing said */
+{
+    static const uint8_t SND[4] = {V_CSND, V_PSND, V_BSND, V_DSND};
+    int16_t rec[P_NPARAMS];
+    uint16_t pool;
+    int n = small ? 1 : 2 + nrand(2), j, best = -1, bd = 0, fm = layer < 3 && en_voice_fm(layer);
+    uint8_t pick[8];
+    int np = 0;
+    en_piece(proj.piece, rec, &pool);
+    for (j = 0; j < (fm ? 8 : 6); j++) {         /* (the values to choose from, each once) */
+        int q, dup = 0;
+        for (q = 0; q < np; q++)
+            dup |= pick[q] == NUDGE_PAR[layer][j];
+        if (!dup)
+            pick[np++] = NUDGE_PAR[layer][j];
+    }
+    for (j = 0; j < n && np; j++) {
+        int w = nrand(np), p = pick[w], lo = en_param_info(p)->lo, hi = en_param_info(p)->hi;
+        pick[w] = pick[--np];                    /* (not twice in one nudge) */
+        int st = (hi - lo) / (p == P_DECAY || p == P_CUTOFF ? 32 : 16), v = proj.par[p], d;
+        if (small)
+            st = (st + 1) / 2;
+        if (st < 1)
+            st = 1;
+        d = 1 + nrand(st);                       /* a step of 1..st; back towards the recipe as likely as it is far
+                                                  * from it (a sixth of the range away: always back), else either way */
+        if (v != rec[p] && nrand(hi - lo) < 6 * (v > rec[p] ? v - rec[p] : rec[p] - v))
+            d = v > rec[p] ? -d : d;
+        else if (nrand(2))
+            d = -d;
+        v += d;
+        v = v < lo ? lo : v > hi ? hi : v;
+        d = v - proj.par[p];
+        if (!d)
+            continue;
+        knob_set(p, v);
+        if (d * d > bd * bd)
+            best = p, bd = d;
+    }
+    if (layer == 1 && nrand(2))                  /* the pings: now and then a note of one loop, another */
+        en_ping_nudge();
+    if (small || best < 0)
+        return;
+    {   /* said: the layer, and its biggest change ("CHORD NUDGE  Colour +6"); its sound page, that knob lit */
+        char t[24], v[8];
+        const char *nm = en_param_info(best)->name;
+        int k = 0, i;
+        while (*nm && k < 14)
+            t[k++] = *nm++;
+        t[k++] = ' ';
+        t[k++] = bd > 0 ? '+' : '-';
+        itoa_u((uint32_t)(bd > 0 ? bd : -bd), v);
+        for (i = 0; v[i] && k < 23; i++)
+            t[k++] = v[i];
+        t[k] = 0;
+        {
+            char head[16];
+            for (i = 0; NUDGE_NAME[layer][i]; i++)
+                head[i] = NUDGE_NAME[layer][i];
+            head[i] = 0;
+            for (k = 0; " NUDGE"[k] && i < 15; k++)
+                head[i++] = " NUDGE"[k];
+            head[i] = 0;
+            say(head, t);
+        }
+    }
+    if (!ui.perf) {
+        set_view(SND[layer]);
+        for (j = 0; j < 4; j++)
+            if (VIEW_KNOB[ui.view][j] == best) {
+                ui.touched = (int8_t)j;
+                ui.touch_until = plat_ms() + 1500u;
+            }
+    }
+}
+static void nudge_tick(void)                     /* Evolve's nudges: on a phrase's first bar, now and then, one layer */
+{
+    static uint8_t last_pb = 0xFF;
+    uint8_t pb = en_phrase_bar;
+    int ev = proj.par[P_EVOLVE];
+    if (pb == last_pb)
+        return;
+    last_pb = pb;
+    if (pb != 0 || !en_playing || en_frozen || ev <= 40)
+        return;
+    if (nrand(100) < (ev - 40) * 2 / 3)          /* (Evolve 100: 40% of the phrases; 70: 20%; 40 and under: none) */
+        nudge(nrand(4), 1);
+}
 static void input(void)
 {
     uint32_t btn = plat_buttons(), keys = plat_keys(), ch, i;
@@ -903,6 +988,13 @@ static void input(void)
             edit_released(plat_ms() - ui.down_t[B_EDIT]);
         } else if (!(ui.btn_used & m) && i != B_PLAY) {
             button((int)i);
+        }
+    }
+    for (i = 0; i < 4; i++) {                    /* a layer's button held: a nudge (its release then does nothing) */
+        uint32_t m = 1u << NUDGE_BTN[i];
+        if ((btn & m) && !(ui.btn_used & m) && plat_ms() - ui.down_t[NUDGE_BTN[i]] >= NUDGE_HOLD) {
+            ui.btn_used |= m;
+            nudge((int)i, 0);
         }
     }
     ch = keys ^ ui.keys;
@@ -985,7 +1077,6 @@ static void input(void)
     if ((btn >> B_SAVE & 1u) && !ui.reset_done && plat_ms() - ui.down_t[B_SAVE] > RESET_HOLD) {
         ui.reset_done = 1;                     /* held: the piece back to its recipe (not saved) */
         ui.btn_used |= 1u << B_SAVE;
-        ui.help = 0;
         project_piece_reset();
         project_apply();
         en_regrow();
@@ -1001,7 +1092,6 @@ static void input(void)
             ui.touch_until = plat_ms() + 1200u;
             ui.act_t = ui.turn_t = plat_ms();
         }
-    help_tick(btn, keys);
 }
 
 /* ------------------------------------------------------------- screen --- */
@@ -1737,46 +1827,6 @@ static void draw_lanes(void)                     /* below: the bar, a lane a lay
     }
 }
 
-/* a button's card (help_tick): its name, then what it does, in the garden's place. A line starting with a
- * space goes on from the one before (a screen reader joins them: sp_line) */
-#define HELP_LINES 5
-static const char *const BTN_LABEL[NB] = {"FX", "SEL", "ENV", "LFO", "EDIT", "GLO", "HOME", "SAVE", "ARP", "SEQ",
-                                          "PLAY", "REC", "OCT-", "OCT+"};
-static int help_lines(int b, const char *l[HELP_LINES])
-{
-    int n = 0;
-#define L(t) (l[n++] = (t))
-    switch (b) {
-    case B_HOME: L("DUB: FILTER, EVOLVE,"); L(" MOTION, DRIFT"); L("ALGORITHM: THE SCREEN"); L("AGAIN: TEMPO, ROOT, MODE, SWING"); L("+ SELECT: TEMPO"); break;
-    case B_ENV: L("THE CHORD: LEVEL, STABS,"); L(" DECAY, CUTOFF"); L("ALGORITHM: ITS VOICE"); L("AGAIN: SOUND; AGAIN: FM"); break;
-    case B_ARP: L("TEXTURE: PINGS, DENSITY,"); L(" CLOUD, CRACKLE"); L("ALGORITHM: THE PINGS' VOICE"); L("AGAIN: SOUND; AGAIN: FM"); break;
-    case B_LFO: L("THE BASS"); L("LEVEL, OCTAVE, GROOVE, FIFTH"); L("ALGORITHM: ITS VOICE"); L("AGAIN: SOUND; AGAIN: FM"); break;
-    case B_SEQ: L("THE DRUMS"); L("LEVEL, HITS, SWING, DUCK"); L("ALGORITHM: THE KIT"); L("AGAIN: SOUND; AGAIN: PATTERN"); break;
-    case B_FX: L("THE SPACE"); L("ECHO, ECHO TIME, FEEDBACK,"); L("REVERB"); break;
-    case B_GLO: L("SETUP (FOR EVERY PIECE)"); L("TUNE, MIDI OUT, LIGHTS"); break;
-    case B_EDIT: L("TAP: THE CHORDS COMING (8:"); L(" KEYS: A ROOT; ALGORITHM:"); L(" THE WALK; KNOB 4: LOOP)"); L("HOLD: THE NEXT CHORD"); break;
-    case B_SEL: L("FILTER, DUB, ENERGY, SPACE;"); L(" WHITE 6 HELD: THE MIX"); L("WHITE 1-5 MUTE, BLACK 1-5 SOLO:"); L(" CHORD PINGS BASS KICK HATS"); L("WHITE 7-11: THROW OPEN SHUT DROP ECHO"); break;
-    case B_REC: L("TAP: DUB HOLD (THE ECHO"); L(" REPEATS WHAT IT HOLDS)"); L("HOLD: THE EFFECTS GRID,"); L(" PLAYED ON THE WHITE KEYS"); break;
-    case B_OCTDN: L("THE PINGS AN OCTAVE DOWN"); L("WITH OCT+, 5 S: UPDATE MODE"); break;
-    case B_OCTUP: L("THE PINGS AN OCTAVE UP"); L("WITH OCT-, 5 S: UPDATE MODE"); break;
-    case B_SAVE: L("SAVES ALL EIGHT PIECES"); L("KEEP HOLDING: THE PIECE"); L(" BACK TO ITS RECIPE"); break;
-    default: break;
-    }
-#undef L
-    return n;
-}
-
-static void draw_help(void)
-{
-    const char *l[HELP_LINES];
-    int n = help_lines(ui.help - 1, l), k;
-    cv_round(16, 14, 208, 116, 6, K_PANEL);
-    cv_round(16, 14, 208, 26, 6, K_TEXT);
-    cv_rect(16, 34, 208, 6, K_TEXT);
-    text_c(120, 18, &FONT_B, BTN_LABEL[ui.help - 1], K_BG);
-    for (k = 0; k < n; k++)
-        text_c(120, (n > 4 ? 45 : 56) + k * (n > 4 ? 17 : 20), &FONT_S, l[k] + (l[k][0] == ' '), K_TEXT);
-}
 
 /* the effects grid, in the main screen's place while REC is held: four rows of four, the first of each lit
  * as the group's (its key lit too), the ones held filled */
@@ -1933,16 +1983,6 @@ static void draw_main(void)
         return;
     }
     ui.grid_said = 0;
-    if (ui.help) {
-        h = hash(0x48454C50u, ui.help);
-        if (h != ui.sig[1]) {
-            ui.sig[1] = h;
-            cv_begin(240, MAIN_H, K_BG);
-            draw_help();
-            cv_blit(0, MAIN_Y);
-        }
-        return;
-    }
     ripples_take(now);
     for (i = 0; i < EN_NPAD; i++)
         h = hash(h, en_chord[i]);
@@ -2172,13 +2212,13 @@ static void autosave(void)
 
 /* ------------------------------------------------------ screen reader --- */
 /* The screen as text for a screen reader on the computer (announce.c; fm1-reader): a page once it settles,
- * with its knobs; a knob's value as it turns; a help card as it comes up; the chord as it moves (queued: the
+ * with its knobs; a knob's value as it turns; the chord as it moves (queued: the
  * garden moves it by itself, every 20 s at the quickest); growing and resting from MIDI, and a MIDI clock
  * arriving or going; what a button did (say). WHERE (the reader asks, or it has just started listening) is
  * the whole screen in two: the page, its knobs and the header, then the garden (the chord, the scale).
  * Nothing is built while no reader listens. */
 static struct {
-    uint8_t view, help, ext, started;
+    uint8_t view, ext, started;
     int16_t val[4];
     uint32_t chord;                            /* the chord's name, hashed */
 } sp;
@@ -2346,28 +2386,6 @@ static void sp_garden(void)
         sp_cat(". Kick out");
 }
 
-/* a help card: its button, then its lines ("ENV button. THE CHORD. LEVEL, STABS, DECAY, CUTOFF") */
-static void sp_line(const char *s)
-{
-    char p = sp_n ? sp_buf[sp_n - 1] : 0;
-    if (*s == ' ')                             /* it goes on from the line before */
-        s++;
-    else if (p != ',' && p != ':')
-        sp_cat(".");
-    sp_cat(" ");
-    sp_cat(s);
-}
-static void sp_help(void)
-{
-    const char *l[HELP_LINES];
-    int n = help_lines(ui.help - 1, l), k;
-    sp_n = 0;
-    sp_buf[0] = 0;
-    sp_cat(BTN_LABEL[ui.help - 1]);
-    sp_cat(" button");
-    for (k = 0; k < n; k++)
-        sp_line(l[k]);
-}
 
 static void sp_piece_text(void)                /* "PIECE Chamber, A Aeolian, tempo 118" */
 {
@@ -2406,7 +2424,6 @@ static void sp_snap(void)
     for (i = 0; i < 4; i++)
         sp.val[i] = (int16_t)knob_get(VIEW_KNOB[ui.view][i]);
     sp.view = ui.view;
-    sp.help = ui.help;
     sp.ext = en_ext;
     sp.chord = sp_chord_sig();
 }
@@ -2423,15 +2440,9 @@ static void speak(void)
     if (!sp.started || where) {                       /* everything on the screen, in two */
         sp.started = 1;
         sp_snap();
-        if (ui.help) {
-            sp_help();
-            ann_say(sp_buf, 0, ANN_NOW);
-            sp_page(1);
-        } else {
-            sp_page(1);
-            ann_say(sp_buf, 0, ANN_NOW);
-            sp_garden();
-        }
+        sp_page(1);
+        ann_say(sp_buf, 0, ANN_NOW);
+        sp_garden();
         ann_say(sp_buf, 0, 0);
         sp_said = 0;
         return;
@@ -2454,14 +2465,6 @@ static void speak(void)
         else
             sp_int((uint32_t)proj.par[P_TEMPO]);
         ann_say(sp_buf, 0, 0);
-    }
-    if (ui.help != sp.help) {                         /* a help card: at once */
-        sp.help = ui.help;
-        if (ui.help) {
-            sp_help();
-            ann_say(sp_buf, 0, ANN_NOW);
-            return;
-        }
     }
     if (ui.view != sp.view) {                         /* a new page: said when it settles */
         sp_snap();
@@ -2493,7 +2496,7 @@ static void speak(void)
 }
 
 #ifdef EN_HOST
-/* every page, knob value, help card, chord and message as a screen reader gets them (the "speakdump"
+/* every page, knob value, chord and message as a screen reader gets them (the "speakdump"
  * command): KIND <tab> the text sent (fm1-reader/tools/audit.mjs puts it in words with web/words/ and checks it) */
 static void sp_print(const char *kind, const char *t) { printf("%s\t%s\n", kind, t); }
 static void speak_dump(void)
@@ -2505,7 +2508,7 @@ static void speak_dump(void)
     static const char *const WARN[][2] = {{"THE ROOT STAYS", "(SETUP)"}, {"3 NOTES", "AT LEAST"},
                                           {"NOT SAVED", "FLASH ERROR"}};
     project_t keep = proj;
-    uint8_t keep_view = ui.view, keep_help = ui.help, keep_dirty = ui.dirty, keep_play = sp_tp.playing;
+    uint8_t keep_view = ui.view, keep_dirty = ui.dirty, keep_play = sp_tp.playing;
     uint8_t keep_ext = en_ext, keep_frozen = en_frozen, keep_rest = en_pulse_rest, keep_sec = en_section;
     int v, i, x, lo, hi;
     char t[48];
@@ -2559,15 +2562,6 @@ static void speak_dump(void)
     en_pulse_rest = keep_rest;
     en_section = keep_sec;
     ui.view = keep_view;
-    for (i = 0; i < NB; i++) {
-        const char *l[HELP_LINES];
-        if (!help_lines(i, l))
-            continue;
-        ui.help = (uint8_t)(i + 1);
-        sp_help();
-        sp_print("HELP", sp_buf);
-    }
-    ui.help = keep_help;
     for (x = 0; x < 12; x++)
         for (i = 0; i < (int)NCHORD_Q; i++) {
             sp_n = 0;
@@ -2648,6 +2642,7 @@ void ui_init(void)
 void ui_frame(void)
 {
     prog_take();
+    nudge_tick();
     input();
     autosave();
     if (grid_up()) {                             /* REC held: the effects, the whole screen */

@@ -208,6 +208,7 @@ extern volatile int8_t en_prog_slot[EN_NPROG][3];
 extern volatile uint32_t en_prog_gen;
 /* a walk slot's chord as written (to edit it): its root (absolute), kind and type, from the scale's degree */
 void en_walk_chord(uint32_t pool, int root, int deg, int *r, int *q, int *x);
+void en_ping_nudge(void);                      /* a nudge (ARP held): one note of one ping loop, another */
 void en_prog_rotate(void);                     /* Loop to Endless (by hand): the slot playing up to slot 1 */
 void en_prog_rewalk(void);                     /* the walk's character turned (by hand): its slots walked again, all but
                                                 * the one playing (yours and the gaps kept) */

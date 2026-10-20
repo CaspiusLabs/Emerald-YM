@@ -38,7 +38,7 @@ installer can reach.
 | OCT− / OCT+ | The pings' octave |
 | SAVE | Saves; held, puts the piece back to its recipe |
 
-Hold any button (but PLAY) for a second and a card says what it does.
+Hold a layer's button (ENV, ARP, LFO, SEQ) for a nudge: its sound a small step somewhere new.
 
 DUB-1 also tells the [FM-1 Screen Reader](https://charlesvestal.github.io/fm1-reader/) what its
 screen shows, over USB: the page and its knobs, a knob's value as it turns, the piece, the chord as
