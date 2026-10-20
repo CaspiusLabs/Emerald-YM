@@ -538,7 +538,7 @@ would fit.
 - MIDI CC out for the filter and the echo send, to drive other gear
 - Keys as live mutes, or a held key as a manual throw
 
-## Release 1.2.5: the chord machine, visible (the user's idea, 2026-10-20; built, to try)
+## Release 1.3.0: the chord machine, visible (the user's idea, 2026-10-20; built, to try; was 1.2.5)
 
 At launch the firmware generates a full eight-chord progression (the random walk writes it into the eight slots), and
 the Chords page (EDIT) shows it. Proposed: both of the user's behaviours, as KNOB 4 (Play) on the Chords page, which
@@ -558,7 +558,8 @@ today switches between Random and the slots.
   engine holds the slots and writes the walk's (`walk_from`, `walk_fill`, `chord_change`); the UI mirrors them
   (`en_prog_slot`, `en_prog_gen`, `prog_take`). A walk slot that becomes diminished after a change of scale is
   walked again. Tests: tests/host/amb_test.c (Loop, Endless), tests/scenarios/chords.amb.
-- [ ] The user tries it (build/dub-1.2.5-test1.fwsc); then the release, and the SMK branch
+- [ ] The user tries it (build/dub-1.3.0-test2.fwsc); then the release, and the SMK branch
+- [ ] Maybe a sound pass in the same release ("the music" release: the chord machine and the sounds), as the user likes
 - The engine: `chord_change()` already has the walk (from a degree other than home, back home 65% of the time;
   otherwise a weighted choice, IV favoured, then VII and V, never the current degree or a diminished one; now and
   then the other voicing). Slots are stored as absolute roots, kinds and types (P_CR*, P_CQ*, P_CX*); the walk would
@@ -567,16 +568,26 @@ today switches between Random and the slots.
   the Dorian test: A-B-A bounces in 64 changes 22 / 2 / 5, at home 24 / 16 / 11); the modes stepped the most common
   first (Aeolian, Ionian, Dorian, Mixolydian, pentatonic minor and major, Phrygian, Lydian; the values kept as they
   were).
-- **Two music theory videos** (the user, 2026-10-20), with the chord machine's: **the modes** (the eight scales
-  DUB-1 has, how each sounds over the same groove, why dub techno lives in the minor ones) and **the chords** (a
-  scale's chords, stacked thirds, kinds and types, the voicings DUB-1 uses).
-- **Then a video, "The chord machine"** (4–5 min, Serena's voice):
-  1. a scale's seven chords;
-  2. the walk's rules (home, the pull back, the favoured degrees, voicings);
-  3. Drift;
-  4. Endless on the Chords page, the chords flowing in;
-  5. steering it: edit a coming chord, a gap, catch it in Loop, shorten it;
-  6. what makes it generative: rules, chance, limits you set.
+- The videos for it: see "Videos to make" below.
+
+## Videos to make (the channel's full plan: build/film/channel/CHANNEL.md)
+
+- **After 1.3.0, with its firmware** (the user, 2026-10-20). Each one long, with Serena's voice-over, made in the
+  simulator like the 1.2.0 video:
+  1. **The chord machine** (4–5 min):
+     1. a scale's seven chords;
+     2. the walk's rules: home, the pull back, the favoured degrees, the voicings; Home, Wander and Free;
+     3. Drift;
+     4. Endless on the Chords page, the chords flowing in;
+     5. steering it: edit a coming chord, make a gap, catch it in Loop, shorten it;
+     6. what makes it generative: rules, chance, limits you set.
+  2. **The modes** (music theory): the eight scales DUB-1 has, in its order (Aeolian, Ionian, Dorian, Mixolydian,
+     the pentatonics, Phrygian, Lydian); how each sounds over the same groove; why dub techno lives in the minor
+     ones; changing the mode live.
+  3. **The chords** (music theory): a scale's chords as stacked thirds; kinds (major, minor, sus, dim, aug) and
+     types (6, 7, maj7, 9, 11, add9); DUB-1's voicings (the open 7th, the 9th without its fifth); writing your own
+     on the Chords page.
+- Done: the 1.1.0 walkthrough, the 1-hour night video, shorts 1-9, the 1.2.0 launch video.
 
 ## Releases after 1.2.0 (the user's ideas, 2026-10-19)
 
