@@ -94,11 +94,11 @@ The drawing at the top shows them all; here they are in more detail.
 | Keys | The scale. Each key adds its note to the scale or takes it out; the keys light up for the notes in it. Every octave of a note is the same key. The root stays ("THE ROOT STAYS"), and the scale keeps at least three notes ("3 NOTES AT LEAST"). |
 | PLAY | Play / rest. DUB-1 starts playing by itself when it's switched on. At rest, the echo's feedback eases under 90% so its tails die away, the reverb rings out and the crackle fades. Playing again starts from the first bar of a phrase. Lit while playing. |
 | REC | A tap: **dub hold**: the echo stops listening and repeats what it holds, sample for sample, for ever; the reverb stops listening too and rings on; the chord doesn't move. The stabs, pings and drums go on, dry, above it. Tap again to let go. Lit while held. Held: the **effects grid** (below). |
-| EDIT | A tap: the **Chords page** (below): the eight chords coming, to see and change. Held (half a second): the next chord, at the start of the next bar (at once while resting; in dub hold, once you let go). |
+| EDIT | A tap: the **Chords page** (below): the eight chords coming, to see and change. Held on (1.5 s): **new chords**, the walk's all walked again (yours, the gaps and the one playing kept). Held (half a second): the next chord, at the start of the next bar (at once while resting; in dub hold, once you let go). |
 | SEL | **PERFORM**: the knobs become the master actions (Filter, Dub, Energy, Space) and the keys stop being the scale: they mute and solo the layers, make the dub moves, and white 6 held puts the mix on the knobs (see below). Press again to go back; lit while on. Held: the key map. |
 | HOME | The Dub page: the Filter and the machine's movement. Again: the Key page (tempo, root, mode, swing), and again back to Dub; HOME blinks on the Key page. |
-| ENV · ARP · LFO · SEQ | The layers' pages: Chord, Texture (the pings and the crackle), Bass, Drums. Held (half a second): a **nudge** to the layer's sound (below). |
-| FX · GLO | The Space page; the Setup page, for what holds for every piece. The lit button shows the page. |
+| ENV · ARP · LFO · SEQ | The layers' pages: Chord, Texture (the pings and the crackle), Bass, Drums. Held (half a second): a **nudge** to the layer's sound; held on (1.5 s): a **shake** (below). |
+| FX · GLO | The Space page; the Setup page, for what holds for every piece. The lit button shows the page. FX held: a nudge to the space; held on: a shake (a new echo time). |
 | SELECT | The previous or next page. Hold HOME and turn it for the tempo, from any page. |
 | ALGORITHM | On a layer's page (Chord, Texture, Bass, Drums): that layer's **voice** (see [The voices](#the-voices)). On the Chords page: the walk's character (Home, Wander, Free). Anywhere else: the middle of the screen, as ripples, a scope or a spectrum (see [The screen](#4-the-screen)). The mode, a piece's choice, is on the Key page (HOME again). |
 | PRESETS | The piece (see [The pieces](#7-the-pieces)). |
@@ -232,6 +232,7 @@ Colour +5"), and the layer's sound page comes up with that knob lit (in PERFORM,
 | ARP | the pings: Tone, Ratio, Length, Bend (an FM voice: its ratio and feedback); now and then one note of one loop |
 | LFO | the bass: Bite, Shape, Length, Slide, the Fifth (an FM voice: its ratio and feedback) |
 | SEQ | the drums: the kick's tune, length and punch, the hats' tone |
+| FX | the space: the echo's send and feedback (smaller steps), the reverb, the plate's size, the cloud; its shake: a new echo time |
 
 SAVE keeps what you like; SAVE held puts the piece back to its recipe. Evolve nudges by itself too (the Dub
 page, below), but never shakes.

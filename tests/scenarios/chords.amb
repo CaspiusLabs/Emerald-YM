@@ -76,6 +76,16 @@ expect par72 0
 expect chordroot 5
 expect par71 >0
 expect par79 0
+# EDIT held on (1.5 s): new chords, the walk's walked again (not the one playing), and no next chord on release
+press EDIT
+wait 1800
+release EDIT
+wait 200
+said NEW CHORDS Wander
+said_none NEXT CHORD
+expect progpos 0
+expect par64 0
+expect par72 0
 tap PLAY
 wait 6000
 expect store_writes >0

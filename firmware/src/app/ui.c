@@ -704,9 +704,12 @@ static void slot_key(uint32_t key)               /* the Chords page: a key, the 
         knob_set(K_CQ, EN_CQ_MINOR);
     say(slot_label(ui.slot, nm), 0);
 }
+static uint8_t edit_new;                         /* EDIT held on: the new progression made this hold */
 static void edit_released(uint32_t held)
 {
-    if (held >= NEXT_HOLD) {                     /* held: the next chord */
+    if (edit_new) {                              /* (held on: done already) */
+        edit_new = 0;
+    } else if (held >= NEXT_HOLD) {              /* held: the next chord */
         en_next();
         say("NEXT CHORD", en_playing ? "ON THE BAR" : 0);
     } else if (ui.view == V_CHORDS) {            /* tapped: the Chords page, or back from it */
@@ -866,13 +869,15 @@ static void midi_in(void)
  * first bar, one layer, a smaller step (nudge_tick) */
 #define NUDGE_HOLD 500u
 #define SHAKE_HOLD 1500u                  /* held on: a shake (a new voice, every value a big step) */
-static const uint8_t NUDGE_BTN[4] = {B_ENV, B_ARP, B_LFO, B_SEQ};
-static const char *const NUDGE_NAME[4] = {"CHORD", "PINGS", "BASS", "DRUMS"};
-static const uint8_t NUDGE_PAR[4][8] = {   /* (the FM ones, the last two of the first three, on an FM voice only) */
+#define NNUDGE 5
+static const uint8_t NUDGE_BTN[NNUDGE] = {B_ENV, B_ARP, B_LFO, B_SEQ, B_FX};
+static const char *const NUDGE_NAME[NNUDGE] = {"CHORD", "PINGS", "BASS", "DRUMS", "SPACE"};
+static const uint8_t NUDGE_PAR[NNUDGE][8] = {   /* (the FM ones, the last two of the first three, on an FM voice only) */
     {P_CATT, P_CCOL, P_CRES, P_CENV, P_DECAY, P_CUTOFF, P_CFRAT, P_CFB},
     {P_PTON, P_PRAT, P_PLEN, P_PBEND, P_PTON, P_PLEN, P_PFRAT, P_PFB},
     {P_BBITE, P_BSHAPE, P_BLEN, P_BSLIDE, P_FIFTH, P_BLEN, P_BFRAT, P_BFB},
     {P_KTUNE, P_KLEN, P_KPUNCH, P_HTONE, P_KLEN, P_KPUNCH, P_HTONE, P_KTUNE},
+    {P_ECHO, P_FEEDBACK, P_REVERB, P_SIZE, P_CLOUD, P_ECHO, P_ECHO, P_ECHO},   /* (the space: FX; its shake, a new echo time) */
 };
 static uint32_t nudge_seed = 0x9E3779B9u;
 static int nrand(int n)
@@ -887,14 +892,18 @@ enum { NUDGE_EVOLVE, NUDGE_HAND, NUDGE_SHAKE };
  * the range away */
 static void nudge(int layer, int how)
 {
-    static const uint8_t SND[4] = {V_CSND, V_PSND, V_BSND, V_DSND};
-    static const uint8_t VOICE[4] = {P_CVOICE, P_PVOICE, P_BVOICE, P_KIT};
+    static const uint8_t SND[NNUDGE] = {V_CSND, V_PSND, V_BSND, V_DSND, V_SPACE};
+    static const uint8_t VOICE[NNUDGE] = {P_CVOICE, P_PVOICE, P_BVOICE, P_KIT, P_ETIME};
     int16_t rec[P_NPARAMS];
     uint16_t pool;
     int j, best = -1, bd = 0, fm, n, np = 0;
     uint8_t pick[8];
     char vn[12] = "";
-    if (how == NUDGE_SHAKE) {                    /* a new voice (another than this), first: the values then fit it */
+    if (how == NUDGE_SHAKE && layer == 4) {      /* the space's: another echo time */
+        int nt = en_param_info(P_ETIME)->hi + 1, cur = proj.par[P_ETIME], v = (cur + 1 + nrand(nt - 1)) % nt;
+        knob_set(P_ETIME, v);
+        en_param_text(P_ETIME, v, vn);
+    } else if (how == NUDGE_SHAKE) {             /* a new voice (another than this), first: the values then fit it */
         const en_param_t *pi = en_param_info(VOICE[layer]);
         int nv = pi->hi - pi->lo + 1 - (layer == 0), cur = proj.par[VOICE[layer]], v;
         v = (cur + 1 + nrand(nv > 1 ? nv - 1 : 1)) % nv;   /* (the chord's: not Noise, the last, an effect more
@@ -916,7 +925,7 @@ static void nudge(int layer, int how)
     n = how == NUDGE_SHAKE ? np : how == NUDGE_HAND ? 3 + nrand(2) : 1 + nrand(2);
     for (j = 0; j < n && np; j++) {
         int w = nrand(np), p = pick[w], lo = en_param_info(p)->lo, hi = en_param_info(p)->hi;
-        int st = (hi - lo) / (p == P_DECAY || p == P_CUTOFF ? 16 : 8), v = proj.par[p], d;
+        int st = (hi - lo) / (p == P_DECAY || p == P_CUTOFF || p == P_FEEDBACK ? 16 : 8), v = proj.par[p], d;
         pick[w] = pick[--np];                    /* (not twice in one nudge) */
         if (p == P_KTUNE)
             st = 2;                              /* (the kick's tune: semitones) */
@@ -986,7 +995,7 @@ static void nudge_tick(void)                     /* Evolve's nudges: on a phrase
     if (pb != 0 || !en_playing || en_frozen || ev <= 40)
         return;
     if (nrand(100) < (ev - 40) * 2 / 3)          /* (Evolve 100: 40% of the phrases; 70: 20%; 40 and under: none) */
-        nudge(nrand(4), NUDGE_EVOLVE);
+        nudge(nrand(NNUDGE), NUDGE_EVOLVE);
 }
 static void input(void)
 {
@@ -1011,7 +1020,7 @@ static void input(void)
             button((int)i);
         }
     }
-    for (i = 0; i < 4; i++) {                    /* a layer's button held: a nudge; held on: a shake (its release
+    for (i = 0; i < NNUDGE; i++) {               /* a layer's button held: a nudge; held on: a shake (its release
                                                   * then does nothing) */
         static uint8_t shaken;
         uint32_t m = 1u << NUDGE_BTN[i], held = plat_ms() - ui.down_t[NUDGE_BTN[i]];
@@ -1025,6 +1034,13 @@ static void input(void)
             shaken |= (uint8_t)(1u << i);
             nudge((int)i, NUDGE_SHAKE);
         }
+    }
+    if ((btn >> B_EDIT & 1u) && !edit_new && plat_ms() - ui.down_t[B_EDIT] >= SHAKE_HOLD &&
+        (int32_t)(ui.turn_t - ui.down_t[B_EDIT]) <= 0) {   /* EDIT held on: a new progression, the walk's chords
+                                                  * all walked again (yours, the gaps and the one playing kept) */
+        edit_new = 1;
+        en_prog_rewalk();
+        say("NEW CHORDS", EN_WALK_NAME[(proj.par[P_PMODE] & 3) % EN_NWALK]);
     }
     ch = keys ^ ui.keys;
     ui.keys = keys;

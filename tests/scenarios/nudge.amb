@@ -44,6 +44,18 @@ release SEQ
 wait 300
 said DRUMS SHAKE
 expect par35 >0
+# FX, the space: a nudge, then held on a shake (a new echo time); the Space page
+press FX
+wait 700
+release FX
+wait 300
+said SPACE NUDGE
+expect view 5
+press FX
+wait 1800
+release FX
+wait 300
+said SPACE SHAKE
 # a tap: the page (no nudge)
 tap ENV
 wait 300
