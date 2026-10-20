@@ -2360,7 +2360,7 @@ static void draw_slots(void)
     char nm[16];
     text_c(120, -1, &FONT_XS, HEAD[loop ? 3 : (proj.par[P_PMODE] & 3) % EN_NWALK], K_ACC);
     for (i = 0; i < EN_NPROG; i++) {
-        int32_t x = 12 + (i & 3) * 55, y = 18 + (i >> 2) * 42;
+        int32_t x = 12 + (i & 3) * 55, y = 30 + (i >> 2) * 46;   /* (the two rows in the middle) */
         int filled = !slot_is_gap(i), now = en_playing && i == en_prog_pos && n, sel = i == ui.slot;
         if (sel)
             cv_round(x - 2, y - 2, 54, 38, 5, K_ACC);
@@ -2378,8 +2378,6 @@ static void draw_slots(void)
             text_c(x + 25, y + 13, &FONT_XS, "(HOLDS)", now ? K_BG : K_DIM);
         }
     }
-    text_c(120, 102, &FONT_XS, "KEYS: THE SLOT'S ROOT   KIND EMPTY: A GAP", K_DIM);
-    text_c(120, 116, &FONT_XS, "ALGORITHM: THE WALK   KNOB 4: LOOP", K_DIM);
 }
 
 /* the level ring (OCT- / OCT+ on a layer's page): over the middle, the layer's level as a big knob in its colour, the
