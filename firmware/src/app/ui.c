@@ -20,21 +20,21 @@
 /* (past NPAGES, off SELECT's round and on no button of their own: V_MIX, PERFORM's knobs, the four layers'
  * levels; the layers' sound pages, the layer's button pressed again) */
 enum { V_DUB, V_CHORD, V_TEXTURE, V_BASS, V_DRUMS, V_SPACE, V_SETUP, NPAGES, V_MIX = NPAGES, V_CSND, V_PSND, V_BSND,
-       V_DSND, V_CFM, V_PFM, V_BFM, V_CHORDS, V_PAT, V_PERF, V_KEY, NVIEWS };
+       V_DSND, V_CFM, V_PFM, V_BFM, V_CHORDS, V_PAT, V_PERF, V_KEY, V_NSND, NVIEWS };
 /* (V_PERF: PERFORM's knobs, the master actions; V_MIX while white 6 is held. V_KEY: HOME again, the key and the
  * tempo, the Dub page's second) */
 static const char *const VIEW_NAME[NVIEWS] = {"Dub", "Chord", "Texture", "Bass", "Drums", "Space", "Setup", "Mix",
                                               "Chord sound", "Ping sound", "Bass sound", "Drum sound",
-                                              "Chord FM", "Ping FM", "Bass FM", "Chords", "Pattern", "Perform", "Key"};
+                                              "Chord FM", "Ping FM", "Bass FM", "Chords", "Pattern", "Perform", "Key", "Noise"};
 #define B_NONE 0xFFu
 static const uint8_t VIEW_BTN[NVIEWS] = {B_HOME, B_ENV, B_ARP, B_LFO, B_SEQ, B_FX, B_GLO, B_NONE, B_NONE, B_NONE, B_NONE,
-                                         B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE};
+                                         B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE};
 static int sound_of(int v) { return v == V_CHORD ? V_CSND : v == V_TEXTURE ? V_PSND : v == V_BASS ? V_BSND : v == V_DRUMS ? V_DSND : -1; }
 static int fm_of(int v) { return v == V_CHORD ? V_CFM : v == V_TEXTURE ? V_PFM : v == V_BASS ? V_BFM : -1; }
 static int parent_of(int v)
 {
     return v == V_CSND || v == V_CFM ? V_CHORD : v == V_PSND || v == V_PFM ? V_TEXTURE : v == V_BSND || v == V_BFM ? V_BASS
-         : v == V_DSND || v == V_PAT ? V_DRUMS : -1;
+         : v == V_DSND || v == V_PAT ? V_DRUMS : v == V_NSND ? V_TEXTURE : -1;
 }
 static int layer_of(int v) { v = parent_of(v) >= 0 ? parent_of(v) : v; return v == V_CHORD ? 0 : v == V_TEXTURE ? 1 : v == V_BASS ? 2 : 3; }
 static int fm_off(int v) { return v >= V_CFM && v <= V_BFM && !en_voice_fm(v - V_CFM); }   /* an FM page, not FM */
@@ -67,6 +67,7 @@ static const uint16_t VIEW_KNOB[NVIEWS][4] = {
     {K_LANE, P_DACCENT, K_LCH, P_DMODE},
     {K_FILTER, K_DUB, K_ENERGY, K_SPACE},
     {P_TEMPO, P_ROOT, K_MODE, P_SWING},
+    {P_NCOL, P_NGRAIN, P_NROOM, P_NDRIFT},
 };
 static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Filter", "Evolve", "Motion", "Drift"},
@@ -88,6 +89,7 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Lane", "Accent", "Chance", "Play"},
     {"Filter", "Dub", "Energy", "Space"},
     {"Tempo", "Root", "Mode", "Swing"},
+    {"Colour", "Grain", "Room", "Drift"},
 };
 
 /* the screen's colours: a dark room, as a dub techno sleeve (grey on black, a cold blue). The chord and
@@ -789,6 +791,8 @@ static void button(int b)
             set_view(fm_of(pv));
         else if (ui.view == sound_of(pv) && pv == V_DRUMS)
             set_view(V_PAT);                     /* the drums: their pattern */
+        else if (ui.view == fm_of(pv) && pv == V_TEXTURE)
+            set_view(V_NSND);                    /* the pings' FM page again: the noise */
         else
             set_view(pv);
         return;
@@ -981,6 +985,23 @@ static void nudge(int layer, int how)
     }
     if (layer == 1 && (how == NUDGE_SHAKE || nrand(2)))   /* the pings: now and then a note of one loop, another */
         en_ping_nudge();
+    if (layer == 1) {                            /* ARP: the noise too, one or two of its four (a shake: all, and
+                                                  * another character) */
+        static const uint8_t NP[4] = {P_NCOL, P_NGRAIN, P_NROOM, P_NDRIFT};
+        int k, m = how == NUDGE_SHAKE ? 4 : 1 + nrand(2);
+        if (how == NUDGE_SHAKE)
+            knob_set(P_NCHAR, (proj.par[P_NCHAR] + 1 + nrand(EN_NNCHAR - 1)) % EN_NNCHAR);
+        for (k = 0; k < m; k++) {
+            int p = NP[how == NUDGE_SHAKE ? k : nrand(4)], v = proj.par[p], st = how == NUDGE_SHAKE ? 18 : how == NUDGE_HAND ? 12 : 6;
+            int d = 1 + nrand(st);
+            if (v != rec[p] && nrand(100) < 4 * (v > rec[p] ? v - rec[p] : rec[p] - v))
+                d = v > rec[p] ? -d : d;
+            else if (nrand(2))
+                d = -d;
+            v += d;
+            knob_set(p, v < -50 ? -50 : v > 50 ? 50 : v);
+        }
+    }
     if (how == NUDGE_EVOLVE)
         return;
     {   /* said: "CHORD NUDGE  Colour +9", "CHORD SHAKE  Keys" */
@@ -1131,7 +1152,11 @@ static void input(void)
     }
     if ((e = plat_enc(EN_ALGO)) != 0) {         /* a layer's page: its voice; the Chords page: the walk; elsewhere: the screen */
         int vp = view_voice(ui.view);
-        if (ui.view == V_CHORDS) {               /* the walk's character: its chords walked again, at once */
+        if (ui.view == V_NSND) {                 /* the Noise page: its character */
+            int c = ((proj.par[P_NCHAR] + (int)(e % EN_NNCHAR)) % EN_NNCHAR + EN_NNCHAR) % EN_NNCHAR;
+            knob_set(P_NCHAR, c);
+            say("NOISE", EN_NCHAR_NAME[c]);
+        } else if (ui.view == V_CHORDS) {        /* the walk's character: its chords walked again, at once */
             int w = (((proj.par[P_PMODE] & 3) + (int)(e % EN_NWALK)) % EN_NWALK + EN_NWALK) % EN_NWALK;
             knob_set(P_PMODE, (proj.par[P_PMODE] & EN_PLOOP) | w);
             en_prog_rewalk();
@@ -2091,6 +2116,9 @@ static void draw_main(void)
     if (ui.view >= V_CFM && ui.view <= V_BFM) {  /* an FM page: the algorithm */
         draw_alg(layer_of(ui.view));
         moving = 0;
+    } else if (ui.view == V_NSND) {              /* the Noise page: the spectrum, its colour as it moves */
+        draw_spec();
+        moving = 1;
     } else if (parent_of(ui.view) >= 0) {        /* a sound page: the layer's envelope instead of the ripples */
         draw_env(parent_of(ui.view));
         moving = 1;
@@ -2166,6 +2194,8 @@ static void draw_knobs(void)
         h = hash(h, (uint32_t)proj.par[view_voice(ui.view)]);
     if (ui.view == V_CHORDS)
         h = hash(h, (uint32_t)proj.par[P_PMODE]);
+    if (ui.view == V_NSND)
+        h = hash(h, (uint32_t)proj.par[P_NCHAR]);
     int now_touch = plat_ms() < ui.touch_until;
     for (i = 0; i < 4; i++)
         h = hash(h, (uint32_t)knob_get(VIEW_KNOB[ui.view][i]));
@@ -2180,10 +2210,11 @@ static void draw_knobs(void)
         int32_t xd = 237 - NPAGES * 6, xt;
         int32_t x0 = 4;
         if (view_voice(ui.view) >= 0 || ui.view == V_CHORDS) {   /* a layer's page: its voice, at the rule's start;
-                                                                   * the Chords page: the walk's */
+                                                                   * the Chords page: the walk's; Noise: its character */
             char vn[12];
-            if (ui.view == V_CHORDS) {
-                const char *w = EN_WALK_NAME[(proj.par[P_PMODE] & 3) % EN_NWALK];
+            if (ui.view == V_CHORDS || ui.view == V_NSND) {
+                const char *w = ui.view == V_NSND ? EN_NCHAR_NAME[proj.par[P_NCHAR] % EN_NNCHAR]
+                                                  : EN_WALK_NAME[(proj.par[P_PMODE] & 3) % EN_NWALK];
                 int j;
                 for (j = 0; j < 11 && w[j]; j++)
                     vn[j] = w[j];
@@ -2383,7 +2414,10 @@ static void sp_page(int all)
     sp_buf[0] = 0;
     sp_cat(VIEW_NAME[ui.view]);
     sp_cat(" page");
-    if (view_voice(ui.view) >= 0) {
+    if (ui.view == V_NSND) {
+        sp_cat(", character ");
+        sp_cat(EN_NCHAR_NAME[proj.par[P_NCHAR] % EN_NNCHAR]);
+    } else if (view_voice(ui.view) >= 0) {
         char vn[12];
         en_param_text(view_voice(ui.view), proj.par[view_voice(ui.view)], vn);
         sp_cat(view_voice(ui.view) == P_KIT ? ", kit " : ", voice ");

@@ -1,0 +1,71 @@
+# the Noise page (ARP: Texture, again the ping sound, again the ping FM, again Noise, again back): Colour, Grain,
+# Room and Drift (-50..+50 around the piece's own), ALGORITHM its character (Vinyl, Tape, Dust, Room, Machine);
+# the spectrum in the middle; ARP held nudges it too; kept by the piece; a 1.2.0 project (format 10) read, the
+# noise from the recipes
+listen
+wait 2000
+tap ARP
+tap ARP
+tap ARP
+tap ARP
+wait 400
+expect view 19
+said Noise page, character Vinyl: Colour 0, Grain 0, Room 0, Drift 0
+shot noise.png
+spin K1 20
+wait 300
+said Colour +20
+expect par106 20
+spin K3 -15
+wait 300
+expect par108 -15
+turn ALGO 1
+wait 300
+said NOISE Tape
+expect par110 1
+wait 3000
+expect peak_db_max -0.5
+tap ARP
+wait 300
+expect view 2
+# Fog's recipe: Tape, a darker, roomier, more restless noise
+turn PRESET 3
+wait 500
+expect par110 1
+expect par106 -10
+expect par108 15
+# the shake on ARP: another character too
+press ARP
+wait 1800
+release ARP
+wait 300
+said PINGS SHAKE
+# kept by SAVE
+turn PRESET -3
+wait 500
+expect par110 1
+expect par106 20
+tap SAVE
+reboot
+wait 1000
+expect format 11
+expect par110 1
+expect par106 20
+# a 1.2.0 project (format 10): read, everything kept (Basic's chord level, set to 50 here), the noise from the
+# recipes (Basic's: Vinyl, 0; Fog's: Tape)
+tap ENV
+wait 200
+spin K1 -100
+spin K1 50
+expect par0 50
+store10
+reboot
+wait 1000
+expect format 11
+expect par0 50
+expect par110 0
+expect par106 0
+turn PRESET 3
+wait 500
+expect par110 1
+expect par106 -10

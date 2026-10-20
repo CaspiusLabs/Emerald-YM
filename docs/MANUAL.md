@@ -229,7 +229,7 @@ Colour +5"), and the layer's sound page comes up with that knob lit (in PERFORM,
 | Held | Nudges |
 |---|---|
 | ENV | the chord: Attack, Colour, Reso, Env, its Decay and Cutoff a little; on an FM voice, its ratio and feedback |
-| ARP | the pings: Tone, Ratio, Length, Bend (an FM voice: its ratio and feedback); now and then one note of one loop |
+| ARP | the pings: Tone, Ratio, Length, Bend (an FM voice: its ratio and feedback); now and then one note of one loop; and the noise's Colour, Grain, Room or Drift (its shake: another noise character) |
 | LFO | the bass: Bite, Shape, Length, Slide, the Fifth (an FM voice: its ratio and feedback); its shake also moves the **groove** to a neighbour (Drone, Offbeat, Dotted, Roller, Sync, in that row) |
 | SEQ | the drums: the kick's tune, length and punch, the hats' tone |
 | FX | the space: the echo's send and feedback (smaller steps), the reverb, the plate's size, the cloud; its shake: a new echo time |
@@ -522,9 +522,30 @@ The stab's sound, saws or FM keys, comes with the piece.
   the sweep is dark. A change shows up as each loop comes round.
 - **Cloud:** how much of the reverb goes through the granular cloud: at 0 the plate alone, at the
   top a thick wash of grains.
-- **Crackle:** the vinyl's level, and how many clicks a second.
+- **Crackle:** the level of the noise: a small palette of noises that drift on their own and trade places, like
+  the pings' loops. A dark tape **hiss** that's always there, its band slowly moving; **vinyl** clicks and pops
+  of every size; **dust**, soft grains between the hits, partly into the echo; a faint **rumble**; and a slow
+  **wind**. Turned up, more of the palette comes in. In a Break or Thin phrase the hiss and the dust come
+  forward, to carry the groove. The Noise page shapes it.
 
 OCT− and OCT+ set the pings' octave, two down to two up.
+
+**The Noise page** (ARP a fourth time: after the pings' sound and FM pages; again, back to Texture). Each knob is 0
+in the middle, the piece's own noise:
+
+![The Noise page: VINYL, COLOUR 0, GRAIN 0, ROOM 0, DRIFT 0, the spectrum in the middle](img/screen-noise.png "The Noise page")
+
+- **Colour:** dark and muffled, through to bright and airy (the band the hiss, the dust and the wind sit in).
+- **Grain:** a smooth hiss bed, through to more and bigger vinyl crackle and dust.
+- **Room:** how much rumble and wind: the space the record is playing in.
+- **Drift:** how much and how fast the noises wander and trade places, from steady to restless.
+- **ALGORITHM:** the noise's character, a mix of the five: **Vinyl** (the default), **Tape** (the hiss, dark and
+  steady), **Dust** (the grains forward), **Room** (the wind and the rumble), **Machine** (darker, coarser and
+  restless). It shows at the left of the knob row.
+
+The middle of the screen shows the spectrum, so you can see the noise's colour as it moves. Each piece has its
+own: Fog and Night Drive on Tape, Chamber on Room, Concrete on Machine, Haze on Dust, Pressure a quieter,
+darker Vinyl.
 
 ### LFO: Bass
 
@@ -715,7 +736,9 @@ The defaults are Basic's; each piece has its own.
 | Texture | Pings | 0–100 | 30 |
 | Texture | Density | 0–100 (0 to 5 notes a loop) | 30 |
 | Texture | Cloud | 0–100 | 30 |
-| Texture | Crackle | 0–100 | 35 |
+| Texture | Crackle (the noise's level) | 0–100 | 35 |
+| Noise | Colour, Grain, Room, Drift | −50 – +50 | 0 |
+| Noise | Character (ALGORITHM) | Vinyl, Tape, Dust, Room, Machine | Vinyl |
 | Bass | Level | 0–100 | 60 |
 | Bass | Octave | −1 – +1 | 0 |
 | Bass | Groove | Drone, Offbeat, Dotted, Roller, Sync | Offbeat |

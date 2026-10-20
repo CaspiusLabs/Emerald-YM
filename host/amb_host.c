@@ -24,6 +24,7 @@
  *   bar N [LABEL]                run until bar N's downbeat (N x 16 sixteenths played): a move on the beat.
  *                                Both print the film's time there, "@ mm:ss.s  bar N  LABEL" (the edit's cue)
  *   store8                       save the project as DUB-1 1.0.0 did (format 8): reboot then reads it
+ *   store10                      save it as 1.2.0 did (format 10, without the noise's five)
  *   pingmark                     remember the ping loops (expect pingsame 1: they are as they were)
  *   splashrun                    the launch screen played out as the device does at power-on (55 ms a frame,
  *                                the music running, the UI not), then the UI started again
@@ -686,6 +687,22 @@ int main(int argc, char **argv)
             for (i = 0; i < NPIECES; i++) {
                 memcpy(o.slot[i].par, proj.slot[i].par, sizeof o.slot[i].par);
                 o.slot[i].pool = proj.slot[i].pool;
+            }
+            plat_store_save(OBJ_PROJ, &o, sizeof o);
+        } else if (!strcmp(cmd, "store10")) {    /* the project as DUB-1 1.2.0 / 1.3.0's chords saved it (format 10) */
+            static project10_t o;
+            int i;
+            keep();
+            memset(&o, 0, sizeof o);
+            o.magic = PROJ_MAGIC, o.format = 10u;
+            memcpy(o.par, proj.par, sizeof o.par);
+            o.pool = proj.pool, o.leds = proj.leds, o.piece = proj.piece, o.screen = proj.screen;
+            for (i = 0; i < NPIECES; i++) {
+                memcpy(o.slot[i].par, proj.slot[i].par, sizeof o.slot[i].par);
+                o.slot[i].pool = proj.slot[i].pool;
+                memcpy(o.slot[i].pings, proj.slot[i].pings, sizeof o.slot[i].pings);
+                o.slot[i].pings_ok = proj.slot[i].pings_ok;
+                o.slot[i].screen = proj.slot[i].screen;
             }
             plat_store_save(OBJ_PROJ, &o, sizeof o);
         } else if (!strcmp(cmd, "pingmark")) {

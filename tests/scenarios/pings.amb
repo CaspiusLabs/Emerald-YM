@@ -43,7 +43,7 @@ wait 500
 store8
 reboot
 wait 1000
-expect format 10
+expect format 11
 expect piece 2
 turn PRESET -2
 wait 500
