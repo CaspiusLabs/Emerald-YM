@@ -290,6 +290,12 @@ static void say(const char *a, const char *b) { say_as(a, b, ANN_NOW); }
  * big, outlined in its colour; it fades out CARD_SHOW after (draw_card) */
 #define CARD_SHOW 1500u
 #define CARD_FADE 300u
+static int str_begins(const char *s, const char *p)   /* (the firmware's libc has no strcmp, strncmp) */
+{
+    while (*p && *s == *p)
+        s++, p++;
+    return !*p;
+}
 static int card_on(uint32_t now) { return ui.card_until && now < ui.card_until + CARD_FADE; }
 static void card_show(const char *head, const char *text, uint16_t col, int big)
 {
@@ -2643,10 +2649,10 @@ static void draw_main(void)
     uint32_t ch_age;
     uint16_t ch_c;
     chord_now(nm);
-    if (strcmp(nm, ch_last)) {                   /* (1.3.0) a new chord: it comes in big and teal, then settles */
+    if (!str_begins(nm, ch_last) || !str_begins(ch_last, nm)) {                   /* (1.3.0) a new chord: it comes in big and teal, then settles */
         if (ch_last[0])
             ch_t = now | 1u;
-        if (card_on(now) && !strncmp(ui.card_head, "NEXT CHORD", 10) && now < ui.card_until)
+        if (card_on(now) && str_begins(ui.card_head, "NEXT CHORD") && now < ui.card_until)
             ui.card_until = now - CARD_FADE;     /* (the next chord's card gone at once, for it) */
         memcpy(ch_last, nm, sizeof ch_last);
     }
