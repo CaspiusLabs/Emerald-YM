@@ -1,5 +1,5 @@
 # PERFORM (SEL): white 1-5 mute the layers, black 1-5 solo them, white 7-11 held make the dub moves, white 6 held
-# puts the mix on the knobs (else the master actions: Filter, Dub, Energy, Space); SEL again gives the scale back
+# puts the mix on the knobs (else the master actions: Filter, Dub, Energy, Space); SEL again stays (one page); a page's button or SELECT gives the scale back
 listen
 wait 3000
 expect pool 0x6AD
@@ -80,6 +80,9 @@ expect par3 65
 expect mutes 1
 tap SEL
 wait 200
+expect view 17
+tap HOME
+wait 200
 said PERFORM OFF
 # the keys are the scale again (key b0 is F#: added)
 tapkey b0
@@ -99,7 +102,7 @@ wait 200
 expect par1 0
 key w5 up
 wait 200
-tap SEL
+tap HOME
 wait 200
 expect view 0
 # keys 1-5 are true mutes, the levels kept (the mixer above left Pings at 0: it stays there)
@@ -120,4 +123,4 @@ wait 200
 expect mutes 0
 expect par0 59
 said CHORD ON
-tap SEL
+tap HOME

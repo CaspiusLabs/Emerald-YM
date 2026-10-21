@@ -1,4 +1,4 @@
-# the Noise page (SAVE: a tap, the page; again, back): Density (the groove's hits), Air (the hiss under it), Tone
+# the Noise page (SAVE: a tap, the page; again, it stays): Density (the groove's hits), Air (the hiss under it), Tone
 # (-50..+50 around the piece's own) and Decay (how long the hits ring; the level on OCT-/OCT+, Drift the recipes'), ALGORITHM its character (Vinyl, Tape, Dust, Room, Machine); the spectrum in the middle; SAVE held nudges it,
 # held on shakes it (another character); kept by the piece; saving on GLO held and Setup's KNOB 4; a 1.2.0 project
 # (format 10) read, the noise from the recipes
@@ -32,6 +32,9 @@ expect par110 1
 wait 3000
 expect peak_db_max -0.5
 tap SAVE
+wait 200
+expect view 19
+tap HOME
 wait 300
 expect view 0
 # Fog's recipe: Tape, a darker, roomier, more restless noise
@@ -53,7 +56,7 @@ release SAVE
 wait 300
 said NOISE SHAKE
 expect par110 !=1
-tap SAVE
+tap HOME
 wait 300
 press ARP
 wait 700

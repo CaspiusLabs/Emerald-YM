@@ -822,8 +822,8 @@ static void edit_released(uint32_t held)
     } else if (held >= NEXT_HOLD) {              /* held: the next chord */
         en_next();
         say("NEXT CHORD", en_playing ? "ON THE BAR" : 0);
-    } else if (ui.view == V_CHORDS) {            /* tapped: the Chords page, or back from it */
-        set_view(ui.chords_from);
+    } else if (ui.view == V_CHORDS) {            /* tapped: the Chords page (one page: again stays) */
+        ;
     } else {
         ui.chords_from = (uint8_t)ui.view;
         set_view(V_CHORDS);
@@ -924,8 +924,12 @@ static void button(int b)
             return;
         }
     switch (b) {
-    case B_SEL:
-        perf_set(!ui.perf);
+    case B_SEL:                                  /* PERFORM: one page, so again stays (1.3.0: a page's button or
+                                                  * SELECT leaves it) */
+        if (!ui.perf)
+            perf_set(1);
+        else if (ui.view == V_MIX)
+            set_view(V_PERF);
         break;
     case B_EDIT:                                 /* (its release: edit_released, in input) */
         break;
@@ -947,10 +951,9 @@ static void button(int b)
         say("DUB HOLD", en_frozen ? "OFF" : "ON");
         en_freeze(!en_frozen);                   /* the engine takes it at its next block */
         break;
-    case B_SAVE:                                 /* the Noise page, or back from it (saving: GLO held, Setup's KNOB 4) */
-        if (ui.view == V_NSND) {
-            set_view(ui.noise_from);
-        } else {
+    case B_SAVE:                                 /* the Noise page (one page: again stays; saving: GLO held, Setup's
+                                                  * KNOB 4) */
+        if (ui.view != V_NSND) {
             ui.noise_from = (uint8_t)ui.view;
             ui.noise_round = 0;
             set_view(V_NSND);
@@ -1352,8 +1355,6 @@ static void input(void)
             }
             if (ui.view == V_CHORDS)
                 from = page_of(ui.chords_from);
-            if (ui.view == V_NSND && !ui.noise_round)    /* (SAVE's: from the page it was opened from) */
-                from = page_of(ui.noise_from);
             v = round_pos(from) + (e > 0 ? 1 : -1);
             if (round_pos(from) >= 0 && v >= 0 && v < NROUND) {
                 if (PAGE_ORDER[v] == V_NSND) {   /* (SAVE then goes back to the page before) */

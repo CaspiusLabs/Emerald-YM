@@ -8,6 +8,9 @@ wait 3000
 tap EDIT
 wait 400
 expect view 15
+tap EDIT
+wait 200
+expect view 15
 # slot 1: the walk's home chord, Fm7 in F Dorian, as it would be written
 said Chords page, walk Wander: Slot 1, Chord Minor, Type 7, Play Endless
 expect par64 1
@@ -60,7 +63,7 @@ turn ALGO -1
 wait 200
 said WALK Wander: roams wider
 expect par88 1
-tap EDIT
+tap HOME
 wait 300
 expect view 0
 # the next chord (EDIT held): all up a slot; slot 1 is the gap now (the Fm9 holds), the walk wrote slot 8
@@ -108,7 +111,7 @@ expect blits <3
 release REC
 wait 300
 expect view 15
-tap EDIT
+tap HOME
 tap SEQ
 tap SEQ
 tap SEQ
