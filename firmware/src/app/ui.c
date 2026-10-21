@@ -95,7 +95,7 @@ static const uint16_t VIEW_KNOB[NVIEWS][4] = {
     {K_LANE, P_DACCENT, K_LCH, P_DMODE},
     {K_FILTER, K_DUB, K_ENERGY, K_SPACE},
     {P_TEMPO, P_ROOT, K_MODE, P_SWING},
-    {P_NGRAIN, P_CRACKLE, P_NCOL, P_NTUNE},   /* (Room and Drift off the page: the recipes and characters set them) */
+    {P_NGRAIN, P_NROOM, P_NCOL, P_NTUNE},     /* (the level on OCT- / OCT+, as the layers'; Drift the recipes') */
     {P_EBLUR, P_ETONE, P_EWIDTH, P_SIZE},
 };
 static const char *const KNOB_LABEL[NVIEWS][4] = {
@@ -118,7 +118,7 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Lane", "Accent", "Chance", "Play"},
     {"Filter", "Dub", "Energy", "Space"},
     {"Tempo", "Root", "Mode", "Swing"},
-    {"Density", "Level", "Colour", "Tune"},
+    {"Density", "Air", "Tone", "Decay"},
     {"Blur", "Tone", "Width", "Size"},
 };
 /* what each knob does, a line: on the rule above the knobs while it's being turned (in capitals; each fits the
@@ -159,8 +159,8 @@ static const char *const KNOB_HELP[NVIEWS][4] = {
     {"Shut: under water. Open: thin", "Dry and tight, to a runaway echo", "Sparse and dry, to busy and bright",
      "Drier, or wider: reverb and cloud"},
     {"Beats a minute", "The key's root note", "The scale: Minor, Dorian, ...", "Off sixteenths late: the whole groove"},
-    {"A smooth hiss, to crackle and dust", "How loud the noise is", "Dark and muffled, to bright",
-     "The shimmer: plain air, to the key"},
+    {"How many hits ring, in two bars", "The hiss under it, softer or more", "The rings darker, or brighter",
+     "How long each hit rings on the chord"},
     {"Clean repeats, to a dissolving wash", "The repeats darker, or brighter", "The echo mono, to wide",
      "How long the plate rings"},
 };
@@ -1047,7 +1047,7 @@ static const uint8_t NUDGE_PAR[NNUDGE][8] = {   /* (the FM ones, the last two of
     {P_BBITE, P_BSHAPE, P_BLEN, P_BSLIDE, P_FIFTH, P_BLEN, P_BFRAT, P_BFB},
     {P_KTUNE, P_KLEN, P_KPUNCH, P_HTONE, P_KLEN, P_HATSLVL, P_HTONE, P_KTUNE},   /* (Hats: their level, against the kick) */
     {P_ECHO, P_FEEDBACK, P_REVERB, P_SIZE, P_CLOUD, P_ECHO, P_ECHO, P_ECHO},   /* (the space: FX; its shake, a new echo time) */
-    {P_NCOL, P_NGRAIN, P_NDRIFT, P_NCOL, P_NGRAIN, P_NDRIFT, P_NCOL, P_NGRAIN},   /* (the noise: SAVE; its shake, a new character) */
+    {P_NCOL, P_NGRAIN, P_NTUNE, P_NROOM, P_NCOL, P_NGRAIN, P_NTUNE, P_NCOL},   /* (the noise: SAVE; its shake, a new character) */
 };
 static uint32_t nudge_seed = 0x9E3779B9u;
 static int nrand(int n)
