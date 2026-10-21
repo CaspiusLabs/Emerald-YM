@@ -606,6 +606,21 @@ today switches between Random and the slots.
      on the Chords page.
 - Done: the 1.1.0 walkthrough, the 1-hour night video, shorts 1-9, the 1.2.0 launch video.
 
+## To talk about (the user, 2026-10-21, after playing 1.3.0's sparse build on the FM-1)
+
+- **Structured randomness for the drums and the bass.** The user liked the sparseness (and the muddy echoes), but
+  thinning the drums and the bass at random "is not very dubby". Find other sources of more structured randomness:
+  e.g. patterns that thin in a phrase-long shape, call and response between the kick and the bass, a sparse bar that
+  comes back on the same beat, probabilities tied to the phrase's bar and the section, Euclidean thinning, motifs that
+  return. Talk it through before building.
+- **The noise machine, again.** "Too loud, and it sounds mostly like... simply noise" (zeroed in most pieces). Its
+  reference: https://youtu.be/bbfI2fvCerc, the talk and its music example (build/research/dubtechno/REFERENCES.md #4;
+  a study under way).
+- **The filter, played.** The user enjoys playing the DJ filter most: a long, pleasant listen low down, then opening it
+  up for a while. Worth building on (a slow filter journey? the filter's range, its feel at the low end).
+- **A future set of pieces** in the vein of the listening list's ambient electronica (Max Cooper's "Parting Ways",
+  REPORT3-partingways.md): an ostinato mode, the Tempo down to 75-80, real stereo width; and re-evaluating the eight.
+
 ## Releases after 1.2.0 (the user's ideas, 2026-10-19)
 
 1.2.0 is about live performance. Then, in roughly this order:

@@ -47,6 +47,7 @@ static void render_block(int32_t *o)                /* ALNK0: one half, measured
     {   /* the peak: the heaviest block of each ~2 s (344 halves) */
         static uint32_t win_max, win_n;
         uint32_t pct = us * 100u / budget;
+        en_load = (uint8_t)(pct > 255u ? 255u : pct);   /* (the engine sheds over 80: en_render) */
         if (pct > win_max)
             win_max = pct;
         if (++win_n >= 344u) {

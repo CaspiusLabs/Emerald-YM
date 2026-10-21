@@ -77,8 +77,8 @@ static const struct {
     const char *name;
     int16_t v[P_NPARAMS];
 } PIECES[EN_NPIECES] = {
-    {"Basic",      {59, 30, 60, 65, 30, 55, 4, 35, 55, 1, 35, 60, 45, 35, 40, 50, 0, 1, 122, 5, 1, 0,
-                    0, 0, 1, 20, 10, 50, 15, 35, 50, 55, 30, 0, 0, 0,
+    {"Basic",      {59, 30, 60, 65, 30, 55, 4, 35, 55, 1, 35, 55, 45, 35, 40, 50, 0, 1, 122, 5, 1, 0,
+                    0, 0, 1, 20, 10, 50, 15, 18, 50, 55, 30, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
@@ -86,8 +86,8 @@ static const struct {
                     0, 0, 0, 0, 0,
                     70, 70, 75, 50,
                     65, 85, 50, 50, 50, 50}},
-    {"Chamber",    {54, 20, 55, 60, 20, 45, 6, 30, 70, 1, 45, 75, 50, 55, 30, 60, 0, 1, 118, 9, 5, 0,
-                    2, 0, 0, 10, 0, 40, 5, 45, 45, 70, 45, 2, 0, 1,
+    {"Chamber",    {54, 20, 55, 60, 20, 45, 6, 30, 70, 1, 45, 65, 50, 55, 30, 60, 0, 1, 118, 9, 5, 0,
+                    2, 0, 0, 10, 0, 40, 5, 23, 45, 70, 45, 2, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
@@ -95,8 +95,8 @@ static const struct {
                     -5, -10, 10, 0, 3,
                     70, 60, 100, 50,
                     50, 55, 50, 50, 50, 50}},
-    {"Steppers",   {60, 35, 70, 70, 35, 55, 3, 38, 50, 3, 30, 55, 55, 25, 50, 45, 0, 1, 126, 2, 1, 0,
-                    0, 0, 2, 35, 15, 60, 25, 25, 60, 50, 20, 1, 1, 2,
+    {"Steppers",   {60, 35, 70, 70, 35, 55, 3, 38, 50, 3, 30, 50, 55, 25, 50, 45, 0, 1, 126, 2, 1, 0,
+                    0, 0, 2, 35, 15, 60, 25, 13, 60, 50, 20, 1, 1, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
@@ -104,8 +104,8 @@ static const struct {
                     5, 10, -10, 0, 0,
                     70, 70, 75, 50,
                     60, 85, 50, 50, 50, 50}},
-    {"Fog",        {50, 34, 50, 50, 40, 55, 5, 30, 75, 2, 55, 80, 46, 70, 25, 70, 0, 1, 112, 7, 5, 0,
-                    1, -1, 0, 15, 0, 30, 5, 60, 35, 80, 60, 0, 0, 3,
+    {"Fog",        {50, 34, 50, 50, 40, 55, 5, 30, 75, 2, 55, 68, 46, 70, 25, 70, 0, 1, 112, 7, 5, 0,
+                    1, -1, 0, 15, 0, 30, 5, 30, 35, 80, 60, 0, 0, 3,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
@@ -113,8 +113,8 @@ static const struct {
                     -10, 0, 15, 10, 1,
                     70, 65, 100, 50,
                     50, 50, 50, 50, 50, 50}},
-    {"Concrete",   {65, 25, 65, 75, 25, 50, 4, 50, 50, 1, 25, 60, 60, 20, 60, 40, 0, 1, 130, 0, 7, 0,
-                    6, 0, 4, 30, 20, 75, 30, 20, 65, 45, 15, 3, 3, 2,
+    {"Concrete",   {65, 25, 65, 75, 25, 50, 4, 50, 50, 1, 25, 50, 60, 20, 60, 40, 0, 1, 130, 0, 7, 0,
+                    6, 0, 4, 30, 20, 75, 30, 10, 65, 45, 15, 3, 3, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
@@ -122,8 +122,8 @@ static const struct {
                     0, 15, 0, 10, 4,
                     70, 65, 70, 42,
                     60, 92, 50, 50, 50, 50}},
-    {"Night Drive", {52, 45, 60, 65, 45, 60, 3, 35, 60, 4, 35, 65, 50, 40, 45, 55, 0, 1, 124, 10, 1, 0,
-                    1, 0, 3, 25, 25, 55, 20, 30, 50, 60, 35, 4, 4, 0,
+    {"Night Drive", {52, 45, 60, 65, 45, 60, 3, 35, 60, 4, 35, 55, 50, 40, 45, 55, 0, 1, 124, 10, 1, 0,
+                    1, 0, 3, 25, 25, 55, 20, 15, 50, 60, 35, 4, 4, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
@@ -131,8 +131,8 @@ static const struct {
                     0, -10, 0, 0, 1,
                     70, 75, 75, 50,
                     65, 85, 50, 50, 50, 50}},
-    {"Pressure",   {62, 20, 54, 74, 20, 45, 6, 38, 45, 1, 20, 55, 48, 30, 35, 35, 0, 1, 128, 4, 2, 0,
-                    5, 0, 1, 10, 5, 65, 25, 32, 70, 40, 20, 3, 4, 1,
+    {"Pressure",   {62, 20, 54, 74, 20, 45, 6, 38, 45, 1, 20, 45, 48, 30, 35, 35, 0, 1, 128, 4, 2, 0,
+                    5, 0, 1, 10, 5, 65, 25, 16, 70, 40, 20, 3, 4, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
@@ -140,8 +140,8 @@ static const struct {
                     -10, -20, -25, -10, 0,
                     70, 70, 75, 42,
                     60, 92, 50, 50, 50, 50}},
-    {"Haze",       {45, 42, 52, 45, 50, 60, 4, 35, 80, 3, 60, 85, 45, 80, 25, 80, 0, 1, 116, 3, 0, 1,
-                    3, 0, 0, 20, 10, 35, 5, 62, 30, 85, 70, 2, 0, 4,
+    {"Haze",       {45, 42, 52, 45, 50, 60, 4, 35, 80, 3, 60, 70, 45, 80, 25, 80, 0, 1, 116, 3, 0, 1,
+                    3, 0, 0, 20, 10, 35, 5, 31, 30, 85, 70, 2, 0, 4,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
@@ -261,9 +261,13 @@ void en_param_text(int i, int v, char *b)
         *b = 0;
         return;
     }
-    if (i == P_FEEDBACK) {                       /* as the loop's gain: 45% .. 112% (past 100: the clip holds it) */
-        b = itoa_s(45 + (v * 67 + 50) / 100, b);
-        *b++ = '%';
+    if (i == P_FEEDBACK) {                       /* (1.3.0) as the tail's length, to -60 dB: 1.5 .. 15 s */
+        int ds = (int)(15.0f * fm_exp2f((float)v * (1.0f / 30.0f)) + 0.5f);   /* (in tenths) */
+        b = itoa_s(ds / 10, b);
+        *b++ = '.';
+        *b++ = (char)('0' + ds % 10);
+        *b++ = ' ';
+        *b++ = 's';
         *b = 0;
         return;
     }
@@ -484,6 +488,9 @@ volatile uint8_t en_view_layer;
 volatile uint32_t en_hits[5];
 volatile float en_hit_vel[5];
 volatile float en_echo_pk;
+volatile uint8_t en_load;
+static int32_t shed_left;                        /* samples the shedding lasts (a heavy block: half a second) */
+#define SHED (shed_left > 0)
 volatile uint8_t en_nev_k[EN_NEV_N], en_nev_s[EN_NEV_N], en_nev_p[EN_NEV_N];
 volatile uint32_t en_nev_w;
 static void nev(int k, float s, float p)         /* a noise event, for the screen (only the ones that show) */
@@ -549,6 +556,16 @@ static float rel(int p) { return (float)par[p] * 0.02f; }   /* a sound page's va
 static float mtof(float n) { return 440.0f * tunefac * fm_exp2f((n - 69.0f) * (1.0f / 12.0f)); }
 
 /* a soft clip, cheap: x - 4/27 x^3, flat at +-1.5 (to +-1) */
+static inline float soft(float x)                /* tanh, nearly: x (27 + x^2) / (27 + 9 x^2), 1 past 3 */
+{
+    float x2;
+    if (x > 3.0f)
+        return 1.0f;
+    if (x < -3.0f)
+        return -1.0f;
+    x2 = x * x;
+    return x * (27.0f + x2) / (27.0f + 9.0f * x2);
+}
 static inline float sat(float x)
 {
     if (x > 1.5f)
@@ -841,7 +858,7 @@ static const struct {
 static int kit;
 
 /* ------------------------------------------------------------------ space --- */
-static float echo_send, rev_send, echo_len, echo_len_t, echo_fb = 0.6f, ein_gain = 1.0f;
+static float echo_send, rev_send, echo_len, echo_len_t, echo_fb = 0.6f, ein_gain = 1.0f, echo_t60 = 6.0f;
 static float fb_cap = 2.0f;                     /* stopped, the feedback eases under 90%: the tails die */
 static float fx_em = 1.0f, fx_ek = 0.001f, fx_ts = 1.0f;   /* the grid on the echo: its time's multiple, its easing; the tape stop */
 static float rev_in_gain = 1.0f;                /* falls to 0 while frozen */
@@ -1955,6 +1972,9 @@ static void heads_step(uint32_t n)
 {
     float p, want, vmax, sw;
     int i;
+    /* (1.3.0) the loop's gain from the tail's length: whatever the echo's time, the repeats are gone (-60 dB) in
+     * Feedback's seconds; long delays vanish as quickly as short ones (Dub and the throws still push past it) */
+    echo_fb = fm_exp2f(-9.966f * (echo_len_t * (1.0f / TAPE_SR)) / echo_t60);
     for (i = 0; i < 2; i++) {
         /* (1.3.0: the first head near the middle, drifting with Motion; the second, on throws, to the right; Width
          * spreads them: 0 mono, 2 as wide as before) */
@@ -2134,7 +2154,7 @@ static inline void cloud(float in, float *ol, float *or_)
         if (--cl_next <= 0) {
             int gap = 1500 - (int)(1100.0f * cl_dens);   /* 136 .. 36 ms apart, on average */
             cl_next = gap / 2 + cl_irand(gap);
-            if (cl_dens > 0.0f)
+            if (cl_dens > 0.0f && !SHED)
                 cloud_birth();
         }
         if (cl_live) {
@@ -2278,7 +2298,7 @@ static void apply(int p, int v)
     case P_ECHO: echo_send = (float)(v * v) * 0.0001f; break;
     case P_ETIME: echo_time(); break;
     case P_REVERB: rev_send = (float)(v * v) * 0.0001f; break;
-    case P_FEEDBACK: echo_fb = 0.45f + 0.0067f * (float)v; break;   /* to 1.12: past 100%, held by the clip */
+    case P_FEEDBACK: echo_t60 = 1.5f * fm_exp2f((float)v * (1.0f / 30.0f)); break;   /* the tail: 1.5 s .. 15 s (heads_step) */
     case P_SIZE: pl_decay_t = 0.5f + 0.0045f * (float)v; break;      /* to 0.95 */
     case P_CUTOFF: cut_base = 110.0f * fm_exp2f((float)v * 0.055f); break;   /* 110 Hz .. 5.4 kHz */
     case P_DECAY: case P_CVOICE:                 /* 60 ms .. 1.5 s (times the voice's); the filter's envelope, quicker */
@@ -2720,7 +2740,7 @@ static void render_stabs(uint32_t n)
     if (st_midi_left > 0 && (st_midi_left -= (int32_t)n) <= 0)
         for (i = 0; i < EN_NPAD; i++)
             midi(0x80, stab[i].midi_note, 0);
-    if (env < 1e-5f && amp < 1e-5f) {
+    if (env < 3e-4f && amp < 3e-4f) {            /* (1.3.0: done at -70 dB, not -100: past it, nothing heard) */
         st_env = st_amp = 0.0f;
         st_throw = thr * fm_expf(-(float)n / (0.5f * EN_SR));
         en_pad_level = 0.0f;
@@ -2933,7 +2953,7 @@ static void render_bells(uint32_t n)
         }
         v->amp = amp;
         v->att = att;
-        if (amp < 0.0008f) {
+        if (amp < (SHED ? 0.006f : 0.0008f)) {   /* (shedding: a tail ends at -44 dB, not -62) */
             v->on = 0;
             midi(0x81, v->note, 0);
         }
@@ -3269,7 +3289,7 @@ static void render_crackle(uint32_t n)
                                                   * the music) */
             r = 1.9f * wr2;
             rsend[j] += (l + r) * 0.8f;
-            if (shg > 0.0f) {                    /* the shimmer: y = noise + fb * LP(y[n - D]); then 2-6 kHz */
+            if (shg > 0.0f && !SHED) {           /* the shimmer: y = noise + fb * LP(y[n - D]); then 2-6 kHz */
                 int rd = sw - shd;
                 float y, b;
                 slp += 0.62f * ((float)sh_buf[rd < 0 ? rd + SH_N : rd] * (1.0f / 12000.0f) - slp);
@@ -3560,8 +3580,9 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
             r += stt_mix * (v - r);
         }
 
-        l = fm_tanhf(l);
-        r = fm_tanhf(r);
+        l = soft(l);                             /* (1.3.0: a rational curve, not tanh: the same below the clip,
+                                                  * a fraction of the time) */
+        r = soft(r);
         out[2 * j] = (int32_t)(l * 8300000.0f);
         out[2 * j + 1] = (int32_t)(r * 8300000.0f);
         {   /* (the screen's scope and spectrum: the output, or a layer alone) */
@@ -3630,6 +3651,10 @@ static void control(uint32_t n)                 /* once a chunk: the slow things
 void en_render(int32_t *out, uint32_t n, uint32_t gain_q12)
 {
     const float gain = (float)gain_q12 * (1.0f / 4096.0f) * 2.0f;
+    if (en_load > 80u)                           /* (the last block ran heavy: shed for half a second) */
+        shed_left = (int32_t)(0.5f * EN_SR);
+    else if (shed_left > 0)
+        shed_left -= (int32_t)n;
     drain();
     if (en_ext && ++ext_age > 100u)
         en_ext = 0;

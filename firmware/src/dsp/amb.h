@@ -201,6 +201,10 @@ extern volatile float en_hit_vel[5];
 extern volatile float en_echo_pk;               /* the echo's output, its peak since the screen last took it */
 /* the noise's events, for the screen's specks: a ring of the last few (kind: 0 a click, 1 a pop, 2 a dust grain; its
  * strength as heard, 0..255; its side, 0 left .. 255 right), en_nev_w where the next goes */
+/* the audio's load, the last block's time against its budget, in % (set by the device's audio handler; 0 elsewhere):
+ * over 80, the engine sheds for a moment what is least heard (the quietest tails, the cloud's new grains, the
+ * shimmer), so a crowded moment doesn't overrun */
+extern volatile uint8_t en_load;
 #define EN_NEV_N 16
 extern volatile uint8_t en_nev_k[EN_NEV_N], en_nev_s[EN_NEV_N], en_nev_p[EN_NEV_N];
 extern volatile uint32_t en_nev_w;

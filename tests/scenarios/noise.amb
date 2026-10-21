@@ -7,7 +7,7 @@ wait 2000
 tap SAVE
 wait 400
 expect view 19
-said Noise page, character Vinyl: Density 0, Level 35, Colour 0, Tune 50
+said Noise page, character Vinyl: Density 0, Level 18, Colour 0, Tune 50
 shot noise.png
 spin K3 20
 wait 300
@@ -19,8 +19,8 @@ said Tune 35
 expect par120 35
 spin K2 -5
 wait 300
-said Level 30
-expect par29 30
+said Level 13
+expect par29 13
 spin K1 10
 wait 300
 said Density +10
