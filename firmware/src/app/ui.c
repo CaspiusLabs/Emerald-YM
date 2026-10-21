@@ -2708,9 +2708,13 @@ static void draw_main(void)
     {   /* (1.3.0) top right: the page's name (PERFORM's too); to its left, LOCK and SOLO while on */
         char pn[16];
         int32_t x;
+        int k;
         caps(pn, VIEW_NAME[ui.view], sizeof pn);
         x = 232 - text_w(&FONT_B, pn);
         cv_text(x, 12, &FONT_B, pn, K_ACC);
+        for (k = 0; k < NROUND; k++)             /* (under it, the round's dots, in the panel's order: FX ENV LFO GLO
+                                                  * HOME SAVE ARP SEQ) */
+            cv_round(212 - NROUND * 6 + 2 + k * 6, 31, 4, 4, 2, PAGE_ORDER[k] == page_of(ui.view) ? K_ACC : K_LINE);
         if (ui.lock) {                           /* (Lock on, kept after PERFORM) */
             x -= 6 + text_w(&FONT_XS, "LOCK");
             cv_text(x, 14, &FONT_XS, "LOCK", K_TEXT);
@@ -2784,10 +2788,9 @@ static void draw_knobs(void)
             if (xt < 234)
                 cv_rect(xt, 5, 234 - xt, 1, K_LINE);
         } else {
-            xt = xd;                             /* (1.3.0: the page's name top right now; here the rule and the dots) */
-            cv_rect(x0, 5, xt - 5 - x0, 1, K_LINE);
-            for (k = 0; k < NROUND; k++)         /* (the panel's order: FX ENV LFO GLO HOME SAVE ARP SEQ) */
-                cv_round(xd + k * 6, 3, 4, 4, 2, PAGE_ORDER[k] == page_of(ui.view) ? K_ACC : K_LINE);
+            xt = 234;                            /* (1.3.0: the page's name and its dots top right now; here the rule) */
+            cv_rect(x0, 5, xt - x0, 1, K_LINE);
+            (void)xd, (void)k;
         }
     }
     for (i = 0; i < 4; i++) {
