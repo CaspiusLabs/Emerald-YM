@@ -31,6 +31,9 @@ tap SAVE
 wait 1500
 shot screen-noise.png
 tap SAVE
+wait 1500
+shot screen-noise-space.png
+tap SAVE
 tap LFO
 wait 1500
 shot screen-bass.png
@@ -59,9 +62,9 @@ key w6 down
 wait 2000
 shot screen-perform.png
 key w6 up
-tap SEL
+tap HOME
 turn K3 50
-wait 138000
+wait 30000
 shot screen-groove.png
 # the Echo page (FX, FX again)
 tap FX
@@ -70,3 +73,14 @@ tap FX
 wait 1500
 shot screen-echo.png
 tap FX
+# Lock (SEL held): its card, "lock" in red above the page's name
+tap HOME
+wait 300
+press SEL
+wait 700
+release SEL
+wait 300
+shot screen-lock.png
+press SEL
+wait 700
+release SEL

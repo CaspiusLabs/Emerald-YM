@@ -220,7 +220,7 @@ static struct {
     uint32_t card_until, card_t0;      /* a nudge's card in the middle: up until, then fading; when it came */
     uint8_t card_shake;                /* the card a big move's (red: a shake, new chords, a reset) or not */
     uint16_t card_col;                 /* its colour */
-    uint8_t lock;                      /* PERFORM's Lock (white 12): each phrase keeps what it has */
+    uint8_t lock;                      /* Lock (SEL held): each phrase keeps what it has */
     char card_head[16], card_text[24];
     uint32_t oct_until, oct_pulse;     /* the ring: up until, then fading; its last step (a pulse) */
     float oct_v;                       /* the ring's arc, gliding to the level */
@@ -867,6 +867,10 @@ static void edit_released(uint32_t held)
     } else if (ui.view == V_CHORDS) {            /* tapped: the Chords page (one page: again stays) */
         ;
     } else {
+        if (ui.perf) {                           /* (a page's button leaves PERFORM: the keys the scale again) */
+            perf_set(0);
+            set_view(V_DUB);
+        }
         ui.chords_from = (uint8_t)ui.view;
         set_view(V_CHORDS);
     }

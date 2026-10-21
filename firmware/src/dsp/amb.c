@@ -2116,7 +2116,7 @@ static void heads_step(uint32_t n)
     head2_v += (want - head2_v) * fm_minf((float)n * (1.0f / EN_SR), 1.0f);
     /* the band-pass: ~165..700 Hz below (1.3.0: from ~60..500, so the repeats thin), ~1.1..2.6 kHz above, moving
      * up together */
-    dub_up = 0.0f;                               /* (1.3.0: PERFORM's second knob is Throws now, not Dub) */
+    dub_up = 0.0f;                               /* (1.3.0: PERFORM's second knob is Wet now, not Dub) */
     sw = fm_clampf(0.45f + 0.5f * arcm + 0.3f * perf_sw + 0.5f * motion * mod[5].v - 0.3f * dub_up, 0.0f, 1.0f);   /* (Dub up: darker) */
     tape_hpc = 0.09f + 0.24f * sw * sw;
     tape_lpc = 0.58f + 0.3f * sw;
@@ -3460,8 +3460,9 @@ static void render_crackle(uint32_t n)
             r = (pr + (qr - pr) * f) * dn;
             esend[j] += (l + r) * (0.15f * ne + 0.8f * st_throw);   /* (a little into the echo, Echo; a throw, more) */
             rsend[j] += (l + r) * 0.3f * np + h * gh * 0.4f;   /* (the plate, Plate) */
-            l *= 0.75f * nw;                     /* (PERFORM's Wet: the dry down as it turns up) */                          /* (the dry -2.5 dB, less into the plate than before: further back,
-                                                  * and its breathing heard, not smoothed into the plate's wash) */
+            l *= 0.75f * nw;                     /* (the dry -2.5 dB, less into the plate than before: further back,
+                                                  * its breathing heard, not smoothed into the plate's wash; PERFORM's
+                                                  * Wet: the dry down as it turns up) */
             r *= 0.75f * nw;
             l += (h * gh + vg * fl) * dn;
             r += (0.9f * h * gh + vg * fr) * dn;
