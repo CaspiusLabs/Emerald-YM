@@ -2657,13 +2657,14 @@ static void draw_main(void)
         memcpy(ch_last, nm, sizeof ch_last);
     }
     ch_age = ch_t ? now - ch_t : 1000u;
-    ch_c = en_frozen ? K_FROST : ch_age < 450u ? mix(K_ACC, K_TEXT, (int)(ch_age * 16u / 450u)) : K_TEXT;
-    if (ch_age < 450u)
+    ch_c = en_frozen ? K_FROST : ch_age < 900u ? mix(K_ACC, K_TEXT, (int)(ch_age * 16u / 900u)) : K_TEXT;
+    if (ch_age < 900u)
         moving = 1;
     if (named && proj.screen % 3u) {          /* the chord: over the scope or the spectrum, small */
         text_c(CX, 1, &FONT_S, nm, ch_c);
     } else if (named) {                          /* the chord, in the middle */
-        if (ch_age < 200u && text_w(&FONT_L, nm) <= 96) {   /* (its first fifth of a second: the big face) */
+        if ((ch_age < 200u || (ch_age >= 400u && ch_age < 600u)) && text_w(&FONT_L, nm) <= 96) {   /* (big, small, big,
+                                                                                         * small: a ping-pong) */
             int32_t w = text_w(&FONT_L, nm);
             cv_round(CX - w / 2 - 4, CY - 15, w + 8, 30, 6, K_BG);
             text_c(CX, CY - 16, &FONT_L, nm, ch_c);
@@ -2692,7 +2693,7 @@ static void draw_main(void)
         for (b = 0; b < 8; b++) {                /* (1.3.0: bars 4 and 8, the B bars, whiter; the 8th blinking on its
                                                   * bar when the next phrase brings a change) */
             const int bb = b == 3 || b == 7, lit = en_playing && b <= en_phrase_bar;
-            uint16_t c = lit ? (bb ? K_TEXT : K_DIM) : (bb ? mix(K_LINE, K_DIM, 7) : K_LINE);
+            uint16_t c = lit ? (bb ? K_TEXT : K_DIM) : (bb ? K_DIM : K_LINE);   /* (B bars: ahead, as bright as one played) */
             if (b == 7 && en_playing && en_phrase_bar == 7 && en_change_next)
                 c = (now / 200u) & 1u ? K_ACC : K_LINE;
             cv_round(9 + b * 5, 22, 3, 3, 1, c);
