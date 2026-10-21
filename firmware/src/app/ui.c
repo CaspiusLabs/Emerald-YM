@@ -2692,7 +2692,7 @@ static void draw_main(void)
         cv_text(8, 2, &FONT_XS, t, en_section == SEC_FULL ? K_DIM : K_ACC);
         for (b = 0; b < 8; b++) {                /* (1.3.0: bars 4 and 8, the B bars, whiter; the 8th blinking on its
                                                   * bar when the next phrase brings a change) */
-            const int bb = b == 3 || b == 7, lit = en_playing && b <= en_phrase_bar;
+            const int bb = (b == 3 || b == 7) && !ui.lock, lit = en_playing && b <= en_phrase_bar;   /* (Lock: all alike) */
             uint16_t c = lit ? (bb ? K_TEXT : K_DIM) : (bb ? K_DIM : K_LINE);   /* (B bars: ahead, as bright as one played) */
             if (b == 7 && en_playing && en_phrase_bar == 7 && en_change_next)
                 c = (now / 200u) & 1u ? K_ACC : K_LINE;
