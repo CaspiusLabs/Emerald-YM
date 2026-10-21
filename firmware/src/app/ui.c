@@ -125,7 +125,7 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Algo", "Ratio", "Feedback", "LFO"},
     {"Slot", "Chord", "Type", "Play"},
     {"Lane", "Accent", "Chance", "Play"},
-    {"Filter", "Dub", "Energy", "Space"},
+    {"Filter", "Throws", "Energy", "Duck"},
     {"Tempo", "Root", "Mode", "Swing"},
     {"Density", "Air", "Tone", "Decay"},
     {"Blur", "Tone", "Width", "Size"},
@@ -165,8 +165,8 @@ static const char *const KNOB_HELP[NVIEWS][4] = {
      "Endless, or the slots in a loop"},
     {"The lane you're writing", "How much quieter the other steps", "How likely the lane's steps play",
      "Auto patterns, or your own"},
-    {"Shut: under water. Open: thin", "Dry and tight, to a runaway echo", "Sparse and dry, to busy and bright",
-     "Drier, or wider: reverb and cloud"},
+    {"Shut: under water. Open: thin", "Fewer stabs thrown, or many more", "Sparse and dry, to busy and bright",
+     "The music breathing on the beat"},
     {"Beats a minute", "The key's root note", "The scale: Minor, Dorian, ...", "Off sixteenths late: the whole groove"},
     {"How many hits ring, in two bars", "The hiss under it, softer or more", "The rings darker, or brighter",
      "How long each hit rings on the chord"},
@@ -402,8 +402,8 @@ static const char *knob_name(int k)
     if (k < P_NPARAMS)
         return en_param_info(k)->name;
     return k == K_LEDS ? "Lights" : k == K_CPU ? "CPU" : k == K_SLOT ? "Slot" : k == K_CQ ? "Chord" : k == K_CX ? "Type"
-         : k == K_LANE ? "Lane" : k == K_LCH ? "Chance" : k == K_FILTER ? "Filter" : k == K_DUB ? "Dub"
-         : k == K_ENERGY ? "Energy" : k == K_SPACE ? "Space" : k == K_MODE ? "Mode" : k == K_PLAY ? "Play" : k == K_SAVE ? "Save" : "";
+         : k == K_LANE ? "Lane" : k == K_LCH ? "Chance" : k == K_FILTER ? "Filter" : k == K_DUB ? "Throws"
+         : k == K_ENERGY ? "Energy" : k == K_SPACE ? "Duck" : k == K_MODE ? "Mode" : k == K_PLAY ? "Play" : k == K_SAVE ? "Save" : "";
 }
 static void knob_text(int k, char *b)
 {

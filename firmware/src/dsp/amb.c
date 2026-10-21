@@ -2000,7 +2000,7 @@ static void heads_step(uint32_t n)
     head2_v += (want - head2_v) * fm_minf((float)n * (1.0f / EN_SR), 1.0f);
     /* the band-pass: ~165..700 Hz below (1.3.0: from ~60..500, so the repeats thin), ~1.1..2.6 kHz above, moving
      * up together */
-    dub_up = fm_maxf((float)mac[EN_MAC_DUB], 0.0f) * (1.0f / 50.0f);
+    dub_up = 0.0f;                               /* (1.3.0: PERFORM's second knob is Throws now, not Dub) */
     sw = fm_clampf(0.45f + 0.5f * arcm + 0.3f * perf_sw + 0.5f * motion * mod[5].v - 0.3f * dub_up, 0.0f, 1.0f);   /* (Dub up: darker) */
     tape_hpc = 0.09f + 0.24f * sw * sw;
     tape_lpc = 0.58f + 0.3f * sw;
@@ -2600,11 +2600,12 @@ static void macro(int i, int v)
 {
     /* each: the parameters it moves and how far at full turn (+50), in the parameter's own units */
     static const struct { uint8_t p; int8_t at50; } MOVE[] = {
-        {P_ECHO, 90}, {P_FEEDBACK, 50},                  /* Dub (and, up, the music pushed into the echo: render_chunk) */
+        {P_CTHROW, 50}, {P_CTHROW, 0},                  /* (1.3.0) Throws: from none to a stab in three (the Space page has the
+                                                          * echo's own knobs) */
         {P_DENSITY, 85}, {P_HITS, 85}, {P_STABS, 85},    /* Energy: the notes and hits, */
         {P_PINGS, 40}, {P_HATS, 45}, {P_DECAY, 30}, {P_KDENS, 30},   /* the pings' level, the hats' colour, the stabs' length, the kick
                                                           * (and the hats' level, the phrases: render_drums, bar_start) */
-        {P_REVERB, 85}, {P_CLOUD, 80}, {P_SIZE, 45},     /* Space */
+        {P_DUCK, 50}, {P_DUCK, 0}, {P_DUCK, 0},         /* (1.3.0) Duck: the music breathing on the beat, still to deep */
     };
     static const uint8_t OF[] = {EN_MAC_DUB, EN_MAC_DUB, EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_ENERGY,
                                  EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_SPACE,
@@ -3493,7 +3494,7 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
     const float rg = rev_send * rev_in_gain * (1.0f - 0.2f * arcm);
     /* (the cloud listens as if Reverb were at 63 at least, so Cloud works with little reverb too) */
     const float cl_in = rev_send > 0.0001f ? fm_maxf(rev_send, 0.4f) / rev_send : 0.0f;
-    const float push = fm_maxf(perf_echo, 0.5f * fm_maxf((float)mac[EN_MAC_DUB], 0.0f) * (1.0f / 50.0f));   /* (Dub up pushes too) */
+    const float push = perf_echo;
     float eg = (echo_send + (1.0f - echo_send) * push) * ein_gain, ca = cloud_amt * (sec == SEC_BREAK ? 1.4f : 1.0f);   /* more in a Break */
     /* PERFORM's Open and Shut on the music, the kick left out on top: Shut a low-pass down to ~230 Hz, Open a
      * resonant high-pass up to ~400 Hz (thin and bright), both swept with perf_sw */
@@ -3667,7 +3668,7 @@ static void control(uint32_t n)                 /* once a chunk: the slow things
     if (echo_len > 0.0f)                        /* for the screen's ripples */
         en_echo_ms = echo_len * (1000.0f / TAPE_SR);
     en_echo_g = en_frozen ? 1.0f : fm_minf(echo_fb + 0.12f * perf_echo, fb_cap) * 0.82f;
-    en_echo_in = echo_send + (1.0f - echo_send) * fm_maxf(perf_echo, 0.5f * fm_maxf((float)mac[EN_MAC_DUB], 0.0f) * (1.0f / 50.0f));
+    en_echo_in = echo_send + (1.0f - echo_send) * perf_echo;
     en_duck = duck_d * (duck_depth > 0.0f ? 1.0f : 0.0f);
     cl_dens = cloud_amt > 0.0f ? fm_clampf(0.25f + 0.5f * cloud_amt + 0.3f * arcm, 0.05f, 1.0f) : 0.0f;
     if (fx_cf > 0.01f)                          /* (Freeze: the grains thick, even at Cloud 0) */

@@ -31,7 +31,7 @@ said MIX
 key w5 up
 wait 200
 expect view 17
-# the master actions: the Filter (it stops at the middle on the way through), Dub, Energy, Space
+# the master actions: the Filter (it stops at the middle on the way through), Throws, Energy, Duck
 spin K1 -21
 wait 300
 said Filter Shut 40
@@ -45,7 +45,7 @@ spin K1 -10
 wait 300
 spin K2 26
 wait 300
-said Dub +50
+said Throws +50
 spin K2 -25
 wait 300
 spin K3 -26
@@ -55,7 +55,7 @@ spin K3 25
 wait 300
 spin K4 51
 wait 300
-said Space +100
+said Duck +100
 spin K4 -50
 wait 300
 # a black key solos its layer (the scale stays): the others go quiet; more than one play together
