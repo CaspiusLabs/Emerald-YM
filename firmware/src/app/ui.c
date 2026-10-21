@@ -218,7 +218,8 @@ static struct {
     uint32_t oct_t, oct_rep;           /* when both went down; an OCT held: its next step */
     uint8_t oct_ring;                  /* the level ring in the middle: its layer + 1 (0: none) */
     uint32_t card_until, card_t0;      /* a nudge's card in the middle: up until, then fading; when it came */
-    uint8_t card_shake;                /* the card a shake's (red) or a nudge's (amber) */
+    uint8_t card_shake;                /* the card a big move's (red: a shake, new chords, a reset) or not */
+    uint16_t card_col;                 /* its colour */
     char card_head[16], card_text[24];
     uint32_t oct_until, oct_pulse;     /* the ring: up until, then fading; its last step (a pulse) */
     float oct_v;                       /* the ring's arc, gliding to the level */
@@ -284,6 +285,25 @@ static void say_as(const char *a, const char *b, uint32_t flags)
     }
 }
 static void say(const char *a, const char *b) { say_as(a, b, ANN_NOW); }
+/* a long press's card in the middle (a nudge, a shake, the next chord, new chords, saved, a reset): what it did, in
+ * big, outlined in its colour; it fades out CARD_SHOW after (draw_card) */
+#define CARD_SHOW 1500u
+#define CARD_FADE 300u
+static int card_on(uint32_t now) { return ui.card_until && now < ui.card_until + CARD_FADE; }
+static void card_show(const char *head, const char *text, uint16_t col, int big)
+{
+    int i;
+    for (i = 0; head && head[i] && i < (int)sizeof ui.card_head - 1; i++)
+        ui.card_head[i] = head[i];
+    ui.card_head[i] = 0;
+    for (i = 0; text && text[i] && i < (int)sizeof ui.card_text - 1; i++)
+        ui.card_text[i] = text[i];
+    ui.card_text[i] = 0;
+    ui.card_col = col;
+    ui.card_shake = (uint8_t)big;
+    ui.card_t0 = plat_ms();
+    ui.card_until = ui.card_t0 + CARD_SHOW;
+}
 /* something did not happen: a screen reader says it whole (what follows does not cut it off) */
 static void warn(const char *a, const char *b) { say_as(a, b, ANN_NOW | ANN_KEEP); }
 void ui_say(const char *a, const char *b) { say(a, b); }
@@ -828,6 +848,7 @@ static void edit_released(uint32_t held)
     } else if (held >= NEXT_HOLD) {              /* held: the next chord */
         en_next();
         say("NEXT CHORD", en_playing ? "ON THE BAR" : 0);
+        card_show("NEXT CHORD", en_playing ? "on the bar" : "", K_PULSE, 0);
     } else if (ui.view == V_CHORDS) {            /* tapped: the Chords page (one page: again stays) */
         ;
     } else {
@@ -1116,9 +1137,6 @@ enum { NUDGE_EVOLVE, NUDGE_HAND, NUDGE_SHAKE };
  * up to an eighth of the range), SHAKE (held on: a new voice or kit, and every value a big step). Each value walks
  * from where it is, pulled back to the recipe: back as likely as it is far from it, always back from a quarter of
  * the range away */
-#define CARD_SHOW 1500u                          /* a nudge's card: up this long, then CARD_FADE fading */
-#define CARD_FADE 300u
-static int card_on(uint32_t now) { return ui.card_until && now < ui.card_until + CARD_FADE; }
 static void nudge(int layer, int how)
 {
     static const uint8_t SND[NNUDGE] = {V_CSND, V_PSND, V_BSND, V_DSND, V_SPACE, V_NSND};
@@ -1220,14 +1238,8 @@ static void nudge(int layer, int how)
             head[i++] = (how == NUDGE_SHAKE ? " SHAKE" : " NUDGE")[k];
         head[i] = 0;
         say(head, t);
-        if (how != NUDGE_EVOLVE) {               /* (yours, not Evolve's: a card in the middle too) */
-            memcpy(ui.card_head, head, sizeof ui.card_head);
-            memcpy(ui.card_text, t, sizeof ui.card_text);
-            ui.card_head[sizeof ui.card_head - 1] = ui.card_text[sizeof ui.card_text - 1] = 0;
-            ui.card_shake = (uint8_t)(how == NUDGE_SHAKE);
-            ui.card_t0 = plat_ms();
-            ui.card_until = ui.card_t0 + CARD_SHOW;
-        }
+        if (how != NUDGE_EVOLVE)                 /* (yours, not Evolve's: a card in the middle too) */
+            card_show(head, t, how == NUDGE_SHAKE ? K_FROST : K_PULSE, how == NUDGE_SHAKE);
     }
     if (!ui.perf) {
         if (SND[layer] == V_NSND && ui.view != V_NSND) {
@@ -1287,6 +1299,8 @@ static void input(void)
             edit_released(plat_ms() - ui.down_t[B_EDIT]);
         } else if (i == B_GLO && !(ui.btn_used & m) && plat_ms() - ui.down_t[B_GLO] >= NUDGE_HOLD) {
             do_save();                           /* GLO held and let go: saved (held on: the reset, below, unsaved) */
+            if (!ui.dirty)
+                card_show("SAVED", "all eight pieces", K_ACC, 0);
         } else if (!(ui.btn_used & m) && i != B_PLAY) {
             button((int)i);
         }
@@ -1313,6 +1327,7 @@ static void input(void)
         edit_new = 1;
         en_prog_rewalk();
         say("NEW CHORDS", EN_WALK_NAME[(proj.par[P_PMODE] & 3) % EN_NWALK]);
+        card_show("NEW CHORDS", EN_WALK_NAME[(proj.par[P_PMODE] & 3) % EN_NWALK], K_FROST, 1);
     }
     ch = keys ^ ui.keys;
     ui.keys = keys;
@@ -1411,6 +1426,7 @@ static void input(void)
         project_apply();
         en_regrow();
         say("RESET", piece_name(proj.piece));
+        card_show("RESET", piece_name(proj.piece), K_FROST, 1);
         mark_dirty();
     }
     for (i = 0; i < 4; i++)
@@ -2506,8 +2522,8 @@ static void draw_card(uint32_t now)
     f = now < ui.card_until ? 16 : 16 - (int)((now - ui.card_until) * 16u / CARD_FADE);
     if (now - ui.card_t0 < 120u)                 /* (it comes in brighter, for a moment) */
         f = 16;
-    edge = mix(K_BG, ui.card_shake ? K_FROST : K_PULSE, f);
-    hc = mix(K_BG, ui.card_shake ? K_FROST : K_PULSE, f);
+    edge = mix(K_BG, ui.card_col, f);
+    hc = mix(K_BG, ui.card_col, f);
     tc = mix(K_BG, K_TEXT, f);
     cv_round(x - 2, y - 2, w + 4, h + 4, 6, edge);
     cv_round(x, y, w, h, 5, mix(K_BG, K_PANEL, f / 2));

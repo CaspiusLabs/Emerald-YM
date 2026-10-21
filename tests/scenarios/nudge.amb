@@ -109,3 +109,28 @@ wait 1700
 release LFO
 wait 200
 expect card 2
+# every long press its card: EDIT held (the next chord), held on (new chords, red); GLO held (saved), held on (reset)
+wait 2000
+press EDIT
+wait 700
+release EDIT
+wait 200
+expect card 1
+wait 2000
+press EDIT
+wait 1700
+release EDIT
+wait 200
+expect card 2
+wait 2000
+press GLO
+wait 700
+release GLO
+wait 200
+expect card 1
+wait 2000
+press GLO
+wait 1700
+release GLO
+wait 200
+expect card 2

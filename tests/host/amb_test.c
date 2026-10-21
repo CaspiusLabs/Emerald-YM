@@ -426,6 +426,40 @@ int main(void)
               "Density 90: four %d, half %d, one %d of %d", four[1], half[1], one[1], played[1]);
     }
 
+    /* the drums' and the bass's phrase plan: A A A B A A A B, the A bars the same, the two B bars the same */
+    {
+        int ph_n = 0, ok = 0, b, k;
+        uint16_t lane[8][3];
+        fresh();
+        en_seed(5);
+        en_set(P_BNOTES, 75);
+        en_set(P_MOTION, 0);                    /* (no Breaks: the bass and hats in every phrase) */
+        en_regrow();
+        en_play(1);
+        run(2.0f);
+        for (b = 0; b < 64 && ph_n < 4; b++) {
+            int last = en_phrase_bar;
+            for (k = 0; k < 4000 && en_phrase_bar == last; k++)
+                run(0.006f);                     /* (a block at a time, to the bar's start) */
+            run(0.2f);
+            lane[en_phrase_bar][0] = en_lane[5], lane[en_phrase_bar][1] = en_lane[2], lane[en_phrase_bar][2] = en_lane[1];
+            if (en_phrase_bar == 7) {            /* (a whole phrase seen) */
+                int a = 1, j, q;
+                for (q = 0; q < 3; q++) {
+                    for (j = 1; j < 3; j++)
+                        a &= lane[j][q] == lane[0][q];
+                    for (j = 4; j < 7; j++)
+                        a &= lane[j][q] == lane[0][q];
+                    a &= q || lane[3][q] == lane[7][q];   /* (B: the bass; the drums' bar 8 may carry the fill) */
+                }
+                ok += a;
+                ph_n++;
+            }
+        }
+        printf("  the phrase plan: %d of %d phrases A A A B A A A B\n", ok, ph_n);
+        CHECK(ph_n >= 3 && ok >= ph_n - 1, "the phrase plan: %d of %d", ok, ph_n);
+    }
+
     /* the bass: Octave -1 a true octave under 0 (E0..Eb1); with Drone, Fifth gives whole bars of the fifth */
     {
         int lo0, hi0;

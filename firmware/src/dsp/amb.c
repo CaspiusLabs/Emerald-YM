@@ -885,6 +885,17 @@ enum { KS_NONE, KS_ONE, KS_HALF, KS_GHOST, KS_FOUR, KS_N };
 static const uint16_t KSHAPE[KS_N] = {0x0000u, 0x0001u, 0x0101u, 0x1111u, 0x1111u};
 static uint8_t kick_shape = KS_FOUR;
 static int kick_draw(int next);
+static uint32_t dpat(int d);
+/* (the drums' and the bass's phrase plan: phrase_plan, ph_bar) */
+static struct {
+    uint32_t seed;
+    uint8_t busy, drawn;
+    int8_t oct;                                  /* (the bass's octave note: its place among the bar's, -1 none) */
+    uint8_t vel[16], late[16];                   /* (the hats' feel: each step's accent, its lateness) */
+} ph;
+static uint32_t ph_rng = 0x2545F491u;
+static uint32_t bar_k, bar_sh, bar_op, bar_bass;   /* this bar's: the kick's, the shaker's, the open hat's, the bass's */
+static int ph_st;                                /* (the step a drum hit is on: its lateness) */
 static void noise_pattern(void);
 static void noise_step(int s);
 static uint8_t nz_drawn;
@@ -1562,8 +1573,8 @@ static void drum_hit(int d, float vel, int off)  /* (Swing delays the whole off 
 {
     int32_t w = 0;
     (void)off;
-    if ((d == 1 || d == 2) && !par[P_DMODE])     /* (1.3.0: the hats a few ms late, at random) */
-        w = (int32_t)(frand() * 0.006f * EN_SR * loose());
+    if ((d == 1 || d == 2) && !par[P_DMODE])     /* (1.3.0: the hats a few ms late, the phrase's feel) */
+        w = (int32_t)((float)ph.late[ph_st & 15] * (1.0f / 255.0f) * 0.006f * EN_SR * loose());
     if (w > 0) {
         drum[d].wait = w;
         drum[d].pend = vel;
@@ -1593,13 +1604,13 @@ static void drums_wait_step(int32_t k)          /* k samples went by: hits whose
 }
 
 /* ----------------------------------------------------------------- bass --- */
-static void bass_hit(int first)
+static void bass_hit(int first, int up)
 {
     int pc = chord_pcs[0], n, g = par[P_GROOVE];
     if ((!first || g == 0) && chord_nt >= 3 && frand() < (float)par[P_FIFTH] * 0.01f)
         pc = chord_pcs[2];                      /* the fifth (with Drone: a whole bar of it) */
     n = bass_note(pc);
-    if (!first && frand() < evolve * 0.08f)
+    if (!first && up)
         n += 12;                                /* now and then, an octave up */
     if (bass.env < 0.05f)
         bass.note = (float)n;                   /* from silence: no slide */
@@ -1662,6 +1673,86 @@ static int section_pick(void)                   /* the next phrase: Motion leave
     return r < 0.45f ? SEC_BREAK : r < 0.75f ? SEC_GROOVE : SEC_THIN;
 }
 
+/* (1.3.0) the drums' and the bass's phrase plan (the user: randomness by phrase and bar, not by note): a phrase is
+ * A A A B A A A B. A is the main bar, repeated exactly; B, on bars 4 and 8, a variant: sparse (breathing) or busy (a
+ * fill), drawn once a phrase. Which of the hats' and the bass's notes rest (Density, Evolve's looseness), the hats'
+ * feel (each step's accent and lateness) and the bass's octave note are drawn once a phrase too, from its seed, and
+ * the same every bar. A new phrase keeps the plan or draws another (more often as Evolve rises; never at 0) */
+static float ph_u(void)
+{
+    ph_rng = ph_rng * 1664525u + 1013904223u;
+    return (float)(ph_rng >> 8) * (1.0f / 16777216.0f);
+}
+static uint32_t ph_hash(uint32_t a)
+{
+    a ^= a >> 16, a *= 0x7FEB352Du, a ^= a >> 15, a *= 0x846CA68Bu, a ^= a >> 16;
+    return a;
+}
+/* of a pattern's steps (but those always kept), keep the first `keep` in an order drawn from the phrase's seed */
+static uint32_t ph_thin(uint32_t pat, int keep, uint32_t always, uint32_t salt)
+{
+    uint32_t out = pat & always, rest = pat & ~always;
+    while (keep-- > 0 && rest) {
+        uint32_t best = 0, bh = 0;
+        int i;
+        for (i = 0; i < 16; i++)
+            if (rest >> i & 1u) {
+                uint32_t h = ph_hash(ph.seed ^ salt * 0x9E3779B9u ^ (uint32_t)i);
+                if (!best || h < bh)
+                    best = 1u << i, bh = h;
+            }
+        out |= best, rest &= ~best;
+    }
+    return out;
+}
+static void phrase_plan(int first)
+{
+    int i;
+    if (!first && ph.drawn && !(evolve > 0.0f && ph_u() < 0.2f + 0.6f * evolve))
+        return;                                  /* (the last phrase's plan again: a motif that comes back) */
+    ph.drawn = 1;
+    ph.seed = ph_rng = ph_rng * 1664525u + 1013904223u;
+    ph.busy = (uint8_t)(ph_u() < 0.5f);
+    ph.oct = (int8_t)(ph_u() < evolve * 0.6f ? (int)(ph_u() * 8.0f) : -1);
+    for (i = 0; i < 16; i++) {
+        ph.vel[i] = (uint8_t)(255.0f * fm_minf(0.3f + 0.4f * ph_u() + (i & 1 ? 0.0f : 0.15f), 1.0f));
+        ph.late[i] = (uint8_t)(255.0f * ph_u());
+    }
+}
+static int pcount(uint32_t m) { return __builtin_popcount(m); }
+/* this bar's patterns, from the plan: A, or (bars 4 and 8) B */
+static void ph_bar(int pb)
+{
+    const int b = pb == 3 || pb == 7;
+    const float lo = loose(), e = (float)mac[EN_MAC_ENERGY] * (1.0f / 50.0f), d0 = (float)par[P_BNOTES] * 0.01f;
+    const float d = fm_clampf(e < 0.0f ? d0 * (1.0f + 0.6f * e) : d0 + (1.0f - d0) * e, 0.0f, 1.0f);
+    uint32_t g = en_groove(gpat()), f = g & (0u - g);   /* (the groove; its first note, always kept) */
+    uint32_t k = drum_pat[0], sh = drum_pat[1], op = drum_pat[2];
+    bar_bass = ph_thin(g, (int)((float)pcount(g) * d + 0.5f) - (f ? 1 : 0), f, 3u);   /* Density: the same notes out */
+    if (b && ph.busy && d >= 0.3f)               /* (B, busy: the whole groove and a pickup into the next bar) */
+        bar_bass = g | 1u << 14;
+    else if (b)                                   /* (B, sparse: every other of A's, the first kept) */
+        bar_bass = ph_thin(bar_bass, pcount(bar_bass) / 2 - (f ? 1 : 0), f, 4u);
+    if (par[P_DMODE]) {                          /* (Pattern: yours, each step's Chance on the grid) */
+        bar_k = dpat(0), bar_sh = dpat(1), bar_op = dpat(2);
+        return;
+    }
+    bar_sh = ph_thin(sh, pcount(sh) - (int)(0.45f * lo * (float)pcount(sh) + 0.5f), 0u, 1u);
+    bar_op = ph_thin(op, pcount(op) - (int)(0.6f * lo * (float)pcount(op) + 0.5f), 0u, 2u);
+    bar_k = k;
+    if (b && ph.busy) {                          /* (B, busy: a ghost kick before the next bar, the hats all in) */
+        if (pe(P_KDENS) < 100 && k)
+            bar_k = k | 1u << 14;
+        bar_sh = sh | 1u << 15;
+        bar_op = op;
+    } else if (b) {                              /* (B, sparse: the kick's downbeat, the shaker on the eighths) */
+        if (pe(P_KDENS) < 100)
+            bar_k = k & 1u;
+        bar_sh &= 0x5555u;
+        bar_op = 0;
+    }
+}
+
 static void bar_start(void)
 {
     int pb = (int)(bar & 7u), db = en_drift_bars(par[P_DRIFT]);
@@ -1671,6 +1762,7 @@ static void bar_start(void)
         kick_shape = (uint8_t)kick_draw(sec);   /* (the phrase's kick) */
         hats_publish();
         noise_pattern();                         /* (the noise's groove: new, or the last one again) */
+        phrase_plan(0);                          /* (the drums' and the bass's plan: new, or the last one again) */
     }
     if (sec == SEC_BREAK && pb == 2)            /* two bars in, the filter starts to open */
         arc_tgt = 1.0f, arc_tau = 2.2f * 16.0f * step_len;
@@ -1695,9 +1787,11 @@ static void bar_start(void)
     chord_bars++;
     if ((bar & 1u) == 0u && bar > 0 && frand() < evolve * 0.6f)   /* (1.3.0: every two bars, was four) */
         stabs_evolve();
-    if (frand() < evolve * 0.25f)
+    if (pb == 0 && frand() < evolve * 0.8f)    /* (1.3.0: the shaker's steps trade places at a phrase's start, not
+                                                  * any bar: the A bars the same) */
         hats_evolve();
     stabs_bar();
+    ph_bar(pb);                                  /* (this bar's drums and bass, from the plan) */
     bar++;
 }
 
@@ -1733,11 +1827,11 @@ static void lanes(void)
     const int kick = lay_kick && !(mutes & EN_M_KICK) && !(perf & EN_PF_KICKDROP) && par[P_DRUMS] > 0,
               hats = !(mutes & EN_M_HATS) && par[P_DRUMS] > 0;
     en_lane[0] = (uint16_t)(mutes & EN_M_CHORD || !par[P_CHORD] ? 0u : en_stab_pat);
-    en_lane[1] = (uint16_t)(kick ? dpat(0) & (fill ? 0x00FFu : 0xFFFFu) : 0u);
-    en_lane[2] = (uint16_t)(hats ? (lay_hats ? dpat(1) : 0u) | (lay_open || fill ? dpat(2) : 0u) : 0u);
+    en_lane[1] = (uint16_t)(kick ? bar_k & (fill ? 0x00FFu : 0xFFFFu) : 0u);
+    en_lane[2] = (uint16_t)(hats ? (lay_hats ? bar_sh : 0u) | (lay_open || fill ? bar_op : 0u) : 0u);
     en_lane[3] = (uint16_t)(hats && lay_hats ? dpat(3) : 0u);
     en_lane[4] = (uint16_t)(hats && (sec == SEC_FULL || sec == SEC_GROOVE || par[P_DMODE]) ? dpat(4) : 0u);
-    en_lane[5] = (uint16_t)(lay_bass && !(mutes & EN_M_BASS) && !(perf & EN_PF_KICKDROP) && par[P_BASS] > 0 ? en_groove(gpat()) : 0u);
+    en_lane[5] = (uint16_t)(lay_bass && !(mutes & EN_M_BASS) && !(perf & EN_PF_KICKDROP) && par[P_BASS] > 0 ? bar_bass : 0u);
 }
 
 /* a pattern's hit: its chance (Play: Pattern only, so Auto's music stays as it was), its accent */
@@ -1763,12 +1857,14 @@ static void tick(void)
     const int kick = lay_kick && !(mutes & EN_M_KICK) && !(perf & EN_PF_KICKDROP), hats = !(mutes & EN_M_HATS);
     lanes();
     {
-        float v0 = st ? 0.88f : 1.0f, v1 = 0.3f + 0.4f * r + (st & 1 ? 0.0f : 0.15f), v2 = 0.55f + 0.35f * r, v3 = 0.75f + 0.15f * r;
-        const float lo = par[P_DMODE] ? 0.0f : loose();   /* (1.3.0, Auto: the hats looser, a shaker step or an open hat
-                                                            * left out now and then) */
+        const float fv = (float)ph.vel[st] * (1.0f / 255.0f);   /* (the phrase's feel: this step's accent) */
+        float v0 = st ? 0.88f : 1.0f, v1 = fv, v2 = 0.55f + 0.35f * fv, v3 = 0.75f + 0.15f * r;
+        ph_st = st;
+        if (bar_k >> st & 1u && st == 14 && !(KSHAPE[kick_shape] >> 14 & 1u))
+            v0 *= 0.45f;                         /* (the busy B bar's pickup: a ghost) */
         if (!par[P_DMODE] && kick_shape == KS_GHOST && (st == 4 || st == 12))
             v0 *= 0.32f;                         /* (two and four ghosted, -10 dB) */
-        if (kick && dpat(0) >> st & 1u && !(fill && st >= 8) && dhit(0, st, &v0))
+        if (kick && bar_k >> st & 1u && !(fill && st >= 8) && dhit(0, st, &v0))
             drum_hit(0, v0, 0);
         else if (!(st & 3) && par[P_DRUMS] > 0) {   /* the ghost duck: the music breathes on every beat, the kick
                                                     * or not (lighter without one; lightest in a Break) */
@@ -1776,9 +1872,9 @@ static void tick(void)
             duck_x = fm_maxf(duck_x, gd);
             duck_xb = fm_maxf(duck_xb, gd);
         }
-        if (hats && lay_hats && dpat(1) >> st & 1u && dhit(1, st, &v1) && frand() >= 0.45f * lo)
+        if (hats && lay_hats && bar_sh >> st & 1u && dhit(1, st, &v1))
             drum_hit(1, v1, st & 1);
-        if (hats && (lay_open || fill) && dpat(2) >> st & 1u && dhit(2, st, &v2) && frand() >= 0.6f * lo)
+        if (hats && (lay_open || fill) && bar_op >> st & 1u && dhit(2, st, &v2))
             drum_hit(2, v2, 0);
         if (hats && lay_hats && dpat(3) >> st & 1u && dhit(3, st, &v3))
             drum_hit(3, v3, st & 1);
@@ -1788,13 +1884,11 @@ static void tick(void)
                 drum_hit(4, v4, 0);
         }
     }
-    if (lay_bass && !(mutes & EN_M_BASS) && !(perf & EN_PF_KICKDROP) && en_groove(gpat()) >> st & 1u) {
-        /* Notes, and Energy: down thins it (to 0.4 of it), up fills a thin one; the first note of a bar always plays
-         * (the random draw only while thinned: a full groove draws nothing, as before) */
-        const float e = (float)mac[EN_MAC_ENERGY] * (1.0f / 50.0f), d0 = (float)par[P_BNOTES] * 0.01f;
-        const float d = fm_clampf(e < 0.0f ? d0 * (1.0f + 0.6f * e) : d0 + (1.0f - d0) * e, 0.0f, 1.0f);
-        if (d >= 0.999f || st == 0 || frand() < d)
-            bass_hit(st == 0);
+    if (lay_bass && !(mutes & EN_M_BASS) && !(perf & EN_PF_KICKDROP) && bar_bass >> st & 1u) {
+        /* (1.3.0) the bar's notes, from the plan (Density and Energy: which rest, the same each A bar); the octave
+         * note, if the plan has one, the same place each bar */
+        const uint32_t first = bar_bass & (0u - bar_bass), below = bar_bass & ((1u << st) - 1u);
+        bass_hit(first >> st & 1u, ph.oct >= 0 && pcount(below) == ph.oct % (pcount(bar_bass) > 1 ? pcount(bar_bass) : 1) && st);
     }
     if (en_stab_pat >> st & 1u) {               /* (the random draws made muted or not: the music goes on the same) */
         uint32_t later = en_stab_pat >> (st + 1);
@@ -2585,6 +2679,7 @@ static void play_start(int from_top)
         hats_publish();
         nz_drawn = 0;
         noise_pattern();
+        phrase_plan(1);
     }
     pulse_left = 0.0f;
     tick_wait = 0;
