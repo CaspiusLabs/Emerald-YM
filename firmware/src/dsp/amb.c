@@ -3475,6 +3475,7 @@ static void render_crackle(uint32_t n)
  * looped), a dub Siren and a noise Riser */
 static float mf_lp = 14.2f, mf_hp = 4.3f, mf_wah, mf_ph, mf_lfo;   /* the master filter: log2 of its cutoffs */
 static float mf_c[3][4], mf_s[12];
+static float crash_lp, crash_att;                /* (the Crash: darker, eased in) */
 static float fx_vt, fx_wash, fx_cf, crash, sir_amp, sir_ph, sir_lfo, ris_amp, ris_oct, ris_s[2], ris_c[4];
 static uint32_t fx_noise = 9871u;
 
@@ -3511,7 +3512,7 @@ static void fx_ctl(uint32_t n)                   /* once a chunk: the effects' e
     fx_cf += ((on >> EN_FX_FREEZE & 1u ? 1.0f : 0.0f) - fx_cf) * fm_minf(t / 0.1f, 1.0f);
     fx_wash += ((on >> EN_FX_WASH & 1u ? 1.0f : 0.0f) - fx_wash) * fm_minf(t / (on >> EN_FX_WASH & 1u ? 0.4f : 0.8f), 1.0f);
     if (rise >> EN_FX_CRASH & 1u)
-        crash = 1.0f;
+        crash = 1.0f, crash_att = 0.0f;
     if (rise >> EN_FX_STUTTER & 1u) {            /* a sixteenth, caught from now */
         stt_state = 1;
         stt_pos = 0;
@@ -3665,7 +3666,11 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
             rin += (mixl[j] + mixr[j] + 2.0f * bassb[j]) * (0.35f * fx_vt + 0.3f * fx_wash);
             if (crash > 0.001f) {
                 fx_noise = fx_noise * 1664525u + 1013904223u;
-                rin += (float)(int32_t)fx_noise * (1.0f / 2147483648.0f) * crash * 2.0f;
+                /* (1.3.0: it was white noise at x2, 15 dB over the music: now a darker wash, eased in over ~8 ms,
+                 * at the music's own level) */
+                crash_lp += 0.3f * ((float)(int32_t)fx_noise * (1.0f / 2147483648.0f) - crash_lp);
+                crash_att += (1.0f - crash_att) * 0.003f;
+                rin += crash_lp * crash * crash_att * 0.6f;
                 crash *= 0.99971f;               /* (~80 ms) */
             }
         }
