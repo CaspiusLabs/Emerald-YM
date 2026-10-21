@@ -70,7 +70,7 @@ const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PAR
  *                  CV BO Grv Fif Swi Hat  Stb Crk Dck Siz  Clo PV BV Kit
  *                  then the sound pages' sixteen, all 0: the voices as they are; then the noise's five (its controls, its character);
  *                  then Throws, Ghost, Notes, Hats level (50, 50, 100, 50: the pieces as they were);
- *                  then the chord's Ghost, the kick's density, the echo's Blur, Tone and Width, the shimmer's Tune
+ *                  then the chord's Ghost, the kick's density, the echo's Blur, Tone and Width, the noise's Decay
  * (Dri: Drift, 2 4 8 16 32 64 bars or Hold; ET: Echo time, 1/8 1/8. 1/4 1/4. 1/2 1 bar; Grv: the knob's, Drone,
  *  Offbeat, Dotted, Sync, Roller (GROOVE_NAME); CV, PV, BV, Kit: the voices, EN_CV_NAME ...) */
 static const struct {
@@ -518,7 +518,7 @@ typedef struct {
 static noise_ctl_t nctl;
 static float throw_mul = 1.0f, ping_dry = 0.5f, hats_lvl = 1.0f;   /* Throws, Ghost, Hats level (apply) */
 static float chord_dry = 0.5f, chord_snd = 1.5f;   /* the chord's Ghost: its dry, its sends (apply) */
-static float ec_g = 0.6f, ec_lpc = 0.68f, ec_wide = 1.0f, sh_fb = 0.86f;   /* the echo's Blur, Tone, Width; the shimmer's Tune */
+static float ec_g = 0.6f, ec_lpc = 0.68f, ec_wide = 1.0f;   /* the echo's Blur, Tone, Width */
 static int gpat(void) { return GROOVE_PAT[(unsigned)par[P_GROOVE] < NGROOVE ? par[P_GROOVE] : 0]; }   /* the pattern */
 static int8_t mac[EN_NMAC];                     /* the master actions, -50..50 */
 static int8_t pofs[P_NPARAMS];
@@ -2363,7 +2363,6 @@ static void apply(int p, int v)
         ec_lpc = 1.0f - fm_expf(-2.0f * FM_PI * fm_clampf(2000.0f * fm_exp2f((float)(v - 50) * 0.04f), 400.0f, 5000.0f) / TAPE_SR);
         break;
     case P_EWIDTH: ec_wide = (float)v * 0.02f; break;   /* the heads' spread: 0 mono, 1 (50), 2 wide */
-    case P_NTUNE: sh_fb = fm_minf((float)v * 0.0172f, 0.95f); break;   /* the comb: 0 plain air, 0.86 (50), 0.95 */
     case P_POCT:                                 /* let it be heard now: a ping from the first loop */
         if (en_playing && nsteps) {
             int l, k;

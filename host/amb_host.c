@@ -492,6 +492,8 @@ static int expect(const char *what, const char *val)
         got = (int)(blits - was);
         was = blits;
     }
+    else if (!strcmp(what, "section"))            /* the phrase's section (0 Full, 1 Break, 2 Groove, 3 Thin) */
+        got = en_section;
     else if (!strcmp(what, "viewlayer"))          /* what the scope and spectrum listen to (0 the whole, 1.. a layer) */
         got = en_view_layer;
     else if (!strcmp(what, "octring"))            /* the level ring showing: its layer + 1 (0: none) */

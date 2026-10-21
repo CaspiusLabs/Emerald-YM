@@ -66,7 +66,7 @@ typedef struct {
     uint8_t rsv[16];
 } project12_t;
 /* DUB-1 1.3.0's pages (format 13): today's, without the chord's Ghost, the kick's density, the echo's Blur, Tone and
- * Width, the shimmer's Tune */
+ * Width, the noise's Decay */
 #define NPAR13 P_CGHOST
 _Static_assert(NPAR13 == 115, "format 13 had 115 parameters");
 typedef struct {

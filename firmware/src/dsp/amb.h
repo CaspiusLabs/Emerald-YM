@@ -91,9 +91,9 @@ enum {
      * about +-12 dB at the ends) */
     P_CTHROW, P_PGHOST, P_BNOTES, P_HATSLVL,
     /* 1.3.0's echo and density (format 14), 0..100: the chord's dry against its sends (as the pings' Ghost; 50: -6 dB,
-     * its echo x1.5); the kick's density (its shapes by phrase: 0 none .. 100 four on the floor, always); the echo's
+     * its echo x1.35); the kick's density (its shapes by phrase: 0 none .. 100 four on the floor, always); the echo's
      * blur (0 clean copies .. 50 each repeat a little more dissolved .. 100 a wash), its tone (darker .. brighter),
-     * its width (0 mono .. 100 wide); the shimmer's tune (0 plain air .. 100 clearly on the key) */
+     * its width (0 mono .. 100 wide); the noise's Decay (how long its hits ring: 0 a knock .. 100 a hum) */
     P_CGHOST, P_KDENS, P_EBLUR, P_ETONE, P_EWIDTH, P_NTUNE,
     P_NPARAMS
 };
@@ -202,8 +202,7 @@ extern volatile float en_echo_pk;               /* the echo's output, its peak s
 /* the noise's events, for the screen's specks: a ring of the last few (kind: 0 a click, 1 a pop, 2 a dust grain; its
  * strength as heard, 0..255; its side, 0 left .. 255 right), en_nev_w where the next goes */
 /* the audio's load, the last block's time against its budget, in % (set by the device's audio handler; 0 elsewhere):
- * over 80, the engine sheds for a moment what is least heard (the quietest tails, the cloud's new grains, the
- * shimmer), so a crowded moment doesn't overrun */
+ * over 80, the engine sheds for a moment what is least heard (the quietest tails, the cloud's new grains), so a crowded moment doesn't overrun */
 extern volatile uint8_t en_load;
 #define EN_NEV_N 16
 extern volatile uint8_t en_nev_k[EN_NEV_N], en_nev_s[EN_NEV_N], en_nev_p[EN_NEV_N];

@@ -143,43 +143,43 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
       <div>
         <h3>Dub <span>HOME</span></h3>
         <dl>
-          <dt>Filter</dt><dd>The DJ filter on the music (the kick left out): down, under water; up, thin and bright; Off in the middle, where the knob stops on its way through. For playing: not saved, kept across pieces.</dd><dt>Evolve</dt><dd>How restless it is: the stab and shaker patterns turn, ping notes change, stabs drop out or are thrown into the echo.</dd><dt>Motion</dt><dd>How often the eight-bar phrases leave Full for a Break, a Groove or Thin, how far the filter sweeps, how much the echo wanders.</dd><dt>Drift</dt><dd>How long a chord lasts, 2 to 64 bars, or Hold. The thin bar top right fills on the way to the next. EDIT moves on at the next bar.</dd>
+          <dt>Filter</dt><dd>The DJ filter on the music (the kick left out): down, under water; up, thin and bright; Off in the middle, where the knob stops on its way through. For playing: not saved, kept across pieces.</dd><dt>Evolve</dt><dd>How restless and loose it is: the stab and shaker patterns turn, bars go without a stab, ping notes change, the hats loosen, the kick's shape wanders; at 0 it all tightens.</dd><dt>Motion</dt><dd>How often the eight-bar phrases leave Full for a Break, a Groove or Thin, how far the filter sweeps, how much the echo wanders.</dd><dt>Drift</dt><dd>How long a chord lasts, 2 to 64 bars, or Hold. The thin bar top right fills on the way to the next. EDIT moves on at the next bar.</dd>
         </dl>
       </div>
       <div>
         <h3>Chord <span>ENV</span></h3>
         <dl>
-          <dt>Throws, Stabs</dt><dd>How often a stab is thrown into the echo (50: as Evolve and the arrangement throw them; 0 never, 100 about three times as often); one to six stabs a bar, off the beat.</dd><dt>Decay, Cutoff</dt><dd>How long a stab rings (60 ms to 1.5 s); where the resonant low-pass sits.</dd>
+          <dt>Density, Throws</dt><dd>One to six stabs a bar, off the beat; how often a stab is thrown into the echo (50: about one in eight; 100: one in three; 0: never).</dd><dt>Ghost, Cutoff</dt><dd>The stab dry against its echo (up: mostly the echo); where the resonant low-pass sits. (Decay is on the chord's sound page.)</dd>
         </dl>
       </div>
       <div>
         <h3>Pings <span>ARP</span></h3>
         <dl>
-          <dt>Ghost, Density</dt><dd>The pings dry against their echo (0: up front; 50 as the pieces have it; 100: almost all echo); how many notes each of the four loops (13, 17, 23, 29 eighths) holds.</dd><dt>Cloud, Octave</dt><dd>How much of the reverb goes through the granular cloud; the pings two octaves down to two up.</dd>
+          <dt>Density, Ghost</dt><dd>How many notes each of the four loops (13, 17, 23, 29 eighths) holds; the pings dry against their echo (0: up front; 100: almost all echo).</dd><dt>Cloud, Octave</dt><dd>How much of the reverb goes through the granular cloud; the pings two octaves down to two up.</dd>
         </dl>
       </div>
       <div>
         <h3>Bass <span>LFO</span></h3>
         <dl>
-          <dt>Notes, Octave</dt><dd>How many of the groove's notes play (100: all; less, some left out, the bar's first kept); an octave down or up.</dd><dt>Groove, Fifth</dt><dd>Drone, Offbeat, Dotted, Sync or Roller, sparse to busy; how often it leans on the fifth.</dd>
+          <dt>Density, Octave</dt><dd>How many of the groove's notes play (100: all; less, some left out, the bar's first kept); an octave down or up.</dd><dt>Groove, Fifth</dt><dd>Drone, Offbeat, Dotted, Sync or Roller, sparse to busy; how often it leans on the fifth.</dd>
         </dl>
       </div>
       <div>
         <h3>Drums <span>SEQ</span></h3>
         <dl>
-          <dt>Hats, Hits</dt><dd>The shaker and the open hat against the kick (50 as the pieces have it, about ±12 dB at the ends); how many shaker sixteenths, and the open hat off the beat.</dd><dt>Swing, Duck</dt><dd>The off sixteenths late (50% to 70%); how far the kick ducks the rest.</dd>
+          <dt>Density, Hits</dt><dd>The kick: its shape a phrase at a time (none, the downbeat, one and three, four with two and four ghosted, four on the floor) around this, 100 always four; how many shaker sixteenths, and the open hat off the beat.</dd><dt>Hats, Duck</dt><dd>The hats against the kick (about ±12 dB); how far each beat pushes the rest down, the kick or not.</dd>
         </dl>
       </div>
       <div>
         <h3>Noise <span>SAVE</span></h3>
         <dl>
-          <dt>Level, Colour</dt><dd>The noise bed's level; dark to bright, around the piece's own.</dd><dt>Grain, Drift</dt><dd>Smooth to granular; steady to restless. ALGORITHM its character: Vinyl, Tape, Dust, Room, Machine. SAVE again: back.</dd>
+          <dt>Density, Air</dt><dd>A crackle groove ringing on the chord: how many hits in two bars; the quiet hiss under it.</dd><dt>Tone, Decay</dt><dd>The rings darker or brighter; how long each hit rings. Its level on OCT− / OCT+. ALGORITHM its character: Vinyl, Tape, Dust, Room, Machine. SAVE again: back.</dd>
         </dl>
       </div>
       <div>
         <h3>Space <span>FX</span></h3>
         <dl>
-          <dt>Echo, Echo time</dt><dd>The tape echo's send; its time, an eighth to a bar (dotted eighth the classic).</dd><dt>Feedback, Reverb</dt><dd>How long the echo repeats (past 100% it swells on itself); the plate's send.</dd>
+          <dt>Echo, Echo time</dt><dd>The tape echo's send; its time, an eighth to a bar (dotted eighth the classic).</dd><dt>Feedback, Reverb</dt><dd>How long the echo's tail lasts, 1.5 to 15 s (each repeat blurrier and darker than the last); the plate's send. FX again: the Echo page, Blur, Tone, Width and Size.</dd>
         </dl>
       </div>
       <div>
@@ -338,9 +338,9 @@ function hit(c, cls, attrs, parent = controls) {
 }
 // what each control does (the Buttons list below says the same); a page button's light is its page, PLAY's
 // playing, REC's dub hold: those are toggle buttons (aria-pressed), the others plain ones
-const TIP = { FX: "The Space page.", SEL: "PERFORM: the knobs are Filter, Dub, Energy and Space (hold white 6: the mix); the white keys 1 to 5 mute the layers, the black keys 1 to 5 solo them, and white 7 to 11, held, make the dub moves.", ENV: "The Chord page.", LFO: "The Bass page.", EDIT: "A tap: the Chords page, eight slots (KNOB 1 the slot, the keys its root, KNOB 2 its kind, KNOB 3 its type, KNOB 4 Play: Endless, the walk writing slot 8 as they move up, or Loop, the eight in turn). Held: the next chord.",
-  GLO: "The Setup page. Held: saves all eight pieces; held on: the piece back to its recipe.", HOME: "The Dub page; again, the Key page (tempo, root, mode, swing). Hold it and turn SELECT for the tempo.", SAVE: "The Noise page: Level, Colour, Grain, Drift; ALGORITHM its character. Held: a nudge to the noise; held on: a shake.",
-  ARP: "The Pings page.", SEQ: "The Drums page. Again: their sound; again: the Pattern page (four lanes, sixteen steps on the white keys).", PLAY: "Play or rest.", REC: "Tap: dub hold (the echo and the cloud repeat what they hold; the chord holds). Hold: the effects grid, played on the white keys.",
+const TIP = { FX: "The Space page; again, the Echo page (Blur, Tone, Width, Size).", SEL: "PERFORM: the knobs are Filter, Dub, Energy and Space (hold white 6: the mix); the white keys 1 to 5 mute the layers, the black keys 1 to 5 solo them, and white 7 to 11, held, make the dub moves.", ENV: "The Chord page.", LFO: "The Bass page.", EDIT: "A tap: the Chords page, eight slots (KNOB 1 the slot, the keys its root, KNOB 2 its kind, KNOB 3 its type, KNOB 4 Play: Endless, the walk writing slot 8 as they move up, or Loop, the eight in turn). Held: the next chord.",
+  GLO: "The Setup page. Held: saves all eight pieces; held on: the piece back to its recipe.", HOME: "The Dub page; again, the Key page (tempo, root, mode, swing). Hold it and turn SELECT for the tempo.", SAVE: "The Noise page: Density, Air, Tone, Decay; ALGORITHM its character. Held: a nudge to the noise; held on: a shake.",
+  ARP: "The Pings page.", SEQ: "The Drums page. Again: their sound; again: the Pattern page (five lanes, sixteen steps on the white keys).", PLAY: "Play or rest.", REC: "Tap: dub hold (the echo and the cloud repeat what they hold; the chord holds). Hold: the effects grid, played on the white keys.",
   "OCT-": "On a layer's page, its level down (held: on). With OCT+, quickly: the layer muted or back.", "OCT+": "On a layer's page, its level up (held: on). With OCT-, quickly: the layer muted or back.", SELECT: "The previous or next page, in the panel's order; with HOME held, the tempo.",
   ALGORITHM: "On a layer's page, its voice; on the Chords page, the walk; elsewhere, the screen (ripples, scope, spectrum).", PRESETS: "The piece.", KNOB1: "The first value on the screen.", KNOB2: "The second value on the screen.",
   KNOB3: "The third value on the screen.", KNOB4: "The fourth value on the screen." };

@@ -2,10 +2,11 @@
 
 DUB-1 turns the M-VAVE FM-1 into a generative dub techno machine. It plays itself
 from the moment it's switched on: chord stabs through a resonant low-pass into a tape echo, short
-FM pings on loops of unequal length, a sub bass on one of five grooves, a four-on-the-floor kick
-that ducks the rest, a shaker and an open hat, and a bed of vinyl crackle. An eight-bar arrangement
-takes the kick out for a break, thins the layers and brings them back with a fill, and now and then
-a stab is thrown into the echo. You don't play it, you steer it: pick a piece and a scale, take
+FM pings on loops of unequal length, a sub bass on one of five grooves, a kick that ducks the rest
+(four on the floor, or sparser, a phrase at a time), a shaker and an open hat, and a crackle that
+rings on the chord. An eight-bar arrangement takes the kick out for a break, thins the layers and
+brings them back with a fill, and now and then a stab is thrown into the echo, each repeat coming
+back darker and more dissolved. You don't play it, you steer it: pick a piece and a scale, take
 notes out, sweep the filter, push the echo, hold it, mute and solo the layers.
 
 DUB-1 is a fork of [AMB-1](https://github.com/charlesvestal/fm1-amb), Charles Vestal's generative
@@ -30,13 +31,13 @@ installer can reach.
 | Keys | The scale: each key adds its note or takes it out |
 | PLAY · REC · EDIT | Play / rest · a tap: dub hold, held: the effects grid (16 effects on the white keys) · a tap: the Chords page (eight slots: root, kind, type; Play random or the slots), held: the next chord |
 | SEL | PERFORM: the knobs the master actions, Filter, Dub (the echo), Energy and Space (white 6 held: the mix); white keys 1–5 mute the layers (their levels kept), black keys 1–5 solo them; white 7–11, held: throw, open, shut, drop (the kick and the bass), push the echo. The keys that do something are lit; hold SEL for the map |
-| FX · ENV · LFO · GLO / HOME · SAVE · ARP · SEQ | The pages, as the buttons sit: Space, Chord (Throws, Stabs, Decay, Cutoff), Bass (Notes, Octave, Groove, Fifth), Setup (for every piece) / Dub (the Filter, Evolve, Motion, Drift), Noise (Level, Colour, Grain, Drift), Pings (Ghost, Density, Cloud, Octave), Drums (Hats, Hits, Swing, Duck); KNOB 1–4 set their four values. HOME again: the Key page (tempo, root, mode, swing). A layer's button again: its sound page (four more, relative to the voice) |
+| FX · ENV · LFO · GLO / HOME · SAVE · ARP · SEQ | The pages, as the buttons sit: Space (Echo, Echo time, Feedback in seconds, Reverb), Chord (Density, Throws, Ghost, Cutoff), Bass (Density, Octave, Groove, Fifth), Setup (for every piece) / Dub (the Filter, Evolve, Motion, Drift), Noise (Density, Air, Tone, Decay), Pings (Density, Ghost, Cloud, Octave), Drums (Density: the kick's shapes, Hits, Hats, Duck); KNOB 1–4 set their four values, and the line above them says what the one turning does. FX again: the Echo page (Blur, Tone, Width, Size). HOME again: the Key page (tempo, root, mode, swing). A layer's button again: its sound page (four more; the chord's has its Decay) |
 | SELECT | The previous or next page, in the panel's order (the dots by the knobs show where); with HOME held, the tempo |
-| SEQ, twice, three times | The drums' sound page, then the **Pattern page**: four lanes (kick, shaker, open hat, rim) of sixteen steps on the white keys, accents, chance |
+| SEQ, twice, three times | The drums' sound page, then the **Pattern page**: five lanes (kick, shaker, open hat, rim, clap) of sixteen steps on the white keys, accents, chance |
 | ALGORITHM | On a layer's page, its voice (7 chord, 5 ping, 5 bass voices, 5 kits); on the Chords page, the walk (Home, Wander, Free); on the Noise page, its character; elsewhere, the screen (ripples, scope, spectrum). The mode is on the Key page (HOME again). An FM voice's layer button a third time: its FM page (the algorithm, ratio, feedback, modulators' decay) |
 | PRESETS | The piece (eight of them) |
-| OCT− / OCT+ | On a layer's page (Chord, Pings, Bass, Drums, Noise): its level, 5 a press (held: on); both together, quickly: the layer muted or back, its level kept (the same mutes as PERFORM's); held 5 s: the update mode |
-| SAVE | The Noise page (Level, Colour, Grain, Drift; ALGORITHM its character); held, a nudge to the noise |
+| OCT− / OCT+ | On a layer's page (Chord, Pings, Bass, Drums, Noise): its level, 5 a press (held: on), shown as a ring; both together, quickly: the layer muted or back, its level kept (the same mutes as PERFORM's); held 5 s: the update mode |
+| SAVE | The Noise page (Density, Air, Tone, Decay; ALGORITHM its character: Vinyl, Tape, Dust, Room, Machine); held, a nudge to the noise |
 | GLO | The Setup page; held, saves (held on, the piece back to its recipe) |
 
 Hold a layer's button (ENV, ARP, LFO, SEQ) for a nudge: its sound a small step somewhere new.
@@ -72,7 +73,8 @@ all come from there. The idea comes from AMB-1 and from dub techno in general: c
 in a tape echo over a steady kick. The reverb is Jon Dattorro's plate ("Effect Design, Part 1",
 JAES 1997), as in [FoMni-1](https://github.com/charlesvestal/fm1-fomni); the granular cloud follows the
 design of CLOUD in [JIANT](https://github.com/juanjiant-bit/JIANT) (GPL-3.0); the Euclidean rhythms
-are Godfried Toussaint's reading of Bjorklund's algorithm. The platform (hardware layer, USB,
+are Godfried Toussaint's reading of Bjorklund's algorithm; the noise machine (a crackle groove
+ringing resonators tuned to the chord) follows Bahadirhan Kocer's "Using Resonators in Live". The platform (hardware layer, USB,
 update loader, storage, installer) is [Felucca](https://github.com/hugelton/Felucca)'s by Leo
 Kuroshita (Hügelton Instruments), by way of [X0X](https://github.com/charlesvestal/fm1-x0x),
 FoMni-1 and AMB-1. The idea of running FM-1 firmware in the browser comes from

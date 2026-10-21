@@ -54,11 +54,19 @@ wait 2500
 shot screen-hold.png
 tap REC
 tap SEL
+wait 18000
 key w6 down
 wait 2000
 shot screen-perform.png
 key w6 up
 tap SEL
 turn K3 50
-wait 52000
+wait 138000
 shot screen-groove.png
+# the Echo page (FX, FX again)
+tap FX
+wait 300
+tap FX
+wait 1500
+shot screen-echo.png
+tap FX

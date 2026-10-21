@@ -1042,7 +1042,7 @@ static void midi_in(void)
 static const uint8_t NUDGE_BTN[NNUDGE] = {B_ENV, B_ARP, B_LFO, B_SEQ, B_FX, B_SAVE};
 static const char *const NUDGE_NAME[NNUDGE] = {"CHORD", "PINGS", "BASS", "DRUMS", "SPACE", "NOISE"};
 static const uint8_t NUDGE_PAR[NNUDGE][8] = {   /* (the FM ones, the last two of the first three, on an FM voice only) */
-    {P_CATT, P_CCOL, P_CRES, P_CENV, P_DECAY, P_CUTOFF, P_CFRAT, P_CFB},
+    {P_CATT, P_CCOL, P_CRES, P_DECAY, P_CATT, P_CUTOFF, P_CFRAT, P_CFB},   /* (Env, on no page now, left be) */
     {P_PTON, P_PRAT, P_PLEN, P_PBEND, P_PGHOST, P_PLEN, P_PFRAT, P_PFB},   /* (Ghost: the dry against the echo) */
     {P_BBITE, P_BSHAPE, P_BLEN, P_BSLIDE, P_FIFTH, P_BLEN, P_BFRAT, P_BFB},
     {P_KTUNE, P_KLEN, P_KPUNCH, P_HTONE, P_KLEN, P_HATSLVL, P_HTONE, P_KTUNE},   /* (Hats: their level, against the kick) */
@@ -2608,7 +2608,7 @@ static void draw_knobs(void)
         int k;
         int32_t xd = 237 - NROUND * 6, xt;
         int32_t x0 = 4;
-        if (view_voice(ui.view) >= 0 || ui.view == V_CHORDS) {   /* a layer's page: its voice, at the rule's start;
+        if (view_voice(ui.view) >= 0 || ui.view == V_CHORDS || ui.view == V_NSND) {   /* a layer's page: its voice, at the rule's start;
                                                                    * the Chords page: the walk's; Noise: its character */
             char vn[12];
             if (ui.view == V_CHORDS || ui.view == V_NSND) {
