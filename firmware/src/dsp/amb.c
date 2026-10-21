@@ -3203,7 +3203,7 @@ static void noise_step(int s)
     }
     v = (float)nz_vel[s & 31] * (1.0f / 255.0f);
     nz_ex = v;
-    nz_exd = fm_expf(-6.9f / ((0.003f + 0.007f * cr_u()) * EN_SR));   /* (a 3-10 ms burst: staccato) */
+    nz_exd = fm_expf(-6.9f / ((0.005f + 0.008f * cr_u()) * EN_SR));   /* (a 5-13 ms burst: struck, staccato) */
     nz_click = v * (cr_u() < 0.5f ? -1.0f : 1.0f);
     nev(v > 0.5f ? 1 : 0, v * crackle_vol * 9.0f, 0.5f);
 }
@@ -3249,9 +3249,9 @@ static void render_crackle(uint32_t n)
     gres = (20.0f * NCHAR[c].res + 5.0f * (1.0f - NCHAR[c].res)) * g;   /* (the band's level; the knob's folded in) */
     dry = 1.0f - NCHAR[c].res;                   /* (Dust: the bursts dry, into the band-pass) */
     cont = NCHAR[c].cont;
-    gh = 0.03f * g * cr_dv[0] * fm_exp2f(1.2f * nr) * (1.0f - 0.35f * duck_d);   /* the Air: quiet, breathing with the duck */
+    gh = 0.03f * g * cr_dv[0] * fm_exp2f(1.2f * nr);   /* the Air: quiet (it breathes with the duck: render_chunk) */
     lpc = fm_clampf(0.4f * fm_exp2f(0.5f * nc), 0.15f, 0.8f);   /* (its band: ~2-4 kHz at the top) */
-    vg = 1.1f * g * NCHAR[c].clicks * fm_exp2f(0.7f * ng);
+    vg = 0.5f * g * NCHAR[c].clicks * fm_exp2f(0.7f * ng);   /* (the dry clicks, quiet) */
     thr = (uint32_t)((3.0f + 12.0f * g) * cr_dv[2] * fm_exp2f(ng) * (4294967296.0f / EN_SR));   /* dry clicks a second */
     {   /* (the state in locals: the compiler keeps it in registers, past the sends' stores) */
         uint32_t cn = cnoise;
@@ -3259,6 +3259,9 @@ static void render_crackle(uint32_t n)
         float ex = nz_ex, ck = nz_click, acc = nz_acc, b0 = nz_b[0], b1 = nz_b[1], b2 = nz_b[2], b3 = nz_b[3];
         float pl = nz_p[0], pr = nz_p[1], ql = nz_c[0], qr = nz_c[1];
         const float exd = nz_exd, sw = 0.05f * cont * (1.0f - 0.8f * duck_d);   /* (Tape: the hiss in, between beats) */
+        /* (1.3.0: the noise under the duck, deeper than the music, its sends too: it dips on each beat and swells
+         * between, the kick or not; the duck as it is at this chunk's start) */
+        const float dn = 1.0f - fm_minf(1.7f * duck_depth, 0.85f) * duck_d;
         int ph = nz_ph, w = nz_w;
 #define CRU() (cn = cn * 1664525u + 1013904223u, (float)(cn >> 8) * (1.0f / 16777216.0f))
         for (j = 0; j < n; j++) {
@@ -3281,7 +3284,8 @@ static void render_crackle(uint32_t n)
             fr += cc * (cr - fr);
             cl *= 0.55f;
             cr *= 0.55f;
-            x = ck + wn * ex + h * sw + 0.3f * (fl + fr);   /* what rings the combs: the hit, the hiss (Tape), the clicks */
+            x = wn * ex + h * sw + 0.3f * (fl + fr);   /* what rings the combs: the hit's burst (no crack), the hiss
+                                                         * (Tape), the clicks */
             ck = 0.0f;
             ex *= exd;
             acc += x;
@@ -3318,12 +3322,15 @@ static void render_crackle(uint32_t n)
                 ql = b1 * gres, qr = b3 * gres;
             }
             f = (float)ph * 0.25f;               /* (back to the full rate: a line from the last to the next) */
-            l = pl + (ql - pl) * f;
-            r = pr + (qr - pr) * f;
+            l = (pl + (ql - pl) * f) * dn;
+            r = (pr + (qr - pr) * f) * dn;
             esend[j] += (l + r) * (0.15f + 0.8f * st_throw);   /* (a little into the echo; a throw, more) */
-            rsend[j] += (l + r) * 0.7f + h * gh * 0.4f;
-            l += h * gh + vg * fl;
-            r += 0.9f * h * gh + vg * fr;
+            rsend[j] += (l + r) * 0.3f + h * gh * 0.4f;
+            l *= 0.75f;                          /* (the dry -2.5 dB, less into the plate than before: further back,
+                                                  * and its breathing heard, not smoothed into the plate's wash) */
+            r *= 0.75f;
+            l += (h * gh + vg * fl) * dn;
+            r += (0.9f * h * gh + vg * fr) * dn;
             crl[j] = l;
             crr[j] = r;
         }
