@@ -2715,17 +2715,20 @@ static void draw_main(void)
         for (k = 0; k < NROUND; k++)             /* (under it, the round's dots, in the panel's order: FX ENV LFO GLO
                                                   * HOME SAVE ARP SEQ) */
             cv_round(212 - NROUND * 6 + 2 + k * 6, 31, 4, 4, 2, PAGE_ORDER[k] == page_of(ui.view) ? K_ACC : K_LINE);
-        if (ui.lock) {                           /* (Lock on, kept after PERFORM) */
-            x -= 6 + text_w(&FONT_XS, "LOCK");
-            cv_text(x, 14, &FONT_XS, "LOCK", K_TEXT);
-        }
         if (ui.solo) {                           /* (a solo on, in PERFORM or kept after it) */
             x -= 6 + text_w(&FONT_XS, "SOLO");
             cv_text(x, 14, &FONT_XS, "SOLO", K_CLAP);
         }
     }
-    if (en_frozen) {                             /* the way to the next chord, top right (dub hold: hold) */
-        cv_text(232 - text_w(&FONT_XS, "hold"), 2, &FONT_XS, "hold", K_FROST);
+    {   /* above the page's name: dub hold ("hold") and Lock ("lock"), alike, in red */
+        int32_t x = 232;
+        if (en_frozen) {
+            x -= text_w(&FONT_XS, "hold");
+            cv_text(x, -2, &FONT_XS, "hold", K_FROST);
+            x -= 6;
+        }
+        if (ui.lock)
+            cv_text(x - text_w(&FONT_XS, "lock"), -2, &FONT_XS, "lock", K_FROST);
     }
     draw_meters();
     draw_duck();
