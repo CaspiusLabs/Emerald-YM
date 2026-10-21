@@ -25,6 +25,7 @@
  *                                Both print the film's time there, "@ mm:ss.s  bar N  LABEL" (the edit's cue)
  *   store8                       save the project as DUB-1 1.0.0 did (format 8): reboot then reads it
  *   store10                      save it as 1.2.0 did (format 10, without the noise's five)
+ *   storefile PATH               a saved project from a file (tests/host/proj-*.bin)
  *   store14                      save it as 1.3.0's echo and density did (format 14)
  *   store13                      save it as 1.3.0's pages did (format 13, without the chord's Ghost .. the shimmer's Tune)
  *   store12 [G]                  save it as 1.3.0's ladder did (format 12, without Throws, Ghost, Notes, Hats level;
@@ -776,6 +777,17 @@ int main(int argc, char **argv)
                 o.slot[i].screen = proj.slot[i].screen;
             }
             plat_store_save(OBJ_PROJ, &o, sizeof o);
+        } else if (!strcmp(cmd, "storefile")) {  /* a saved project from a file, as it would be in the flash */
+            static uint8_t fb[PLAT_STORE_MAX];
+            FILE *f = fopen(a, "rb");
+            size_t got = f ? fread(fb, 1, sizeof fb, f) : 0;
+            if (f)
+                fclose(f);
+            if (!got) {
+                printf("line %d: no file %s\n", lineno, a);
+                return 2;
+            }
+            plat_store_save(OBJ_PROJ, fb, (uint32_t)got);
         } else if (!strcmp(cmd, "store14")) {    /* the project as 1.3.0's echo and density saved it (format 14) */
             static project14_t o;
             int i;

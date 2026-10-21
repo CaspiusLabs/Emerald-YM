@@ -10,6 +10,53 @@ const char *piece_name(int i) { return en_piece_name(i); }
 
 static int global_par(int p) { return p == P_TUNE || p == P_MIDI; }
 
+/* (1.3.0) a piece never changed takes today's recipe on an upgrade: one that matches one of its own recipes as they
+ * have been (recipe_prints.h, from git: a hash over their values, Tune and MIDI out left out), on the scale its mode
+ * gives, was left as it came, so it gets today's sound; one you changed keeps your settings */
+#include "recipe_prints.h"
+static uint32_t print_of(const int16_t *par, int n)
+{
+    uint32_t h = 2166136261u;
+    int i;
+    for (i = 0; i < n; i++) {
+        uint16_t u = (uint16_t)par[i];
+        if (global_par(i))
+            continue;
+        h = (h ^ (u & 0xFFu)) * 16777619u;
+        h = (h ^ (u >> 8)) * 16777619u;
+    }
+    return h;
+}
+static int untouched_raw(const int16_t *par, int n, uint16_t pool, int piece)   /* as it was saved, n of them */
+{
+    int k;
+    if ((unsigned)par[P_MODE] >= EN_NMODES || pool != EN_MODE_POOL[par[P_MODE]])
+        return 0;                                /* (its scale changed by hand) */
+    for (k = 0; k < RECIPE_PRINTS; k++)
+        if (RECIPE_PRINT[k].n == n && RECIPE_PRINT[k].h[piece] == print_of(par, n))
+            return 1;
+    return 0;
+}
+static int untouched_now(const slot_t *sl, int piece)   /* as read: an old recipe's first ones, today's after them */
+{
+    int16_t rec[P_NPARAMS];
+    uint16_t pool;
+    int k, p;
+    en_piece(piece, rec, &pool);
+    if (sl->pool != pool)
+        return 0;
+    for (k = 0; k < RECIPE_PRINTS; k++) {
+        const int nk = RECIPE_PRINT[k].n;
+        if (nk > P_NPARAMS || RECIPE_PRINT[k].h[piece] != print_of(sl->par, nk))
+            continue;
+        for (p = nk; p < P_NPARAMS && (global_par(p) || sl->par[p] == rec[p]); p++)
+            ;
+        if (p == P_NPARAMS)
+            return 1;
+    }
+    return 0;
+}
+
 static void recipe(int i, slot_t *s)
 {
     en_piece(i, s->par, &s->pool);
@@ -321,24 +368,46 @@ int project_load(void)
 {
     static project_t buf;
     int n, old = 0, i;
+    uint8_t fresh[NPIECES];                      /* (a piece never changed: today's recipe) */
+    memset(fresh, 0, sizeof fresh);
     memset(&buf, 0, sizeof buf);
     n = plat_store_load(OBJ_PROJ, &buf, sizeof buf);
     if (n >= 8 && buf.magic == PROJ_MAGIC && buf.format == 8u && n >= (int)sizeof(project8_t)) {
+        for (i = 0; i < NPIECES; i++) {
+            const project8_t *o = (const project8_t *)(const void *)&buf;
+            fresh[i] = (uint8_t)untouched_raw(o->slot[i].par, NPAR10, o->slot[i].pool, i);
+        }
         from8((const project8_t *)(const void *)&buf);
         old = 9;
     } else if (n >= 8 && buf.magic == PROJ_MAGIC && (buf.format == 9u || buf.format == 10u) &&
                n >= (int)sizeof(project10_t)) {
         old = (int)buf.format;
+        for (i = 0; i < NPIECES; i++) {
+            const project10_t *o = (const project10_t *)(const void *)&buf;
+            fresh[i] = (uint8_t)untouched_raw(o->slot[i].par, NPAR10, o->slot[i].pool, i);
+        }
         from10((const project10_t *)(const void *)&buf);
     } else if (n >= 8 && buf.magic == PROJ_MAGIC && (buf.format == 11u || buf.format == 12u) &&
                n >= (int)sizeof(project12_t)) {
         old = (int)buf.format;
+        for (i = 0; i < NPIECES; i++) {
+            const project12_t *o = (const project12_t *)(const void *)&buf;
+            fresh[i] = (uint8_t)untouched_raw(o->slot[i].par, NPAR12, o->slot[i].pool, i);
+        }
         from12((const project12_t *)(const void *)&buf);
     } else if (n >= 8 && buf.magic == PROJ_MAGIC && buf.format == 14u && n >= (int)sizeof(project14_t)) {
         old = 14;
+        for (i = 0; i < NPIECES; i++) {
+            const project14_t *o = (const project14_t *)(const void *)&buf;
+            fresh[i] = (uint8_t)untouched_raw(o->slot[i].par, NPAR14, o->slot[i].pool, i);
+        }
         from14((const project14_t *)(const void *)&buf);
     } else if (n >= 8 && buf.magic == PROJ_MAGIC && buf.format == 13u && n >= (int)sizeof(project13_t)) {
         old = 13;
+        for (i = 0; i < NPIECES; i++) {
+            const project13_t *o = (const project13_t *)(const void *)&buf;
+            fresh[i] = (uint8_t)untouched_raw(o->slot[i].par, NPAR13, o->slot[i].pool, i);
+        }
         from13((const project13_t *)(const void *)&buf);
     } else {
         proj = buf;
@@ -365,6 +434,14 @@ int project_load(void)
         pars_clamp(proj.par);
         for (i = 0; i < NPIECES; i++)
             pars_clamp(proj.slot[i].par);
+        for (i = 0; i < NPIECES; i++)            /* (never changed: today's recipe, its view kept) */
+            if (fresh[i] || untouched_now(&proj.slot[i], i)) {
+                uint8_t sc = proj.slot[i].screen;
+                recipe(i, &proj.slot[i]);
+                proj.slot[i].screen = sc;
+                if (i == proj.piece)
+                    take(&proj.slot[i]);
+            }
     }
     if (n >= 8 && project_valid())
         return 0;

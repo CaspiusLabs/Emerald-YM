@@ -1,0 +1,41 @@
+# an upgrade (1.3.0): a piece never changed takes today's recipe; one you changed keeps your settings.
+# tests/host/proj-1.2.0*.bin are 1.2.0's own saves (made by its project code: every piece its 1.2.0 recipe; the second
+# with Basic's Stabs set by hand to 77)
+storefile tests/host/proj-1.2.0.bin
+reboot
+wait 500
+expect format 15
+expect piece 0
+# Basic as 1.3.0 has it (Stabs 15, Feedback 55: a 5.4 s tail; 1.2.0's were 30 and 60), its noise Vinyl
+expect par28 15
+expect par11 55
+expect par4 30
+turn PRESET 3
+wait 300
+expect piece 3
+# Fog too (its chord 50, its kick's Density 50)
+expect par0 50
+expect par116 50
+turn PRESET -3
+storefile tests/host/proj-1.2.0-basic-changed.bin
+reboot
+wait 500
+# Basic changed by hand: kept as it was (its Stabs 77, its Feedback still 1.2.0's 60); Fog, untouched, today's
+expect par28 77
+expect par11 60
+turn PRESET 3
+wait 300
+expect par0 50
+# a 1.3.0 test build's save (format 14, every piece its recipe then), and the same converted and saved again as 15
+# (its first values that build's recipe, the new ones today's): today's recipe either way
+storefile tests/host/proj-1.3.0-test14.bin
+reboot
+wait 500
+expect format 15
+expect par11 55
+expect par29 15
+storefile tests/host/proj-1.3.0-test14-resaved15.bin
+reboot
+wait 500
+expect par11 55
+expect par29 15
