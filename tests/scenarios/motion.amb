@@ -13,9 +13,9 @@ press EDIT
 wait 600
 release EDIT
 wait 4000
-# the pings an octave up (the Pings page's KNOB 4)
+# the pings an octave up (the Pings page's KNOB 2)
 tap ARP
-spin K4 1
+spin K2 1
 expect par21 1
 # the chord's level, on PERFORM's mix (white 6 held)
 tap SEL

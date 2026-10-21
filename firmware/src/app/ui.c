@@ -78,13 +78,13 @@ _Static_assert(P_NPARAMS <= K_LEDS, "the knobs' own codes must come after the pa
 static const uint16_t VIEW_KNOB[NVIEWS][4] = {
     {K_FILTER, P_EVOLVE, P_MOTION, P_DRIFT},
     {P_STABS, P_CTHROW, P_CGHOST, P_CUTOFF},
-    {P_DENSITY, P_PGHOST, P_CLOUD, P_POCT},
+    {P_DENSITY, P_POCT, P_PGHOST, P_CLOUD},
     {P_BNOTES, P_BASSOCT, P_GROOVE, P_FIFTH},
     {P_KDENS, P_HITS, P_HATSLVL, P_DUCK},
     {P_ECHO, P_ETIME, P_FEEDBACK, P_REVERB},
     {P_TUNE, P_MIDI, K_LEDS, K_SAVE},
     {P_CHORD, P_PINGS, P_BASS, P_DRUMS},
-    {P_CATT, P_CCOL, P_CRES, P_DECAY},           /* (Env, P_CENV, off the page: the voices and the recipes set it) */
+    {P_CATT, P_DECAY, P_CCOL, P_CRES},           /* (Env, P_CENV, off the page: the voices and the recipes set it) */
     {P_PTON, P_PRAT, P_PLEN, P_PBEND},
     {P_BBITE, P_BSHAPE, P_BLEN, P_BSLIDE},
     {P_KTUNE, P_KLEN, P_KPUNCH, P_HTONE},
@@ -100,14 +100,14 @@ static const uint16_t VIEW_KNOB[NVIEWS][4] = {
 };
 static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Filter", "Evolve", "Motion", "Drift"},
-    {"Density", "Throws", "Ghost", "Cutoff"},
-    {"Density", "Ghost", "Cloud", "Octave"},
+    {"Density", "Throws", "Wet", "Cutoff"},
+    {"Density", "Octave", "Wet", "Cloud"},
     {"Density", "Octave", "Groove", "Fifth"},
     {"Density", "Hits", "Hats", "Duck"},
     {"Echo", "Echo time", "Feedback", "Reverb"},
     {"Tune", "MIDI out", "Lights", "Save"},
     {"Chord", "Pings", "Bass", "Drums"},
-    {"Attack", "Colour", "Reso", "Decay"},
+    {"Attack", "Decay", "Colour", "Reso"},
     {"Tone", "Ratio", "Length", "Bend"},
     {"Bite", "Shape", "Length", "Slide"},
     {"Kick tune", "Kick len", "Punch", "Hat tone"},
@@ -126,10 +126,10 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
 static const char *const KNOB_HELP[NVIEWS][4] = {
     {"Sweeps the whole mix but the kick", "How restless: stabs come and go", "How often it leaves Full, and sweeps",
      "Bars before the chord moves on"},
-    {"Stabs a bar, one to six", "How often a stab is thrown to the echo", "The stab dry, against its echo",
+    {"Stabs a bar, one to six", "How often a stab is thrown to the echo", "Dry, to mostly the echo",
      "The stabs' low-pass: dark to bright"},
-    {"How many notes each loop holds", "The pings dry, against their echo", "The reverb through the grain cloud",
-     "The pings two octaves down to two up"},
+    {"How many notes each loop holds", "The pings two octaves down to two up", "Dry, to mostly the echo",
+     "The reverb through the grain cloud"},
     {"How many of the groove's notes play", "The bass an octave down or up", "The pattern, from sparse to busy",
      "How often the fifth, not the root"},
     {"The kick: none, one, half, four", "How busy the hats are", "The hats' level against the kick",
@@ -139,8 +139,8 @@ static const char *const KNOB_HELP[NVIEWS][4] = {
     {"Fine tuning, in cents", "Notes and clock out over MIDI", "The keys' and buttons' lights",
      "A turn saves all eight pieces"},
     {"The chord's level", "The pings' level", "The bass's level", "The drums' level"},
-    {"The strike: a snap, to a swell", "The voice's own colour", "The filter's resonance",
-     "How long each stab rings"},
+    {"The strike: a snap, to a swell", "How long each stab rings", "The voice's own colour",
+     "The filter's resonance"},
     {"The ping, round to metallic", "The modulator: harmonic to clangy", "How long each ping rings",
      "The pitch falling at the strike"},
     {"Drive: clean to growling", "A pure sine, to a square", "How long each note holds", "The glide between notes"},
@@ -546,9 +546,23 @@ static void turn(int role, int k, int32_t e)
         return;
     }
     knob_range(k, &lo, &hi);
-    if (k >= K_FILTER && k <= K_SPACE) {         /* the master actions stop at the middle on the way through */
-        int v = knob_get(k), n = v + accel(role, e, hi - lo);
-        knob_set(k, (v > 0 && n < 0) || (v < 0 && n > 0) ? 0 : n);
+    if (lo < 0 && hi > 0 && hi - lo >= 10) {     /* (1.3.0) a centred knob: a notch at 0, a click to leave it */
+        static uint8_t armed[16];
+        static uint32_t arm_t[16];
+        int v = knob_get(k), n, r = role & 15;
+        if (v == 0) {                            /* (the first click out of 0 held, unless one came just before) */
+            int32_t s1 = e > 0 ? 1 : -1;
+            if (!(armed[r] && plat_ms() - arm_t[r] < 600u && (armed[r] == 1) == (e > 0))) {
+                armed[r] = (uint8_t)(e > 0 ? 1 : 2);
+                arm_t[r] = plat_ms();
+                if (e == s1)
+                    return;
+                e -= s1;
+            }
+            armed[r] = 0;
+        }
+        n = v + accel(role, e, hi - lo);
+        knob_set(k, (v > 0 && n < 0) || (v < 0 && n > 0) ? 0 : n);   /* (and it stops at 0 on the way through) */
         return;
     }
     knob_set(k, knob_get(k) + accel(role, e, hi - lo));
@@ -862,6 +876,14 @@ static void set_view(int v)
 static void button(int b)
 {
     int v;
+    if (ui.perf && (b == B_HOME || b == B_ENV || b == B_ARP || b == B_LFO || b == B_SEQ || b == B_FX || b == B_GLO ||
+                    b == B_SAVE || b == B_EDIT)) {   /* (1.3.0) a page's button leaves PERFORM: the keys the scale
+                                                      * again, the page its first (SEL brings PERFORM back) */
+        perf_set(0);
+        set_view(V_DUB);
+        if (b == B_HOME)
+            return;
+    }
     if (sound_of(ui.view) >= 0 && b == VIEW_BTN[ui.view]) {   /* the layer's button again: its sound page */
         set_view(sound_of(ui.view));
         return;
@@ -1300,8 +1322,11 @@ static void input(void)
             }
         } else {                                 /* (in the round's order, PAGE_ORDER; at its ends, it stays) */
             int from = page_of(ui.view), v;
-            if (ui.view == V_MIX || ui.view == V_PERF)   /* from PERFORM: SELECT goes on from the page it came from */
+            if (ui.view == V_MIX || ui.view == V_PERF) {   /* from PERFORM: SELECT leaves it, on from the page it came
+                                                            * from */
                 from = page_of(ui.perf_from);
+                perf_set(0);
+            }
             if (ui.view == V_CHORDS)
                 from = page_of(ui.chords_from);
             if (ui.view == V_NSND && !ui.noise_round)    /* (SAVE's: from the page it was opened from) */
@@ -2595,6 +2620,8 @@ static void draw_knobs(void)
         h = hash(h, (uint32_t)proj.par[P_PMODE]);
     if (ui.view == V_NSND)
         h = hash(h, (uint32_t)proj.par[P_NCHAR]);
+    if (ui.view == V_MIX)
+        h = hash(h, ui.mutes);
     int now_touch = plat_ms() < ui.touch_until;
     for (i = 0; i < 4; i++)
         h = hash(h, (uint32_t)knob_get(VIEW_KNOB[ui.view][i]));
@@ -2642,11 +2669,13 @@ static void draw_knobs(void)
         }
     }
     for (i = 0; i < 4; i++) {
+        const int moff = ui.view == V_MIX && (ui.mutes & LAYER_MUTE[i]) == LAYER_MUTE[i];   /* (the mix: a muted
+                                                                                       * layer grey, its level kept) */
         int k = VIEW_KNOB[ui.view][i], lo, hi, v, hot = now_touch && ui.touched == (int)i && !off;
         int32_t x = (int32_t)i * 60, cx = x + 30;
         char t[16];
         static const uint16_t MIXC[4] = {K_PAD, K_BELL, K_BASS, K_PULSE};   /* (the Mix page: the layers' colours) */
-        uint16_t bg = hot ? K_PANEL : K_BG, fill = off ? K_LINE : ui.view == V_MIX ? MIXC[i] : hot ? K_ACC : K_PAD;
+        uint16_t bg = hot ? K_PANEL : K_BG, fill = off || moff ? K_LINE : ui.view == V_MIX ? MIXC[i] : hot ? K_ACC : K_PAD;
         if (k == K_NONE)
             continue;
         if (i)
@@ -2659,8 +2688,8 @@ static void draw_knobs(void)
         text_c(cx, 12, &FONT_XS, t, hot ? K_TEXT : K_DIM);
         if (k == K_SAVE) {                       /* (Save: a dot, lit while there's something to save) */
             cv_disc(cx, 37, 5, v ? K_ACC : K_LINE);
-        } else if (k != K_CPU && hi - lo < 6) {  /* a switch: its positions as pips */
-            int n = hi - lo + 1, j, pw = n > 4 ? 6 : 9, gap = 3, w0 = n * (pw + gap) - gap;
+        } else if (k != K_CPU && hi - lo < 10) { /* a switch: its positions as pips (up to ten) */
+            int n = hi - lo + 1, j, pw = n > 6 ? 3 : n > 4 ? 6 : 9, gap = n > 6 ? 2 : 3, w0 = n * (pw + gap) - gap;
             for (j = 0; j < n; j++)
                 cv_round(cx - w0 / 2 + j * (pw + gap), 33, pw, 8, 2, j == v - lo ? fill : K_LINE);
         } else if (k != K_CPU) {
@@ -2670,7 +2699,7 @@ static void draw_knobs(void)
             en_param_text(k, 0, t);
         else
             knob_text(k, t);
-        text_c(cx, 50, &FONT_B, t, off ? K_DIM : hot ? K_ACC : K_TEXT);
+        text_c(cx, 50, &FONT_B, t, off || moff ? K_DIM : hot ? K_ACC : K_TEXT);
     }
     cv_blit(0, KNB_Y);
 }

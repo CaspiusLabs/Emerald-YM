@@ -5,9 +5,9 @@ tap ENV
 wait 300
 tap ENV
 wait 400
-said Chord sound page, voice Saws: Attack 0, Colour 0, Reso 0, Decay 35
+said Chord sound page, voice Saws: Attack 0, Decay 35, Colour 0, Reso 0
 expect view 8
-spin K2 30
+spin K3 31
 wait 200
 expect par37 30
 said Colour +30
@@ -15,7 +15,7 @@ turn ALGO 1
 wait 300
 said VOICE Keys
 expect par37 30
-spin K3 -100
+spin K4 -100
 wait 200
 expect par38 -50
 tap ENV
@@ -29,7 +29,7 @@ wait 200
 tap SEQ
 wait 300
 expect view 11
-spin K1 5
+spin K1 6
 wait 200
 expect par48 5
 said Kick tune +5

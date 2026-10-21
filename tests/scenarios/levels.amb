@@ -52,7 +52,8 @@ turn SELECT 1 100
 expect view 19
 tap SAVE
 expect view 0
-# from a sound page and from PERFORM: on from its layer's page
+# from a sound page and from PERFORM: on from its layer's page (SELECT leaves PERFORM; so does a page's button,
+# to that page's first, the keys the scale again)
 tap SEQ
 tap SEQ
 expect view 11
@@ -61,13 +62,21 @@ expect view 2
 tap SEL
 turn SELECT -1 100
 expect view 19
+said PERFORM OFF
 tap SEL
+wait 200
+expect view 17
+tap ARP
 wait 300
-# the knobs: Density first on every layer's page; Chord's Throws and Ghost, Pings' Ghost and Octave, Bass's Density (and
+said PERFORM OFF
+expect view 2
+tap HOME
+wait 300
+# the knobs: Density first on every layer's page; Chord's Throws and Wet, Pings' Octave and Wet, Bass's Density (and
 # Groove's five), Drums' Density (the kick) and Hats, Noise's Density and Level
 tap ENV
 wait 300
-said Chord page, voice Saws: Density 15, Throws 70, Ghost 65, Cutoff 45
+said Chord page, voice Saws: Density 15, Throws 70, Wet 65, Cutoff 45
 shot chord_page.png
 spin K2 10
 wait 300
@@ -75,22 +84,22 @@ said Throws 80
 expect par111 80
 spin K3 10
 wait 300
-said Ghost 75
+said Wet 75
 expect par115 75
 spin K3 -10
 tap ARP
 wait 300
-said Pings page, voice Blip: Density 30, Ghost 70, Cloud 30, Octave 0
+said Pings page, voice Blip: Density 30, Octave 0, Wet 70, Cloud 30
 shot pings_page.png
-spin K2 -10
+spin K3 -10
 wait 300
-said Ghost 60
+said Wet 60
 expect par112 60
-spin K4 1
+spin K2 1
 wait 300
 said Octave +1
 expect par21 1
-spin K4 -1
+spin K2 -1
 tap LFO
 wait 300
 said Bass page, voice Sub: Density 75, Octave 0, Groove Offbeat, Fifth 20
@@ -374,7 +383,7 @@ expect par113 65
 tap ARP
 wait 300
 expect view 2
-spin K2 10
+spin K3 10
 wait 300
 expect par112 80
 store13
