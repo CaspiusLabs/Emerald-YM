@@ -3546,7 +3546,7 @@ static void render_fx(uint32_t n)                /* the Siren and the Riser: two
             sir_ph += 480.0f * fm_exp2f(1.3f * tri) * (1.0f / EN_SR);
             if (sir_ph >= 1.0f)
                 sir_ph -= 1.0f;
-            x = sat(sine(sir_ph) * 3.0f) * 0.12f * sir_amp;
+            x = sat(sine(sir_ph) * 3.0f) * 0.075f * sir_amp;   /* (1.3.0: -4 dB, it stood 6 dB over the music) */
             mixl[j] += x;
             mixr[j] += x;
             esend[j] += x * 2.0f;
@@ -3561,7 +3561,7 @@ static void render_fx(uint32_t n)                /* the Siren and the Riser: two
             v2 = ris_s[1] + ris_c[1] * ris_s[0] + ris_c[2] * v3;
             ris_s[0] = 2.0f * v1 - ris_s[0];
             ris_s[1] = 2.0f * v2 - ris_s[1];
-            x = v1 * 0.35f * ris_amp;
+            x = v1 * 0.22f * ris_amp;            /* (1.3.0: -4 dB, it stood 6 dB over the music) */
             mixl[j] += x;
             mixr[j] += x;
             rsend[j] += x * 1.2f;
