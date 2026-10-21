@@ -24,16 +24,16 @@
 /* (past NPAGES, on no button of their own: V_MIX, PERFORM's knobs, the four layers' levels; the layers' sound
  * pages, the layer's button pressed again) */
 enum { V_DUB, V_CHORD, V_TEXTURE, V_BASS, V_DRUMS, V_SPACE, V_SETUP, NPAGES, V_MIX = NPAGES, V_CSND, V_PSND, V_BSND,
-       V_DSND, V_CFM, V_PFM, V_BFM, V_CHORDS, V_PAT, V_PERF, V_KEY, V_NSND, V_ESND, NVIEWS };
+       V_DSND, V_CFM, V_PFM, V_BFM, V_CHORDS, V_PAT, V_PERF, V_KEY, V_NSND, V_ESND, V_NSND2, NVIEWS };
 /* (V_PERF: PERFORM's knobs, the master actions; V_MIX while white 6 is held. V_KEY: HOME again, the key and the
  * tempo, the Dub page's second) */
 static const char *const VIEW_NAME[NVIEWS] = {"Dub", "Chord", "Pings", "Bass", "Drums", "Space", "Setup", "Mix",
                                               "Chord sound", "Ping sound", "Bass sound", "Drum sound",
                                               "Chord FM", "Ping FM", "Bass FM", "Chords", "Pattern", "Perform", "Key", "Noise",
-                                              "Echo"};
+                                              "Echo", "Noise space"};
 #define B_NONE 0xFFu
 static const uint8_t VIEW_BTN[NVIEWS] = {B_HOME, B_ENV, B_ARP, B_LFO, B_SEQ, B_FX, B_GLO, B_NONE, B_NONE, B_NONE, B_NONE,
-                                         B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_SAVE, B_NONE};
+                                         B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_NONE, B_SAVE, B_NONE, B_NONE};
 static int sound_of(int v) { return v == V_CHORD ? V_CSND : v == V_TEXTURE ? V_PSND : v == V_BASS ? V_BSND : v == V_DRUMS ? V_DSND : -1; }
 static int fm_of(int v) { return v == V_CHORD ? V_CFM : v == V_TEXTURE ? V_PFM : v == V_BASS ? V_BFM : -1; }
 static int parent_of(int v)
@@ -54,7 +54,7 @@ static int fm_knob_off(int v, int i)             /* a knob there doing nothing: 
 }
 static int page_of(int v)                        /* a sound page: its layer's; the Echo page: Space's */
 {
-    return v == V_KEY ? V_DUB : v == V_ESND ? V_SPACE : parent_of(v) >= 0 ? parent_of(v) : v;
+    return v == V_KEY ? V_DUB : v == V_ESND ? V_SPACE : v == V_NSND2 ? V_NSND : parent_of(v) >= 0 ? parent_of(v) : v;
 }
 /* SELECT's round and the dots, as the buttons sit on the panel: FX ENV LFO GLO, then HOME SAVE ARP SEQ */
 #define NROUND 8
@@ -73,7 +73,7 @@ static int round_pos(int v)                      /* a page's place in the round 
 static int oct_layer(int v)
 {
     v = parent_of(v) >= 0 ? parent_of(v) : v;
-    return v == V_CHORD ? 0 : v == V_TEXTURE ? 1 : v == V_BASS ? 2 : v == V_DRUMS ? 3 : v == V_NSND ? 4 : -1;
+    return v == V_CHORD ? 0 : v == V_TEXTURE ? 1 : v == V_BASS ? 2 : v == V_DRUMS ? 3 : v == V_NSND || v == V_NSND2 ? 4 : -1;
 }
 /* the four knobs of each page: a parameter, or one of these; and what the knob is called there */
 enum { K_LEDS = 200, K_CPU, K_NONE, K_SLOT, K_CQ, K_CX,    /* (the Chords page: the slot, and its kind and type) */
@@ -89,46 +89,48 @@ static const uint16_t VIEW_KNOB[NVIEWS][4] = {
     {P_STABS, P_CTHROW, P_CGHOST, P_CUTOFF},
     {P_DENSITY, P_POCT, P_PGHOST, P_CLOUD},
     {P_BNOTES, P_BASSOCT, P_GROOVE, P_FIFTH},
-    {P_KDENS, P_HITS, P_HATSLVL, P_DUCK},
+    {P_KDENS, P_HITS, P_HATSLVL, P_HTONE},       /* (Duck: PERFORM's, a master action) */
     {P_ECHO, P_ETIME, P_FEEDBACK, P_REVERB},
     {P_TUNE, P_MIDI, K_LEDS, K_SAVE},
     {P_CHORD, P_PINGS, P_BASS, P_DRUMS},
     {P_CATT, P_DECAY, P_CCOL, P_CRES},           /* (Env, P_CENV, off the page: the voices and the recipes set it) */
     {P_PTON, P_PRAT, P_PLEN, P_PBEND},
     {P_BBITE, P_BSHAPE, P_BLEN, P_BSLIDE},
-    {P_KTUNE, P_KLEN, P_KPUNCH, P_HTONE},
+    {P_KTUNE, P_KLEN, P_KPUNCH, P_HLEN},
     {P_CALG, P_CFRAT, P_CFB, P_CFDEC},
     {P_PALG, P_PFRAT, P_PFB, P_PFDEC},
     {P_BALG, P_BFRAT, P_BFB, P_BFDEC},
     {K_SLOT, K_CQ, K_CX, K_PLAY},
     {K_LANE, P_DACCENT, K_LCH, P_DMODE},
-    {K_FILTER, K_DUB, K_ENERGY, K_SPACE},
+    {K_FILTER, K_DUB, K_ENERGY, P_DUCK},         /* (Wet, Energy: offsets for playing; Duck the piece's own) */
     {P_TEMPO, P_ROOT, K_MODE, P_SWING},
     {P_NGRAIN, P_NROOM, P_NCOL, P_NTUNE},     /* (the level on OCT- / OCT+, as the layers'; Drift the recipes') */
     {P_EBLUR, P_ETONE, P_EWIDTH, P_SIZE},
+    {P_NWIDTH, P_NPLATE, P_NECHO, P_NDRIFT},     /* (the Noise page's second: SAVE again) */
 };
 static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Filter", "Evolve", "Motion", "Drift"},
     {"Density", "Throws", "Wet", "Cutoff"},
     {"Density", "Octave", "Wet", "Cloud"},
     {"Density", "Octave", "Groove", "Fifth"},
-    {"Density", "Hits", "Hats", "Duck"},
+    {"Density", "Hits", "Hats", "Tone"},
     {"Echo", "Echo time", "Feedback", "Reverb"},
     {"Tune", "MIDI out", "Lights", "Save"},
     {"Chord", "Pings", "Bass", "Drums"},
     {"Attack", "Decay", "Colour", "Reso"},
     {"Tone", "Ratio", "Length", "Bend"},
     {"Bite", "Shape", "Length", "Slide"},
-    {"Kick tune", "Kick len", "Punch", "Hat tone"},
+    {"Kick tune", "Kick len", "Punch", "Hat len"},
     {"Algo", "Ratio", "Feedback", "LFO"},
     {"Algo", "Ratio", "Feedback", "LFO"},
     {"Algo", "Ratio", "Feedback", "LFO"},
     {"Slot", "Chord", "Type", "Play"},
     {"Lane", "Accent", "Chance", "Play"},
-    {"Filter", "Throws", "Energy", "Duck"},
+    {"Filter", "Wet", "Energy", "Duck"},
     {"Tempo", "Root", "Mode", "Swing"},
     {"Density", "Air", "Tone", "Decay"},
     {"Blur", "Tone", "Width", "Size"},
+    {"Width", "Plate", "Echo", "Change"},
 };
 /* what each knob does, a line: on the rule above the knobs while it's being turned (in capitals; each fits the
  * rule's 228 px: the host's expect helpfit) */
@@ -142,7 +144,7 @@ static const char *const KNOB_HELP[NVIEWS][4] = {
     {"How many of the groove's notes play", "The bass an octave down or up", "The pattern, from sparse to busy",
      "How often the fifth, not the root"},
     {"The kick: none, one, half, four", "How busy the hats are", "The hats' level against the kick",
-     "How far each beat pushes the rest down"},
+     "The hats, dark to bright"},
     {"How much goes into the echo", "The tape loop's length, in beats", "How long the repeats go on",
      "How much goes into the plate"},
     {"Fine tuning, in cents", "Notes and clock out over MIDI", "The keys' and buttons' lights",
@@ -154,7 +156,7 @@ static const char *const KNOB_HELP[NVIEWS][4] = {
      "The pitch falling at the strike"},
     {"Drive: clean to growling", "A pure sine, to a square", "How long each note holds", "The glide between notes"},
     {"The kick's pitch, in semitones", "How long the kick booms", "The kick's click and start pitch",
-     "The hats, dark to bright"},
+     "How long the hats ring"},
     {"Which operators modulate which", "Operators 3 and 4's pitch", "Op 4 on itself: pure to gritty",
      "The filter swept, over two bars"},
     {"Which operators modulate which", "Operators 3 and 4's pitch", "Op 4 on itself: pure to gritty",
@@ -165,13 +167,15 @@ static const char *const KNOB_HELP[NVIEWS][4] = {
      "Endless, or the slots in a loop"},
     {"The lane you're writing", "How much quieter the other steps", "How likely the lane's steps play",
      "Auto patterns, or your own"},
-    {"Shut: under water. Open: thin", "Fewer stabs thrown, or many more", "Sparse and dry, to busy and bright",
-     "The music breathing on the beat"},
+    {"Shut: under water. Open: thin", "The whole music dry, or drowned", "Sparse and dry, to busy and bright",
+     "How far each beat pushes the rest down"},
     {"Beats a minute", "The key's root note", "The scale: Minor, Dorian, ...", "Off sixteenths late: the whole groove"},
     {"How many hits ring, in two bars", "The hiss under it, softer or more", "The rings darker, or brighter",
      "How long each hit rings on the chord"},
     {"Clean repeats, to a dissolving wash", "The repeats darker, or brighter", "The echo mono, to wide",
      "How long the plate rings"},
+    {"The noise mono, to wide", "How much of it rings in the plate", "How much of it goes into the echo",
+     "Steady, to a groove changing often"},
 };
 
 /* the screen's colours: a dark room, as a dub techno sleeve (grey on black, a cold blue). The chord and
@@ -405,7 +409,7 @@ static const char *knob_name(int k)
     if (k < P_NPARAMS)
         return en_param_info(k)->name;
     return k == K_LEDS ? "Lights" : k == K_CPU ? "CPU" : k == K_SLOT ? "Slot" : k == K_CQ ? "Chord" : k == K_CX ? "Type"
-         : k == K_LANE ? "Lane" : k == K_LCH ? "Chance" : k == K_FILTER ? "Filter" : k == K_DUB ? "Throws"
+         : k == K_LANE ? "Lane" : k == K_LCH ? "Chance" : k == K_FILTER ? "Filter" : k == K_DUB ? "Wet"
          : k == K_ENERGY ? "Energy" : k == K_SPACE ? "Duck" : k == K_MODE ? "Mode" : k == K_PLAY ? "Play" : k == K_SAVE ? "Save" : "";
 }
 static void knob_text(int k, char *b)
@@ -955,7 +959,9 @@ static void button(int b)
         break;
     case B_SAVE:                                 /* the Noise page (one page: again stays; saving: GLO held, Setup's
                                                   * KNOB 4) */
-        if (ui.view != V_NSND) {
+        if (ui.view == V_NSND || ui.view == V_NSND2) {   /* (1.3.0: two pages now: SAVE again steps through) */
+            set_view(ui.view == V_NSND ? V_NSND2 : V_NSND);
+        } else {
             ui.noise_from = (uint8_t)ui.view;
             ui.noise_round = 0;
             set_view(V_NSND);
@@ -1370,7 +1376,7 @@ static void input(void)
     }
     if ((e = plat_enc(EN_ALGO)) != 0) {         /* a layer's page: its voice; the Chords page: the walk; elsewhere: the screen */
         int vp = view_voice(ui.view);
-        if (ui.view == V_NSND) {                 /* the Noise page: its character */
+        if (ui.view == V_NSND || ui.view == V_NSND2) {   /* the Noise pages: its character */
             int c = ((proj.par[P_NCHAR] + (int)(e % EN_NNCHAR)) % EN_NNCHAR + EN_NNCHAR) % EN_NNCHAR;
             knob_set(P_NCHAR, c);
             say("NOISE", EN_NCHAR_NAME[c]);
@@ -1739,7 +1745,7 @@ static uint32_t rip_stabs;
 static int8_t rip_src = -2;                      /* whose notes the ripples are: -1 the whole (the stabs), or a layer */
 static int scr_layer(int v)                      /* a layer's own page (and the Noise page): the screen that layer's */
 {
-    return v == V_CHORD || v == V_TEXTURE || v == V_BASS || v == V_DRUMS || v == V_NSND || (v >= V_CSND && v <= V_DSND)
+    return v == V_CHORD || v == V_TEXTURE || v == V_BASS || v == V_DRUMS || v == V_NSND || v == V_NSND2 || (v >= V_CSND && v <= V_DSND)
          ? oct_layer(v) : -1;                    /* (1.3.0: the sound pages too, live, not the envelope) */
 }
 
@@ -2586,7 +2592,7 @@ static void draw_main(void)
     if (ui.view >= V_CFM && ui.view <= V_BFM) {  /* an FM page: the algorithm */
         draw_alg(layer_of(ui.view));
         moving = 0;
-    } else if (ui.view == V_NSND) {              /* the Noise page: the spectrum, its colour as it moves */
+    } else if (ui.view == V_NSND || ui.view == V_NSND2) {   /* the Noise pages: the spectrum, its colour as it moves */
         draw_spec();
         moving = 1;
     } else if (proj.screen % 3u == 1u) {         /* (HOME again: a scope, a spectrum, or the ripples) */
@@ -2667,7 +2673,7 @@ static void draw_knobs(void)
         h = hash(h, (uint32_t)proj.par[view_voice(ui.view)]);
     if (ui.view == V_CHORDS)
         h = hash(h, (uint32_t)proj.par[P_PMODE]);
-    if (ui.view == V_NSND)
+    if (ui.view == V_NSND || ui.view == V_NSND2)
         h = hash(h, (uint32_t)proj.par[P_NCHAR]);
     if (ui.view == V_MIX)
         h = hash(h, ui.mutes);
@@ -2684,11 +2690,11 @@ static void draw_knobs(void)
         int k;
         int32_t xd = 237 - NROUND * 6, xt;
         int32_t x0 = 4;
-        if (view_voice(ui.view) >= 0 || ui.view == V_CHORDS || ui.view == V_NSND) {   /* a layer's page: its voice, at the rule's start;
+        if (view_voice(ui.view) >= 0 || ui.view == V_CHORDS || ui.view == V_NSND || ui.view == V_NSND2) {   /* a layer's page: its voice, at the rule's start;
                                                                    * the Chords page: the walk's; Noise: its character */
             char vn[12];
-            if (ui.view == V_CHORDS || ui.view == V_NSND) {
-                const char *w = ui.view == V_NSND ? EN_NCHAR_NAME[proj.par[P_NCHAR] % EN_NNCHAR]
+            if (ui.view == V_CHORDS || ui.view == V_NSND || ui.view == V_NSND2) {
+                const char *w = ui.view != V_CHORDS ? EN_NCHAR_NAME[proj.par[P_NCHAR] % EN_NNCHAR]
                                                   : EN_WALK_NAME[(proj.par[P_PMODE] & 3) % EN_NWALK];
                 int j;
                 for (j = 0; j < 11 && w[j]; j++)
@@ -2757,7 +2763,7 @@ static void draw_knobs(void)
 static void leds(void)
 {
     uint32_t b = 0, k = 0, i, ap = pool_abs();
-    if (VIEW_BTN[page_of(ui.view)] != B_NONE && ((parent_of(ui.view) < 0 && ui.view != V_KEY && ui.view != V_ESND) || (plat_ms() / 300u) & 1u))
+    if (VIEW_BTN[page_of(ui.view)] != B_NONE && ((parent_of(ui.view) < 0 && ui.view != V_KEY && ui.view != V_ESND && ui.view != V_NSND2) || (plat_ms() / 300u) & 1u))
         b |= 1u << VIEW_BTN[page_of(ui.view)];   /* (a sound page, or Key: its button blinks) */
     if (en_playing)
         b |= 1u << B_PLAY;
@@ -2904,7 +2910,7 @@ static void sp_page(int all)
     sp_buf[0] = 0;
     sp_cat(VIEW_NAME[ui.view]);
     sp_cat(" page");
-    if (ui.view == V_NSND) {
+    if (ui.view == V_NSND || ui.view == V_NSND2) {
         sp_cat(", character ");
         sp_cat(EN_NCHAR_NAME[proj.par[P_NCHAR] % EN_NNCHAR]);
     } else if (view_voice(ui.view) >= 0) {

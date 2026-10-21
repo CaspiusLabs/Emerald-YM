@@ -33,7 +33,8 @@ wait 3000
 expect peak_db_max -0.5
 tap SAVE
 wait 200
-expect view 19
+expect view 21
+said Noise space page, character Tape: Width 50, Plate 50, Echo 50, Change 0
 tap HOME
 wait 300
 expect view 0
@@ -74,7 +75,7 @@ wait 600
 release GLO
 reboot
 wait 1000
-expect format 14
+expect format 15
 expect par110 1
 expect par106 20
 # a 1.2.0 project (format 10): read, everything kept (Basic's chord level, set to 50 here), the noise from the
@@ -89,7 +90,7 @@ expect par0 50
 store10
 reboot
 wait 1000
-expect format 14
+expect format 15
 expect par111 70
 expect par113 100
 expect par0 50
@@ -110,3 +111,16 @@ spin K4 1
 wait 300
 said SAVED
 expect dirty 0
+# a 1.3.0 echo-and-density project (format 14): kept, the Noise page's second and the hats' length from the recipes
+tap SAVE
+tap SAVE
+wait 300
+spin K1 10
+wait 300
+expect par121 60
+store14
+reboot
+wait 1000
+expect format 15
+expect par121 50
+expect par124 0

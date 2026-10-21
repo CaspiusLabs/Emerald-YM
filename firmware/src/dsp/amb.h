@@ -95,6 +95,9 @@ enum {
      * blur (0 clean copies .. 50 each repeat a little more dissolved .. 100 a wash), its tone (darker .. brighter),
      * its width (0 mono .. 100 wide); the noise's Decay (how long its hits ring: 0 a knock .. 100 a hum) */
     P_CGHOST, P_KDENS, P_EBLUR, P_ETONE, P_EWIDTH, P_NTUNE,
+    /* (format 15) the Noise page's second (SAVE again): its width (0 mono, 50 as it was, 100 wide), how much of it
+     * into the plate and into the echo (50 as it was, 0 none, 100 twice); the hats' length (-50..+50 around the kit's) */
+    P_NWIDTH, P_NPLATE, P_NECHO, P_HLEN,
     P_NPARAMS
 };
 typedef struct {

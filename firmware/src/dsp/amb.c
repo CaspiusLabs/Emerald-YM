@@ -61,6 +61,7 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     {"Throws", 0, 100, 50},   {"Wet", 0, 100, 50},    {"Notes", 0, 100, 100},   {"Hats level", 0, 100, 50},
     {"Chord wet", 0, 100, 50}, {"Kick density", 0, 100, 100}, {"Blur", 0, 100, 50}, {"Echo tone", 0, 100, 50},
     {"Width", 0, 100, 50},    {"Noise decay", 0, 100, 50},
+    {"Noise width", 0, 100, 50}, {"Noise plate", 0, 100, 50}, {"Noise echo", 0, 100, 50}, {"Hat len", -50, 50, 0},
 };
 const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PARAMS[i] : &PARAMS[0]; }
 
@@ -70,7 +71,8 @@ const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PAR
  *                  CV BO Grv Fif Swi Hat  Stb Crk Dck Siz  Clo PV BV Kit
  *                  then the sound pages' sixteen, all 0: the voices as they are; then the noise's five (its controls, its character);
  *                  then Throws, Ghost, Notes, Hats level (50, 50, 100, 50: the pieces as they were);
- *                  then the chord's Ghost, the kick's density, the echo's Blur, Tone and Width, the noise's Decay
+ *                  then the chord's Ghost, the kick's density, the echo's Blur, Tone and Width, the noise's Decay;
+ *                  then the noise's Width, Plate and Echo, the hats' length
  * (Dri: Drift, 2 4 8 16 32 64 bars or Hold; ET: Echo time, 1/8 1/8. 1/4 1/4. 1/2 1 bar; Grv: the knob's, Drone,
  *  Offbeat, Dotted, Sync, Roller (GROOVE_NAME); CV, PV, BV, Kit: the voices, EN_CV_NAME ...) */
 static const struct {
@@ -85,7 +87,8 @@ static const struct {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     0, 0, 0, 0, 0,
                     70, 70, 75, 50,
-                    65, 85, 50, 50, 50, 50}},
+                    65, 85, 50, 50, 50, 50,
+                    50, 50, 50, 0}},
     {"Chamber",    {54, 20, 55, 60, 20, 45, 6, 30, 70, 1, 45, 65, 50, 55, 30, 60, 0, 1, 118, 9, 5, 0,
                     2, 0, 0, 10, 0, 40, 5, 23, 45, 70, 45, 2, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -94,7 +97,8 @@ static const struct {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     -5, -10, 10, 0, 3,
                     70, 60, 100, 50,
-                    50, 55, 50, 50, 50, 50}},
+                    50, 55, 50, 50, 50, 50,
+                    50, 50, 50, 0}},
     {"Steppers",   {60, 35, 70, 70, 35, 55, 3, 38, 50, 3, 30, 50, 55, 25, 50, 45, 0, 1, 126, 2, 1, 0,
                     0, 0, 2, 35, 15, 60, 25, 13, 60, 50, 20, 1, 1, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -103,7 +107,8 @@ static const struct {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     5, 10, -10, 0, 0,
                     70, 70, 75, 50,
-                    60, 85, 50, 50, 50, 50}},
+                    60, 85, 50, 50, 50, 50,
+                    50, 50, 50, 0}},
     {"Fog",        {50, 34, 50, 50, 40, 55, 5, 30, 75, 2, 55, 68, 46, 70, 25, 70, 0, 1, 112, 7, 5, 0,
                     1, -1, 0, 15, 0, 30, 5, 22, 35, 80, 60, 0, 0, 3,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -112,7 +117,8 @@ static const struct {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     -10, 0, 15, 10, 1,
                     70, 65, 100, 50,
-                    50, 50, 50, 50, 50, 50}},
+                    50, 50, 50, 50, 50, 50,
+                    50, 50, 50, 0}},
     {"Concrete",   {65, 25, 65, 75, 25, 50, 4, 50, 50, 1, 25, 50, 60, 20, 60, 40, 0, 1, 130, 0, 7, 0,
                     6, 0, 4, 30, 20, 75, 30, 10, 65, 45, 15, 3, 3, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -121,7 +127,8 @@ static const struct {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     0, 15, 0, 10, 4,
                     70, 65, 70, 42,
-                    60, 92, 50, 50, 50, 50}},
+                    60, 92, 50, 50, 50, 50,
+                    50, 50, 50, 0}},
     {"Night Drive", {52, 45, 60, 65, 45, 60, 3, 35, 60, 4, 35, 55, 50, 40, 45, 55, 0, 1, 124, 10, 1, 0,
                     1, 0, 3, 25, 25, 55, 20, 15, 50, 60, 35, 4, 4, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -130,7 +137,8 @@ static const struct {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     0, -10, 0, 0, 1,
                     70, 75, 75, 50,
-                    65, 85, 50, 50, 50, 50}},
+                    65, 85, 50, 50, 50, 50,
+                    50, 50, 50, 0}},
     {"Pressure",   {62, 20, 54, 74, 20, 45, 6, 38, 45, 1, 20, 45, 48, 30, 35, 35, 0, 1, 128, 4, 2, 0,
                     5, 0, 1, 10, 5, 65, 25, 16, 70, 40, 20, 3, 4, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -139,7 +147,8 @@ static const struct {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     -10, -20, -25, -10, 0,
                     70, 70, 75, 42,
-                    60, 92, 50, 50, 50, 50}},
+                    60, 92, 50, 50, 50, 50,
+                    50, 50, 50, 0}},
     {"Haze",       {45, 42, 52, 45, 50, 60, 4, 35, 80, 3, 60, 70, 45, 80, 25, 80, 0, 1, 116, 3, 0, 1,
                     3, 0, 0, 20, 10, 35, 5, 31, 30, 85, 70, 2, 0, 4,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -148,7 +157,8 @@ static const struct {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
                     5, 10, 10, 15, 2,
                     70, 70, 100, 50,
-                    50, 50, 50, 50, 50, 50}},
+                    50, 50, 50, 50, 50, 50,
+                    50, 50, 50, 0}},
 };
 
 const char *en_piece_name(int i) { return PIECES[(unsigned)i < EN_NPIECES ? i : 0].name; }
@@ -1523,12 +1533,13 @@ static void drum_fire(int d, float vel)
     }
     case 1:                                     /* the shaker: short; it chokes the open hat */
         v->note = DRUM_GM[1];
-        v->adec = fm_expf(-6.9f / (0.07f * KIT[kit].hat_t * EN_SR));   /* (1.3.0: 45 ms to 70: a shaker) */
+        v->adec = fm_expf(-6.9f / (0.07f * KIT[kit].hat_t * fm_exp2f(1.2f * rel(P_HLEN)) * EN_SR));   /* (1.3.0: 45 ms to 70: a
+                                                                                             * shaker; the hats' length) */
         drum[2].adec = fm_expf(-6.9f / (0.03f * EN_SR));
         break;
     case 2:                                     /* open hat: the "tss" off the beat */
         v->note = DRUM_GM[2];
-        v->adec = fm_expf(-6.9f / (hat_open * KIT[kit].hat_t * EN_SR));
+        v->adec = fm_expf(-6.9f / (hat_open * KIT[kit].hat_t * fm_exp2f(1.2f * rel(P_HLEN)) * EN_SR));
         break;
     case 3:                                     /* the rim: a short wooden tok, thrown into the echo */
         v->note = DRUM_GM[3];
@@ -2600,16 +2611,15 @@ static void macro(int i, int v)
 {
     /* each: the parameters it moves and how far at full turn (+50), in the parameter's own units */
     static const struct { uint8_t p; int8_t at50; } MOVE[] = {
-        {P_CTHROW, 50}, {P_CTHROW, 0},                  /* (1.3.0) Throws: from none to a stab in three (the Space page has the
-                                                          * echo's own knobs) */
+        {P_CGHOST, 50}, {P_PGHOST, 50}, {P_ECHO, 30},  /* (1.3.0) Wet: the whole music dry, or drowned in the echo (the
+                                                          * chord's and the pings' Wet, the echo's send; the noise too:
+                                                          * render_crackle) */
         {P_DENSITY, 85}, {P_HITS, 85}, {P_STABS, 85},    /* Energy: the notes and hits, */
         {P_PINGS, 40}, {P_HATS, 45}, {P_DECAY, 30}, {P_KDENS, 30},   /* the pings' level, the hats' colour, the stabs' length, the kick
                                                           * (and the hats' level, the phrases: render_drums, bar_start) */
-        {P_DUCK, 50}, {P_DUCK, 0}, {P_DUCK, 0},         /* (1.3.0) Duck: the music breathing on the beat, still to deep */
     };
-    static const uint8_t OF[] = {EN_MAC_DUB, EN_MAC_DUB, EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_ENERGY,
-                                 EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_SPACE,
-                                 EN_MAC_SPACE, EN_MAC_SPACE};
+    static const uint8_t OF[] = {EN_MAC_DUB, EN_MAC_DUB, EN_MAC_DUB, EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_ENERGY,
+                                 EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_ENERGY, EN_MAC_ENERGY};
     unsigned k;
     mac[i] = (int8_t)v;
     for (k = 0; k < sizeof OF; k++)
@@ -3174,7 +3184,7 @@ static void noise_pattern(void)
     float d = fm_clampf(nctl.grain + 0.5f * NCHAR[c].dens, -1.0f, 1.0f);
     int k = (int)(9.0f + 7.0f * d + 0.5f), i, m;
     uint32_t p;
-    if (nz_drawn && cr_u() > 0.35f + 0.5f * evolve)
+    if (nz_drawn && cr_u() > 0.35f + 0.5f * evolve + 0.3f * nctl.drift)   /* (Change: more often new) */
         return;
     nz_drawn = 1;
     if (sec == SEC_BREAK || sec == SEC_THIN)
@@ -3274,6 +3284,10 @@ static void render_crackle(uint32_t n)
         /* (1.3.0: the noise under the duck, deeper than the music, its sends too: it dips on each beat and swells
          * between, the kick or not; the duck as it is at this chunk's start) */
         const float dn = 1.0f - fm_minf(1.7f * duck_depth, 0.85f) * duck_d;
+        /* (the second page: Width, Plate, Echo; PERFORM's Wet, -50..+50: the dry x2 .. x0.5, the sends x0.5 .. x2) */
+        const float wv = (float)par[P_NWIDTH] * 0.02f, wa = 0.6f + 0.25f * wv, wb = 0.6f - 0.25f * wv,
+                    wm = (float)mac[EN_MAC_DUB] * (1.0f / 50.0f), nw = fm_exp2f(-wm),
+                    np = (float)par[P_NPLATE] * 0.02f * fm_exp2f(wm), ne = (float)par[P_NECHO] * 0.02f * fm_exp2f(wm);
         int ph = nz_ph, w = nz_w;
 #define CRU() (cn = cn * 1664525u + 1013904223u, (float)(cn >> 8) * (1.0f / 16777216.0f))
         for (j = 0; j < n; j++) {
@@ -3323,9 +3337,9 @@ static void render_crackle(uint32_t n)
                 }
                 if (++w >= NZ_L)
                     w = 0;
-                sl = o[0] + 0.85f * o[1] + 0.35f * o[2] + dry * m;   /* (the root in the middle, the third left, the
-                                                                        * fifth right) */
-                sr2 = o[0] + 0.35f * o[1] + 0.85f * o[2] + dry * m;
+                sl = o[0] + wa * o[1] + wb * o[2] + dry * m;   /* (the root in the middle, the third left, the fifth
+                                                                  * right: Width) */
+                sr2 = o[0] + wb * o[1] + wa * o[2] + dry * m;
                 b1 += bf * (sl - b0 - 0.9f * b1);    /* (Chamberlin band-passes, Q ~1.1: b1 the band, b0 the low) */
                 b0 += bf * b1;
                 b3 += bf * (sr2 - b2 - 0.9f * b3);
@@ -3336,11 +3350,11 @@ static void render_crackle(uint32_t n)
             f = (float)ph * 0.25f;               /* (back to the full rate: a line from the last to the next) */
             l = (pl + (ql - pl) * f) * dn;
             r = (pr + (qr - pr) * f) * dn;
-            esend[j] += (l + r) * (0.15f + 0.8f * st_throw);   /* (a little into the echo; a throw, more) */
-            rsend[j] += (l + r) * 0.3f + h * gh * 0.4f;
-            l *= 0.75f;                          /* (the dry -2.5 dB, less into the plate than before: further back,
+            esend[j] += (l + r) * (0.15f * ne + 0.8f * st_throw);   /* (a little into the echo, Echo; a throw, more) */
+            rsend[j] += (l + r) * 0.3f * np + h * gh * 0.4f;   /* (the plate, Plate) */
+            l *= 0.75f * nw;                     /* (PERFORM's Wet: the dry down as it turns up) */                          /* (the dry -2.5 dB, less into the plate than before: further back,
                                                   * and its breathing heard, not smoothed into the plate's wash) */
-            r *= 0.75f;
+            r *= 0.75f * nw;
             l += (h * gh + vg * fl) * dn;
             r += (0.9f * h * gh + vg * fr) * dn;
             crl[j] = l;

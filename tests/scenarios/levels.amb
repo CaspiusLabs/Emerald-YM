@@ -51,7 +51,7 @@ tap HOME
 turn SELECT 1 100
 expect view 19
 tap SAVE
-expect view 19
+expect view 21
 tap HOME
 expect view 0
 # from a sound page and from PERFORM: on from its layer's page (SELECT leaves PERFORM; so does a page's button,
@@ -125,7 +125,7 @@ expect par24 1
 spin K1 40
 tap SEQ
 wait 300
-said Drums page, kit Tight: Density 85, Hits 35, Hats 50, Duck 50
+said Drums page, kit Tight: Density 85, Hits 35, Hats 50, Tone 0
 shot drums_page.png
 spin K3 10
 wait 300
@@ -365,7 +365,7 @@ wait 300
 store12 5
 reboot
 wait 1000
-expect format 14
+expect format 15
 expect piece 0
 expect par24 3
 expect par113 65
@@ -391,7 +391,7 @@ expect par112 80
 store13
 reboot
 wait 1000
-expect format 14
+expect format 15
 expect par112 80
 expect par115 65
 expect par116 85

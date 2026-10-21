@@ -45,7 +45,7 @@ spin K1 -10
 wait 300
 spin K2 27
 wait 300
-said Throws +50
+said Wet +50
 spin K2 -25
 wait 300
 spin K3 -27
@@ -55,7 +55,8 @@ spin K3 25
 wait 300
 spin K4 52
 wait 300
-said Duck +100
+said Duck 100
+expect par30 100
 spin K4 -50
 wait 300
 # a black key solos its layer (the scale stays): the others go quiet; more than one play together
