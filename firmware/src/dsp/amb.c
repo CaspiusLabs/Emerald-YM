@@ -886,6 +886,8 @@ enum { KS_NONE, KS_ONE, KS_HALF, KS_GHOST, KS_FOUR, KS_N };
 static const uint16_t KSHAPE[KS_N] = {0x0000u, 0x0001u, 0x0101u, 0x1111u, 0x1111u};
 static uint8_t kick_shape = KS_FOUR;
 static uint8_t lock;                             /* (PERFORM's Lock: the phrases keep what they have) */
+static uint8_t kick_next = KS_FOUR, ph_new_next; /* (the next phrase's kick and plan, decided a bar before it) */
+volatile uint8_t en_change_next;                 /* the next phrase brings a change: 1 the plan, 2 the kick, 4 the section */
 static int kick_draw(int next);
 static uint32_t dpat(int d);
 /* (the drums' and the bass's phrase plan: phrase_plan, ph_bar) */
@@ -1707,10 +1709,10 @@ static uint32_t ph_thin(uint32_t pat, int keep, uint32_t always, uint32_t salt)
     }
     return out;
 }
-static void phrase_plan(int first)
+static void phrase_plan(int first)                /* (1: the first; 2: a new one, decided a bar before; 0: kept) */
 {
     int i;
-    if (!first && ph.drawn && !(evolve > 0.0f && ph_u() < 0.2f + 0.6f * evolve))
+    if (!first && ph.drawn)
         return;                                  /* (the last phrase's plan again: a motif that comes back) */
     ph.drawn = 1;
     ph.seed = ph_rng = ph_rng * 1664525u + 1013904223u;
@@ -1762,11 +1764,12 @@ static void bar_start(void)
     if (pb == 0 && bar > 0) {
         section_set(sec_next);
         if (!lock) {                             /* (Lock: the kick's shape, the noise's groove, the plan, kept) */
-            kick_shape = (uint8_t)kick_draw(sec);   /* (the phrase's kick) */
+            kick_shape = kick_next;              /* (the phrase's kick and plan, as decided a bar before) */
             hats_publish();
             noise_pattern();                     /* (the noise's groove: new, or the last one again) */
-            phrase_plan(0);                      /* (the drums' and the bass's plan: new, or the last one again) */
+            phrase_plan(ph_new_next ? 2 : 0);    /* (the drums' and the bass's plan: new, or the last one again) */
         }
+        en_change_next = 0;
     }
     if (sec == SEC_BREAK && pb == 2)            /* two bars in, the filter starts to open */
         arc_tgt = 1.0f, arc_tau = 2.2f * 16.0f * step_len;
@@ -1782,6 +1785,10 @@ static void bar_start(void)
             sec_next = SEC_THIN;
         else if (mac[EN_MAC_ENERGY] >= 25)
             sec_next = SEC_FULL, fill = 1;
+        /* (1.3.0) the next phrase's kick and plan, decided now, so the screen can say a change is coming */
+        kick_next = lock ? kick_shape : (uint8_t)kick_draw(sec_next);
+        ph_new_next = (uint8_t)(!lock && evolve > 0.0f && ph_u() < 0.2f + 0.6f * evolve);
+        en_change_next = (uint8_t)(ph_new_next | (kick_next != kick_shape) << 1 | (sec_next != sec) << 2);
     }
     if (!en_frozen && (change_pending || (db && bar > 0 && chord_bars >= (uint32_t)db))) {
         change_pending = 0;
@@ -2679,11 +2686,12 @@ static void play_start(int from_top)
             loop_pos[i] = 0;
         section_set(SEC_FULL);
         sec_next = SEC_FULL;
-        kick_shape = (uint8_t)kick_draw(SEC_FULL);
+        kick_shape = kick_next = (uint8_t)kick_draw(SEC_FULL);
         hats_publish();
         nz_drawn = 0;
         noise_pattern();
         phrase_plan(1);
+        en_change_next = 0;
     }
     pulse_left = 0.0f;
     tick_wait = 0;

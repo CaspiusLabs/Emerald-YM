@@ -182,7 +182,9 @@ extern volatile uint8_t en_pulse_rest;         /* the kick is out (a Break) */
 extern volatile uint8_t en_pad_note[EN_NPAD];  /* the note each voice plays (MIDI) */
 extern volatile float en_pad_amp[EN_NPAD];     /* and how loud */
 extern volatile uint8_t en_section;            /* SEC_*: the phrase playing */
-extern volatile uint8_t en_phrase_bar;         /* 0..7: its bar */
+extern volatile uint8_t en_phrase_bar;
+extern volatile uint8_t en_change_next;        /* the next phrase brings a change (1 the plan, 2 the kick, 4 the section;
+                                                * decided on its last bar) */         /* 0..7: its bar */
 extern volatile uint32_t en_stab_pat;          /* the stabs' pattern this bar (bit i: step i) */
 extern volatile uint32_t en_throws;            /* stabs thrown into the echo so far (for tests) */
 /* for the screen's ripples and lanes */

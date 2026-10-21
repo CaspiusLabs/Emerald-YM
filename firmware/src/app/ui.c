@@ -2612,7 +2612,7 @@ static void draw_main(void)
             h = hash(h, (uint32_t)(proj.par[VIEW_KNOB[ui.view][i]] + 64));
         h = hash(h, (uint32_t)proj.par[view_voice(ui.view)] | (uint32_t)proj.par[P_DECAY] << 8 | (uint32_t)proj.par[P_GROOVE] << 16);
     }
-    h = hash(h, (uint32_t)card_on(now));
+    h = hash(h, (uint32_t)card_on(now) | (en_phrase_bar == 7 && en_change_next ? (now / 200u & 1u) << 1 : 0u));
     if (h == ui.sig[1] && !moving && !oct_ring_on(now) && !card_on(now))
         return;
     ui.sig[1] = h;
@@ -2637,24 +2637,41 @@ static void draw_main(void)
             draw_orbits();
     }
     const int named = parent_of(ui.view) < 0 || scr_layer(ui.view) >= 0;   /* (a sound page: as its layer's) */
+    static char ch_last[16];
+    static uint32_t ch_t;
+    char nm[16];
+    uint32_t ch_age;
+    uint16_t ch_c;
+    chord_now(nm);
+    if (strcmp(nm, ch_last)) {                   /* (1.3.0) a new chord: it comes in big and teal, then settles */
+        if (ch_last[0])
+            ch_t = now | 1u;
+        if (card_on(now) && !strncmp(ui.card_head, "NEXT CHORD", 10) && now < ui.card_until)
+            ui.card_until = now - CARD_FADE;     /* (the next chord's card gone at once, for it) */
+        memcpy(ch_last, nm, sizeof ch_last);
+    }
+    ch_age = ch_t ? now - ch_t : 1000u;
+    ch_c = en_frozen ? K_FROST : ch_age < 450u ? mix(K_ACC, K_TEXT, (int)(ch_age * 16u / 450u)) : K_TEXT;
+    if (ch_age < 450u)
+        moving = 1;
     if (named && proj.screen % 3u) {          /* the chord: over the scope or the spectrum, small */
-        char nm[16];
-        chord_now(nm);
-        text_c(CX, 1, &FONT_S, nm, en_frozen ? K_FROST : K_TEXT);
+        text_c(CX, 1, &FONT_S, nm, ch_c);
     } else if (named) {                          /* the chord, in the middle */
-        char nm[16];
-        chord_now(nm);
-        if (text_w(&FONT_C, nm) <= 66) {         /* (the bigger face, the rings behind it; a long name, smaller) */
+        if (ch_age < 200u && text_w(&FONT_L, nm) <= 96) {   /* (its first fifth of a second: the big face) */
+            int32_t w = text_w(&FONT_L, nm);
+            cv_round(CX - w / 2 - 4, CY - 15, w + 8, 30, 6, K_BG);
+            text_c(CX, CY - 16, &FONT_L, nm, ch_c);
+        } else if (text_w(&FONT_C, nm) <= 66) {  /* (the bigger face, the rings behind it; a long name, smaller) */
             int32_t w = text_w(&FONT_C, nm);
             cv_round(CX - w / 2 - 3, CY - 9, w + 6, 19, 5, K_BG);
-            text_c(CX, CY - 11, &FONT_C, nm, en_frozen ? K_FROST : K_TEXT);
+            text_c(CX, CY - 11, &FONT_C, nm, ch_c);
         } else if (text_w(&FONT_B, nm) <= 72) {
             int32_t w = text_w(&FONT_B, nm);
             cv_round(CX - w / 2 - 3, CY - 7, w + 6, 15, 4, K_BG);
-            text_c(CX, CY - 8, &FONT_B, nm, en_frozen ? K_FROST : K_TEXT);
+            text_c(CX, CY - 8, &FONT_B, nm, ch_c);
         }
         else
-            text_c(CX, CY - 6, &FONT_XS, nm, en_frozen ? K_FROST : K_TEXT);
+            text_c(CX, CY - 6, &FONT_XS, nm, ch_c);
         if ((proj.par[P_PMODE] & EN_PLOOP) && en_prog_pos >= 0 && prog_count()) {   /* Loop: where it is ("2/4") */
             char t[8];
             t[0] = (char)('1' + en_prog_pos), t[1] = '/', t[2] = (char)('0' + prog_count()), t[3] = 0;
@@ -2666,8 +2683,14 @@ static void draw_main(void)
         int b;
         caps(t, EN_SEC_NAME[en_section], sizeof t);
         cv_text(8, 2, &FONT_XS, t, en_section == SEC_FULL ? K_DIM : K_ACC);
-        for (b = 0; b < 8; b++)
-            cv_round(9 + b * 5, 22, 3, 3, 1, en_playing && b <= en_phrase_bar ? K_DIM : K_LINE);
+        for (b = 0; b < 8; b++) {                /* (1.3.0: bars 4 and 8, the B bars, whiter; the 8th blinking on its
+                                                  * bar when the next phrase brings a change) */
+            const int bb = b == 3 || b == 7, lit = en_playing && b <= en_phrase_bar;
+            uint16_t c = lit ? (bb ? K_TEXT : K_DIM) : (bb ? mix(K_LINE, K_DIM, 7) : K_LINE);
+            if (b == 7 && en_playing && en_phrase_bar == 7 && en_change_next)
+                c = (now / 200u) & 1u ? K_ACC : K_LINE;
+            cv_round(9 + b * 5, 22, 3, 3, 1, c);
+        }
         if (!en_frozen && en_drift_bars(proj.par[P_DRIFT])) {   /* under them, the way to the next chord (Drift) */
             int32_t f = (int32_t)(en_drift * 38.0f + 0.5f);
             cv_rect(9, 27, 38, 1, K_LINE);
