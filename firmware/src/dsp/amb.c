@@ -2271,6 +2271,18 @@ void en_env_shape(int layer, float *lvl, float *aux, int n, float *secs)
 
 /* ------------------------------------------------------------ parameters --- */
 static int pulse;
+/* (1.3.0) the FM pages' fourth knob, an LFO synced to the bar: the chord's filter over two bars (+-1.5 octaves at
+ * 100), the pings' FM brightness over one, the bass's bite over four; a sine from the grid's place, eased */
+static float lfo_c, lfo_p, lfo_b;
+static void lfo_step(void)
+{
+    const float pos = (float)(sixteenth & 63u) + (float)pulse * (1.0f / 6.0f);   /* (four bars of sixteenths) */
+    const float tc = fm_sinf(6.2831853f * pos * (1.0f / 32.0f)), tp = fm_sinf(6.2831853f * pos * (1.0f / 16.0f)),
+                tb = fm_sinf(6.2831853f * pos * (1.0f / 64.0f));
+    lfo_c += (1.5f * (float)par[P_CFDEC] * 0.01f * tc - lfo_c) * 0.2f;
+    lfo_p += (0.8f * (float)par[P_PFDEC] * 0.01f * tp - lfo_p) * 0.2f;
+    lfo_b += (1.2f * (float)par[P_BFDEC] * 0.01f * tb - lfo_b) * 0.2f;
+}
 static uint32_t ext_age;
 
 static void tempo_set(void) { step_len = EN_SR * 60.0f / ((float)par[P_TEMPO] * 4.0f); }
@@ -2753,7 +2765,7 @@ static void render_stabs(uint32_t n)
     for (j = 0; j < n; j++) {
         float l = 0.0f, r = 0.0f, v1, v2, v3, yl, yr, e;
         if (!(j & 31u)) {                        /* the filter: its base, its envelope, the sweep */
-            float fc = cut_base * fm_exp2f(fe * st_fenv + 1.6f * arcm + st_cofs + perf_sw + 0.3f * motion * mod[0].v);
+            float fc = cut_base * fm_exp2f(fe * st_fenv + 1.6f * arcm + st_cofs + lfo_c + perf_sw + 0.3f * motion * mod[0].v);
             svf_coefs(st_c, fm_clampf(fc, 90.0f, 12000.0f), k);
             st_fenv *= st_fdec;
             pc = st_fenv * st_fenv;              /* (Tonewheel: the percussion, quicker still) */
@@ -2868,7 +2880,7 @@ static void render_bass(uint32_t n)
     uint32_t j;
     const int bv = (unsigned)par[P_BVOICE] < EN_NBV ? par[P_BVOICE] : 0;
     const float g = bass_vol * 0.5f * BV_GAIN[bv] * GROOVE_LVL[gpat()],
-                xb = rel(P_BBITE), xs = rel(P_BSHAPE),
+                xb = rel(P_BBITE) + lfo_b, xs = rel(P_BSHAPE),   /* (the LFO on the bite) */
                 drv = 1.2f * fm_exp2f(1.2f * xb), bi = fm_maxf(1.0f + xb, 0.0f);   /* Bite: the drive, the FM bite */
     const int balg = BV_PATCH[bv] ? fm_alg_of(P_BALG, BV_PATCH[bv]) : 0;
     const float bfb = BV_PATCH[bv] ? fm_fb(P_BFB, BV_PATCH[bv]) : 0.0f;
@@ -2943,7 +2955,7 @@ static void render_bells(uint32_t n)
         for (; j < n; j++) {
             float x;
             if (!(j & 31u))
-                fm_ctl(&v->fm, &v->pt, alg, 1.0f);
+                fm_ctl(&v->fm, &v->pt, alg, fm_exp2f(lfo_p));   /* (the LFO: brighter, darker) */
             x = fm_sample(&v->fm, alg, fb, 1.0f + v->drop) * amp * att * g;
             mixl[j] += x * v->gl * ping_dry;   /* (Ghost: the dry against the sends, which stay; 50: -6 dB) */
             mixr[j] += x * v->gr * ping_dry;
@@ -3494,6 +3506,7 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
         mb_s[0] = mb_s[1] = mb_s[2] = mb_s[3] = 0.0f;
     for (j = 0; j < n; j++)
         mixl[j] = mixr[j] = rsend[j] = esend[j] = kickb[j] = bassb[j] = 0.0f;
+    lfo_step();
     {   /* (a layer's own part of the dry mix: what its render adds; the bass, the kick and the noise their own) */
         const int tl = en_view_layer;
         render_stabs(n);

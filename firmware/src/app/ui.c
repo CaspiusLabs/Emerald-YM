@@ -111,9 +111,9 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Tone", "Ratio", "Length", "Bend"},
     {"Bite", "Shape", "Length", "Slide"},
     {"Kick tune", "Kick len", "Punch", "Hat tone"},
-    {"Algo", "Ratio", "Feedback", "Mod dec"},
-    {"Algo", "Ratio", "Feedback", "Mod dec"},
-    {"Algo", "Ratio", "Feedback", "Mod dec"},
+    {"Algo", "Ratio", "Feedback", "LFO"},
+    {"Algo", "Ratio", "Feedback", "LFO"},
+    {"Algo", "Ratio", "Feedback", "LFO"},
     {"Slot", "Chord", "Type", "Play"},
     {"Lane", "Accent", "Chance", "Play"},
     {"Filter", "Dub", "Energy", "Space"},
@@ -147,11 +147,11 @@ static const char *const KNOB_HELP[NVIEWS][4] = {
     {"The kick's pitch, in semitones", "How long the kick booms", "The kick's click and start pitch",
      "The hats, dark to bright"},
     {"Which operators modulate which", "Operators 3 and 4's pitch", "Op 4 on itself: pure to gritty",
-     "How fast each note's brightness fades"},
+     "The filter swept, over two bars"},
     {"Which operators modulate which", "Operators 3 and 4's pitch", "Op 4 on itself: pure to gritty",
-     "How fast each note's brightness fades"},
+     "The brightness swept, over a bar"},
     {"Which operators modulate which", "Operators 3 and 4's pitch", "Op 4 on itself: pure to gritty",
-     "How fast each note's brightness fades"},
+     "The bite swept, over four bars"},
     {"The slot you're writing", "Its kind (Empty: a gap)", "Triad, 6, 7, Maj7, 9, 11, Add9",
      "Endless, or the slots in a loop"},
     {"The lane you're writing", "How much quieter the other steps", "How likely the lane's steps play",
@@ -1385,8 +1385,9 @@ static void input(void)
         if ((e = plat_enc(EN_K1 + (int)i)) != 0) {
             if (grid_up())
                 continue;                        /* (the grid on the screen: the knobs rest) */
-            if (fm_off(ui.view))
-                continue;                        /* (an FM page on a voice that isn't FM: the knobs rest, greyed) */
+            if (fm_off(ui.view) && i != 3)
+                continue;                        /* (an FM page on a voice that isn't FM: the knobs rest, greyed; the
+                                                  * LFO, the fourth, works on every voice) */
             turn(EN_K1 + (int)i, VIEW_KNOB[ui.view][i], e);
             ui.touched = (int8_t)i;
             ui.touch_until = plat_ms() + 1200u;
@@ -1712,7 +1713,8 @@ static uint32_t rip_stabs;
 static int8_t rip_src = -2;                      /* whose notes the ripples are: -1 the whole (the stabs), or a layer */
 static int scr_layer(int v)                      /* a layer's own page (and the Noise page): the screen that layer's */
 {
-    return v == V_CHORD || v == V_TEXTURE || v == V_BASS || v == V_DRUMS || v == V_NSND ? oct_layer(v) : -1;
+    return v == V_CHORD || v == V_TEXTURE || v == V_BASS || v == V_DRUMS || v == V_NSND || (v >= V_CSND && v <= V_DSND)
+         ? oct_layer(v) : -1;                    /* (1.3.0: the sound pages too, live, not the envelope) */
 }
 
 static const char *chord_now(char *nm)          /* the chord's name, as the screen shows it ("Em7") */
@@ -2539,9 +2541,6 @@ static void draw_main(void)
     } else if (ui.view == V_NSND) {              /* the Noise page: the spectrum, its colour as it moves */
         draw_spec();
         moving = 1;
-    } else if (parent_of(ui.view) >= 0) {        /* a sound page: the layer's envelope instead of the ripples */
-        draw_env(parent_of(ui.view));
-        moving = 1;
     } else if (proj.screen % 3u == 1u) {         /* (HOME again: a scope, a spectrum, or the ripples) */
         draw_scope();
         moving = 1;
@@ -2555,11 +2554,12 @@ static void draw_main(void)
         if (rip_src < 0 || rip_src == 1)         /* (the ping loops: on the whole, and the Pings page) */
             draw_orbits();
     }
-    if (parent_of(ui.view) < 0 && proj.screen % 3u) {   /* the chord: over the scope or the spectrum, small */
+    const int named = parent_of(ui.view) < 0 || scr_layer(ui.view) >= 0;   /* (a sound page: as its layer's) */
+    if (named && proj.screen % 3u) {          /* the chord: over the scope or the spectrum, small */
         char nm[16];
         chord_now(nm);
         text_c(CX, 1, &FONT_S, nm, en_frozen ? K_FROST : K_TEXT);
-    } else if (parent_of(ui.view) < 0) {         /* the chord, in the middle */
+    } else if (named) {                          /* the chord, in the middle */
         char nm[16];
         chord_now(nm);
         if (text_w(&FONT_C, nm) <= 66) {         /* (the bigger face, the rings behind it; a long name, smaller) */
@@ -2612,7 +2612,7 @@ static void draw_main(void)
  * square root and an arctangent per pixel). */
 static void draw_knobs(void)
 {
-    const int off = fm_off(ui.view);             /* an FM page, the voice not FM: the knobs grey, at 0 */
+    const int fm_off0 = fm_off(ui.view);         /* an FM page, the voice not FM: the knobs grey, at 0 */
     uint32_t h = hash(2166136261u, ui.view | (uint32_t)ui.touched << 8), i;
     if (view_voice(ui.view) >= 0)
         h = hash(h, (uint32_t)proj.par[view_voice(ui.view)]);
@@ -2651,7 +2651,7 @@ static void draw_knobs(void)
             caps(t, vn, sizeof t);
             x0 = cv_text(6, -1, &FONT_XS, t, K_DIM) + 5;
         }
-        if (now_touch && ui.touched >= 0 && ui.touched < 4 && !off) {   /* a knob turning: what it does, the rule's
+        if (now_touch && ui.touched >= 0 && ui.touched < 4 && !(fm_off0 && ui.touched != 3)) {   /* a knob turning: what it does, the rule's
                                                                           * whole width */
             char hp[48];
             caps(hp, KNOB_HELP[ui.view][ui.touched], sizeof hp);
@@ -2669,6 +2669,7 @@ static void draw_knobs(void)
         }
     }
     for (i = 0; i < 4; i++) {
+        const int off = fm_off0 && i != 3;       /* (the LFO, the fourth, on every voice) */
         const int moff = ui.view == V_MIX && (ui.mutes & LAYER_MUTE[i]) == LAYER_MUTE[i];   /* (the mix: a muted
                                                                                        * layer grey, its level kept) */
         int k = VIEW_KNOB[ui.view][i], lo, hi, v, hot = now_touch && ui.touched == (int)i && !off;

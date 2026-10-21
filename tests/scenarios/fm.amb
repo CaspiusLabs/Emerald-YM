@@ -9,7 +9,7 @@ said VOICE Keys
 tap ENV
 tap ENV
 wait 400
-said Chord FM page, voice Keys: Algo Voice, Ratio 0, Feedback 0, Mod dec 0
+said Chord FM page, voice Keys: Algo Voice, Ratio 0, Feedback 0, LFO 0
 expect view 12
 spin K1 1
 wait 300
@@ -49,3 +49,18 @@ spin K1 9
 wait 3000
 expect par56 9
 expect peak_db_max -0.5
+# the fourth knob, the LFO, works on every voice: on Saws (not FM) the FM page greys the rest but not it
+tap HOME
+tap ENV
+wait 300
+expect par22 0
+tap ENV
+tap ENV
+wait 300
+expect view 12
+spin K4 30
+wait 300
+expect par55 30
+spin K1 3
+wait 300
+expect par52 1
