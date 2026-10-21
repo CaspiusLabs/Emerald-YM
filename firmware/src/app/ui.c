@@ -43,6 +43,15 @@ static int parent_of(int v)
 }
 static int layer_of(int v) { v = parent_of(v) >= 0 ? parent_of(v) : v; return v == V_CHORD ? 0 : v == V_TEXTURE ? 1 : v == V_BASS ? 2 : 3; }
 static int fm_off(int v) { return v >= V_CFM && v <= V_BFM && !en_voice_fm(v - V_CFM); }   /* an FM page, not FM */
+static int fm_knob_off(int v, int i)             /* a knob there doing nothing: the voice not FM (but the LFO), or Ratio
+                                                  * (operators 3 and 4) on a two-operator algorithm */
+{
+    if (v < V_CFM || v > V_BFM)
+        return 0;
+    if (!en_voice_fm(v - V_CFM))
+        return i != 3;
+    return i == 1 && en_fm_alg(v - V_CFM) == 8;
+}
 static int page_of(int v)                        /* a sound page: its layer's; the Echo page: Space's */
 {
     return v == V_KEY ? V_DUB : v == V_ESND ? V_SPACE : parent_of(v) >= 0 ? parent_of(v) : v;
@@ -1385,7 +1394,7 @@ static void input(void)
         if ((e = plat_enc(EN_K1 + (int)i)) != 0) {
             if (grid_up())
                 continue;                        /* (the grid on the screen: the knobs rest) */
-            if (fm_off(ui.view) && i != 3)
+            if (fm_knob_off(ui.view, (int)i))
                 continue;                        /* (an FM page on a voice that isn't FM: the knobs rest, greyed; the
                                                   * LFO, the fourth, works on every voice) */
             turn(EN_K1 + (int)i, VIEW_KNOB[ui.view][i], e);
@@ -2612,7 +2621,6 @@ static void draw_main(void)
  * square root and an arctangent per pixel). */
 static void draw_knobs(void)
 {
-    const int fm_off0 = fm_off(ui.view);         /* an FM page, the voice not FM: the knobs grey, at 0 */
     uint32_t h = hash(2166136261u, ui.view | (uint32_t)ui.touched << 8), i;
     if (view_voice(ui.view) >= 0)
         h = hash(h, (uint32_t)proj.par[view_voice(ui.view)]);
@@ -2651,7 +2659,7 @@ static void draw_knobs(void)
             caps(t, vn, sizeof t);
             x0 = cv_text(6, -1, &FONT_XS, t, K_DIM) + 5;
         }
-        if (now_touch && ui.touched >= 0 && ui.touched < 4 && !(fm_off0 && ui.touched != 3)) {   /* a knob turning: what it does, the rule's
+        if (now_touch && ui.touched >= 0 && ui.touched < 4 && !fm_knob_off(ui.view, ui.touched)) {   /* a knob turning: what it does, the rule's
                                                                           * whole width */
             char hp[48];
             caps(hp, KNOB_HELP[ui.view][ui.touched], sizeof hp);
@@ -2669,7 +2677,7 @@ static void draw_knobs(void)
         }
     }
     for (i = 0; i < 4; i++) {
-        const int off = fm_off0 && i != 3;       /* (the LFO, the fourth, on every voice) */
+        const int off = fm_knob_off(ui.view, (int)i);   /* (the LFO, the fourth, on every voice; Ratio on two ops) */
         const int moff = ui.view == V_MIX && (ui.mutes & LAYER_MUTE[i]) == LAYER_MUTE[i];   /* (the mix: a muted
                                                                                        * layer grey, its level kept) */
         int k = VIEW_KNOB[ui.view][i], lo, hi, v, hot = now_touch && ui.touched == (int)i && !off;
