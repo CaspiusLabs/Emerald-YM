@@ -497,6 +497,8 @@ static int expect(const char *what, const char *val)
         got = en_section;
     else if (!strcmp(what, "card"))               /* a nudge's card in the middle: 1 a nudge's, 2 a shake's (0: none) */
         got = card_on(plat_ms()) ? 1 + ui.card_shake : 0;
+    else if (!strcmp(what, "lock"))               /* PERFORM's Lock (SEL held) */
+        got = ui.lock;
     else if (!strcmp(what, "viewlayer"))          /* what the scope and spectrum listen to (0 the whole, 1.. a layer) */
         got = en_view_layer;
     else if (!strcmp(what, "octring"))            /* the level ring showing: its layer + 1 (0: none) */

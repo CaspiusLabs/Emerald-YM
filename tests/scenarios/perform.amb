@@ -125,3 +125,26 @@ expect mutes 0
 expect par0 59
 said CHORD ON
 tap HOME
+# SEL held: Lock (the phrases keep their kick, groove and plan), on or off, from any page; a tap is still PERFORM
+tap ENV
+wait 300
+expect view 1
+expect lock 0
+press SEL
+wait 700
+release SEL
+wait 200
+said LOCK ON
+expect lock 1
+expect view 1
+expect card 1
+tap SEL
+wait 200
+expect view 17
+tap ENV
+press SEL
+wait 700
+release SEL
+wait 200
+said LOCK OFF
+expect lock 0

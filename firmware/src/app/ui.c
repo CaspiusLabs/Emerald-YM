@@ -220,6 +220,7 @@ static struct {
     uint32_t card_until, card_t0;      /* a nudge's card in the middle: up until, then fading; when it came */
     uint8_t card_shake;                /* the card a big move's (red: a shake, new chords, a reset) or not */
     uint16_t card_col;                 /* its colour */
+    uint8_t lock;                      /* PERFORM's Lock (white 12): each phrase keeps what it has */
     char card_head[16], card_text[24];
     uint32_t oct_until, oct_pulse;     /* the ring: up until, then fading; its last step (a pulse) */
     float oct_v;                       /* the ring's arc, gliding to the level */
@@ -693,6 +694,14 @@ static int perf_sounds(int i)                    /* layer i (0..4) heard: not mu
 }
 static void set_view(int v);
 #define PERF_SHIFT 9u                            /* white 6 (D4), held: the knobs the mix */
+static void lock_toggle(void)                    /* SEL held: Lock, on or off: the phrases keep their kick, groove and plan,
+                                                  * Evolve's own moves rest (not saved; off at boot) */
+{
+    ui.lock = (uint8_t)!ui.lock;
+    en_lock(ui.lock);
+    say("LOCK", ui.lock ? "ON" : "OFF");
+    card_show("LOCK", ui.lock ? "the groove kept" : "the groove free", K_ACC, 0);
+}
 static void perf_key(uint32_t key, int down)
 {
     int i;
@@ -1262,7 +1271,7 @@ static void nudge_tick(void)                     /* Evolve's nudges: on a phrase
     if (pb == last_pb)
         return;
     last_pb = pb;
-    if (pb != 0 || !en_playing || en_frozen || ev <= 40)
+    if (pb != 0 || !en_playing || en_frozen || ev <= 40 || ui.lock)   /* (Lock: they rest) */
         return;
     if (nrand(100) < (ev - 40) * 2 / 3)          /* (Evolve 100: 40% of the phrases; 70: 20%; 40 and under: none) */
         nudge(nrand(NNUDGE), NUDGE_EVOLVE);
@@ -1301,6 +1310,8 @@ static void input(void)
             do_save();                           /* GLO held and let go: saved (held on: the reset, below, unsaved) */
             if (!ui.dirty)
                 card_show("SAVED", "all eight pieces", K_ACC, 0);
+        } else if (i == B_SEL && !(ui.btn_used & m) && plat_ms() - ui.down_t[B_SEL] >= NUDGE_HOLD) {
+            lock_toggle();                       /* (SEL held: Lock; a tap, PERFORM) */
         } else if (!(ui.btn_used & m) && i != B_PLAY) {
             button((int)i);
         }
@@ -2589,7 +2600,8 @@ static void draw_main(void)
         h = hash(h, en_lane[i] | (uint32_t)proj.par[i < 4 ? i : 0] << 16);
     h = hash(h, en_drum_pos[0] | (uint32_t)q16(en_duck) << 4 | (uint32_t)q16(en_pad_level) << 9 | (uint32_t)q16(en_bass_level) << 14);
     h = hash(h, (uint32_t)(en_prog_pos + 1) << 12);
-    h = hash(h, (uint32_t)(en_drift * 40.0f) | en_section << 8 | (uint32_t)en_phrase_bar << 12 | (uint32_t)ui.perf << 16 | ui.solo << 20);
+    h = hash(h, (uint32_t)(en_drift * 40.0f) | en_section << 8 | (uint32_t)en_phrase_bar << 12 | (uint32_t)ui.perf << 16 | ui.solo << 20 |
+                (uint32_t)ui.lock << 28);
     for (i = 0; i < EN_NLOOP; i++)
         h = hash(h, (uint32_t)q16(en_loop_glow[i]) | (uint32_t)en_loop_pos[i] << 8);
     for (i = 0; i < EN_NDRUM; i++)
@@ -2665,6 +2677,8 @@ static void draw_main(void)
     }
     if (ui.perf)
         cv_text(232 - text_w(&FONT_XS, "PERFORM"), 18, &FONT_XS, "PERFORM", K_ACC);
+    if (ui.lock)                                 /* Lock on (kept after PERFORM), under the rest */
+        cv_text(232 - text_w(&FONT_XS, "LOCK"), 30, &FONT_XS, "LOCK", K_ACC);
     if (ui.solo)                                 /* a solo on (in PERFORM or kept after it) */
         cv_text(232 - text_w(&FONT_XS, "PERFORM") - 6 - text_w(&FONT_XS, "SOLO"), 18, &FONT_XS, "SOLO", K_CLAP);
     if (en_frozen) {                             /* the way to the next chord, top right (dub hold: hold) */
@@ -2817,6 +2831,7 @@ static void leds(void)
             if (!(ui.solo >> i & 1u) || blink)
                 k |= 1u << PERF_KEY[10 + i];
         }
+
     } else if (proj.leds) {
         for (i = 0; i < NKEYS; i++)
             if (ap >> ((5u + i) % 12u) & 1u)

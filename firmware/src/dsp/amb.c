@@ -437,7 +437,7 @@ const char *en_chord_name(const int *pcs, int n, char *buf)
 }
 
 /* ------------------------------------------------------------ commands --- */
-enum { C_SET, C_POOL, C_PLAY, C_NEXT, C_FREEZE, C_SEED, C_PANIC, C_CLOCK, C_REGROW, C_MUTE, C_PERF, C_FX, C_PINGS, C_MACRO, C_PROT, C_REWALK, C_PNUDGE };
+enum { C_SET, C_POOL, C_PLAY, C_NEXT, C_FREEZE, C_SEED, C_PANIC, C_CLOCK, C_REGROW, C_MUTE, C_PERF, C_FX, C_PINGS, C_MACRO, C_PROT, C_REWALK, C_PNUDGE, C_LOCK };
 #define QN 512u                                 /* (a piece is every parameter at once: room for twice over and more) */
 _Static_assert(QN >= 2u * (P_NPARAMS + 8), "the command queue can't hold a piece's parameters twice over");
 static uint32_t q[QN];
@@ -464,6 +464,7 @@ void en_mute(uint32_t m) { post(C_MUTE, (int)(m & 0xFFu), 0); }
 void en_perf(uint32_t f) { post(C_PERF, (int)(f & 0xFFu), 0); }
 void en_fx(uint32_t m) { post(C_FX, 0, (int)(m & 0xFFFFu)); }
 void en_macro(int i, int v) { post(C_MACRO, i, v + 50); }   /* (sent as 0..100) */
+void en_lock(int on) { post(C_LOCK, on != 0, 0); }
 void en_prog_rotate(void) { post(C_PROT, 0, 0); }
 void en_prog_rewalk(void) { post(C_REWALK, 0, 0); }
 void en_ping_nudge(void) { post(C_PNUDGE, 0, 0); }
@@ -884,6 +885,7 @@ static uint8_t lay_kick = 1, lay_hats = 1, lay_open = 1, lay_bass = 1, lay_stabs
 enum { KS_NONE, KS_ONE, KS_HALF, KS_GHOST, KS_FOUR, KS_N };
 static const uint16_t KSHAPE[KS_N] = {0x0000u, 0x0001u, 0x0101u, 0x1111u, 0x1111u};
 static uint8_t kick_shape = KS_FOUR;
+static uint8_t lock;                             /* (PERFORM's Lock: the phrases keep what they have) */
 static int kick_draw(int next);
 static uint32_t dpat(int d);
 /* (the drums' and the bass's phrase plan: phrase_plan, ph_bar) */
@@ -1759,10 +1761,12 @@ static void bar_start(void)
     en_phrase_bar = (uint8_t)pb;
     if (pb == 0 && bar > 0) {
         section_set(sec_next);
-        kick_shape = (uint8_t)kick_draw(sec);   /* (the phrase's kick) */
-        hats_publish();
-        noise_pattern();                         /* (the noise's groove: new, or the last one again) */
-        phrase_plan(0);                          /* (the drums' and the bass's plan: new, or the last one again) */
+        if (!lock) {                             /* (Lock: the kick's shape, the noise's groove, the plan, kept) */
+            kick_shape = (uint8_t)kick_draw(sec);   /* (the phrase's kick) */
+            hats_publish();
+            noise_pattern();                     /* (the noise's groove: new, or the last one again) */
+            phrase_plan(0);                      /* (the drums' and the bass's plan: new, or the last one again) */
+        }
     }
     if (sec == SEC_BREAK && pb == 2)            /* two bars in, the filter starts to open */
         arc_tgt = 1.0f, arc_tau = 2.2f * 16.0f * step_len;
@@ -1787,7 +1791,7 @@ static void bar_start(void)
     chord_bars++;
     if ((bar & 1u) == 0u && bar > 0 && frand() < evolve * 0.6f)   /* (1.3.0: every two bars, was four) */
         stabs_evolve();
-    if (pb == 0 && frand() < evolve * 0.8f)    /* (1.3.0: the shaker's steps trade places at a phrase's start, not
+    if (pb == 0 && !lock && frand() < evolve * 0.8f)   /* (1.3.0: the shaker's steps trade places at a phrase's start, not
                                                   * any bar: the A bars the same) */
         hats_evolve();
     stabs_bar();
@@ -2802,6 +2806,7 @@ static void drain(void)
             prog_publish();
             break;
         }
+        case C_LOCK: lock = (uint8_t)a; break;
         case C_PNUDGE: {                         /* a nudge on the pings: one note of one loop, another */
             int l = irand(EN_NLOOP), k = loop_pick(l);
             if (k >= 0)
