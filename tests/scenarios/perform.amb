@@ -32,28 +32,28 @@ key w5 up
 wait 200
 expect view 17
 # the master actions: the Filter (it stops at the middle on the way through), Throws, Energy, Duck
-spin K1 -21
+spin K1 -22
 wait 300
 said Filter Shut 40
 spin K1 30
 wait 300
 said Filter Off
-spin K1 11
+spin K1 12
 wait 300
 said Filter Open 20
 spin K1 -10
 wait 300
-spin K2 26
+spin K2 27
 wait 300
 said Throws +50
 spin K2 -25
 wait 300
-spin K3 -26
+spin K3 -27
 wait 300
 said Energy -50
 spin K3 25
 wait 300
-spin K4 51
+spin K4 52
 wait 300
 said Duck +100
 spin K4 -50

@@ -17,7 +17,7 @@ tap GLO
 wait 300
 said Setup page: Tune 0, MIDI out On, Lights On
 # a knob: its name and value, once it settles
-spin K1 4
+spin K1 5
 wait 300
 said Tune +3
 spin K3 1
@@ -72,7 +72,7 @@ spin K4 -20
 wait 300
 said Drift 2 bars
 # the Filter: down, the low-pass; it stops at the middle on the way back
-spin K1 -101
+spin K1 -102
 wait 300
 said Filter Shut 100
 spin K1 80

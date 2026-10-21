@@ -558,20 +558,22 @@ static void turn(int role, int k, int32_t e)
         return;
     }
     knob_range(k, &lo, &hi);
-    if (lo < 0 && hi > 0 && hi - lo >= 10) {     /* (1.3.0) a centred knob: a notch at 0, a click to leave it */
-        static uint8_t armed[16];
-        static uint32_t arm_t[16];
+    if (lo < 0 && hi > 0 && hi - lo >= 10) {     /* (1.3.0) a centred knob: a notch at 0, three clicks to leave it */
+#define NOTCH 2                                  /* (the clicks out of 0 held back) */
+        static int8_t held[16];
+        static uint32_t held_t[16];
         int v = knob_get(k), n, r = role & 15;
-        if (v == 0) {                            /* (the first click out of 0 held, unless one came just before) */
-            int32_t s1 = e > 0 ? 1 : -1;
-            if (!(armed[r] && plat_ms() - arm_t[r] < 600u && (armed[r] == 1) == (e > 0))) {
-                armed[r] = (uint8_t)(e > 0 ? 1 : 2);
-                arm_t[r] = plat_ms();
-                if (e == s1)
-                    return;
-                e -= s1;
-            }
-            armed[r] = 0;
+        if (v == 0) {                            /* (clicks out of 0 held back, NOTCH of them, one way, close together) */
+            int32_t a = e > 0 ? e : -e, dir = e > 0 ? 1 : -1;
+            if (plat_ms() - held_t[r] > 700u || (held[r] > 0) != (dir > 0))
+                held[r] = 0;
+            held_t[r] = plat_ms();
+            while (a > 0 && (held[r] > 0 ? held[r] : -held[r]) < NOTCH)
+                held[r] = (int8_t)(held[r] + dir), a--;
+            if (!a)
+                return;
+            e = dir * a;
+            held[r] = 0;
         }
         n = v + accel(role, e, hi - lo);
         knob_set(k, (v > 0 && n < 0) || (v < 0 && n > 0) ? 0 : n);   /* (and it stops at 0 on the way through) */
