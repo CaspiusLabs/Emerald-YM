@@ -15,7 +15,7 @@ spin K1 1
 wait 300
 expect par52 1
 said Algo 1
-spin K3 41
+spin K3 40
 wait 300
 expect par54 40
 wait 4000

@@ -139,6 +139,18 @@ static int pars_ok(const int16_t *par)
     return 1;
 }
 
+static void pars_clamp(int16_t *par)            /* a value out of its (now narrower) range: to its end, not the whole
+                                                  * project thrown away (1.3.0's one-sided knobs) */
+{
+    int i;
+    for (i = 0; i < P_NPARAMS; i++) {
+        const en_param_t *p = en_param_info(i);
+        if (par[i] < p->lo)
+            par[i] = p->lo;
+        if (par[i] > p->hi)
+            par[i] = p->hi;
+    }
+}
 static int project_valid(void)                  /* an older format: the recipes again */
 {
     int i;
@@ -311,6 +323,11 @@ int project_load(void)
         groove12(proj.par);
         for (i = 0; i < NPIECES; i++)
             groove12(proj.slot[i].par);
+    }
+    if (n >= 8 && proj.magic == PROJ_MAGIC && proj.format == PROJ_FORMAT) {   /* (the ranges as they are now) */
+        pars_clamp(proj.par);
+        for (i = 0; i < NPIECES; i++)
+            pars_clamp(proj.slot[i].par);
     }
     if (n >= 8 && project_valid())
         return 0;

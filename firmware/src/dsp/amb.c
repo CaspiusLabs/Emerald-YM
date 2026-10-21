@@ -35,13 +35,13 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     {"Stabs", 0, 100, 30},    {"Crackle", 0, 100, 35},  {"Duck", 0, 100, 50},     {"Size", 0, 100, 55},
     {"Cloud", 0, 100, 30},
     {"Ping voice", 0, EN_NPV - 1, 0}, {"Bass voice", 0, EN_NBV - 1, 0}, {"Kit", 0, EN_NKIT - 1, 0},
-    {"Attack", -50, 50, 0},   {"Colour", -50, 50, 0},   {"Resonance", -50, 50, 0}, {"Env amount", -50, 50, 0},
-    {"Tone", -50, 50, 0},     {"Ratio", -50, 50, 0},    {"Ping len", -50, 50, 0}, {"Bend", -50, 50, 0},
+    {"Attack", 0, 100, 0},   {"Colour", -50, 50, 0},   {"Resonance", -50, 50, 0}, {"Env amount", -50, 50, 0},
+    {"Tone", -50, 50, 0},     {"Ratio", -50, 50, 0},    {"Ping len", -50, 50, 0}, {"Bend", 0, 100, 0},
     {"Bite", -50, 50, 0},     {"Shape", -50, 50, 0},    {"Bass len", -50, 50, 0}, {"Slide", -50, 50, 0},
     {"Kick tune", -12, 12, 0}, {"Kick len", -50, 50, 0}, {"Punch", -50, 50, 0},   {"Hat tone", -50, 50, 0},
-    {"Chord alg", 0, 9, 0},   {"Chord ratio", -50, 50, 0}, {"Chord fb", -50, 50, 0}, {"Chord mod", -50, 50, 0},
-    {"Ping alg", 0, 9, 0},    {"Ping ratio", -50, 50, 0}, {"Ping fb", -50, 50, 0}, {"Ping mod", -50, 50, 0},
-    {"Bass alg", 0, 9, 0},    {"Bass ratio", -50, 50, 0}, {"Bass fb", -50, 50, 0}, {"Bass mod", -50, 50, 0},
+    {"Chord alg", 0, 9, 0},   {"Chord ratio", -50, 50, 0}, {"Chord fb", 0, 100, 0}, {"Chord LFO", 0, 100, 0},
+    {"Ping alg", 0, 9, 0},    {"Ping ratio", -50, 50, 0}, {"Ping fb", 0, 100, 0}, {"Ping LFO", 0, 100, 0},
+    {"Bass alg", 0, 9, 0},    {"Bass ratio", -50, 50, 0}, {"Bass fb", 0, 100, 0}, {"Bass LFO", 0, 100, 0},
     {"Root 1", 0, 11, 0}, {"Root 2", 0, 11, 0}, {"Root 3", 0, 11, 0}, {"Root 4", 0, 11, 0},
     {"Root 5", 0, 11, 0}, {"Root 6", 0, 11, 0}, {"Root 7", 0, 11, 0}, {"Root 8", 0, 11, 0},
     {"Kind 1", 0, EN_NCQ - 1, 0}, {"Kind 2", 0, EN_NCQ - 1, 0}, {"Kind 3", 0, EN_NCQ - 1, 0}, {"Kind 4", 0, EN_NCQ - 1, 0},
@@ -717,8 +717,8 @@ static const fmpatch_t FM_PLUCK = {FM_ALG2, 0.0f, {{1.0f, 1.0f, 0.0f, 1.0f}, {3.
 static const fmpatch_t FM_GROWL = {FM_ALG2, 0.0f, {{1.0f, 1.0f, 0.0f, 1.0f}, {1.0f, 0.44f, 0.07f, 0.09f}, {2.0f, 0.2f, 0.1f, 0.1f},
                                                    {1.0f, 0.1f, 0.1f, 0.0f}}};
 static float fm_q(int p) { return fm_exp2f((float)par[p] * 0.02f); }           /* FM page: the upper ratios, x0.5 .. x2 */
-static float fm_d(int p) { return fm_exp2f(1.5f * (float)par[p] * 0.02f); }    /* the modulators' decay */
-static float fm_fb(int p, const fmpatch_t *pt) { return fm_clampf(pt->fb + 0.3f * (float)par[p] * 0.02f, 0.0f, 0.7f); }
+static float fm_d(int p) { (void)p; return 1.0f; }   /* the modulators' decay: the patch's own (1.3.0: the knob is the LFO) */
+static float fm_fb(int p, const fmpatch_t *pt) { return fm_clampf(pt->fb + 0.004f * (float)par[p], 0.0f, 0.7f); }   /* (1.3.0: more only) */
 static int fm_alg_of(int p, const fmpatch_t *pt) { return par[p] ? par[p] - 1 : pt->alg; }
 
 /* ------------------------------------------------- slow random motion --- */
@@ -1328,7 +1328,7 @@ static void bell_voice(int l, int n, float vel, int32_t wait)
     v->loop = (uint8_t)l;
     pv = (unsigned)par[P_PVOICE] < EN_NPV ? par[P_PVOICE] : 0;
     ri = (int)(btone * 100.0f + 0.5f) * 5 / 101 + LOOP_RAT[l];
-    v->drop = fm_clampf(PV[pv].drop + 1.5f * rel(P_PBEND), 0.0f, 3.0f);   /* Bend: from up to four times its note */
+    v->drop = fm_clampf(PV[pv].drop + 0.015f * (float)par[P_PBEND], 0.0f, 3.0f);   /* Bend: from up to four times its note */
     v->amp = vel * PV[pv].gain;
     t60 = fm_clampf(0.9f - (float)(n - 60) * 0.02f, 0.25f, 1.1f) * LOOP_DEC[l] * PV[pv].t60   /* short: a ping */
           * fm_exp2f(1.5f * rel(P_PLEN));
@@ -2225,7 +2225,7 @@ void en_env_shape(int layer, float *lvl, float *aux, int n, float *secs)
     float T = 1.0f, a = 0.035f, t60 = 0.3f, ft = 0.1f, fe = 0.0f, rel_s = 0.02f, hold = 0.0f;
     switch (layer) {
     case 0: {                                   /* the chord: the strike (or swell), the decay; the filter's envelope */
-        float xa = rel(P_CATT);
+        float xa = (float)par[P_CATT] * 0.01f;   /* (1.3.0: 0 the voice's strike, 100 a swell) */
         a = fm_clampf(CV[cvoice].att * fm_exp2f(-(xa > 0.0f ? 9.0f : 3.0f) * xa), 0.00004f, 0.3f);
         t60 = st_t60;
         ft = 0.25f * st_t60 + 0.02f;
@@ -2237,7 +2237,7 @@ void en_env_shape(int layer, float *lvl, float *aux, int n, float *secs)
         int pv = (unsigned)par[P_PVOICE] < EN_NPV ? par[P_PVOICE] : 0;
         t60 = 0.8f * PV[pv].t60 * fm_exp2f(1.5f * rel(P_PLEN));
         a = 0.004f + 0.02f * fm_minf(btone * 2.0f, 1.0f);
-        fe = fm_clampf(PV[pv].drop + 1.5f * rel(P_PBEND), 0.0f, 3.0f) / 3.0f;   /* the bend */
+        fe = fm_clampf(PV[pv].drop + 0.015f * (float)par[P_PBEND], 0.0f, 3.0f) / 3.0f;   /* the bend */
         ft = 0.035f;
         T = fm_clampf(t60 * 1.2f, 0.25f, 4.0f);
         break;
@@ -2726,7 +2726,7 @@ static void render_stabs(uint32_t n)
     const int cv = cvoice;
     /* the sound page: Attack (a swell up, a snap down), Colour (as each voice has it: the detune, the FM index, the
      * drawbars, the noise against the saw), Resonance, Env (how far each stab opens the filter) */
-    const float xa = rel(P_CATT), xc = rel(P_CCOL), up = fm_clampf(1.0f + xc, 0.0f, 2.0f), fx = fm_exp2f(1.5f * xc);
+    const float xa = (float)par[P_CATT] * 0.01f, xc = rel(P_CCOL), up = fm_clampf(1.0f + xc, 0.0f, 2.0f), fx = fm_exp2f(1.5f * xc);
     const float g = chord_vol * 0.5f * CV[cv].gain,
                 k = fm_clampf(1.1f - 0.6f * fm_clampf(0.5f + 0.5f * arcm, 0.0f, 1.0f) - 0.55f * rel(P_CRES) -
                                  0.22f * fm_maxf(perf_sw, 0.0f), 0.12f, 2.0f);   /* (Open: it sings) */
