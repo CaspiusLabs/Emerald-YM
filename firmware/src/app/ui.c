@@ -213,6 +213,9 @@ static struct {
     uint8_t oct_both, oct_done;        /* OCT- and OCT+ down together this press; its mute done (or too late) */
     uint32_t oct_t, oct_rep;           /* when both went down; an OCT held: its next step */
     uint8_t oct_ring;                  /* the level ring in the middle: its layer + 1 (0: none) */
+    uint32_t card_until, card_t0;      /* a nudge's card in the middle: up until, then fading; when it came */
+    uint8_t card_shake;                /* the card a shake's (red) or a nudge's (amber) */
+    char card_head[16], card_text[24];
     uint32_t oct_until, oct_pulse;     /* the ring: up until, then fading; its last step (a pulse) */
     float oct_v;                       /* the ring's arc, gliding to the level */
     uint32_t prog_gen;                 /* the engine's slots, as last taken (en_prog_gen) */
@@ -1102,6 +1105,9 @@ enum { NUDGE_EVOLVE, NUDGE_HAND, NUDGE_SHAKE };
  * up to an eighth of the range), SHAKE (held on: a new voice or kit, and every value a big step). Each value walks
  * from where it is, pulled back to the recipe: back as likely as it is far from it, always back from a quarter of
  * the range away */
+#define CARD_SHOW 1500u                          /* a nudge's card: up this long, then CARD_FADE fading */
+#define CARD_FADE 300u
+static int card_on(uint32_t now) { return ui.card_until && now < ui.card_until + CARD_FADE; }
 static void nudge(int layer, int how)
 {
     static const uint8_t SND[NNUDGE] = {V_CSND, V_PSND, V_BSND, V_DSND, V_SPACE, V_NSND};
@@ -1203,6 +1209,14 @@ static void nudge(int layer, int how)
             head[i++] = (how == NUDGE_SHAKE ? " SHAKE" : " NUDGE")[k];
         head[i] = 0;
         say(head, t);
+        if (how != NUDGE_EVOLVE) {               /* (yours, not Evolve's: a card in the middle too) */
+            memcpy(ui.card_head, head, sizeof ui.card_head);
+            memcpy(ui.card_text, t, sizeof ui.card_text);
+            ui.card_head[sizeof ui.card_head - 1] = ui.card_text[sizeof ui.card_text - 1] = 0;
+            ui.card_shake = (uint8_t)(how == NUDGE_SHAKE);
+            ui.card_t0 = plat_ms();
+            ui.card_until = ui.card_t0 + CARD_SHOW;
+        }
     }
     if (!ui.perf) {
         if (SND[layer] == V_NSND && ui.view != V_NSND) {
@@ -2471,6 +2485,27 @@ static void draw_oct(uint32_t now)
     }
 }
 
+/* a nudge's card: a rounded panel in the middle, outlined amber (a nudge) or red (a shake), the layer and its move
+ * and what changed; it fades out CARD_SHOW after */
+static void draw_card(uint32_t now)
+{
+    const int32_t w = 196, h = 50, x = CX - w / 2, y = 34;
+    int f;
+    uint16_t edge, hc, tc;
+    if (!card_on(now))
+        return;
+    f = now < ui.card_until ? 16 : 16 - (int)((now - ui.card_until) * 16u / CARD_FADE);
+    if (now - ui.card_t0 < 120u)                 /* (it comes in brighter, for a moment) */
+        f = 16;
+    edge = mix(K_BG, ui.card_shake ? K_FROST : K_PULSE, f);
+    hc = mix(K_BG, ui.card_shake ? K_FROST : K_PULSE, f);
+    tc = mix(K_BG, K_TEXT, f);
+    cv_round(x - 2, y - 2, w + 4, h + 4, 6, edge);
+    cv_round(x, y, w, h, 5, mix(K_BG, K_PANEL, f / 2));
+    text_c(CX, y + 4, &FONT_B, ui.card_head, hc);
+    text_c(CX, y + 28, &FONT_XS, ui.card_text, tc);
+}
+
 static void draw_main(void)
 {
     uint32_t now = plat_ms(), h = hash(2166136261u, (uint32_t)en_frozen << 16 | proj.piece << 24 | (uint32_t)en_playing << 17), i;
@@ -2540,7 +2575,8 @@ static void draw_main(void)
             h = hash(h, (uint32_t)(proj.par[VIEW_KNOB[ui.view][i]] + 64));
         h = hash(h, (uint32_t)proj.par[view_voice(ui.view)] | (uint32_t)proj.par[P_DECAY] << 8 | (uint32_t)proj.par[P_GROOVE] << 16);
     }
-    if (h == ui.sig[1] && !moving && !oct_ring_on(now))
+    h = hash(h, (uint32_t)card_on(now));
+    if (h == ui.sig[1] && !moving && !oct_ring_on(now) && !card_on(now))
         return;
     ui.sig[1] = h;
     cv_begin(240, MAIN_H, K_BG);
@@ -2595,6 +2631,12 @@ static void draw_main(void)
         cv_text(8, 2, &FONT_XS, t, en_section == SEC_FULL ? K_DIM : K_ACC);
         for (b = 0; b < 8; b++)
             cv_round(9 + b * 5, 22, 3, 3, 1, en_playing && b <= en_phrase_bar ? K_DIM : K_LINE);
+        if (!en_frozen && en_drift_bars(proj.par[P_DRIFT])) {   /* under them, the way to the next chord (Drift) */
+            int32_t f = (int32_t)(en_drift * 38.0f + 0.5f);
+            cv_rect(9, 27, 38, 1, K_LINE);
+            if (f > 0)
+                cv_rect(9, 27, f, 1, K_PAD);
+        }
     }
     if (ui.perf)
         cv_text(232 - text_w(&FONT_XS, "PERFORM"), 18, &FONT_XS, "PERFORM", K_ACC);
@@ -2602,16 +2644,12 @@ static void draw_main(void)
         cv_text(232 - text_w(&FONT_XS, "PERFORM") - 6 - text_w(&FONT_XS, "SOLO"), 18, &FONT_XS, "SOLO", K_CLAP);
     if (en_frozen) {                             /* the way to the next chord, top right (dub hold: hold) */
         cv_text(232 - text_w(&FONT_XS, "hold"), 2, &FONT_XS, "hold", K_FROST);
-    } else if (en_drift_bars(proj.par[P_DRIFT])) {
-        int32_t w = 30, f = (int32_t)(en_drift * (float)w + 0.5f);
-        cv_round(232 - w, 8, w, 6, 3, K_LINE);
-        if (f > 0)
-            cv_round(232 - w, 8, f < 6 ? 6 : f, 6, 3, K_PAD);
     }
     draw_meters();
     draw_duck();
     draw_lanes();
     draw_oct(now);
+    draw_card(now);
     cv_blit(0, MAIN_Y);
 }
 

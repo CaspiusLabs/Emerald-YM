@@ -93,3 +93,19 @@ wait 300
 expect dirty 0
 wait 120000
 expect dirty 1
+# a nudge of yours shows a card in the middle (amber), a shake's red; Evolve's don't; gone after ~1.8 s
+tap HOME
+wait 2500
+expect card 0
+press ENV
+wait 700
+release ENV
+wait 200
+expect card 1
+wait 2000
+expect card 0
+press LFO
+wait 1700
+release LFO
+wait 200
+expect card 2
