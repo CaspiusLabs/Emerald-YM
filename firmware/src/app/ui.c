@@ -1152,6 +1152,7 @@ enum { NUDGE_EVOLVE, NUDGE_HAND, NUDGE_SHAKE };
  * up to an eighth of the range), SHAKE (held on: a new voice or kit, and every value a big step). Each value walks
  * from where it is, pulled back to the recipe: back as likely as it is far from it, always back from a quarter of
  * the range away */
+static uint8_t nudge_quiet;                      /* (HOME held on: the shakes all at once, said once, the page kept) */
 static void nudge(int layer, int how)
 {
     static const uint8_t SND[NNUDGE] = {V_CSND, V_PSND, V_BSND, V_DSND, V_SPACE, V_NSND};
@@ -1252,11 +1253,12 @@ static void nudge(int layer, int how)
         for (k = 0; (how == NUDGE_SHAKE ? " SHAKE" : " NUDGE")[k] && i < 15; k++)
             head[i++] = (how == NUDGE_SHAKE ? " SHAKE" : " NUDGE")[k];
         head[i] = 0;
-        say(head, t);
-        if (how != NUDGE_EVOLVE)                 /* (yours, not Evolve's: a card in the middle too) */
+        if (!nudge_quiet)
+            say(head, t);
+        if (how != NUDGE_EVOLVE && !nudge_quiet) /* (yours, not Evolve's: a card in the middle too) */
             card_show(head, t, how == NUDGE_SHAKE ? K_FROST : K_PULSE, how == NUDGE_SHAKE);
     }
-    if (!ui.perf) {
+    if (!ui.perf && !nudge_quiet) {
         if (SND[layer] == V_NSND && ui.view != V_NSND) {
             ui.noise_from = (uint8_t)ui.view;   /* (SAVE again goes back there) */
             ui.noise_round = 0;
@@ -1336,6 +1338,26 @@ static void input(void)
                    (int32_t)(ui.turn_t - ui.down_t[NUDGE_BTN[i]]) <= 0) {
             shaken |= (uint8_t)(1u << i);
             nudge((int)i, NUDGE_SHAKE);
+        }
+    }
+    {   /* (1.3.0) HOME held on (1.5 s, nothing turned meanwhile: not the tempo): a shake of everything that shakes,
+         * the chord, the pings, the bass, the drums and the noise, at once; again and again, till something sounds */
+        static uint8_t home_shaken;
+        const uint32_t m = 1u << B_HOME;
+        if (!(btn & m)) {
+            home_shaken = 0;
+        } else if (!home_shaken && !(ui.btn_used & m) && plat_ms() - ui.down_t[B_HOME] >= SHAKE_HOLD &&
+                   (int32_t)(ui.turn_t - ui.down_t[B_HOME]) <= 0) {
+            static const uint8_t ALL[5] = {0, 1, 2, 3, 5};
+            int j;
+            home_shaken = 1;
+            ui.btn_used |= m;
+            nudge_quiet = 1;
+            for (j = 0; j < 5; j++)
+                nudge(ALL[j], NUDGE_SHAKE);
+            nudge_quiet = 0;
+            say("SHAKE", "EVERYTHING");
+            card_show("SHAKE ALL", "chord pings bass drums noise", K_FROST, 1);
         }
     }
     if ((btn >> B_EDIT & 1u) && !edit_new && plat_ms() - ui.down_t[B_EDIT] >= SHAKE_HOLD &&

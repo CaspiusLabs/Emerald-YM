@@ -134,3 +134,25 @@ wait 1700
 release GLO
 wait 200
 expect card 2
+# HOME held on: a shake of everything (the chord's, the pings', the bass's voices and the kit, the noise's character);
+# the page kept; HOME with SELECT turned is still the tempo
+tap ENV
+wait 300
+expect view 1
+turn PRESET 1
+turn PRESET -1
+press GLO
+wait 1700
+release GLO
+wait 300
+expect par22 0
+expect par35 0
+press HOME
+wait 1700
+release HOME
+wait 200
+said SHAKE EVERYTHING
+expect card 2
+expect view 1
+expect par22 !=0
+expect par35 !=0
