@@ -120,17 +120,17 @@ static const struct {
                     50, 70, 50, 50, 50, 50,
                     50, 50, 50, 0}},
     {"Concrete",   {58, 25, 70, 85, 25, 50, 4, 50, 50, 1, 25, 50, 60, 20, 60, 40, 0, 1, 130, 0, 7, 0,
-                    6, 0, 4, 30, 20, 75, 30, 10, 65, 45, 15, 3, 3, 2,
+                    6, 0, 4, 30, 10, 75, 30, 10, 50, 45, 15, 3, 3, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 100, 5, 50, 0,
-                    0, 15, 0, 10, 4,
+                    0, 0, 0, 10, 0,
                     70, 65, 85, 42,
                     60, 97, 50, 50, 50, 50,
                     50, 50, 50, 0}},
     {"Night Drive", {48, 45, 68, 78, 45, 60, 3, 35, 60, 4, 35, 55, 50, 40, 45, 55, 0, 1, 124, 10, 1, 0,
-                    1, 0, 3, 25, 25, 55, 20, 15, 50, 60, 35, 4, 4, 0,
+                    1, 0, 3, 25, 13, 55, 20, 15, 50, 60, 35, 4, 4, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
@@ -901,6 +901,7 @@ static uint32_t ph_rng = 0x2545F491u;
 static uint32_t bar_k, bar_sh, bar_op, bar_bass;   /* this bar's: the kick's, the shaker's, the open hat's, the bass's */
 static int ph_st;                                /* (the step a drum hit is on: its lateness) */
 static void noise_pattern(void);
+static int cr_dbars;                            /* bars till the drifts' next targets (on a barline) */
 static void noise_step(int s);
 static uint8_t nz_drawn;
 static float arc, arc_tgt, arc_tau = 1.0f;     /* the sweep, its target, its time (samples) */
@@ -1761,6 +1762,8 @@ static void bar_start(void)
 {
     int pb = (int)(bar & 7u), db = en_drift_bars(par[P_DRIFT]);
     en_phrase_bar = (uint8_t)pb;
+    if (cr_dbars > 0)                            /* (the noise's drifts: their next targets on a barline) */
+        cr_dbars--;
     if (pb == 0 && bar > 0) {
         section_set(sec_next);
         if (!lock) {                             /* (Lock: the kick's shape, the noise's groove, the plan, kept) */
@@ -2133,6 +2136,9 @@ static void heads_step(uint32_t n)
  * Echoplex's short taps out of the mix. At the tape's rate; the feedback's allpasses' delay taken off the head's */
 #define EAP_IN 1002                              /* (36 + 95 + 154 + 276 + 441: 3 to 40 ms) */
 #define EAP_FB 277                               /* (37 + 89 + 151) */
+/* (the input's allpasses' delay: their ring's peak ~60 ms after it goes in; the input written that much nearer the
+ * head, so the first repeat lands on its time, not ~66 ms behind it (REPORT6 9.2); the loop's period as it was) */
+#define EAP_LEAD 640
 static int16_t eap[EAP_IN + EAP_FB] EN_POOL;    /* (int16 at 1/8000: +-4) */
 static int eap_i[8];
 static float ec_lp, ec_hp;
@@ -2196,10 +2202,16 @@ static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
             tape_lp += tape_lpc * (h1 + fb_lean * st_throw * (h2 - h1) - tape_lp);   /* each time round: thinner, darker */
             tape_hp += tape_hpc * (tape_lp - tape_hp);
             fb = ec_fb(tape_lp - tape_hp);       /* (and more dissolved) */
-            w = ec_in(tape_acc * 0.25f) + 0.7f * sat(fb * g * (1.0f / 0.7f));
+            w = 0.7f * sat(fb * g * (1.0f / 0.7f));
             if (++tape_w >= TAPE_N)
                 tape_w = 0;
             tape[tape_w] = s16(w);
+            {                                    /* (the input, EAP_LEAD nearer the head: not read yet, d > it) */
+                int i = tape_w - EAP_LEAD;
+                if (i < 0)
+                    i += TAPE_N;
+                tape[i] = s16((float)tape[i] * (1.0f / 12000.0f) + ec_in(tape_acc * 0.25f));
+            }
         }
         tape_acc = 0.0f;
         tape_p1 = tape_c1;
@@ -3261,20 +3273,20 @@ const char *const EN_NCHAR_NAME[EN_NNCHAR] = {"Vinyl", "Tape", "Dust", "Room", "
 static const struct {
     float res, cont, clicks, dens, dec, tone, air;  /* resonance (0 dry), the hiss into the combs (a pad), the dry
                                                      * clicks, and offsets: hits, Decay, Tone, Air */
+    float loose;                                    /* the dry clicks off the grid (the rest on its sixteenths) */
     uint8_t key, inh;                               /* on the key's triad (not the chord's); inharmonic ratios */
 } NCHAR[EN_NNCHAR] = {
-    {1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0, 0},     /* Vinyl: the resonated crackle groove, on the chord */
-    {1.0f, 1.0f, 0.4f, -0.6f, 0.6f, -0.2f, -0.3f, 0, 0},  /* Tape: the hiss through the combs, a pad that swells between
+    {1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.6f, 0, 0},     /* Vinyl: the resonated crackle groove, on the chord */
+    {1.0f, 1.0f, 0.4f, -0.6f, 0.6f, -0.2f, -0.3f, 0.3f, 0, 0},  /* Tape: the hiss through the combs, a pad that swells between
                                                            * the beats (the duck), few hits */
-    {0.0f, 0.0f, 2.0f, 0.3f, 0.0f, 0.3f, 0.0f, 0, 0},     /* Dust: dry clicks and bursts, no resonance */
-    {1.0f, 0.3f, 0.7f, -0.3f, 0.5f, -0.3f, 0.2f, 1, 0},   /* Room: on the key's tonic triad, long, more of the plate */
-    {1.0f, 0.0f, 1.2f, 0.2f, 0.2f, 0.15f, -0.2f, 0, 1},   /* Machine: inharmonic (1 : 1.41 : 2.76), metallic */
+    {0.0f, 0.0f, 2.0f, 0.3f, 0.0f, 0.3f, 0.0f, 0.5f, 0, 0},     /* Dust: dry clicks and bursts, no resonance */
+    {1.0f, 0.3f, 0.7f, -0.3f, 0.5f, -0.3f, 0.2f, 0.25f, 1, 0},   /* Room: on the key's tonic triad, long, more of the plate */
+    {1.0f, 0.0f, 1.2f, 0.2f, 0.2f, 0.15f, -0.2f, 0.0f, 0, 1},   /* Machine: inharmonic (1 : 1.41 : 2.76), metallic */
 };
 #define CR_ND 4                                 /* the drifts: the air's level, the tone, the clicks' density, the decay */
 static float cr_lp, cr_lp2, cr_hp, cr_cl, cr_cr, cr_fl, cr_fr, cr_cc = 0.3f, cr_gate, cr_sg = 1.0f;
 static float cr_dv[CR_ND] = {1.0f, 1.0f, 1.0f, 1.0f}, cr_dt[CR_ND] = {1.0f, 1.0f, 1.0f, 1.0f};
 static const float CR_DRANGE[CR_ND] = {0.66f, 0.7f, 2.0f, 0.5f};   /* (octaves of each drift's span) */
-static int32_t cr_dleft;
 #define NZ_L 280                                /* a comb's line, at the quarter rate (E1: 269 samples) */
 static int16_t nz_buf[3 * NZ_L];
 static int nz_w, nz_ph;
@@ -3282,6 +3294,12 @@ static float nz_D[3] = {200.0f, 160.0f, 133.0f}, nz_lp[3], nz_acc, nz_b[4], nz_p
 static uint32_t nz_pat;                         /* this phrase's hits, 32 sixteenths (two bars) */
 static uint8_t nz_vel[32];
 static float nz_ex, nz_exd = 0.99f, nz_click;   /* a hit: its burst's level and fall, its click */
+/* (a hit struck early: the combs speak a period after the burst and swell after, so the next step's hit is struck
+ * that much before its tick, its ring heard on it; REPORT6 9.1) */
+static int32_t nz_wait = -1;                    /* samples till the next hit strikes (-1: none) */
+static float nz_wv, nz_wd, nz_wD[3];            /* its burst's level, fall, the combs' tuning */
+static uint8_t nz_due;                          /* (the hit struck for this tick: its screen event on it) */
+static float nz_gck;                            /* a dry click on this tick (its level; 0: none) */
 static float cr_u(void)                          /* the noises' own randomness: the music's choices left be */
 {
     cnoise = cnoise * 1664525u + 1013904223u;
@@ -3313,13 +3331,31 @@ static void noise_pattern(void)
         nz_vel[i] = (uint8_t)(cr_u() < 0.15f ? 64 : 180 + (int)(cr_u() * 75.0f));   /* (a ghost now and then) */
 }
 static float nz_note(int pc) { return mtof((float)(28 + (pc + 8) % 12)); }   /* octave 1: E1 .. Eb2 */
-/* a sixteenth (tick): a hit if the groove has one; the combs retuned on it (never mid-ring) */
+/* a sixteenth (tick): the hit struck for it told; the next step's, if the groove has one, struck ahead of its tick by
+ * the combs' latency (the shortest one's period, and a little of the swell), the combs retuned as it strikes (never
+ * mid-ring); a dry click on the grid now and then (the character's loose ones at random: render_crackle) */
 static void noise_step(int s)
 {
     const unsigned c = nz_char();
-    float f[3], v;
+    const int nx = (s + 1) & 31;
+    float f[3], v, gap, lead = 0.0f;
     int k;
-    if (!(nz_pat >> (s & 31) & 1u) || (mutes & EN_M_NOISE) || crackle_vol <= 0.0f)
+    if (nz_due) {
+        nz_due = 0;
+        v = (float)nz_vel[s & 31] * (1.0f / 255.0f);
+        nev(v > 0.5f ? 1 : 0, v * crackle_vol * 9.0f, 0.5f);
+    }
+    if ((mutes & EN_M_NOISE) || crackle_vol <= 0.0f)
+        return;
+    {   /* the grid's dry clicks: of the clicks a second, those not loose, a sixteenth at a time */
+        const float rate = (3.0f + 12.0f * crackle_vol) * cr_dv[2] * fm_exp2f(fm_clampf(nctl.grain, -1.0f, 1.0f)) *
+                           (1.0f - NCHAR[c].loose);
+        if (cr_u() < fm_minf(rate * step_len * (1.0f / EN_SR), 0.9f)) {
+            float a = cr_u();
+            nz_gck = (0.03f + 0.4f * a * a * a);
+        }
+    }
+    if (!(nz_pat >> nx & 1u))
         return;
     if (NCHAR[c].key) {                          /* (Room: the key's tonic triad) */
         int r = par[P_ROOT];
@@ -3333,13 +3369,16 @@ static void noise_step(int s)
         float d = TAPE_SR / f[k];
         while (d > (float)(NZ_L - 2))
             d *= 0.5f;
-        nz_D[k] = d;
+        nz_wD[k] = d;
     }
-    v = (float)nz_vel[s & 31] * (1.0f / 255.0f);
-    nz_ex = v;
-    nz_exd = fm_expf(-6.9f / ((0.005f + 0.008f * cr_u()) * EN_SR));   /* (a 5-13 ms burst: struck, staccato) */
-    nz_click = v * (cr_u() < 0.5f ? -1.0f : 1.0f);
-    nev(v > 0.5f ? 1 : 0, v * crackle_vol * 9.0f, 0.5f);
+    if (NCHAR[c].res > 0.0f)                     /* (the shortest comb's period, at the full rate, and 6 ms) */
+        lead = 4.0f * fm_minf(fm_minf(nz_wD[0], nz_wD[1]), nz_wD[2]) + 0.006f * EN_SR;
+    gap = step_len * (1.0f + (s & 1 ? -swing : swing));   /* (to the next tick: the odd ones late by Swing) */
+    v = (float)nz_vel[nx] * (1.0f / 255.0f);
+    nz_wv = v;
+    nz_wd = fm_expf(-6.9f / ((0.005f + 0.008f * cr_u()) * EN_SR));   /* (a 5-13 ms burst: struck, staccato) */
+    nz_wait = (int32_t)fm_maxf(gap - lead, 0.0f);
+    nz_due = 1;
 }
 static void render_crackle(uint32_t n)
 {
@@ -3360,13 +3399,14 @@ static void render_crackle(uint32_t n)
     ng = fm_clampf(nctl.grain, -1.0f, 1.0f);                     /* Density (the clicks with it) */
     nr = fm_clampf(nctl.room + NCHAR[c].air, -1.0f, 1.0f);       /* Air */
     nd = fm_clampf(nctl.drift, -1.0f, 1.0f);                     /* the drifts' speed (the recipes') */
-    if ((cr_dleft -= (int32_t)n) <= 0) {        /* the drifts: new targets every 2-6 s, eased over ~3 s */
+    if (cr_dbars <= 0) {                         /* the drifts: new targets on a barline, every 1-3 bars, eased over
+                                                  * a bar (REPORT6 9.3: they crossed the barlines at random) */
         float sp = fm_exp2f(nd);
         for (i = 0; i < CR_ND; i++)
             cr_dt[i] = fm_exp2f((cr_u() - 0.5f) * CR_DRANGE[i] * sp);
-        cr_dleft = (int32_t)((2.0f + 4.0f * cr_u()) * EN_SR / sp);
+        cr_dbars = (int)fm_maxf((1.0f + 3.0f * cr_u()) / sp, 1.0f);
     }
-    k = fm_minf((float)n * fm_exp2f(nd) / (3.0f * EN_SR), 1.0f);
+    k = fm_minf((float)n * fm_exp2f(nd) / (16.0f * step_len), 1.0f);
     for (i = 0; i < CR_ND; i++)
         cr_dv[i] += (cr_dt[i] - cr_dv[i]) * k;
     cr_sg += ((sec == SEC_BREAK || sec == SEC_THIN ? 1.0f : 0.0f) - cr_sg) * fm_minf((float)n / (2.0f * EN_SR), 1.0f);
@@ -3386,16 +3426,21 @@ static void render_crackle(uint32_t n)
     gh = 0.03f * g * cr_dv[0] * fm_exp2f(1.2f * nr);   /* the Air: quiet (it breathes with the duck: render_chunk) */
     lpc = fm_clampf(0.4f * fm_exp2f(0.5f * nc), 0.15f, 0.8f);   /* (its band: ~2-4 kHz at the top) */
     vg = 0.5f * g * NCHAR[c].clicks * fm_exp2f(0.7f * ng);   /* (the dry clicks, quiet) */
-    thr = (uint32_t)((3.0f + 12.0f * g) * cr_dv[2] * fm_exp2f(ng) * (4294967296.0f / EN_SR));   /* dry clicks a second */
+    thr = (uint32_t)((3.0f + 12.0f * g) * cr_dv[2] * fm_exp2f(ng) * NCHAR[c].loose * (4294967296.0f / EN_SR));   /* dry
+                                                  * clicks a second, the loose ones (the rest on the grid: noise_step) */
     {   /* (the state in locals: the compiler keeps it in registers, past the sends' stores) */
         uint32_t cn = cnoise;
         float lp1 = cr_lp, lp2 = cr_lp2, hp1 = cr_hp, cl = cr_cl, cr = cr_cr, fl = cr_fl, fr = cr_fr, cc = cr_cc;
         float ex = nz_ex, ck = nz_click, acc = nz_acc, b0 = nz_b[0], b1 = nz_b[1], b2 = nz_b[2], b3 = nz_b[3];
         float pl = nz_p[0], pr = nz_p[1], ql = nz_c[0], qr = nz_c[1];
-        const float exd = nz_exd, sw = 0.05f * cont * (1.0f - 0.8f * duck_d);   /* (Tape: the hiss in, between beats) */
+        float exd = nz_exd;
+        const float sw = 0.05f * cont * (1.0f - 0.8f * duck_d);   /* (Tape: the hiss in, between beats) */
+        const int32_t sj = nz_wait >= 0 && nz_wait < (int32_t)n ? nz_wait : -1;   /* (a hit strikes in this chunk) */
         /* (1.3.0: the noise under the duck, deeper than the music, its sends too: it dips on each beat and swells
          * between, the kick or not; the duck as it is at this chunk's start) */
         const float dn = 1.0f - fm_minf(1.7f * duck_depth, 0.85f) * duck_d;
+        /* (the combs at the music's own depth: ducked deeper, a hit on the beat swelled late, REPORT6 9.1) */
+        const float dnr = 1.0f - fm_minf(duck_depth, 0.85f) * duck_d;
         /* (the second page: Width, Plate, Echo; PERFORM's Wet, -50..+50: the dry x2 .. x0.5, the sends x0.5 .. x2) */
         const float wv = (float)par[P_NWIDTH] * 0.02f, wa = 0.6f + 0.25f * wv, wb = 0.6f - 0.25f * wv,
                     wm = (float)mac[EN_MAC_DUB] * (1.0f / 50.0f), nw = fm_exp2f(-wm),
@@ -3410,6 +3455,19 @@ static void render_crackle(uint32_t n)
             lp2 += lpc * (lp1 - lp2);
             hp1 += 0.15f * (lp2 - hp1);
             h = lp2 - hp1;
+            if ((int32_t)j == sj) {              /* the next step's hit strikes, ahead of its tick */
+                ex = nz_wv, exd = nz_wd;
+                nz_D[0] = nz_wD[0], nz_D[1] = nz_wD[1], nz_D[2] = nz_wD[2];
+            }
+            if (j == 0 && nz_gck > 0.0f) {       /* a dry click on the tick */
+                float s1 = CRU() < 0.5f ? -1.0f : 1.0f, pn = 0.3f + 0.4f * CRU(), a = nz_gck;
+                cc = 0.05f + 0.3f * CRU();
+                a *= 1.8f - 0.8f * cc;
+                cl += a * s1 * (1.0f - pn);
+                cr += a * s1 * pn;
+                nev(0, a * vg * 3.0f, pn);
+                nz_gck = 0.0f;
+            }
             if (cn < thr) {                      /* a dry vinyl click, now and then (dull, near the middle) */
                 float a = CRU(), s1 = CRU() < 0.5f ? -1.0f : 1.0f, pn = 0.3f + 0.4f * CRU();
                 cc = 0.05f + 0.3f * CRU();
@@ -3460,8 +3518,8 @@ static void render_crackle(uint32_t n)
                 ql = b1 * gres, qr = b3 * gres;
             }
             f = (float)ph * 0.25f;               /* (back to the full rate: a line from the last to the next) */
-            l = (pl + (ql - pl) * f) * dn;
-            r = (pr + (qr - pr) * f) * dn;
+            l = (pl + (ql - pl) * f) * dnr;
+            r = (pr + (qr - pr) * f) * dnr;
             esend[j] += (l + r) * (0.15f * ne + 0.8f * st_throw);   /* (a little into the echo, Echo; a throw, more) */
             rsend[j] += (l + r) * 0.3f * np + h * gh * 0.4f;   /* (the plate, Plate) */
             l *= 0.75f * nw;                     /* (the dry -2.5 dB, less into the plate than before: further back,
@@ -3477,6 +3535,8 @@ static void render_crackle(uint32_t n)
         cnoise = cn;
         cr_lp = fm_flush(lp1), cr_lp2 = fm_flush(lp2), cr_hp = fm_flush(hp1);
         cr_cl = fm_flush(cl), cr_cr = fm_flush(cr), cr_fl = fm_flush(fl), cr_fr = fm_flush(fr), cr_cc = cc;
+        nz_wait = sj >= 0 ? -1 : nz_wait >= 0 ? nz_wait - (int32_t)n : -1;
+        nz_exd = exd;
         nz_ex = fm_flush(ex), nz_click = ck, nz_acc = acc, nz_ph = ph, nz_w = w;
         nz_b[0] = fm_flush(b0), nz_b[1] = fm_flush(b1), nz_b[2] = fm_flush(b2), nz_b[3] = fm_flush(b3);
         nz_p[0] = pl, nz_p[1] = pr, nz_c[0] = ql, nz_c[1] = qr;
