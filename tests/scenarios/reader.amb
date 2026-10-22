@@ -60,7 +60,7 @@ said Reverb 0
 # the page again, as now set
 tap SEQ
 wait 300
-said Drums page, kit Tight: Density 85, Hits 
+said Drums page, kit Tight: Density 94, Hits 
 tap FX
 wait 300
 said Space page: Echo 0, Echo time 1 bar, Feedback 1.5 s, Reverb 0

@@ -13,9 +13,9 @@ expect par4 30
 turn PRESET 3
 wait 300
 expect piece 3
-# Fog too (its chord 50, its kick's Density 50)
+# Fog too (its chord 50, its kick's Density 70)
 expect par0 50
-expect par116 50
+expect par116 70
 turn PRESET -3
 storefile tests/host/proj-1.2.0-basic-changed.bin
 reboot

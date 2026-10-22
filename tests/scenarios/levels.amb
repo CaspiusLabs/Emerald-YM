@@ -104,12 +104,12 @@ expect par21 1
 spin K2 -1
 tap LFO
 wait 300
-said Bass page, voice Sub: Density 75, Octave 0, Groove Offbeat, Fifth 20
+said Bass page, voice Sub: Density 90, Octave 0, Groove Offbeat, Fifth 20
 shot bass_page.png
 spin K1 -40
 wait 300
-said Density 35
-expect par113 35
+said Density 50
+expect par113 50
 spin K3 3
 wait 300
 said Groove Roller
@@ -125,7 +125,7 @@ expect par24 1
 spin K1 40
 tap SEQ
 wait 300
-said Drums page, kit Tight: Density 85, Hits 35, Hats 50, Tone 0
+said Drums page, kit Tight: Density 94, Hits 35, Hats 50, Tone 0
 shot drums_page.png
 spin K3 10
 wait 300
@@ -133,8 +133,8 @@ said Hats 60
 expect par114 60
 spin K1 -10
 wait 300
-said Density 75
-expect par116 75
+said Density 84
+expect par116 84
 spin K1 10
 tap SAVE
 wait 300
@@ -190,17 +190,17 @@ tap OCT-
 expect par1 30
 tap LFO
 tap OCT-
-said BASS 55
-expect par2 55
+said BASS 63
+expect par2 63
 tap SEQ
 tap OCT-
-said DRUMS 60
-expect par3 60
+said DRUMS 75
+expect par3 75
 tap SEQ
 tap SEQ
 expect view 16
 tap OCT+
-expect par3 65
+expect par3 80
 tap SAVE
 tap OCT+
 said NOISE 20
@@ -219,7 +219,7 @@ expect mutes 4
 expect octring 3
 wait 200
 shot octring_muted.png
-expect par2 55
+expect par2 63
 # PERFORM's lights follow it (white 3, the bass, dark), and its key brings it back
 tap SEL
 wait 100
@@ -253,7 +253,7 @@ release OCT+
 release OCT-
 said DRUMS MUTED
 expect mutes 24
-expect par3 65
+expect par3 80
 tap SEL
 wait 100
 expect litkey6 0
@@ -327,7 +327,7 @@ release OCT+
 wait 100
 said_none MUTED
 expect mutes 0
-expect par2 55
+expect par2 63
 # elsewhere (the Dub page, the Chords page) OCT does nothing for now
 tap HOME
 wait 300
@@ -394,6 +394,6 @@ wait 1000
 expect format 15
 expect par112 80
 expect par115 65
-expect par116 85
+expect par116 94
 expect par117 50
 expect par120 50

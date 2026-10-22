@@ -77,7 +77,7 @@ tapkey w3
 wait 200
 said KICK ON
 # (true mutes: the Drums level untouched; the chord still muted)
-expect par3 65
+expect par3 80
 expect mutes 1
 tap SEL
 wait 200
@@ -122,7 +122,7 @@ said PINGS ON
 tapkey w0
 wait 200
 expect mutes 0
-expect par0 59
+expect par0 52
 said CHORD ON
 tap HOME
 # SEL held: Lock (the phrases keep their kick, groove and plan), on or off, from any page; a tap is still PERFORM
