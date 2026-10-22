@@ -38,7 +38,7 @@ installer can reach.
 | ALGORITHM | On a layer's page, its voice (7 chord, 5 ping, 5 bass voices, 5 kits); on the Chords page, the walk (Home, Wander, Free); on the Noise page, its character; elsewhere, the screen (ripples, scope, spectrum). The mode is on the Key page (HOME again). An FM voice's layer button a third time: its FM page (the algorithm, ratio, feedback, and an LFO in time with the bars: the chord's filter, the pings' brightness, the bass's bite) |
 | PRESETS | The piece (eight of them) |
 | OCT− / OCT+ | On a layer's page (Chord, Pings, Bass, Drums, Noise): its level, 5 a press (held: on), shown as a ring; both together, quickly: the layer muted or back, its level kept (the same mutes as PERFORM's); held 5 s: the update mode |
-| SAVE | The Noise page (Density, Air, Tone, Decay; ALGORITHM its character: Vinyl, Tape, Dust, Room, Machine); again, Noise space (Width, Plate, Echo, Change); held, a nudge to the noise |
+| SAVE | The Noise page (Density, Air, Tone, Decay; ALGORITHM its character: Vinyl, Tape, Dust, Room, Machine); again, Noise space (Width, Plate, Echo, LFO); held, a nudge to the noise |
 | GLO | The Setup page; held, saves (held on, the piece back to its recipe) |
 
 Hold a layer's button (ENV, ARP, LFO, SEQ) for a nudge: its sound a small step somewhere new. Every

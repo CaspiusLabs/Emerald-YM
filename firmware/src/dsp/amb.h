@@ -98,6 +98,7 @@ enum {
     /* (format 15) the Noise page's second (SAVE again): its width (0 mono, 50 as it was, 100 wide), how much of it
      * into the plate and into the echo (50 as it was, 0 none, 100 twice); the hats' length (-50..+50 around the kit's) */
     P_NWIDTH, P_NPLATE, P_NECHO, P_HLEN,
+    P_NLFO,                                           /* (1.3.0, format 16) the noise's LFO: its rings' tone, over a bar */
     P_NPARAMS
 };
 typedef struct {

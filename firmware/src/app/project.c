@@ -147,6 +147,23 @@ typedef struct {
     slot14_t slot[NPIECES];
     uint8_t rsv[16];
 } project14_t;
+/* DUB-1 1.3.0's Noise space (format 15): today's, without the noise's LFO */
+#define NPAR15 P_NLFO
+_Static_assert(NPAR15 == 125, "format 15 had 125 parameters");
+typedef struct {
+    int16_t par[NPAR15];
+    uint16_t pool;
+    uint8_t pings[EN_PINGS_N];
+    uint8_t pings_ok, screen;
+} slot15_t;
+typedef struct {
+    uint32_t magic, format;
+    int16_t par[NPAR15];
+    uint16_t pool;
+    uint8_t leds, piece, screen, rsv0;
+    slot15_t slot[NPIECES];
+    uint8_t rsv[16];
+} project15_t;
 _Static_assert(sizeof(project_t) <= 3840u, "the project must fit one storage sector's payload");
 
 static void take(const slot_t *s)                /* a piece's settings into play, the globals kept */
@@ -310,6 +327,23 @@ static void from14(const project14_t *o)        /* 1.3.0's echo and density (14)
         proj.slot[i].screen = o->slot[i].screen;
     }
 }
+static void from15(const project15_t *o)        /* 1.3.0's Noise space (15): everything kept */
+{
+    int i;
+    memset(&proj, 0, sizeof proj);
+    proj.magic = o->magic;
+    proj.format = PROJ_FORMAT;
+    memcpy(proj.par, o->par, sizeof o->par);
+    proj.pool = o->pool;
+    proj.leds = o->leds, proj.piece = o->piece, proj.screen = o->screen;
+    for (i = 0; i < NPIECES; i++) {
+        memcpy(proj.slot[i].par, o->slot[i].par, sizeof o->slot[i].par);
+        proj.slot[i].pool = o->slot[i].pool;
+        memcpy(proj.slot[i].pings, o->slot[i].pings, sizeof proj.slot[i].pings);
+        proj.slot[i].pings_ok = o->slot[i].pings_ok;
+        proj.slot[i].screen = o->slot[i].screen;
+    }
+}
 static void groove11(int16_t *par)              /* before 12: the groove a pattern (0..4: Drone, Offbeat, Dotted,
                                                  * Roller, Sync), now the knob's (Drone, Offbeat, Dotted, Sync, Roller) */
 {
@@ -395,6 +429,13 @@ int project_load(void)
             fresh[i] = (uint8_t)untouched_raw(o->slot[i].par, NPAR12, o->slot[i].pool, i);
         }
         from12((const project12_t *)(const void *)&buf);
+    } else if (n >= 8 && buf.magic == PROJ_MAGIC && buf.format == 15u && n >= (int)sizeof(project15_t)) {
+        old = 15;
+        for (i = 0; i < NPIECES; i++) {
+            const project15_t *o = (const project15_t *)(const void *)&buf;
+            fresh[i] = (uint8_t)untouched_raw(o->slot[i].par, NPAR15, o->slot[i].pool, i);
+        }
+        from15((const project15_t *)(const void *)&buf);
     } else if (n >= 8 && buf.magic == PROJ_MAGIC && buf.format == 14u && n >= (int)sizeof(project14_t)) {
         old = 14;
         for (i = 0; i < NPIECES; i++) {
@@ -412,8 +453,8 @@ int project_load(void)
     } else {
         proj = buf;
     }
-    if (old)                                     /* (the new ones, from the recipes: 13's six, before it ten) */
-        newpar(old == 14 ? NPAR14 : old == 13 ? NPAR13 : NPAR12);
+    if (old)                                     /* (the new ones, from the recipes) */
+        newpar(old == 15 ? NPAR15 : old == 14 ? NPAR14 : old == 13 ? NPAR13 : NPAR12);
     if (old == 9) {                              /* (8 and 9: the chords' slots as 10 has them) */
         gaps9(proj.par);
         for (i = 0; i < NPIECES; i++)

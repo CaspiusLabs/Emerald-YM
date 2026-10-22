@@ -9,7 +9,7 @@ said VOICE Keys
 tap ENV
 tap ENV
 wait 400
-said Chord FM page, voice Keys: Algo Voice, Ratio 0, Feedback 0, LFO 0
+said Chord FM page, voice Keys: Algo Voice, Ratio 0, Feedback 0, LFO +25
 expect view 12
 spin K1 1
 wait 300
@@ -60,7 +60,7 @@ wait 300
 expect view 12
 spin K4 30
 wait 300
-expect par55 30
+expect par55 55
 spin K1 3
 wait 300
 expect par52 1

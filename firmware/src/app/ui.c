@@ -106,7 +106,7 @@ static const uint16_t VIEW_KNOB[NVIEWS][4] = {
     {P_TEMPO, P_ROOT, K_MODE, P_SWING},
     {P_NGRAIN, P_NROOM, P_NCOL, P_NTUNE},     /* (the level on OCT- / OCT+, as the layers'; Drift the recipes') */
     {P_EBLUR, P_ETONE, P_EWIDTH, P_SIZE},
-    {P_NWIDTH, P_NPLATE, P_NECHO, P_NDRIFT},     /* (the Noise page's second: SAVE again) */
+    {P_NWIDTH, P_NPLATE, P_NECHO, P_NLFO},       /* (the Noise page's second: SAVE again; its Change the recipes') */
 };
 static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Filter", "Evolve", "Motion", "Drift"},
@@ -130,7 +130,7 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Tempo", "Root", "Mode", "Swing"},
     {"Density", "Air", "Tone", "Decay"},
     {"Blur", "Tone", "Width", "Size"},
-    {"Width", "Plate", "Echo", "Change"},
+    {"Width", "Plate", "Echo", "LFO"},
 };
 /* what each knob does, a line: on the rule above the knobs while it's being turned (in capitals; each fits the
  * rule's 228 px: the host's expect helpfit) */
@@ -175,7 +175,7 @@ static const char *const KNOB_HELP[NVIEWS][4] = {
     {"Clean repeats, to a dissolving wash", "The repeats darker, or brighter", "The echo mono, to wide",
      "How long the plate rings"},
     {"The noise mono, to wide", "How much of it rings in the plate", "How much of it goes into the echo",
-     "Steady, to a groove changing often"},
+     "The rings' tone swept, over a bar"},
 };
 
 /* the screen's colours: a dark room, as a dub techno sleeve (grey on black, a cold blue). The chord and

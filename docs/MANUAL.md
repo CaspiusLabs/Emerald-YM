@@ -111,7 +111,7 @@ The drawing at the top shows them all; here they are in more detail.
 | SELECT | The previous or next page, in the order the page buttons sit on the panel, the top row then the bottom one: **Space** (FX), **Chord** (ENV), **Bass** (LFO), **Setup** (GLO), **Dub** (HOME), **Noise** (SAVE), **Pings** (ARP), **Drums** (SEQ). The eight dots under the page's name, top right, show where you are, in the same order. From a sound page, an FM page, the Pattern, Key or Echo page or Noise space, it goes on from its page's place in the round (the Noise page's own, between Dub and Pings); from the Chords page or PERFORM, from the page you came from (and it leaves PERFORM). Hold HOME and turn it for the tempo, from any page. |
 | ALGORITHM | On a layer's page (Chord, Pings, Bass, Drums): that layer's **voice** (see [The voices](#the-voices)). On the Noise pages: its character. On the Chords page: the walk's character (Home, Wander, Free). Anywhere else: the middle of the screen, as ripples, a scope or a spectrum (see [The screen](#4-the-screen)). The mode, a piece's choice, is on the Key page (HOME again). |
 | PRESETS | The piece (see [The pieces](#7-the-pieces)). |
-| KNOB 1–4 | The four values on the screen. A few clicks are always single steps; a quick turn speeds up, so half a turn sweeps the range. While a knob turns, the line above the knobs says what it does. A **centred** knob (0 in the middle: the sound pages' −50…+50 ones, the Noise page's Density, Air and Tone, Noise space's Change, PERFORM's Filter, Wet and Energy) has a **notch** at 0: turning through, it stops there, and to leave it takes three clicks the same way (the first two are held back). A switch shows its positions as dots, up to ten (Drift, Mode, Algo). A grey knob does nothing there. |
+| KNOB 1–4 | The four values on the screen. A few clicks are always single steps; a quick turn speeds up, so half a turn sweeps the range. While a knob turns, the line above the knobs says what it does. A **centred** knob (0 in the middle: the sound pages' −50…+50 ones, the Noise page's Density, Air and Tone, PERFORM's Filter, Wet and Energy) has a **notch** at 0: turning through, it stops there, and to leave it takes three clicks the same way (the first two are held back). A switch shows its positions as dots, up to ten (Drift, Mode, Algo). A grey knob does nothing there. |
 | OCT− / OCT+ | On a layer's page (Chord, Pings, Bass, Drums or Noise, and their sound, FM and Pattern pages, and Noise space): that layer's **level**, 5 down or up a press ("BASS 55" in the header, and a big ring in the middle, in the layer's colour, the level inside, until a second after the last press); held, it keeps going. **Both together**, let go within a second: the layer **muted** ("BASS MUTED"), its level kept; again, back ("BASS ON"). The drums mute the kick and the hats together. These are PERFORM's mutes (white 1–5): a mute made here shows there, and the other way round. Held together for five seconds: the update mode (see [Troubleshooting](#11-troubleshooting)); a long press never mutes. On the other pages they do nothing. (The pings' octave is on the Pings page, KNOB 2.) |
 | MASTER | Volume. |
 | SAVE | The **Noise page** (below); again, **Noise space** (its width, its sends and how often its groove changes; SAVE blinks); again, back to the Noise page. Held: a nudge to the noise; held on (1.5 s): a shake (another noise character). Saving is on GLO. |
@@ -559,7 +559,8 @@ the fourth, the LFO, works on every voice.
   noise.
 - **LFO:** a slow sweep in time with the bars, 0 (off) to 100 (the deepest). The chord: its
   filter, up to an octave and a half either way, over two bars; the pings: their brightness (how
-  hard the modulators work), over a bar; the bass: its bite, over four bars.
+  hard the modulators work), over a bar; the bass: its bite, over four bars. The pieces sweep their
+  chords a little (20 to 30) and leave the pings and the bass still.
 
 Algo and Ratio are relative to the voice (Voice, 0); Feedback and the LFO start from the voice as
 it is at 0. Each stays when the voice changes, and is kept by the piece.
@@ -708,23 +709,26 @@ The knobs are around the piece's own noise, 0 (Decay 50) in the middle:
 
 The middle of the screen shows the spectrum of the noise alone, so you can see its colour as it
 moves. Each piece has its own: Basic and Steppers on Vinyl, Fog and Night Drive on Tape, Chamber on
-Room, Concrete on Machine, Haze on Dust, Pressure a quieter, darker Vinyl.
+Room, Concrete on Vinyl too, Haze on Dust, Pressure a quieter, darker Vinyl.
 
 ### SAVE again: Noise space
 
-![Noise space: VINYL, WIDTH 50, PLATE 50, ECHO 50, CHANGE 0, the noise's spectrum in the middle](img/screen-noise-space.png "Noise space")
+![Noise space: VINYL, WIDTH 50, PLATE 50, ECHO 50, LFO 40, the noise's spectrum in the middle](img/screen-noise-space.png "Noise space")
 
-Where the noise sits, and how often it changes. SAVE blinks while you're here; SAVE again goes
-back to the Noise page. ALGORITHM still turns its character. 50 (Change 0) is the noise as the
-pieces have it:
+Where the noise sits, and how it moves. SAVE blinks while you're here; SAVE again goes back to
+the Noise page. ALGORITHM still turns its character. 50 is the noise as the pieces have it:
 
 - **Width:** the rings mono (0) to wide (100): the third further left, the fifth further right.
 - **Plate:** how much of it rings in the plate, none at 0, twice at 100.
 - **Echo:** how much of it goes into the echo, none at 0, twice at 100 (a thrown stab still sends
   more).
-- **Change:** −50 to +50: down, steady, the crackle groove kept phrase after phrase and its levels,
-  tone and decay drifting slowly; up, a groove drawn anew more often and drifting faster. Lock
-  keeps the groove whatever Change says.
+- **LFO:** the rings' tone swept in time with the bar, 0 (off) to 100 (an octave either way): brightest
+  on the second beat, as the chord's LFO is brightest on the third, so the two move apart. Each piece
+  has some (30 to 50).
+
+How often the noise's groove changes, and how fast its levels, tone and decay drift, is each piece's
+own (its recipe); the groove is drawn anew at a phrase's start now and then, more often as Evolve
+rises, and Lock keeps it. Its drifts move on the barlines.
 
 PERFORM's Wet moves the noise too: its dry down and its plate and echo up, or the other way.
 
@@ -972,8 +976,8 @@ The defaults are Basic's; each piece has its own.
 | Noise | Decay | 0–100 (about 70 ms – over a second) | 50 |
 | Noise | Character (ALGORITHM) | Vinyl, Tape, Dust, Room, Machine | Vinyl |
 | Noise space | Width, Plate, Echo | 0–100 (50: as the pieces have it) | 50 |
-| Noise space | Change | −50 – +50 | 0 |
-| Bass | Density | 0–100 (100: every note of the groove) | 75 |
+| Noise space | LFO | 0–100 | 40 |
+| Bass | Density | 0–100 (100: every note of the groove) | 90 |
 | Bass | Octave | −1 – +1 | 0 |
 | Bass | Groove | Drone, Offbeat, Dotted, Sync, Roller | Offbeat |
 | Bass | Fifth | 0–100 | 20 |
@@ -1011,7 +1015,9 @@ The defaults are Basic's; each piece has its own.
 | Bass sound | Bite, Shape, Length, Slide | −50 – +50 | 0 |
 | Chord, Ping, Bass FM | Algo | Voice, 1–8, 2-op | Voice |
 | Chord, Ping, Bass FM | Ratio | −50 – +50 | 0 |
-| Chord, Ping, Bass FM | Feedback (from the voice's own), LFO | 0–100 | 0 |
+| Chord, Ping, Bass FM | Feedback (from the voice's own) | 0–100 | 0 |
+| Chord FM | LFO | 0–100 | 25 |
+| Ping, Bass FM | LFO | 0–100 | 0 |
 | Drum sound | Kick tune | −12 – +12 semitones | 0 |
 | Drum sound | Kick len, Punch, Hat len | −50 – +50 | 0 |
 | OCT− / OCT+ (a layer's page), Mix (PERFORM, white 6) | Levels: chord, pings, bass, drums (and the noise: OCT on its page) | 0–100, 5 a press | 59, 30, 60, 65 (noise 15) |

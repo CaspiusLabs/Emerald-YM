@@ -10,7 +10,8 @@
 #define EN_VERSION "DEV"
 #endif
 #define PROJ_MAGIC 0x31425544u           /* "DUB1": AMB-1's projects ("ENO1") give the recipes */
-#define PROJ_FORMAT 15u                  /* 15: the Noise page's second (Width, Plate, Echo) and the hats' length
+#define PROJ_FORMAT 16u                  /* 16: the noise's LFO (P_NLFO; 8-15 read, it from the recipes);
+                                         * 15: the Noise page's second (Width, Plate, Echo) and the hats' length
                                          * (P_NWIDTH..P_HLEN; 8-14 read, the new ones from the recipes);
                                          * 14: the chord's Ghost, the kick's density, the echo's Blur, Tone and
                                          * Width, the shimmer's Tune (P_CGHOST..P_NTUNE; 8-13 read, the new ones from the
