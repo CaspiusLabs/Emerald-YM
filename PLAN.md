@@ -660,7 +660,12 @@ loop held, the kick never leaving, an echo you hear, movement by hand rather tha
 - **Smaller engine features:** hats on the four "ands" (an auto pattern); named bass figures (BCD's x.....x.x.....x.)
   as grooves; kick shapes 3+3+2 and a four leaning on 1 and 3; a dotted-half echo time; a lower chord voicing; a
   reggae offbeat chop (a stab pattern); intro and outro (for a set or a recording).
-- **CPU: the hot DSP code from RAM** (the user's peaks to the low 90s on the FM-1, none on a Mac; a study, 2026-10-23).
+- **CPU: the hot DSP code from RAM: tried, not kept** (2026-10-23). The core's stall counters don't run on this chip
+  (F--, both orders); the engine in RAM (b757564: 62 KB in a FAST region) gave the same averages (Fog 30s, Haze
+  50s-60s; flash a tad lower) and evened the peaks to 80-82 (Haze, Chamber down a little, Fog up from 63-70): the
+  load is the engine's own work, not the cache. Reverted (cacd975), the counters' test too. What's left for the CPU:
+  the engine's work itself (the noise machine, the voices, the plate), and the safety valve (from 75%).
+- **(The study, kept for the record)** (the user's peaks to the low 90s on the FM-1, none on a Mac).
   The wl82 has a 32 KB I-cache (8 ways x 4 KB, 32 B lines) over SPI flash (XIP); the engine's hot code is ~33 KB
   (render_chunk 26.5 KB with reverb, echoes, stabs, crackle, cloud inlined; render_drums 2.3, fm_sample 1.9,
   render_bells 0.9, widen 0.9, render_hat 0.8), more than the cache, and the UI between the blocks (draw_main 9 KB,
