@@ -32,15 +32,6 @@ static inline int fm1_perf_cycles_run(void)
     return FM1_C0_TL_CKCNTL != c0;
 }
 
-/* the fetch count moves: two reads 100 us apart differ (after fm1_perf_stalls_enable) */
-static inline int fm1_perf_fetch_run(void)
-{
-    uint32_t c0 = FM1_C0_IF_UACNTL, t0 = fm1_ticks();
-    while ((uint32_t)(fm1_ticks() - t0) < 100u * FM1_TICKS_PER_US)
-        ;
-    return FM1_C0_IF_UACNTL != c0;
-}
-
 static inline void fm1_perf_stalls(uint32_t s[3])
 {
     s[0] = FM1_C0_IF_UACNTL;

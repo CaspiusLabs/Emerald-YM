@@ -50,7 +50,6 @@ uint32_t plat_xruns(void);
 uint32_t plat_cpu_peak(void);            /* the heaviest block of the last ~2 s, % of its time */
 #if EN_PERF
 uint32_t plat_perf(void);                /* (a test build) the peak block's fetch and read stalls: main_fm1.c */
-uint32_t plat_perf_kind(void);           /* 1: shares of its cycles (%); 2: counts a block (tens of thousands) */
 #endif
 int32_t plat_battery(void);              /* the battery divider's reading, raw (0..1023, smoothed); -1: none */
 int plat_usb_power(void);                /* a USB host is there (it powers, and charges, the FM-1) */
