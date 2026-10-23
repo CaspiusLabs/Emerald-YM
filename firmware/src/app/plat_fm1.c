@@ -93,7 +93,9 @@ uint32_t plat_cpu_peak(void) { return audio_cpu_peak; }
 #if EN_PERF
 static volatile uint32_t perf_show;              /* (EN_PERF) the peak block's fetch and read stalls, % of its cycles,
                                                   * and the window's highest (8 bits each); 0xFFFFFFFF: no counter */
+static volatile uint8_t perf_kind;               /* (1: shares of the block's cycles, %; 2: counts a block, tens of thousands) */
 uint32_t plat_perf(void) { return perf_show; }
+uint32_t plat_perf_kind(void) { return perf_kind; }
 #endif
 static int32_t batt_raw = -1;
 int32_t plat_battery(void) { return batt_raw; }

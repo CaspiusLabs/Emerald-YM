@@ -1778,6 +1778,11 @@ static void draw_header(void)
                         ;
                     c[k++] = '/';
                     itoa_u(pf >> 24, c + k);
+                    if (plat_perf_kind() == 2u) {   /* (counts, not shares: in tens of thousands, "x") */
+                        for (; c[k]; k++)
+                            ;
+                        c[k++] = 'x', c[k] = 0;
+                    }
                 }
             }
 #endif

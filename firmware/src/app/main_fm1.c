@@ -26,7 +26,7 @@ struct en_dbg {
 static uint8_t safe_mode;                           /* two failed boots: no audio, USB on (safe_main) */
 
 #if EN_PERF
-static int perf_on;                                 /* the cycle counter moves, the stall counts enabled */
+static int perf_on;                                 /* 1: the cycle counter moves (shares, %); 2: only the counts do */
 #endif
 static void render_block(int32_t *o)                /* ALNK0: one half, measured */
 {
@@ -62,7 +62,10 @@ static void render_block(int32_t *o)                /* ALNK0: one half, measured
             uint32_t ps1[3], dc;
             fm1_perf_stalls(ps1);
             dc = fm1_perf_cycles() - pc0;
-            if (dc) {
+            if (perf_on == 2) {                   /* (no clock count: the block's counts, in tens of thousands) */
+                fif = (ps1[0] - ps0[0]) / 10000u;
+                frd = (ps1[1] - ps0[1]) / 10000u;
+            } else if (dc) {
                 fif = (uint32_t)((uint64_t)(ps1[0] - ps0[0]) * 100u / dc);
                 frd = (uint32_t)((uint64_t)(ps1[1] - ps0[1]) * 100u / dc);
             }
@@ -85,6 +88,7 @@ static void render_block(int32_t *o)                /* ALNK0: one half, measured
             perf_show = perf_on ? (pk_if > 255u ? 255u : pk_if) | (mx_if > 255u ? 255u : mx_if) << 8 |
                                   (pk_rd > 255u ? 255u : pk_rd) << 16 | (mx_rd > 255u ? 255u : mx_rd) << 24
                                 : 0xFFFFFFFFu;
+            perf_kind = (uint8_t)perf_on;
             mx_if = mx_rd = 0u;
 #endif
             win_max = 0;
@@ -456,10 +460,10 @@ void fm1_cstart(void)
     fm1_mailbox_clear();
     fm1_guard_enable(FM1_GUARD_STACK | FM1_GUARD_WRITE | FM1_GUARD_BUS | FM1_GUARD_PC);
 #if EN_PERF
-    if (fm1_perf_cycles_run()) {                  /* (the test build: the stall counts, only if the clock count runs) */
-        fm1_perf_stalls_enable(1);
-        perf_on = 1;
-    }
+    fm1_perf_stalls_enable(1);                    /* (the test build: as the SDK's cpu_effic_init, enabled first) */
+    perf_on = fm1_perf_cycles_run() ? 1 : fm1_perf_fetch_run() ? 2 : 0;   /* (1: %, the clock runs; 2: counts a block) */
+    if (!perf_on)
+        fm1_perf_stalls_enable(0);
 #endif
     safe_mode = (uint8_t)(p3 >> 8);
     fm1_boot.p3_rst = (uint8_t)p3;
