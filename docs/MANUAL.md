@@ -402,19 +402,24 @@ plate's tail goes back into the cloud: with **Cloud** up the reverb turns into a
 with a bigger plate. The grains come thicker as the filter opens, and in a Break there is more of
 the cloud. Dub hold freezes the cloud as it does the echo.
 
-**The echo dissolves.** What goes into the tape is band-limited first (**Tone**, on the Echo page)
-and smeared through a chain of allpass filters, and each repeat goes through three more on its way
-round (**Blur**): every repeat comes back softer and darker than the one before, not a clean copy,
-until it melts into a wash. In the feedback, a band-pass also makes each repeat thinner and
+**The echo dissolves.** What goes into the tape is band-limited first (**Tone**, on the Echo page),
+and the first repeat comes back clean, a copy of the stab on its time. Each repeat after it goes
+through a chain of allpass filters on its way round (**Blur**): every repeat comes back softer and
+darker than the one before, until it melts into a wash. Each new stab pushes the returns down
+(by up to 6 dB, back over about 150 ms), so the repeats are heard in the gaps between the stabs,
+not over them; a thrown stab's repeats ride over. In the feedback, a band-pass also makes each repeat thinner and
 darker, and moves with the arrangement. **Feedback** (the Space page) is how long the repeats go
 on, in seconds: the loop's gain follows the echo's time, so a long echo dies away as soon as a
 short one. A throw, PERFORM's Echo key and the grid's Swell push it further; a soft clip lets the
 feedback pass 100% then, so the echo swells on itself without running away. The echo plays from
-one head, near the middle of the stereo field (**Width** spreads it); a second head, at three
-quarters of the loop, joins in only while a thrown stab rings, to the right. With **Motion** up,
+one head, its right side a few milliseconds behind its left (**Width**: 8 ms at 50), so the
+repeats spread wide without changing their rhythm; a second head, at three quarters of the loop,
+joins in only while a thrown stab rings, to the right. With **Motion** up,
 the heads wander across the field, and every so often the second head slides to another part of
 the loop (two thirds, a half, three eighths, a quarter), bending its repeats in pitch on the way.
-The stabs and the pings sit nearer the middle too, so the echo has the sides.
+The stabs and the pings are widened too, each side taking a little of the other's sound a few
+milliseconds later and slowly drifting (with Width), so the two sides differ without the voices
+being panned further. Under about 80 Hz the mix stays mono.
 
 Under it all, **the noise** (the Noise page): a crackle groove that rings on the chord, and a quiet
 hiss (see [SAVE: Noise](#save-noise)). It plays only while the music plays, fading in and out over
@@ -450,14 +455,22 @@ DUB-1 plays in phrases of eight bars. Each phrase is one of four sections:
 | **Groove** | Every other stab of the pattern; the filter in the middle. |
 | **Thin** | No bass, no shaker; the kick's shape a step sparser. The filter a little darker. The noise's hits fewer, ringing longer. |
 
-In the last bar of each phrase, the next one is chosen. **Motion** sets how often it leaves Full:
-at 0, never; at 50, about one phrase in three; at 100, more than half the time. When it leaves, a
-Break is the likeliest, then a Groove, then Thin. From any other section it goes back to Full
-three times in four (or else from a Break to Thin, from the others to a Break).
+In the last bar of each phrase, the next one is chosen. **Motion** has three regions (marked on its
+ring at 40 and 70):
 
-**Fills:** the last bar before the kick comes back from a Break is always a fill, and other
-phrases end with one now and then (more often with Motion up; never at Motion 0), unless a Break
-follows. In a fill
+- **Under 40: the loop holds.** Full only, phrase after phrase, the kick never leaving; the music
+  moves by its filter, its echo and its texture, as the classic records do.
+- **40 to 70: variations.** Now and then a Groove or a Thin for a phrase or two, more often as
+  Motion rises; the kick half-time at most, never gone.
+- **70 and over: Breaks too.** A Break now and then (the kick and the bass out for a phrase).
+
+Between two departures there are always at least four phrases (32 bars) of Full. From any other
+section it goes back to Full three times in four. PERFORM's Energy and Drop break it by hand at
+any Motion.
+
+**Fills:** the last bar before the kick comes back from a Break is always a fill; from Motion 40 a
+phrase ends with one when the section changes, and now and then otherwise (more often with Motion
+up); under 40, never. In a fill
 the kick (if it's playing) drops out for the second half of the bar, the open hat plays (if Hits
 gives it any steps), and the last stab is thrown into the echo.
 
@@ -466,11 +479,13 @@ far it goes (at 0 it stays put). It opens the stabs' filter (up to an octave and
 way) and its resonance, moves the echo's band-pass, thins the pings in the dark, moves the noise's
 tone and takes a little off the reverb when it's open.
 
-**The kick, a phrase at a time:** as each phrase starts, the kick takes a shape for its eight bars
-(none, the downbeat, one and three, four with two and four ghosted, four on the floor), drawn
-round the Drums page's Density: the nearer a shape is to it, the likelier. Evolve lets it wander
-further; a Thin phrase takes it a step sparser; Energy (PERFORM) moves it. At Density 100 it's
-always four on the floor. With the Pattern page on Pattern, your kick lane plays instead. The
+**The kick, a few phrases at a time:** the kick takes a shape (none, the downbeat, one and three,
+four with two and four ghosted, four on the floor) and keeps it for two to six phrases (fewer as
+Evolve rises), drawn round the Drums page's Density: the nearer a shape is to it, the likelier.
+From Density 90 it's four on the floor in every Full or Groove phrase, ghosted or half in a Thin;
+at 100, always. Under Motion 70 it never goes silent in Full. A piece starts on four on the floor
+for its first three phrases, and after a Break the kick comes back whole. Evolve lets the shape
+wander further; Energy (PERFORM) moves it. With the Pattern page on Pattern, your kick lane plays instead. The
 shape is chosen in the phrase's last bar (dot 8 blinks if it changes), and Lock keeps it.
 
 **The phrase plan** (the drums and the bass): a phrase plays **A A A B A A A B**. A is the main
@@ -496,14 +511,14 @@ Tune, MIDI out and Lights are the same for all.
 
 | Piece | What it is |
 |---|---|
-| **Basic** | F Dorian, 122: the reference. Saw stabs into a dotted-eighth echo, an offbeat sub, the kick mostly four on the floor, a vinyl crackle; a new chord every 32 bars. |
-| **Chamber** | A minor, 118: one chord that never moves (Drift on Hold), organ stabs, longer and darker, a long echo tail, a drone bass, straight time, fewer hits, a kick that comes and goes, the noise ringing on the key (Room). |
-| **Steppers** | D Dorian, 126: shorter, brighter, busier saw stabs, a dotted bass, a dotted-quarter echo, the kick mostly four on the floor; a new chord every 16 bars. |
-| **Fog** | G minor, 112: FM keys, long dark stabs lost in a quarter-note echo and a big plate, a drone bass an octave down, soft drums, a kick that comes and goes, a tape hiss through the noise (Tape); the chord moves every 64 bars. |
-| **Concrete** | C pentatonic minor, 130: the fastest. Chords stacked in fourths, short bright noise stabs, a rolling bass, the drums forward with bright hats and the kick on the floor, more swing, a metallic noise (Machine). |
-| **Night Drive** | Bb Dorian, 124: FM keys, more pings, a half-note echo, a syncopated bass, the most swing, a tape noise; a new chord every 16 bars. |
-| **Pressure** | E Phrygian, 128: the kick and the bass forward, the kick on the floor and the heaviest ducking, one chord held (Drift on Hold), little reverb, a quieter, darker crackle, the least movement. |
-| **Haze** | Eb major, 116: pad stabs, the longest, the most echo and the longest tail, pings an octave up and the most of them, a kick that comes and goes, the most noise, dry and dusty (Dust), and the most Motion: it leaves Full most often. |
+| **Basic** | F Dorian, 122, after Basic Channel's *BCD*: held, saw stabs, short, into a clean dotted-eighth echo, the dry forward, almost no hats, narrow and dark, the kick on the floor; a new chord every 32 bars. |
+| **Chamber** | A minor, 128, after Fluxion's *Vibrant Forms*: one chord that never moves (Drift on Hold), warm organ stabs up front, a long half-note echo, a drone bass, an even four, the steadiest loop, the noise ringing on the key (Room). |
+| **Steppers** | D Dorian, 126, after Maurizio's *M-Series*: the most frozen loop, one chord held, short saw stabs, a dotted bass, the open hat on the four "ands", real swing, clean. |
+| **Fog** | G minor, 120, after Echospace's *The Coldest Season*: pad stabs lost in a quarter-note echo and a big plate, very wide, hiss (Tape), offbeat hats, a drone bass, a kick that comes and goes, a rare Break; the chord moves every 32 bars. |
+| **Concrete** | C pentatonic minor, 136, after Monolake's *Hongkong*: the fastest. Chords stacked in fourths, short bright noise stabs, glassy pings over them, a rolling bass, loud hats, a clean dotted-eighth echo, deep filter sweeps, a vinyl crackle, the most rumble but one. |
+| **Night Drive** | Bb Dorian, 120, after Intrusion's *The Seduction of Silence*: FM keys, more pings, an offbeat bass with a deep sub, a dotted-quarter echo, very wide, a filter that's played; variations now and then; a new chord every 16 bars. |
+| **Pressure** | E Phrygian, 126, after Porter Ricks' *Biokinetics*: it never breaks; the kick and the bass forward with the most rumble, one chord held, a wide tape-noise bed under it, wide. |
+| **Haze** | Eb major, 116: the sparse intro. Pad stabs, the longest, the most echo, pings an octave up and the most of them, a kick that comes and goes, dry and dusty (Dust), wide; variations, no Breaks. |
 
 The pieces' echo tails run from about 4 to 8 seconds.
 
@@ -617,8 +632,10 @@ spectrum (see [The screen](#4-the-screen)). **HOME** again: the Key page (below)
   Above 60 it also moves the **bass's groove**, rarely, to a neighbour (Offbeat to Dotted, say), and
   back towards the piece's own later: at 100, every few minutes; at 60 and under, never. The groove
   away from home usually lasts a few minutes, so a long run's bass line slowly breathes.
-- **Motion:** how often the arrangement leaves Full, how far the filter sweeps, how likely a fill
-  is, and how much the echo's heads, the filter and the band-pass wander.
+- **Motion:** the arrangement, in three regions (marks on the ring at 40 and 70): under 40 the loop
+  holds, 40 to 70 a variation now and then, from 70 Breaks too (see [The arrangement](#6-the-arrangement)).
+  It also sets how far the filter sweeps and how much the echo's heads, the filter and the
+  band-pass wander.
 - **Drift:** how many bars a chord lasts before it moves on: 2, 4, 8, 16, 32 or 64 bars, or Hold
   (it moves only when you press EDIT). The chord moves at the start of a bar.
 
@@ -819,8 +836,8 @@ four are 0 to 100; 50 is the echo as the pieces have it.
   more smeared than the last; at 100, a wash.
 - **Tone:** what goes into the echo, darker or brighter: a low-pass at about 2 kHz at 50, an octave
   down or up for every 25 (from about 500 Hz to 5 kHz).
-- **Width:** how wide the echo sits: at 0, mono; at 50, near the middle; at 100, as wide as it was
-  before 1.3.0.
+- **Width:** how wide the echo, the stabs and the pings sit: at 0, mono; at 50, wide; at 100, as
+  wide as the widest records (Fog and Night Drive have 85).
 - **Size:** how long the plate rings.
 
 ### GLO: Setup
@@ -840,9 +857,10 @@ again stays here.
 On this page the top right shows the machine instead of the tempo. **CPU 35/61** is how much of
 the FM-1's time the sound takes: 35% now (smoothed), and 61% at the heaviest moment of the last
 two seconds. Under 100% the sound never breaks up; if it ever did, a **!** and a count of the
-dropouts would follow. When a moment runs heavy (past 80%), DUB-1 sheds for half a second what is
-least heard, the quietest tails of the pings and the cloud's new grains, so a crowded moment
-doesn't break up. Then, next to the battery icon, a rough charge in % (**67%**), or **USB**
+dropouts would follow. When a moment runs heavy (past 75%), DUB-1 sheds for half a second what is
+least heard: the quietest tails of the stabs and the pings, the cloud's new grains, the noise's new
+hits, the width and the rumble, eased back as the load falls, so a crowded moment doesn't break
+up. Then, next to the battery icon, a rough charge in % (**67%**), or **USB**
 when a computer powers (and charges) the FM-1.
 
 ---
@@ -962,12 +980,12 @@ The defaults are Basic's; each piece has its own.
 |---|---|---|---|
 | Dub | Filter | Shut 100 – Off – Open 100 (for playing, not saved) | Off |
 | Dub | Evolve | 0–100 | 55 |
-| Dub | Motion | 0–100 | 50 |
+| Dub | Motion | 0–100 (under 40 held, 40–70 variations, 70– Breaks) | 30 |
 | Dub | Drift | 2, 4, 8, 16, 32, 64 bars, Hold | 32 bars |
-| Chord | Density | 0–100 (1 to 6 stabs a bar) | 15 |
+| Chord | Density | 0–100 (1 to 6 stabs a bar) | 30 |
 | Chord | Throws | 0–100 (none – about 1 stab in 8 at 50 – about 1 in 3) | 70 |
-| Chord | Wet | 0–100 (the dry 0 dB – −6 dB at 50 – −20 dB) | 65 |
-| Chord | Cutoff | 0–100 (110 Hz – 5.4 kHz) | 45 |
+| Chord | Wet | 0–100 (the dry 0 dB – −6 dB at 50 – −20 dB) | 45 |
+| Chord | Cutoff | 0–100 (110 Hz – 5.4 kHz) | 40 |
 | Pings | Density | 0–100 (0 to 5 notes a loop) | 30 |
 | Pings | Octave | −2 – +2 | 0 |
 | Pings | Wet | 0–100 (the dry 0 dB – −6 dB at 50 – −20 dB) | 70 |
@@ -976,7 +994,7 @@ The defaults are Basic's; each piece has its own.
 | Noise | Decay | 0–100 (about 70 ms – over a second) | 50 |
 | Noise | Character (ALGORITHM) | Vinyl, Tape, Dust, Room, Machine | Vinyl |
 | Noise space | Width, Plate, Echo | 0–100 (50: as the pieces have it) | 50 |
-| Noise space | LFO | 0–100 | 40 |
+| Noise space | LFO | 0–100 | 25 |
 | Bass | Density | 0–100 (100: every note of the groove) | 90 |
 | Bass | Octave | −1 – +1 | 0 |
 | Bass | Groove | Drone, Offbeat, Dotted, Sync, Roller | Offbeat |
@@ -984,16 +1002,18 @@ The defaults are Basic's; each piece has its own.
 | Key | Tempo | 90–140 | 122 |
 | Key | Root | C – B | F |
 | Key | Mode | 8 modes, or Custom | Dorian |
-| Key | Swing | 50%–70% | 52% |
-| Drums | Density (the kick's shapes) | 0–100 (100: four on the floor, always) | 85 |
-| Drums | Hits | 0–100 | 35 |
-| Drums | Hats | 0–100 (−12 dB – ×1 at 50 – +12 dB) | 50 |
+| Key | Swing | 50%–70% | 51% |
+| Drums | Density (the kick's shapes) | 0–100 (from 90: four on the floor in Full; 100: always) | 97 |
+| Drums | Hits | 0–100 | 10 |
+| Drums | Hats | 0–100 (−12 dB – ×1 at 50 – +12 dB) | 40 |
 | Drums | Tone (the hats) | −50 – +50 | 0 |
 | Space | Echo | 0–100 | 55 |
 | Space | Echo time | 1/8, 1/8., 1/4, 1/4., 1/2, 1 bar | 1/8. |
-| Space | Feedback | 1.5 s – 15 s (the tail, to −60 dB) | 5.3 s |
+| Space | Feedback | 1.5 s – 15 s (the tail, to −60 dB) | 6.3 s |
 | Space | Reverb | 0–100 | 35 |
-| Echo | Blur, Tone, Width | 0–100 | 50 |
+| Echo | Blur | 0–100 | 25 |
+| Echo | Tone | 0–100 | 50 |
+| Echo | Width | 0–100 | 40 |
 | Echo | Size | 0–100 | 55 |
 | Setup | Tune | −50 – +50 cents | 0 |
 | Setup | MIDI out | Off, On | On |
@@ -1008,7 +1028,7 @@ The defaults are Basic's; each piece has its own.
 | ALGORITHM | Bass voice (Bass page) | 5 voices | Sub |
 | ALGORITHM | Kit (Drums page) | 5 kits | Tight |
 | Chord sound | Attack | 0–100 (from the voice's own strike) | 0 |
-| Chord sound | Decay | 0–100 (60 ms – 1.5 s, times the voice's) | 35 |
+| Chord sound | Decay | 0–100 (60 ms – 1.5 s, times the voice's) | 25 |
 | Chord sound | Colour, Reso | −50 – +50 | 0 |
 | Ping sound | Tone, Ratio, Length | −50 – +50 | 0 |
 | Ping sound | Bend | 0–100 (from the voice's own) | 0 |
@@ -1021,7 +1041,7 @@ The defaults are Basic's; each piece has its own.
 | Drum sound | Kick tune | −12 – +12 semitones | 0 |
 | Drum sound | Kick len, Punch | −50 – +50 | 0 |
 | Drum sound | Rumble | 0–100 | 20 |
-| OCT− / OCT+ (a layer's page), Mix (PERFORM, white 6) | Levels: chord, pings, bass, drums (and the noise: OCT on its page) | 0–100, 5 a press | 59, 30, 60, 65 (noise 15) |
+| OCT− / OCT+ (a layer's page), Mix (PERFORM, white 6) | Levels: chord, pings, bass, drums (and the noise: OCT on its page) | 0–100, 5 a press | 52, 30, 68, 80 (noise 8) |
 
 Set by the piece (no knob of its own): the pings' tone (from a round blip to a metallic clank;
 the Ping sound page's Tone moves it), the hats' colour (the Drums page's Tone moves it) and how far
