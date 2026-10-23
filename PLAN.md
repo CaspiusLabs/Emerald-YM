@@ -621,6 +621,38 @@ today switches between Random and the slots.
 - **A future set of pieces** in the vein of the listening list's ambient electronica (Max Cooper's "Parting Ways",
   REPORT3-partingways.md): an ostinato mode, the Tempo down to 75-80, real stereo width; and re-evaluating the eight.
 
+## Next: the classics pass (the user, 2026-10-23; after REPORT6-9, build/research/dubtechno/)
+
+The references (the seven classics, an AI session, Outskirts) agree: dub techno's core is in time, not sound (the
+loop held, the kick never leaving, an echo you hear, movement by hand rather than by section). Decided:
+- **The palette:** the eight pieces as eight different ideas, each after one reference: Basic (Basic Channel's
+  BCD), Steppers (Maurizio's M-Series), Chamber (Fluxion's Vibrant Forms), Night Drive (Intrusion's The Seduction of
+  Silence), Concrete (Monolake's Hongkong), Pressure (Porter Ricks' Biokinetics), Fog (Echospace's The Coldest
+  Season), Haze (the sparse intro: Parting Ways, Liumin's softer side). Their recipes as the features arrive.
+- **The echo, clearer** (muddy now, some pieces especially): a clean first repeat, Blur growing with each pass; the
+  returns ducked under the dry; less plate on the returns, the band-pass a little higher. Measured against
+  Radiance's echo (likeness >= 0.15). First.
+- **Width:** the chord's voices spread (with Width), the echo's heads apart left and right (ping-pong), a Haas on
+  the pings, the lows mono under ~80 Hz but some width at 80-150 Hz.
+- **Motion, three regions:** 0-40 the loop holds (Full only: the kick on four, nothing drops; the change by the
+  filter, the echo, the texture); 40-70 variations (Thin or Groove now and then, 32+ bars apart, the kick half-time
+  at most, never gone); 70-100 Breaks too (shorter, 4-8 bars, rarer than now). The kick four outside Thin and Break;
+  the kick's shape, the hats' pattern, the bass's plan redrawn every few phrases (Evolve). Live breaks stay
+  (PERFORM's Energy, Drop). The recipes mostly at 30-40.
+  - **On the knob's ring:** brighter marks at 40 and 70 (the regions' edges).
+  - **HOME's shake of everything** keeps Motion inside its region.
+- **The virtual dub mixer** (off the 8-bar grid): slow, continuous moves of the filter, the echo's send and feedback,
+  the hats' level, the noise's level, each 10-60 s, starting at any bar; the structural changes (the kick, the
+  chord) on phrase lines but rarer. (Today 46% of the changes fall on an 8-bar line, the classics 24%.)
+- **The kick's rumble:** the kick into a dark reverb under ~150 Hz, ducked by the next kick; its knob in Hat len's
+  place on the Drums sound page (then all the kick's there; Hat len back to the recipes). A new parameter (a format
+  change, converted).
+- **Smaller engine features:** hats on the four "ands" (an auto pattern); named bass figures (BCD's x.....x.x.....x.)
+  as grooves; kick shapes 3+3+2 and a four leaning on 1 and 3; a dotted-half echo time; a lower chord voicing; a
+  reggae offbeat chop (a stab pattern); intro and outro (for a set or a recording).
+- **Later: a review of the UI:** the main ways the user shapes a piece, which knobs and where; to improve the UX and
+  the clarity, separating **structure** from **sonority**.
+
 ## Releases after 1.2.0 (the user's ideas, 2026-10-19)
 
 1.2.0 is about live performance. Then, in roughly this order:
