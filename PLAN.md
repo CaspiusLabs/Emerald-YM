@@ -621,6 +621,14 @@ today switches between Random and the slots.
 - **A future set of pieces** in the vein of the listening list's ambient electronica (Max Cooper's "Parting Ways",
   REPORT3-partingways.md): an ostinato mode, the Tempo down to 75-80, real stereo width; and re-evaluating the eight.
 
+## Now: two lines in parallel (the user, 2026-10-23)
+
+After 1.3.0's release (the docs done, e20d31b..e10ddf4; a release video being made in build/film/release-1.3.0/):
+1. **The CPU: the hot code in RAM** (below, "CPU: the hot DSP code from RAM"): first the test build
+   (build/dub-1.3.0l-perf.fwsc, EN_PERF=1: the stall counters on the Setup page), then the FAST region.
+2. **The firmware, on:** the UI review (structure from sonority), song structure (an intro and an outro), the virtual
+   dub mixer, the smaller engine features, the ring marks; all below.
+
 ## Next: the classics pass (the user, 2026-10-23; after REPORT6-9, build/research/dubtechno/)
 
 The references (the seven classics, an AI session, Outskirts) agree: dub techno's core is in time, not sound (the
