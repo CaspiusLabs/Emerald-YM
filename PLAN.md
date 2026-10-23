@@ -654,7 +654,9 @@ loop held, the kick never leaving, an echo you hear, movement by hand rather tha
 - **The virtual dub mixer** (off the 8-bar grid): slow, continuous moves of the filter, the echo's send and feedback,
   the hats' level, the noise's level, each 10-60 s, starting at any bar; the structural changes (the kick, the
   chord) on phrase lines but rarer. (Today 46% of the changes fall on an 8-bar line, the classics 24%.)
-- **The kick's rumble:** the kick into a dark reverb under ~150 Hz, ducked by the next kick; its knob in Hat len's
+- **The kick's rumble** (built, b93e56e; **out of 1.3.0**, b517faf: "not yet to standard, we need more work on it";
+  EN_RUMBLE 0, its code and its parameter P_RUMBLE kept, saved; Pressure's 35 since the user's "too much" at 60): for
+  1.4.0, more work on its sound. The kick into a dark reverb under ~150 Hz, ducked by the next kick; its knob in Hat len's
   place on the Drums sound page (then all the kick's there; Hat len back to the recipes). A new parameter (a format
   change, converted).
 - **Smaller engine features:** hats on the four "ands" (an auto pattern); named bass figures (BCD's x.....x.x.....x.)
