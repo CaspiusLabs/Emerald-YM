@@ -625,7 +625,7 @@ today switches between Random and the slots.
 
 The references (the seven classics, an AI session, Outskirts) agree: dub techno's core is in time, not sound (the
 loop held, the kick never leaving, an echo you hear, movement by hand rather than by section). Decided:
-- **The palette:** the eight pieces as eight different ideas, each after one reference: Basic (Basic Channel's
+- **The palette** (proposed, to confirm): the eight pieces as eight different ideas, each after one reference: Basic (Basic Channel's
   BCD), Steppers (Maurizio's M-Series), Chamber (Fluxion's Vibrant Forms), Night Drive (Intrusion's The Seduction of
   Silence), Concrete (Monolake's Hongkong), Pressure (Porter Ricks' Biokinetics), Fog (Echospace's The Coldest
   Season), Haze (the sparse intro: Parting Ways, Liumin's softer side). Their recipes as the features arrive.
