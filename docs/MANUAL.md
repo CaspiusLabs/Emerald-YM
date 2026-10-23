@@ -587,7 +587,7 @@ ALGORITHM's view, the scope or the spectrum of its sound), with the chord's name
 | Chord | **Attack**: 0 the voice's strike, up to a slow swell | **Decay**: how long a stab rings, 0–100, from 60 ms to 1.5 s (times the voice's own length) | **Colour**: as each voice has it: the saws' detune, the FM voices' brightness, the organs' upper drawbars, the noise against its saw | **Reso**: the filter's resonance |
 | Pings | **Tone**: round to metallic (moves the piece's Ping tone) | **Ratio**: the FM modulator, from harmonic to clangy | **Length** | **Bend**: the pitch falling at the strike, 0 the voice's own, up to from four times its note |
 | Bass | **Bite**: drive, and Growl's bite | **Shape**: up, towards a square; down, towards a pure sine | **Length**: how long each note holds, against its groove's | **Slide**: the glide between notes, ~1 ms to ~250 ms |
-| Drums | **Kick tune**: semitones from the key's note, −12 to +12 | **Kick len** | **Punch**: the kick's start pitch and its click | **Hat len**: how long the shaker and the open hat ring, from about half the kit's to twice |
+| Drums | **Kick tune**: semitones from the key's note, −12 to +12 | **Kick len** | **Punch**: the kick's start pitch and its click | **Rumble**: the kick's low roar between the beats, a dark reverb of the kick alone under 150 Hz, ducked as each kick lands; none (0) to a deep roar (100), longer as it rises |
 
 The chord's Decay is the voice's length times its own: an Organ or a Pad rings longer than Saws at
 the same Decay. The filter's own envelope is quicker. How far each stab opens the filter comes with
@@ -772,8 +772,8 @@ PERFORM's Wet moves the noise too: its dry down and its plate and echo up, or th
   the Drum sound page's Hat tone).
 
 Duck, how far each beat pushes the rest down, is PERFORM's KNOB 4 now (see [Controls](#3-controls)).
-Swing is on the Key page (HOME, then HOME again). How long the hats ring is on the Drum sound page
-(Hat len).
+Swing is on the Key page (HOME, then HOME again). How long the hats ring is each piece's own (its
+recipe): the Drum sound page is the kick's now, with its Rumble.
 
 **The Pattern page** (SEQ a third time, after the Drum sound page): the drums' five lanes,
 sixteen steps each, to write yourself.
@@ -1019,7 +1019,8 @@ The defaults are Basic's; each piece has its own.
 | Chord FM | LFO | 0–100 | 25 |
 | Ping, Bass FM | LFO | 0–100 | 0 |
 | Drum sound | Kick tune | −12 – +12 semitones | 0 |
-| Drum sound | Kick len, Punch, Hat len | −50 – +50 | 0 |
+| Drum sound | Kick len, Punch | −50 – +50 | 0 |
+| Drum sound | Rumble | 0–100 | 20 |
 | OCT− / OCT+ (a layer's page), Mix (PERFORM, white 6) | Levels: chord, pings, bass, drums (and the noise: OCT on its page) | 0–100, 5 a press | 59, 30, 60, 65 (noise 15) |
 
 Set by the piece (no knob of its own): the pings' tone (from a round blip to a metallic clank;

@@ -62,7 +62,7 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     {"Chord wet", 0, 100, 50}, {"Kick density", 0, 100, 100}, {"Blur", 0, 100, 50}, {"Echo tone", 0, 100, 50},
     {"Width", 0, 100, 50},    {"Noise decay", 0, 100, 50},
     {"Noise width", 0, 100, 50}, {"Noise plate", 0, 100, 50}, {"Noise echo", 0, 100, 50}, {"Hat len", -50, 50, 0},
-    {"Noise LFO", 0, 100, 0},
+    {"Noise LFO", 0, 100, 0}, {"Rumble", 0, 100, 0},
 };
 const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PARAMS[i] : &PARAMS[0]; }
 
@@ -73,7 +73,7 @@ const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PAR
  *                  then the sound pages' sixteen, all 0: the voices as they are; then the noise's five (its controls, its character);
  *                  then Throws, Ghost, Notes, Hats level (50, 50, 100, 50: the pieces as they were);
  *                  then the chord's Ghost, the kick's density, the echo's Blur, Tone and Width, the noise's Decay;
- *                  then the noise's Width, Plate and Echo, the hats' length; then the noise's LFO
+ *                  then the noise's Width, Plate and Echo, the hats' length; then the noise's LFO, the kick's rumble
  * (Dri: Drift, 2 4 8 16 32 64 bars or Hold; ET: Echo time, 1/8 1/8. 1/4 1/4. 1/2 1 bar; Grv: the knob's, Drone,
  *  Offbeat, Dotted, Sync, Roller (GROOVE_NAME); CV, PV, BV, Kit: the voices, EN_CV_NAME ...) */
 static const struct {
@@ -90,7 +90,7 @@ static const struct {
                     70, 70, 90, 40,
                     45, 97, 25, 50, 40, 50,
                     50, 50, 50, 0,
-                    25}},
+                    25, 20}},
     {"Chamber",    {55, 20, 62, 72, 20, 35, 6, 40, 70, 4, 45, 72, 50, 55, 30, 30, 0, 1, 128, 9, 5, 0,
                     2, 0, 0, 10, 0, 40, 5, 12, 45, 70, 45, 2, 0, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -101,7 +101,7 @@ static const struct {
                     70, 60, 100, 55,
                     35, 96, 50, 50, 60, 50,
                     50, 50, 50, 0,
-                    30}},
+                    30, 15}},
     {"Steppers",   {52, 35, 80, 82, 35, 35, 6, 45, 50, 1, 30, 50, 55, 25, 50, 25, 0, 1, 126, 2, 1, 0,
                     0, 0, 2, 35, 45, 60, 25, 5, 60, 50, 20, 1, 1, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -112,7 +112,7 @@ static const struct {
                     70, 70, 90, 60,
                     50, 97, 30, 50, 45, 50,
                     50, 50, 50, 0,
-                    30}},
+                    30, 25}},
     {"Fog",        {50, 34, 58, 62, 40, 55, 5, 42, 75, 2, 55, 72, 46, 80, 25, 72, 0, 1, 120, 7, 5, 0,
                     3, -1, 0, 15, 0, 30, 5, 30, 35, 80, 60, 0, 0, 3,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -123,7 +123,7 @@ static const struct {
                     70, 65, 100, 50,
                     55, 70, 50, 50, 85, 50,
                     85, 50, 50, 0,
-                    35}},
+                    35, 30}},
     {"Concrete",   {58, 45, 70, 85, 25, 50, 4, 55, 50, 1, 25, 62, 60, 20, 60, 35, 0, 1, 136, 0, 7, 0,
                     6, 0, 4, 30, 10, 75, 30, 5, 50, 45, 15, 2, 3, 2,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -134,7 +134,7 @@ static const struct {
                     70, 65, 85, 65,
                     50, 97, 20, 50, 55, 50,
                     50, 50, 50, 0,
-                    45}},
+                    45, 40}},
     {"Night Drive", {48, 45, 68, 78, 45, 60, 3, 35, 60, 3, 35, 65, 50, 40, 45, 45, 0, 1, 120, 10, 1, 0,
                     1, 0, 1, 25, 13, 55, 20, 15, 50, 60, 35, 4, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -145,7 +145,7 @@ static const struct {
                     80, 75, 90, 58,
                     55, 94, 50, 50, 85, 50,
                     50, 50, 50, 0,
-                    40}},
+                    40, 25}},
     {"Pressure",   {55, 20, 75, 92, 20, 45, 6, 38, 55, 1, 20, 55, 48, 30, 35, 25, 0, 1, 126, 4, 2, 0,
                     5, 0, 1, 10, 5, 65, 25, 30, 70, 40, 40, 3, 4, 1,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -156,7 +156,7 @@ static const struct {
                     70, 70, 90, 55,
                     60, 98, 50, 50, 75, 50,
                     85, 50, 50, 0,
-                    20}},
+                    20, 60}},
     {"Haze",       {45, 42, 58, 55, 50, 60, 4, 35, 80, 3, 60, 70, 45, 80, 25, 62, 0, 1, 116, 3, 0, 1,
                     3, 0, 0, 20, 10, 35, 5, 20, 30, 85, 70, 2, 0, 4,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -167,7 +167,7 @@ static const struct {
                     70, 70, 100, 50,
                     50, 60, 50, 50, 70, 50,
                     50, 50, 50, 0,
-                    30}},
+                    30, 10}},
 };
 
 const char *en_piece_name(int i) { return PIECES[(unsigned)i < EN_NPIECES ? i : 0].name; }
@@ -779,6 +779,8 @@ typedef struct {
 static stab_t stab[EN_NPAD];
 static float chord_vol, cut_base = 800.0f, st_dec = 0.9995f, st_fdec = 0.99f, st_t60 = 0.3f;
 static float st_env, st_amp, st_fenv, st_throw, throw_dec, st_cofs;
+#define RB_SR (EN_SR / 16.0f)                    /* (the rumble's rate) */
+static float rb_amt, rb_g = 0.9f;                /* (the kick's rumble: its level, its loop's gain) */
 static float ec_dk, ec_dd;                      /* (the classics pass) a strike ducks the echo's returns: its level,
                                                  * eased; the repeats heard in the gaps, not over the stab */
 static float st_s[4], st_c[4], st_h[2];
@@ -2543,6 +2545,11 @@ static void apply(int p, int v)
         ping_dry = 0.5f * fm_exp2f((v <= 50 ? 6.0f * (float)(50 - v) : -14.0f * (float)(v - 50)) * 0.02f * 0.16609640f);
         break;
     case P_HATSLVL: hats_lvl = fm_exp2f((float)(v - 50) * 0.04f); break;   /* x1 at 50, -12 .. +12 dB */
+    case P_RUMBLE:                               /* the kick's rumble: none (0) .. a deep roar (100), longer as it rises:
+                                                  * its tail 0.8 s .. 2.5 s (rumble) */
+        rb_amt = (float)v * (float)v * 0.0001f;
+        rb_g = fm_exp2f(-9.966f * (180.0f / RB_SR) / (0.8f + 1.7f * (float)v * 0.01f));
+        break;
     case P_CGHOST:                               /* the chord's dry: 0 dB (0), -6 dB (50), -20 dB (100); its sends x1 .. x1.7 */
         chord_dry = 0.5f * fm_exp2f((v <= 50 ? 6.0f * (float)(50 - v) : -14.0f * (float)(v - 50)) * 0.02f * 0.16609640f);
         chord_snd = 1.0f + (float)v * 0.007f;
@@ -2910,6 +2917,48 @@ static void drain(void)
 /* --------------------------------------------------------------- render --- */
 #define BLK 256
 static float mixl[BLK], mixr[BLK], rsend[BLK], esend[BLK], kickb[BLK], bassb[BLK], crl[BLK], crr[BLK];
+
+/* (the classics pass) the kick's rumble: the kick alone into a small dark reverb under ~150 Hz, ducked by each beat,
+ * so it roars between them (Porter Ricks, Monolake's Cyan). Four lines mixed (a Householder matrix) at a sixteenth of
+ * the rate (all of it under 150 Hz), its two sides apart over 80 Hz: some width in the lows. Rumble: its level and
+ * its length */
+#define RB_N 692                                /* (157 + 173 + 179 + 183: the lines, ~57-66 ms) */
+static int16_t rb_buf[RB_N];
+static const int16_t RB_LEN[4] = {157, 173, 179, 183}, RB_OFF[4] = {0, 157, 330, 509};
+static int rb_i[4], rb_ph;
+static float rb_lp, rb_acc, rb_d[4], rb_pl, rb_pr, rb_cl, rb_cr, rb_ol, rb_or;
+static inline void rumble(float kick, float duck, float *l, float *r)
+{
+    float f;
+    rb_lp += 0.021f * (kick - rb_lp);            /* (~150 Hz) */
+    rb_acc += rb_lp;
+    if (++rb_ph >= 16) {                          /* the reverb, a sixteenth of the time */
+        float y[4], m = 0.0f, x = rb_acc * (1.0f / 16.0f);
+        int k;
+        rb_ph = 0;
+        rb_acc = 0.0f;
+        for (k = 0; k < 4; k++) {
+            y[k] = (float)rb_buf[RB_OFF[k] + rb_i[k]] * (1.0f / 12000.0f);
+            m += y[k];
+        }
+        m *= 0.5f;                                /* (Householder: y - 2/N sum) */
+        for (k = 0; k < 4; k++) {
+            float w = rb_g * (y[k] - m);
+            rb_d[k] += 0.35f * (w - rb_d[k]);     /* (each round darker) */
+            rb_buf[RB_OFF[k] + rb_i[k]] = s16(rb_d[k] + x);
+            if (++rb_i[k] >= RB_LEN[k])
+                rb_i[k] = 0;
+        }
+        rb_pl = rb_cl, rb_pr = rb_cr;
+        rb_cl = y[0] + y[2], rb_cr = y[1] + y[3];
+    }
+    f = (float)rb_ph * (1.0f / 16.0f);
+    rb_ol += 0.021f * (rb_pl + (rb_cl - rb_pl) * f - rb_ol);   /* (back to the full rate, smoothed) */
+    rb_or += 0.021f * (rb_pr + (rb_cr - rb_pr) * f - rb_or);
+    f = rb_amt * 2.2f * (1.0f - 0.9f * duck);
+    *l += rb_ol * f;
+    *r += rb_or * f;
+}
 
 /* (the classics pass) the chord's and the pings' dry, wider: each side a little of the other's, 5 and 8 ms later and
  * drifting slowly (a chorus crossed), so the two sides differ without the voices panned further; Width (0 none,
@@ -3858,6 +3907,8 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
         cr *= 1.0f + 9.0f * fx_cf;
         l = mixl[j] * dry + 1.2f * el + 1.1f * wl + 1.4f * cl;   /* (1.3.0: the Echoplex's taps out) */
         r = mixr[j] * dry + 1.2f * er + 1.1f * wr + 1.4f * cr;
+        if (rb_amt > 0.0f)                       /* (the kick's rumble, ducked as the kick lands) */
+            rumble(kickb[j], duck_d, &l, &r);
         sd = 0.5f * (l - r);                     /* mono below ~80 Hz (the classics pass; was ~150): the side's lows
                                                   * taken out (two poles), so the
                                                   * stabs' and pings' low partials, the echo's and the plate's, sit in

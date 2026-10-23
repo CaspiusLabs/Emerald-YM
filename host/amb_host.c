@@ -26,6 +26,7 @@
  *   store8                       save the project as DUB-1 1.0.0 did (format 8): reboot then reads it
  *   store10                      save it as 1.2.0 did (format 10, without the noise's five)
  *   storefile PATH               a saved project from a file (tests/host/proj-*.bin)
+ *   store16                      save it as 1.3.0's noise LFO did (format 16, without the kick's rumble)
  *   store15                      save it as 1.3.0's Noise space did (format 15, without the noise's LFO)
  *   store14                      save it as 1.3.0's echo and density did (format 14)
  *   store13                      save it as 1.3.0's pages did (format 13, without the chord's Ghost .. the shimmer's Tune)
@@ -789,6 +790,22 @@ int main(int argc, char **argv)
                 return 2;
             }
             plat_store_save(OBJ_PROJ, fb, (uint32_t)got);
+        } else if (!strcmp(cmd, "store16")) {    /* the project as 1.3.0's noise LFO saved it (format 16) */
+            static project16_t o;
+            int i;
+            keep();
+            memset(&o, 0, sizeof o);
+            o.magic = PROJ_MAGIC, o.format = 16u;
+            memcpy(o.par, proj.par, sizeof o.par);
+            o.pool = proj.pool, o.leds = proj.leds, o.piece = proj.piece, o.screen = proj.screen;
+            for (i = 0; i < NPIECES; i++) {
+                memcpy(o.slot[i].par, proj.slot[i].par, sizeof o.slot[i].par);
+                o.slot[i].pool = proj.slot[i].pool;
+                memcpy(o.slot[i].pings, proj.slot[i].pings, sizeof o.slot[i].pings);
+                o.slot[i].pings_ok = proj.slot[i].pings_ok;
+                o.slot[i].screen = proj.slot[i].screen;
+            }
+            plat_store_save(OBJ_PROJ, &o, sizeof o);
         } else if (!strcmp(cmd, "store15")) {    /* the project as 1.3.0's Noise space saved it (format 15) */
             static project15_t o;
             int i;
