@@ -632,8 +632,10 @@ loop held, the kick never leaving, an echo you hear, movement by hand rather tha
 - **The echo, clearer** (muddy now, some pieces especially): a clean first repeat, Blur growing with each pass; the
   returns ducked under the dry; less plate on the returns, the band-pass a little higher. Measured against
   Radiance's echo (likeness >= 0.15). First.
-- **Width:** the chord's voices spread (with Width), the echo's heads apart left and right (ping-pong), a Haas on
-  the pings, the lows mono under ~80 Hz but some width at 80-150 Hz.
+- **Width** (built, 6e49d06: the echo's right a few ms behind, a crossed chorus on the chord's and the pings' dry,
+  the mix mono under ~80 Hz; the Echo page's Width): the user liked Width 85 over 50 in Fog and Night Drive (the
+  palette's wide pieces, after Echospace and Intrusion); the narrower ones (Basic Channel's, Maurizio's) less.
+  **The echo, clearer:** built, 36f899b ("sounds right").
 - **Motion, three regions:** 0-40 the loop holds (Full only: the kick on four, nothing drops; the change by the
   filter, the echo, the texture); 40-70 variations (Thin or Groove now and then, 32+ bars apart, the kick half-time
   at most, never gone); 70-100 Breaks too (shorter, 4-8 bars, rarer than now). The kick four outside Thin and Break;
