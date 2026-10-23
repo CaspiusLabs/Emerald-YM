@@ -652,6 +652,25 @@ loop held, the kick never leaving, an echo you hear, movement by hand rather tha
 - **Smaller engine features:** hats on the four "ands" (an auto pattern); named bass figures (BCD's x.....x.x.....x.)
   as grooves; kick shapes 3+3+2 and a four leaning on 1 and 3; a dotted-half echo time; a lower chord voicing; a
   reggae offbeat chop (a stab pattern); intro and outro (for a set or a recording).
+- **Song structure: an intro and an outro** (the user, 2026-10-23: "a big change, plan it carefully"; not now, to
+  plan before building). DUB-1 is endless today: it starts full and never ends. The references: the AI session's
+  intros and outros take 24% of its bars (4-58% by song); the classics' US branch 21-27% (Echospace, Intrusion);
+  BCD and M-Series start nearly full. Questions to settle first:
+  - **When:** always (each piece a song: in, the body, out), or a mode (Endless / Song), or played (PLAY held: an outro
+    from here; at start, an intro first)? A set (one piece into the next) and a recording are the main uses.
+  - **How long:** the intro and outro in phrases (2-4: 16-32 bars), or set by a length for the whole song (5, 8, 12
+    minutes)? Does the body's length stay endless till you ask for the outro?
+  - **The order the layers come in** (and leave, the other way): e.g. the noise and the pad first, the hats, the
+    kick, the bass last (the session's and Echospace's way); or the kick first (Basic Channel's). Per piece, from the
+    palette?
+  - **With what's built:** Motion's regions, the held loop, the virtual dub mixer (the filter and the echo opening
+    over the intro), PERFORM's Energy and Drop, Lock; the phrase plan and the kick's shapes (an intro on the kick's
+    ramp from none to four?).
+  - **Between pieces:** an outro into the next piece's intro (a DJ's blend, same tempo or a tempo walk), PRESET
+    turned during an outro.
+  - **The UI:** where it's started and stopped, what the screen shows (the song's part, bars left), how it's said
+    for the reader.
+  - **Saved:** in the piece (its intro's length and order), the project format.
 - **Ring marks elsewhere** (the user, 2026-10-23: Motion's marks "could be used in other places"; built for Motion,
   83b1ff9). A mark wherever a knob's behaviour changes at a point, not smoothly; to build with the UI review:
   - **Hits** (Drums): 15 (the open hat comes in, on the off-beats), 40 (two more), 70 (the rim on two and four).
