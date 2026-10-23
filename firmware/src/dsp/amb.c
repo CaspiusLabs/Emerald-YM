@@ -538,7 +538,8 @@ typedef struct {
 static noise_ctl_t nctl;
 static float throw_mul = 1.0f, ping_dry = 0.5f, hats_lvl = 1.0f;   /* Throws, Ghost, Hats level (apply) */
 static float chord_dry = 0.5f, chord_snd = 1.5f;   /* the chord's Ghost: its dry, its sends (apply) */
-static float ec_g = 0.6f, ec_lpc = 0.68f, ec_wide = 1.0f;   /* the echo's Blur, Tone, Width */
+static float ec_g = 0.6f, ec_lpc = 0.68f, ec_wide = 1.0f;   /* the echo's Blur, Tone, Width (and the chord's and the
+                                                             * pings': widen) */
 static int gpat(void) { return GROOVE_PAT[(unsigned)par[P_GROOVE] < NGROOVE ? par[P_GROOVE] : 0]; }   /* the pattern */
 static int8_t mac[EN_NMAC];                     /* the master actions, -50..50 */
 static int8_t pofs[P_NPARAMS];
@@ -2057,7 +2058,8 @@ static void plate_init(void)
 #define TAPE_SR 11025.0f
 static int16_t tape[TAPE_N] EN_POOL;
 static int tape_w, tape_ph;
-static float tape_acc, tape_lp, tape_hp, tape_p1, tape_p2, tape_c1, tape_c2;
+static float tape_acc, tape_lp, tape_hp, tape_p1, tape_p2, tape_c1, tape_c2, tape_p3, tape_c3;   /* (3: the right's, a
+                                                 * few ms behind the left: Width) */
 static const float HEAD2[5] = {0.75f, 0.6667f, 0.5f, 0.375f, 0.25f};    /* the second head's parts */
 static float head2 = 0.75f, head2_t = 0.75f, head2_v;   /* its place (of the loop), target, speed */
 static float fb_lean;                            /* 0..1: how much of the feedback is the second head's */
@@ -2189,7 +2191,7 @@ static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
     }
     tape_acc += in;
     if (++tape_ph >= 4) {                        /* the tape, a quarter of the time */
-        float d, h1, h2, f1, f2, fb, w;
+        float d, h1, h2, h3, f1, f2, fb, w;
         tape_ph = 0;
         echo_len += (echo_len_t * fx_em - echo_len) * fx_ek;   /* (the grid: the time doubled, the tape slowing) */
         if (echo_len > (float)(TAPE_N - 8))      /* (Tape stop slows a long echo past the tape: it stops at its end;
@@ -2200,6 +2202,8 @@ static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
         if (d > (float)(TAPE_N - 4))
             d = (float)(TAPE_N - 4);
         h1 = tape_read(d);                       /* (the heads: what comes out, on its time) */
+        h3 = tape_read(fm_minf(d + 88.0f * fm_minf(ec_wide, 2.0f), (float)(TAPE_N - 4)));   /* (the classics pass: the
+                                                  * right's 8 ms later at Width 50, 16 at 100: the repeats wide) */
         h2 = tape_read(d * head2);
         f1 = tape_read(fm_maxf(d - (float)EAP_FB, 2.0f));   /* (and what goes round, the diffusers' delay earlier) */
         f2 = tape_read(fm_maxf(d * head2 - (float)EAP_FB, 2.0f));
@@ -2221,6 +2225,8 @@ static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
         }
         tape_acc = 0.0f;
         tape_p1 = tape_c1;
+        tape_p3 = tape_c3;
+        tape_c3 = h3;
         tape_p2 = tape_c2;
         tape_c1 = h1;
         tape_c2 = h2;
@@ -2228,8 +2234,10 @@ static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
     {   /* between the tape's samples: a line from the last to the next; then to the field */
         float f = (float)tape_ph * 0.25f;
         float h1 = tape_p1 + (tape_c1 - tape_p1) * f, h2 = tape_p2 + (tape_c2 - tape_p2) * f;
+        float h3 = tape_p3 + (tape_c3 - tape_p3) * f;
         *el = hg[0] * h1 + hg[2] * h2 * st_throw;   /* (the second head: only while a throw rings) */
-        *er = hg[1] * h1 + hg[3] * h2 * st_throw;
+        *er = hg[1] * (h1 + fm_minf(0.6f * ec_wide, 1.0f) * (h3 - h1)) + hg[3] * h2 * st_throw;   /* (the later head
+                                                  * blended in: 60% at Width 50, all from 84) */
     }
 }
 
@@ -2871,6 +2879,47 @@ static void drain(void)
 /* --------------------------------------------------------------- render --- */
 #define BLK 256
 static float mixl[BLK], mixr[BLK], rsend[BLK], esend[BLK], kickb[BLK], bassb[BLK], crl[BLK], crr[BLK];
+
+/* (the classics pass) the chord's and the pings' dry, wider: each side a little of the other's, 5 and 8 ms later and
+ * drifting slowly (a chorus crossed), so the two sides differ without the voices panned further; Width (0 none,
+ * 50 0.4, 100 0.8) */
+#define WD_N 448                                /* (to 10 ms: the pool's headroom) */
+static int16_t wd_buf[2 * WD_N] EN_POOL;
+static int wd_w;
+static float wd_ph;
+static inline float wd_read(const int16_t *b, float d)
+{
+    float r = (float)wd_w - d, a;
+    int i0, i1;
+    if (r < 0.0f)
+        r += (float)WD_N;
+    i0 = (int)r;
+    i1 = i0 + 1 < WD_N ? i0 + 1 : 0;
+    a = r - (float)i0;
+    return ((float)b[i0] + a * (float)(b[i1] - b[i0])) * (1.0f / 12000.0f);
+}
+static void widen(uint32_t n)
+{
+    const float c = 0.4f * fm_minf(ec_wide, 2.0f);
+    float tl, tr, dl, dr;
+    uint32_t j;
+    wd_ph += (float)n * (0.21f / EN_SR);
+    if (wd_ph >= 1.0f)
+        wd_ph -= 1.0f;
+    tl = (0.005f + 0.001f * fm_sinf(6.2831853f * wd_ph)) * EN_SR;
+    tr = (0.008f + 0.001f * fm_cosf(6.2831853f * wd_ph + 1.3f)) * EN_SR;
+    for (j = 0; j < n; j++) {
+        float l = mixl[j], r = mixr[j];
+        wd_buf[wd_w] = s16(l), wd_buf[WD_N + wd_w] = s16(r);
+        dl = wd_read(wd_buf + WD_N, tl);         /* (the left: the right's, 5 ms on) */
+        dr = wd_read(wd_buf, tr);                /* (the right: the left's, 8 ms on) */
+        if (++wd_w >= WD_N)
+            wd_w = 0;
+        mixl[j] = l + c * dl;
+        mixr[j] = r + c * dr;
+    }
+}
+
 static float tapb[BLK];                          /* the layer the screen listens to, alone (en_view_layer) */
 /* (bassb: the bass, mono, on its own so the duck takes it deeper than the rest) */
 
@@ -3715,6 +3764,7 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
             for (j = 0; j < n; j++)
                 tapb[j] = -(mixl[j] + mixr[j]);
         render_bells(n);
+        widen(n);                                /* (the chord's and the pings' dry, wider) */
         if (tl == 2)
             for (j = 0; j < n; j++)
                 tapb[j] += mixl[j] + mixr[j];
@@ -3777,11 +3827,12 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
         cr *= 1.0f + 9.0f * fx_cf;
         l = mixl[j] * dry + 1.2f * el + 1.1f * wl + 1.4f * cl;   /* (1.3.0: the Echoplex's taps out) */
         r = mixr[j] * dry + 1.2f * er + 1.1f * wr + 1.4f * cr;
-        sd = 0.5f * (l - r);                     /* mono below ~150 Hz: the side's lows taken out (two poles), so the
+        sd = 0.5f * (l - r);                     /* mono below ~80 Hz (the classics pass; was ~150): the side's lows
+                                                  * taken out (two poles), so the
                                                   * stabs' and pings' low partials, the echo's and the plate's, sit in
                                                   * the middle with the bass */
-        ms_lp1 += 0.0211f * (sd - ms_lp1);
-        ms_lp2 += 0.0211f * (sd - ms_lp1 - ms_lp2);
+        ms_lp1 += 0.0113f * (sd - ms_lp1);
+        ms_lp2 += 0.0113f * (sd - ms_lp1 - ms_lp2);
         sd = ms_lp1 + ms_lp2;
         l = (l - sd) * dg + bassb[j] * dry * dgb;
         r = (r + sd) * dg + bassb[j] * dry * dgb;
