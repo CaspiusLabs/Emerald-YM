@@ -287,7 +287,7 @@ GLO held on, RESET (red); SEL held, LOCK. Evolve's own nudges show no card.
 
 ## 4. The screen
 
-![The main screen on the Dub page: Basic, F Dorian, tempo 122; FULL and the phrase's eight dots top left, bars 4 and 8 brighter, the line to the next chord under them; DUB and the eight page dots top right; the ripples with the chord's name in the middle, the four level bars on the left, the duck meter on the right, the six lanes below; FILTER Off, EVOLVE 55, MOTION 50, DRIFT 32 bars](img/screen-main.png "The Dub page (HOME)")
+![The main screen on the Dub page: Basic, F Dorian, tempo 122; FULL and the phrase's eight dots top left, bars 4 and 8 brighter, the line to the next chord under them; DUB and the eight page dots top right; the ripples with the chord's name in the middle, the four level bars on the left, the duck meter on the right, the six lanes below; FILTER Off, EVOLVE 55, MOTION 30 (its ring marked at 40 and 70), DRIFT 64 bars](img/screen-main.png "The Dub page (HOME)")
 ![A Groove phrase: GROOVE lit top left, fewer stabs in the top lane; MOTION 100](img/screen-groove.png "A Groove")
 
 - **Top line:** the piece in a tag, its root and mode. On the right, a beat light (a play triangle
@@ -354,7 +354,7 @@ GLO held on, RESET (red); SEL held, LOCK. Evolve's own nudges show no card.
 - **The cards:** a long press's card, in the middle (see [The cards](#3-controls)).
 - **The level ring:** OCT− / OCT+'s, in the middle (see [Controls](#3-controls)).
 
-![The Space page with FEEDBACK lit as it turns, set to 5.7 s, the line above it saying HOW LONG THE REPEATS GO ON; ECHO 55, ECHO TIME 1/8., REVERB 35](img/screen-turning.png "Turning Feedback on the Space page")
+![The Space page with FEEDBACK lit as it turns, set to 6.7 s, the line above it saying HOW LONG THE REPEATS GO ON; ECHO 55, ECHO TIME 1/8., REVERB 35](img/screen-turning.png "Turning Feedback on the Space page")
 ![The scope: the output as a thick teal line over a dotted centre line, the two traces before it fading behind; Fm7 at the top](img/screen-scope.png "ALGORITHM: the scope")
 ![The spectrum: eighteen columns of teal and brass segments, a white cap over each; Fm7 at the top](img/screen-spectrum.png "ALGORITHM: the spectrum")
 ![Dub hold: red rings, the chord's name red, and "hold" in red above DUB, top right](img/screen-hold.png "Dub hold")
@@ -511,10 +511,10 @@ Tune, MIDI out and Lights are the same for all.
 
 | Piece | What it is |
 |---|---|
-| **Basic** | F Dorian, 122, after Basic Channel's *BCD*: held, saw stabs, short, into a clean dotted-eighth echo, the dry forward, almost no hats, narrow and dark, the kick on the floor; a new chord every 32 bars. |
+| **Basic** | F Dorian, 122, after Basic Channel's *BCD*: held, saw stabs, short, into a clean dotted-eighth echo, the dry forward, almost no hats, narrow and dark, the kick on the floor; a new chord every 64 bars. |
 | **Chamber** | A minor, 128, after Fluxion's *Vibrant Forms*: one chord that never moves (Drift on Hold), warm organ stabs up front, a long half-note echo, a drone bass, an even four, the steadiest loop, the noise ringing on the key (Room). |
 | **Steppers** | D Dorian, 126, after Maurizio's *M-Series*: the most frozen loop, one chord held, short saw stabs, a dotted bass, the open hat on the four "ands", real swing, clean. |
-| **Fog** | G minor, 120, after Echospace's *The Coldest Season*: pad stabs lost in a quarter-note echo and a big plate, very wide, hiss (Tape), offbeat hats, a drone bass, a kick that comes and goes, a rare Break; the chord moves every 32 bars. |
+| **Fog** | G minor, 120, after Echospace's *The Coldest Season*: pad stabs lost in a quarter-note echo and a big plate, very wide, hiss (Tape), offbeat hats, a drone bass, a kick that comes and goes, a rare Break; the chord moves every 64 bars. |
 | **Concrete** | C pentatonic minor, 136, after Monolake's *Hongkong*: the fastest. Chords stacked in fourths, short bright noise stabs, glassy pings over them, a rolling bass, loud hats, a clean dotted-eighth echo, deep filter sweeps, a vinyl crackle, the most rumble but one. |
 | **Night Drive** | Bb Dorian, 120, after Intrusion's *The Seduction of Silence*: FM keys, more pings, an offbeat bass with a deep sub, a dotted-quarter echo, very wide, a filter that's played; variations now and then; a new chord every 16 bars. |
 | **Pressure** | E Phrygian, 126, after Porter Ricks' *Biokinetics*: it never breaks; the kick and the bass forward with the most rumble, one chord held, a wide tape-noise bed under it, wide. |
@@ -610,7 +610,7 @@ the voice and the piece.
 
 ### HOME: Dub
 
-![The Dub page: FILTER Off, EVOLVE 55, MOTION 50, DRIFT 32 bars](img/screen-main.png "The Dub page")
+![The Dub page: FILTER Off, EVOLVE 55, MOTION 30 (its ring marked at 40 and 70), DRIFT 64 bars](img/screen-main.png "The Dub page")
 
 The song as it plays. **ALGORITHM** (here and on any page but a layer's, the Noise page or the Chords page): the middle of the screen as ripples, scope or
 spectrum (see [The screen](#4-the-screen)). **HOME** again: the Key page (below).
@@ -641,7 +641,7 @@ spectrum (see [The screen](#4-the-screen)). **HOME** again: the Key page (below)
 
 ### HOME again: Key
 
-![The Key page: TEMPO 122, ROOT F, MODE Dorian, SWING 52%](img/screen-key.png "The Key page")
+![The Key page: TEMPO 122, ROOT F, MODE Dorian, SWING 51%](img/screen-key.png "The Key page")
 
 The piece's key and time, which a dub track seldom changes. HOME blinks while you're here; HOME
 again goes back to the Dub page.
@@ -655,7 +655,7 @@ again goes back to the Dub page.
 
 ### ENV: Chord
 
-![The Chord page: SAWS, DENSITY 15, THROWS 70, WET 65, CUTOFF 45](img/screen-chord.png "The Chord page")
+![The Chord page: SAWS, DENSITY 30, THROWS 70, WET 45, CUTOFF 40](img/screen-chord.png "The Chord page")
 
 - **Density:** how many stabs a bar, from one (0 to 9) to six (90 and up), on a Euclidean pattern
   off the beat. Evolve may add or take one now and then, leave one out, or rest a whole bar.
@@ -730,7 +730,7 @@ Room, Concrete on Vinyl too, Haze on Dust, Pressure a quieter, darker Vinyl.
 
 ### SAVE again: Noise space
 
-![Noise space: VINYL, WIDTH 50, PLATE 50, ECHO 50, LFO 40, the noise's spectrum in the middle](img/screen-noise-space.png "Noise space")
+![Noise space: VINYL, WIDTH 50, PLATE 50, ECHO 50, LFO 25, the noise's spectrum in the middle](img/screen-noise-space.png "Noise space")
 
 Where the noise sits, and how it moves. SAVE blinks while you're here; SAVE again goes back to
 the Noise page. ALGORITHM still turns its character. 50 is the noise as the pieces have it:
@@ -751,7 +751,7 @@ PERFORM's Wet moves the noise too: its dry down and its plate and echo up, or th
 
 ### LFO: Bass
 
-![The Bass page: SUB, DENSITY 75, OCTAVE 0, GROOVE Offbeat, FIFTH 20](img/screen-bass.png "The Bass page")
+![The Bass page: SUB, DENSITY 90, OCTAVE 0, GROOVE Offbeat, FIFTH 20](img/screen-bass.png "The Bass page")
 
 - **Density:** how many of the groove's notes play. At 100, every one; lower, some are left out
   (at 50 about half), the bar's first note always kept. Which ones is drawn once a phrase (the
@@ -768,7 +768,7 @@ PERFORM's Wet moves the noise too: its dry down and its plate and echo up, or th
 
 ### SEQ: Drums
 
-![The Drums page: TIGHT, DENSITY 85, HITS 35, HATS 50, TONE 0](img/screen-drums.png "The Drums page")
+![The Drums page: TIGHT, DENSITY 97, HITS 10, HATS 40, TONE 0](img/screen-drums.png "The Drums page")
 
 - **Density:** the kick's shape, chosen a phrase at a time: none, the downbeat alone, one and three,
   four with two and four ghosted (10 dB down), or four on the floor. Density is where the shapes
@@ -812,7 +812,7 @@ Auto's (the bass still plays its plan). The patterns are kept with the piece.
 
 ### FX: Space
 
-![The Space page: ECHO 55, ECHO TIME 1/8., FEEDBACK 5.3 s, REVERB 35](img/screen-space.png "The Space page")
+![The Space page: ECHO 55, ECHO TIME 1/8., FEEDBACK 6.3 s, REVERB 35](img/screen-space.png "The Space page")
 
 - **Echo:** how much goes to the echo.
 - **Echo time:** the tape loop's length: an eighth, a dotted eighth, a quarter, a dotted quarter, a
@@ -827,7 +827,7 @@ Auto's (the bass still plays its plan). The patterns are kept with the piece.
 
 ### FX again: Echo
 
-![The Echo page: BLUR 50, TONE 50, WIDTH 50, SIZE 55](img/screen-echo.png "The Echo page")
+![The Echo page: BLUR 25, TONE 50, WIDTH 40, SIZE 55](img/screen-echo.png "The Echo page")
 
 FX on the Space page opens the Echo page (FX blinks while you're here); FX again goes back. The
 four are 0 to 100; 50 is the echo as the pieces have it.
@@ -981,7 +981,7 @@ The defaults are Basic's; each piece has its own.
 | Dub | Filter | Shut 100 – Off – Open 100 (for playing, not saved) | Off |
 | Dub | Evolve | 0–100 | 55 |
 | Dub | Motion | 0–100 (under 40 held, 40–70 variations, 70– Breaks) | 30 |
-| Dub | Drift | 2, 4, 8, 16, 32, 64 bars, Hold | 32 bars |
+| Dub | Drift | 2, 4, 8, 16, 32, 64 bars, Hold | 64 bars |
 | Chord | Density | 0–100 (1 to 6 stabs a bar) | 30 |
 | Chord | Throws | 0–100 (none – about 1 stab in 8 at 50 – about 1 in 3) | 70 |
 | Chord | Wet | 0–100 (the dry 0 dB – −6 dB at 50 – −20 dB) | 45 |
