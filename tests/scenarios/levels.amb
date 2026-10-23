@@ -78,7 +78,7 @@ wait 300
 # Groove's five), Drums' Density (the kick) and Hats, Noise's Density and Level
 tap ENV
 wait 300
-said Chord page, voice Saws: Density 15, Throws 70, Wet 65, Cutoff 45
+said Chord page, voice Saws: Density 30, Throws 70, Wet 45, Cutoff 40
 shot chord_page.png
 spin K2 10
 wait 300
@@ -86,8 +86,8 @@ said Throws 80
 expect par111 80
 spin K3 10
 wait 300
-said Wet 75
-expect par115 75
+said Wet 55
+expect par115 55
 spin K3 -10
 tap ARP
 wait 300
@@ -125,16 +125,16 @@ expect par24 1
 spin K1 40
 tap SEQ
 wait 300
-said Drums page, kit Tight: Density 94, Hits 35, Hats 50, Tone 0
+said Drums page, kit Tight: Density 97, Hits 10, Hats 40, Tone 0
 shot drums_page.png
 spin K3 10
 wait 300
-said Hats 60
-expect par114 60
+said Hats 50
+expect par114 50
 spin K1 -10
 wait 300
-said Density 84
-expect par116 84
+said Density 87
+expect par116 87
 spin K1 10
 tap SAVE
 wait 300
@@ -203,8 +203,8 @@ tap OCT+
 expect par3 80
 tap SAVE
 tap OCT+
-said NOISE 20
-expect par29 20
+said NOISE 13
+expect par29 13
 tap HOME
 # both together, let go quickly: the layer muted, its level kept; again: back
 tap LFO
@@ -304,9 +304,9 @@ release OCT+
 release OCT-
 said NOISE MUTED
 expect mutes 32
-expect par29 20
+expect par29 13
 tap OCT+
-expect par29 25
+expect par29 18
 expect mutes 32
 press OCT-
 press OCT+
@@ -315,7 +315,7 @@ release OCT+
 release OCT-
 said NOISE ON
 expect mutes 0
-expect par29 25
+expect par29 18
 tap HOME
 # both held longer (on the device, held 5 s: the update mode, counted from 2 s): no mute, no steps
 tap LFO
@@ -371,7 +371,7 @@ expect par24 3
 expect par113 65
 expect par111 70
 expect par112 70
-expect par114 50
+expect par114 40
 expect par0 90
 turn PRESET 2
 wait 300
@@ -393,7 +393,7 @@ reboot
 wait 1000
 expect format 16
 expect par112 80
-expect par115 65
-expect par116 94
-expect par117 50
+expect par115 45
+expect par116 97
+expect par117 25
 expect par120 50
