@@ -1985,8 +1985,10 @@ static void tick(void)
  * then a figure-eight tank of two halves, each a modulated allpass, a delay, a damping lowpass, an
  * allpass and a delay, feeding the other half. Stereo out from seven taps a side. The paper's lengths
  * are for 29761 Hz; DS() scales them to 44.1 kHz. */
-#define DS(n) (((n) * 14818 + 5000) / 10000)          /* 44100 / 29761 */
-#define PRE_N 1323                                   /* 30 ms */
+/* (the classics pass: the plate at half the rate, 22.05 kHz: a quarter of the engine's time halved, its memory too;
+ * nothing of it above ~10 kHz was heard: its input band-limited, its damping) */
+#define DS(n) (((n) * 7409 + 5000) / 10000)           /* 22050 / 29761 */
+#define PRE_N 662                                    /* 30 ms */
 #define EXC DS(16)
 enum { L_PRE, L_IN1, L_IN2, L_IN3, L_IN4, L_APL, L_D1L, L_AP2L, L_D2L, L_APR, L_D1R, L_AP2R, L_D2R, L_N };
 static const int DL_LEN[L_N] = {PRE_N, DS(142), DS(107), DS(379), DS(277), DS(672) + EXC + 2, DS(4453), DS(1800),
@@ -2000,6 +2002,8 @@ typedef struct {
 } dl_t;
 static dl_t dl[L_N];
 static float pl_bw, pl_damp_l, pl_damp_r, pl_decay = 0.5f, pl_decay_t = 0.5f, pl_dd2 = 0.5f, lfo_s, lfo_c = 1.0f;
+static float pl_acc, pl_ol, pl_or;               /* (the plate at half the rate: the last input, its last output) */
+static uint32_t pl_ph;
 
 static inline float tap(const dl_t *d, int k)
 {
@@ -2031,26 +2035,26 @@ static inline void reverb(float in, float *ol, float *or_)
     float x, a, b, fb_l = tap(&dl[L_D2R], DS(3163)), fb_r = tap(&dl[L_D2L], DS(3720));
     push(&dl[L_PRE], in);
     x = tap(&dl[L_PRE], PRE_N);
-    pl_bw += 0.6f * (x - pl_bw);
+    pl_bw += 0.84f * (x - pl_bw);                /* (0.6 at the full rate) */
     x = allpass(&dl[L_IN1], DS(142), pl_bw, 0.75f);
     x = allpass(&dl[L_IN2], DS(107), x, 0.75f);
     x = allpass(&dl[L_IN3], DS(379), x, 0.625f);
     x = allpass(&dl[L_IN4], DS(277), x, 0.625f);
     {
-        float s = lfo_s + 0.0001f * lfo_c, c = lfo_c - 0.0001f * s;
+        float s = lfo_s + 0.0002f * lfo_c, c = lfo_c - 0.0002f * s;   /* (the same speed at half the rate) */
         lfo_s = s;
         lfo_c = c;
     }
     a = allpass_mod(&dl[L_APL], (float)DS(672) + (float)EXC * lfo_s, x + pl_decay * fb_l, -0.7f);
     push(&dl[L_D1L], a);
     b = tap(&dl[L_D1L], DS(4453));
-    pl_damp_l += 0.4f * (b - pl_damp_l);
+    pl_damp_l += 0.64f * (b - pl_damp_l);        /* (0.4 at the full rate) */
     b = allpass(&dl[L_AP2L], DS(1800), pl_damp_l * pl_decay, pl_dd2);
     push(&dl[L_D2L], b);
     a = allpass_mod(&dl[L_APR], (float)DS(908) + (float)EXC * lfo_c, x + pl_decay * fb_r, -0.7f);
     push(&dl[L_D1R], a);
     b = tap(&dl[L_D1R], DS(4217));
-    pl_damp_r += 0.4f * (b - pl_damp_r);
+    pl_damp_r += 0.64f * (b - pl_damp_r);
     b = allpass(&dl[L_AP2R], DS(2656), pl_damp_r * pl_decay, pl_dd2);
     push(&dl[L_D2R], b);
     *ol = 0.6f * (tap(&dl[L_D1R], DS(266)) + tap(&dl[L_D1R], DS(2974)) - tap(&dl[L_AP2R], DS(1913)) +
@@ -2237,9 +2241,13 @@ static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
         h1 = tape_read(d);                       /* (the heads: what comes out, on its time) */
         h3 = tape_read(fm_minf(d + 88.0f * fm_minf(ec_wide, 2.0f), (float)(TAPE_N - 4)));   /* (the classics pass: the
                                                   * right's 8 ms later at Width 50, 16 at 100: the repeats wide) */
-        h2 = tape_read(d * head2);
         f1 = tape_read(fm_maxf(d - (float)EAP_FB, 2.0f));   /* (and what goes round, the diffusers' delay earlier) */
-        f2 = tape_read(fm_maxf(d * head2 - (float)EAP_FB, 2.0f));
+        if (st_throw > 1e-4f) {                  /* (the second head: only while a throw rings) */
+            h2 = tape_read(d * head2);
+            f2 = tape_read(fm_maxf(d * head2 - (float)EAP_FB, 2.0f));
+        } else {
+            h2 = f2 = 0.0f;
+        }
         if (en_frozen) {                         /* dub hold: the loop, as it is */
             int k = (int)echo_len, i0 = tape_w - k;
             int16_t s = tape[i0 < 0 ? i0 + TAPE_N : i0];
@@ -2926,12 +2934,11 @@ static float mixl[BLK], mixr[BLK], rsend[BLK], esend[BLK], kickb[BLK], bassb[BLK
 static int16_t rb_buf[RB_N];
 static const int16_t RB_LEN[4] = {157, 173, 179, 183}, RB_OFF[4] = {0, 157, 330, 509};
 static int rb_i[4], rb_ph;
-static float rb_lp, rb_acc, rb_d[4], rb_pl, rb_pr, rb_cl, rb_cr, rb_ol, rb_or;
+static float rb_acc, rb_d[4], rb_pl, rb_pr, rb_cl, rb_cr, rb_ol, rb_or;
 static inline void rumble(float kick, float duck, float *l, float *r)
 {
     float f;
-    rb_lp += 0.021f * (kick - rb_lp);            /* (~150 Hz) */
-    rb_acc += rb_lp;
+    rb_acc += kick;                               /* (the sixteen's mean: its own low-pass) */
     if (++rb_ph >= 16) {                          /* the reverb, a sixteenth of the time */
         float y[4], m = 0.0f, x = rb_acc * (1.0f / 16.0f);
         int k;
@@ -2953,8 +2960,8 @@ static inline void rumble(float kick, float duck, float *l, float *r)
         rb_cl = y[0] + y[2], rb_cr = y[1] + y[3];
     }
     f = (float)rb_ph * (1.0f / 16.0f);
-    rb_ol += 0.021f * (rb_pl + (rb_cl - rb_pl) * f - rb_ol);   /* (back to the full rate, smoothed) */
-    rb_or += 0.021f * (rb_pr + (rb_cr - rb_pr) * f - rb_or);
+    rb_ol = rb_pl + (rb_cl - rb_pl) * f;         /* (back to the full rate: a line between) */
+    rb_or = rb_pr + (rb_cr - rb_pr) * f;
     f = rb_amt * 2.2f * (1.0f - 0.9f * duck);
     *l += rb_ol * f;
     *r += rb_or * f;
@@ -3901,7 +3908,18 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
         }
         cloud(rin * ca * 2.5f * cl_in + pl_back * cloud_amt * 0.22f, &cl, &cr);   /* the grains, into the plate: they bloom;
                                                  * the plate's tail back into the line: the wash grows on itself */
-        reverb(rin * (1.0f - 0.5f * cloud_amt) + (cl + cr) * 0.8f, &wl, &wr);
+        {   /* the plate, every other sample (its input the pair's mean, its output a line between) */
+            const float pin = rin * (1.0f - 0.5f * cloud_amt) + (cl + cr) * 0.8f;
+            if ((pl_ph ^= 1u) != 0u) {
+                pl_acc = pin;
+                wl = pl_ol, wr = pl_or;
+            } else {
+                float nl, nr;
+                reverb(0.5f * (pl_acc + pin), &nl, &nr);
+                wl = 0.5f * (pl_ol + nl), wr = 0.5f * (pl_or + nr);
+                pl_ol = nl, pl_or = nr;
+            }
+        }
         pl_back = 0.5f * (wl + wr);
         cl *= 1.0f + 9.0f * fx_cf;               /* (Freeze: the held cloud brought forward) */
         cr *= 1.0f + 9.0f * fx_cf;
