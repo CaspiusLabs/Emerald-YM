@@ -3877,9 +3877,12 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
             lp = svf_lp(mb_c, mb_s + 2, r, &bp);
             r -= lp + mb_c[3] * bp;
         }
-        l = (l + kickb[j] * (1.0f - 0.5f * fx_wash) + crl[j]) * 0.595f * gain;   /* (1.3.0: +1.5 dB, what the
-                                                                                    * re-balance took, from the headroom) */
-        r = (r + kickb[j] * (1.0f - 0.5f * fx_wash) + crr[j]) * 0.595f * gain;
+        l = (l + kickb[j] * (1.0f - 0.5f * fx_wash) + crl[j]) * 0.75f * gain;   /* (1.3.0: +1.5 dB, what the
+                                                                                  * re-balance took, from the headroom;
+                                                                                  * the classics pass: +2 dB more, the
+                                                                                  * user's ear; the loop held, the
+                                                                                  * level steadier) */
+        r = (r + kickb[j] * (1.0f - 0.5f * fx_wash) + crr[j]) * 0.75f * gain;
         if (mf_lp < 14.15f || mf_hp > 4.35f || mf_wah > 0.001f) {   /* the master filter */
             l = mfx(l, mf_s);
             r = mfx(r, mf_s + 6);
@@ -3908,7 +3911,7 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
         out[2 * j] = (int32_t)(l * 8300000.0f);
         out[2 * j + 1] = (int32_t)(r * 8300000.0f);
         {   /* (the screen's scope and spectrum: the output, or a layer alone) */
-            const float v = en_view_layer ? tapb[j] * 0.595f * gain : l + r;
+            const float v = en_view_layer ? tapb[j] * 0.75f * gain : l + r;
             scope_acc += v;
             spec_acc += v;
         }
