@@ -3635,6 +3635,9 @@ static void render_crackle(uint32_t n)
                 ph = 0;
                 m = acc * 0.25f;
                 acc = 0.0f;
+                if (dry >= 1.0f)                 /* (Dust: no resonance, the combs not run; CPU) */
+                    o[0] = o[1] = o[2] = 0.0f;
+                else
                 for (q = 0; q < 3; q++) {        /* y = x + g LP(y[n - D]), read between two samples */
                     float d = nz_D[q], rd = (float)w - d, a, fb;
                     int i0, i1;
