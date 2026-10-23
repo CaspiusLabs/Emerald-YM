@@ -25,9 +25,17 @@ struct en_dbg {
 } en_dbg __attribute__((section(".noinit")));
 static uint8_t safe_mode;                           /* two failed boots: no audio, USB on (safe_main) */
 
+#if EN_PERF
+static int perf_on;                                 /* the cycle counter moves, the stall counts enabled */
+#endif
 static void render_block(int32_t *o)                /* ALNK0: one half, measured */
 {
     uint32_t t0 = fm1_ticks(), us, budget = HALF_FRAMES * 1000000u / FS;
+#if EN_PERF
+    uint32_t ps0[3], pc0 = 0u;
+    if (perf_on)
+        fm1_perf_stalls(ps0), pc0 = fm1_perf_cycles();
+#endif
     en_dbg.in_audio = 1;
 #if FELUCCA_UAC
     uac_render_start();
@@ -47,11 +55,38 @@ static void render_block(int32_t *o)                /* ALNK0: one half, measured
     {   /* the peak: the heaviest block of each ~2 s (344 halves) */
         static uint32_t win_max, win_n;
         uint32_t pct = us * 100u / budget;
-        en_load = (uint8_t)(pct > 255u ? 255u : pct);   /* (the engine sheds over 80: en_render) */
-        if (pct > win_max)
+#if EN_PERF
+        static uint32_t pk_if, pk_rd, mx_if, mx_rd;
+        uint32_t fif = 0u, frd = 0u;
+        if (perf_on) {                            /* (this block's fetch and read stalls, % of its cycles) */
+            uint32_t ps1[3], dc;
+            fm1_perf_stalls(ps1);
+            dc = fm1_perf_cycles() - pc0;
+            if (dc) {
+                fif = (uint32_t)((uint64_t)(ps1[0] - ps0[0]) * 100u / dc);
+                frd = (uint32_t)((uint64_t)(ps1[1] - ps0[1]) * 100u / dc);
+            }
+            if (fif > mx_if)
+                mx_if = fif;
+            if (frd > mx_rd)
+                mx_rd = frd;
+        }
+#endif
+        en_load = (uint8_t)(pct > 255u ? 255u : pct);   /* (the engine sheds over 75: en_render) */
+        if (pct > win_max) {
             win_max = pct;
+#if EN_PERF
+            pk_if = fif, pk_rd = frd;            /* (the heaviest block's own) */
+#endif
+        }
         if (++win_n >= 344u) {
             audio_cpu_peak = win_max;
+#if EN_PERF
+            perf_show = perf_on ? (pk_if > 255u ? 255u : pk_if) | (mx_if > 255u ? 255u : mx_if) << 8 |
+                                  (pk_rd > 255u ? 255u : pk_rd) << 16 | (mx_rd > 255u ? 255u : mx_rd) << 24
+                                : 0xFFFFFFFFu;
+            mx_if = mx_rd = 0u;
+#endif
             win_max = 0;
             win_n = 0;
         }
@@ -420,6 +455,12 @@ void fm1_cstart(void)
         *d = *s;
     fm1_mailbox_clear();
     fm1_guard_enable(FM1_GUARD_STACK | FM1_GUARD_WRITE | FM1_GUARD_BUS | FM1_GUARD_PC);
+#if EN_PERF
+    if (fm1_perf_cycles_run()) {                  /* (the test build: the stall counts, only if the clock count runs) */
+        fm1_perf_stalls_enable(1);
+        perf_on = 1;
+    }
+#endif
     safe_mode = (uint8_t)(p3 >> 8);
     fm1_boot.p3_rst = (uint8_t)p3;
     fm1_boot.rst_src = src;

@@ -1743,7 +1743,7 @@ static void draw_header(void)
             itoa_u((uint32_t)proj.par[P_TEMPO], t);
         }
         if (ui.view == V_SETUP) {                 /* Setup: the audio load (now/peak), and any dropouts ("!n") */
-            char c[24] = "CPU ";
+            char c[48] = "CPU ";
             uint32_t k;
             itoa_u(plat_cpu_pct(), c + 4);
             for (k = 0; c[k]; k++)
@@ -1756,6 +1756,31 @@ static void draw_header(void)
                 c[k++] = ' ', c[k++] = '!';
                 itoa_u(plat_xruns() > 999u ? 999u : plat_xruns(), c + k);
             }
+#if EN_PERF
+            {   /* (the test build) the heaviest block's fetch stalls and the window's highest, then the reads' */
+                uint32_t pf = plat_perf();
+                for (; c[k]; k++)
+                    ;
+                if (pf == 0xFFFFFFFFu) {
+                    c[k++] = ' ', c[k++] = 'F', c[k++] = '-', c[k++] = '-', c[k] = 0;
+                } else {
+                    c[k++] = ' ', c[k++] = 'F';
+                    itoa_u(pf & 255u, c + k);
+                    for (; c[k]; k++)
+                        ;
+                    c[k++] = '/';
+                    itoa_u(pf >> 8 & 255u, c + k);
+                    for (; c[k]; k++)
+                        ;
+                    c[k++] = ' ', c[k++] = 'R';
+                    itoa_u(pf >> 16 & 255u, c + k);
+                    for (; c[k]; k++)
+                        ;
+                    c[k++] = '/';
+                    itoa_u(pf >> 24, c + k);
+                }
+            }
+#endif
             x -= text_w(&FONT_XS, c);
             cv_text(x, 8, &FONT_XS, c, K_DIM);   /* (the leftmost on the right: its changing width moves nothing) */
         } else {                                 /* elsewhere: the tempo and the beat light */

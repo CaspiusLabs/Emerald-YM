@@ -31,6 +31,10 @@ static inline int32_t clamp(int32_t v, int32_t lo, int32_t hi) { return v < lo ?
 #ifndef EN_CDC
 #define EN_CDC 0                  /* USB serial console off: one plain MIDI interface */
 #endif
+#ifndef EN_PERF
+#define EN_PERF 0                 /* a test build (EN_PERF=1): the core's stall counters around each audio block, on
+                                   * the Setup page (is the CPU's load the instruction cache's misses?) */
+#endif
 #define FELUCCA_CDC EN_CDC
 #ifndef EN_UAC
 #define EN_UAC 1                  /* USB audio input: the master output, recordable over the cable */

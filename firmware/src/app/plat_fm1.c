@@ -90,6 +90,11 @@ int plat_store_save(uint32_t obj, const void *src, uint32_t len) { return flash_
 static volatile uint32_t audio_cpu_pct, audio_xruns, audio_cpu_peak;
 uint32_t plat_cpu_pct(void) { return audio_cpu_pct; }
 uint32_t plat_cpu_peak(void) { return audio_cpu_peak; }
+#if EN_PERF
+static volatile uint32_t perf_show;              /* (EN_PERF) the peak block's fetch and read stalls, % of its cycles,
+                                                  * and the window's highest (8 bits each); 0xFFFFFFFF: no counter */
+uint32_t plat_perf(void) { return perf_show; }
+#endif
 static int32_t batt_raw = -1;
 int32_t plat_battery(void) { return batt_raw; }
 int plat_usb_power(void) { return usb.config && !usb.suspended; }
