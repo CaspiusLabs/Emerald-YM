@@ -652,6 +652,17 @@ loop held, the kick never leaving, an echo you hear, movement by hand rather tha
 - **Smaller engine features:** hats on the four "ands" (an auto pattern); named bass figures (BCD's x.....x.x.....x.)
   as grooves; kick shapes 3+3+2 and a four leaning on 1 and 3; a dotted-half echo time; a lower chord voicing; a
   reggae offbeat chop (a stab pattern); intro and outro (for a set or a recording).
+- **Ring marks elsewhere** (the user, 2026-10-23: Motion's marks "could be used in other places"; built for Motion,
+  83b1ff9). A mark wherever a knob's behaviour changes at a point, not smoothly; to build with the UI review:
+  - **Hits** (Drums): 15 (the open hat comes in, on the off-beats), 40 (two more), 70 (the rim on two and four).
+  - **Kick density** (Drums sound / Drums): 90 (from here four in every Full bar) and the ladder's shapes at 25, 50,
+    75 (one, half, ghosted: where the draw centres).
+  - **Energy** (PERFORM): -25 (from here the next phrase Thin) and +25 (Full, with a fill into it).
+  - **Notes** (Bass): 30 (under it the B bars never fill).
+  - **Evolve** (Dub): 40 (the playing as loose as it gets; past it only the change's rate rises).
+  - Not for smooth knobs (levels, Feedback, Width): their notch (0) or nothing.
+  - Possibly two marks' colours: white for "something new comes in", red for "something drops out" (Motion's 70:
+    the Breaks).
 - **Later: a review of the UI:** the main ways the user shapes a piece, which knobs and where; to improve the UX and
   the clarity, separating **structure** from **sonority**.
 
