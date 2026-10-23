@@ -778,6 +778,8 @@ typedef struct {
 static stab_t stab[EN_NPAD];
 static float chord_vol, cut_base = 800.0f, st_dec = 0.9995f, st_fdec = 0.99f, st_t60 = 0.3f;
 static float st_env, st_amp, st_fenv, st_throw, throw_dec, st_cofs;
+static float ec_dk, ec_dd;                      /* (the classics pass) a strike ducks the echo's returns: its level,
+                                                 * eased; the repeats heard in the gaps, not over the stab */
 static float st_s[4], st_c[4], st_h[2];
 static int32_t st_midi_left;
 static int shape, root_note = 55;               /* the voicing's shape, the chord's root as voiced (MIDI) */
@@ -1470,6 +1472,7 @@ static void stab_fire(float vel, int throw_it)
         midi(0x90, stab[i].note, (uint32_t)(40.0f + 80.0f * vel));
     }
     st_env = vel;
+    ec_dk = fm_maxf(ec_dk, vel);
     st_fenv = 1.0f;
     st_cofs = (frand() - 0.5f) * 0.8f * loose();   /* (1.3.0: each stab its own cutoff, +-0.4 octave) */
     click = cvoice == CV_WHEEL ? 0.12f * vel : 0.0f;
@@ -2130,26 +2133,24 @@ static void heads_step(uint32_t n)
     vmax = 0.008f / fm_maxf(echo_len, 100.0f);
     want = fm_clampf((head2_t - head2) * (1.0f / (2.0f * TAPE_SR)), -vmax, vmax);
     head2_v += (want - head2_v) * fm_minf((float)n * (1.0f / EN_SR), 1.0f);
-    /* the band-pass: ~165..700 Hz below (1.3.0: from ~60..500, so the repeats thin), ~1.1..2.6 kHz above, moving
+    /* the band-pass: ~220..800 Hz below (1.3.0: from ~60..500, so the repeats thin; the classics pass: from ~165..700), ~1.1..2.6 kHz above, moving
      * up together */
     dub_up = 0.0f;                               /* (1.3.0: PERFORM's second knob is Wet now, not Dub) */
     sw = fm_clampf(0.45f + 0.5f * arcm + 0.3f * perf_sw + 0.5f * motion * mod[5].v - 0.3f * dub_up, 0.0f, 1.0f);   /* (Dub up: darker) */
-    tape_hpc = 0.09f + 0.24f * sw * sw;
+    tape_hpc = 0.12f + 0.24f * sw * sw;          /* (the classics pass: ~220 Hz at the bottom, was ~165) */
     tape_lpc = 0.58f + 0.3f * sw;
 }
 
 /* one sample of both: the input (a mono send) to the tape's heads (el, er) and the Echoplex (xl, xr) */
-/* 1.3.0, the echo dissolving (build/research/dubtechno/REPORT2.md, variant D): what enters the tape band-limited (Tone)
- * and through five allpasses, and each repeat through three more in the feedback (Blur: their gain), so a repeat comes
- * back softer and darker than the last instead of a clean copy; one head (the second only while a throw rings), the
- * Echoplex's short taps out of the mix. At the tape's rate; the feedback's allpasses' delay taken off the head's */
-#define EAP_IN 1002                              /* (36 + 95 + 154 + 276 + 441: 3 to 40 ms) */
-#define EAP_FB 277                               /* (37 + 89 + 151) */
-/* (the input's allpasses' delay: their ring's peak ~60 ms after it goes in; the input written that much nearer the
- * head, so the first repeat lands on its time, not ~66 ms behind it (REPORT6 9.2); the loop's period as it was) */
-#define EAP_LEAD 640
-static int16_t eap[EAP_IN + EAP_FB] EN_POOL;    /* (int16 at 1/8000: +-4) */
-static int eap_i[8];
+/* 1.3.0, the echo dissolving (build/research/dubtechno/REPORT2.md, variant D): what enters the tape band-limited (Tone),
+ * each repeat through five allpasses in the feedback (Blur: their gain), so a repeat comes back softer and darker
+ * than the last; one head (the second only while a throw rings), the Echoplex's short taps out of the mix. (The
+ * classics pass, REPORT9: the first repeat clean, a copy of the strike on its time; the blur grows with each pass,
+ * the dub way. The input's allpasses moved into the feedback: they smeared even the first.) At the tape's rate: the
+ * heads read where the strike comes back (the output) and, the allpasses' delay earlier, what goes round again */
+#define EAP_FB 994                               /* (37 + 89 + 151 + 276 + 441: 3 to 40 ms) */
+static int16_t eap[EAP_FB] EN_POOL;             /* (int16 at 1/8000: +-4) */
+static int eap_i[5];
 static float ec_lp, ec_hp;
 static inline float eapf(int k, int off, int n, float x)
 {
@@ -2163,12 +2164,12 @@ static inline float eapf(int k, int off, int n, float x)
 static inline float ec_in(float x)
 {
     ec_lp += ec_lpc * (x - ec_lp);
-    ec_hp += 0.133f * (ec_lp - ec_hp);           /* (~250 Hz) */
-    return eapf(7, 561, 441, eapf(3, 285, 276, eapf(2, 131, 154, eapf(1, 36, 95, eapf(0, 0, 36, ec_lp - ec_hp)))));
+    ec_hp += 0.18f * (ec_lp - ec_hp);            /* (~350 Hz: the repeats above the chord's low mids) */
+    return ec_lp - ec_hp;
 }
 static inline float ec_fb(float x)
 {
-    return eapf(6, EAP_IN + 126, 151, eapf(5, EAP_IN + 37, 89, eapf(4, EAP_IN, 37, x)));
+    return eapf(4, 553, 441, eapf(3, 277, 276, eapf(2, 126, 151, eapf(1, 37, 89, eapf(0, 0, 37, x)))));
 }
 
 static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
@@ -2188,18 +2189,20 @@ static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
     }
     tape_acc += in;
     if (++tape_ph >= 4) {                        /* the tape, a quarter of the time */
-        float d, h1, h2, fb, w;
+        float d, h1, h2, f1, f2, fb, w;
         tape_ph = 0;
         echo_len += (echo_len_t * fx_em - echo_len) * fx_ek;   /* (the grid: the time doubled, the tape slowing) */
         if (echo_len > (float)(TAPE_N - 8))      /* (Tape stop slows a long echo past the tape: it stops at its end;
                                                   * the hold below reads echo_len itself. Reported by genkigenki) */
             echo_len = (float)(TAPE_N - 8);
         head2 += head2_v;
-        d = echo_len * (1.0f + 0.002f * motion * mod[5].v) - (float)EAP_FB;   /* wow; (the diffusers' delay) */
+        d = echo_len * (1.0f + 0.002f * motion * mod[5].v);   /* wow */
         if (d > (float)(TAPE_N - 4))
             d = (float)(TAPE_N - 4);
-        h1 = tape_read(d);
+        h1 = tape_read(d);                       /* (the heads: what comes out, on its time) */
         h2 = tape_read(d * head2);
+        f1 = tape_read(fm_maxf(d - (float)EAP_FB, 2.0f));   /* (and what goes round, the diffusers' delay earlier) */
+        f2 = tape_read(fm_maxf(d * head2 - (float)EAP_FB, 2.0f));
         if (en_frozen) {                         /* dub hold: the loop, as it is */
             int k = (int)echo_len, i0 = tape_w - k;
             int16_t s = tape[i0 < 0 ? i0 + TAPE_N : i0];
@@ -2208,19 +2211,13 @@ static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
             tape[tape_w] = s;
         } else {
             float g = fm_minf(echo_fb + 0.15f * st_throw + 0.12f * perf_echo + 0.1f * dub_up, fb_cap);   /* (Dub: past the knob) */
-            tape_lp += tape_lpc * (h1 + fb_lean * st_throw * (h2 - h1) - tape_lp);   /* each time round: thinner, darker */
+            tape_lp += tape_lpc * (f1 + fb_lean * st_throw * (f2 - f1) - tape_lp);   /* each time round: thinner, darker */
             tape_hp += tape_hpc * (tape_lp - tape_hp);
             fb = ec_fb(tape_lp - tape_hp);       /* (and more dissolved) */
-            w = 0.7f * sat(fb * g * (1.0f / 0.7f));
+            w = ec_in(tape_acc * 0.25f) + 0.7f * sat(fb * g * (1.0f / 0.7f));
             if (++tape_w >= TAPE_N)
                 tape_w = 0;
             tape[tape_w] = s16(w);
-            {                                    /* (the input, EAP_LEAD nearer the head: not read yet, d > it) */
-                int i = tape_w - EAP_LEAD;
-                if (i < 0)
-                    i += TAPE_N;
-                tape[i] = s16((float)tape[i] * (1.0f / 12000.0f) + ec_in(tape_acc * 0.25f));
-            }
         }
         tape_acc = 0.0f;
         tape_p1 = tape_c1;
@@ -3749,8 +3746,17 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
         duck_xb *= duck_relb;
         dgb = 1.0f - fm_minf(2.0f * duck_depth, 0.9f) * duck_db;
         echoes(esend[j] * eg, &el, &er, &xl, &xr);
+        {   /* (a strike: the returns down by up to 6 dB, back over ~150 ms; not a throw's, which rides over) */
+            float ge;
+            ec_dd += (ec_dk - ec_dd) * 0.05f;
+            ec_dk *= 0.99985f;
+            ge = 1.0f - 0.5f * fm_minf(ec_dd, 1.0f) * (1.0f - st_throw);
+            el *= ge;
+            er *= ge;
+        }
         epk = fm_maxf(epk, fm_fabsf(el + er));   /* (the screen's ripples: the echo as it comes out) */
-        rin = (rsend[j] * rg + (el + er) * 0.25f * rev_send) * 0.8f;
+        rin = (rsend[j] * rg + (el + er) * 0.12f * rev_send) * 0.8f;   /* (the classics pass: less of the echo into
+                                                  * the plate, 0.25 before: the repeats stay distinct) */
         if (fx_vt + fx_wash > 0.001f || crash > 0.001f) {   /* Verb, Wash: the dry into the plate; Crash: a burst */
             rin += (mixl[j] + mixr[j] + 2.0f * bassb[j]) * (0.35f * fx_vt + 0.3f * fx_wash);
             if (crash > 0.001f) {
