@@ -5,20 +5,8 @@
 
 #ifdef EN_HOST
 #define EN_POOL
-#define EN_FAST
 #else
 #define EN_POOL __attribute__((section(".pool")))
-/* the hot code, run from RAM (app.ld's FAST, copied at boot): the FM-1's I-cache (32 KB over the SPI flash) can't
- * hold the engine's ~33 KB with the UI's code between the blocks (PLAN.md, CPU) */
-#define EN_FAST __attribute__((section(".fast_text")))
-#endif
-/* (on the device) all of the engine's code in RAM (app.ld puts this file's .text in FAST), but what's cold (a parameter
- * set, a piece loaded, the start) kept in the flash: EN_COLD. (A function in another section isn't inlined into one
- * here, so the hot path is all one section) */
-#ifdef EN_HOST
-#define EN_COLD
-#else
-#define EN_COLD __attribute__((section(".text.amb_cold")))
 #endif
 #define BARRIER() __asm__ volatile("" ::: "memory")
 
@@ -183,7 +171,7 @@ static const struct {
 };
 
 const char *en_piece_name(int i) { return PIECES[(unsigned)i < EN_NPIECES ? i : 0].name; }
-EN_COLD void en_piece(int i, int16_t *par, uint16_t *pool)
+void en_piece(int i, int16_t *par, uint16_t *pool)
 {
     int p;
     i = (unsigned)i < EN_NPIECES ? i : 0;
@@ -237,7 +225,7 @@ static char *itoa_s(int v, char *b)
     return b;
 }
 
-EN_COLD void en_param_text(int i, int v, char *b)
+void en_param_text(int i, int v, char *b)
 {
     static const char *const ONOFF[2] = {"Off", "On"};
     const char *s = 0;
@@ -697,7 +685,7 @@ static void fm_ctl(fmvoice_t *v, const fmpatch_t *p, int alg, float ms)
 }
 
 /* one sample (dk: the pitch now, a multiple of the note's; fb: op 4's feedback) */
-EN_FAST static inline float fm_sample(fmvoice_t *v, int alg, float fb, float dk)
+static inline float fm_sample(fmvoice_t *v, int alg, float fb, float dk)
 {
     float o2, o3, o4, out, *ph = v->ph, *l = v->lv;
     int k;
@@ -1413,7 +1401,7 @@ static void bell_voice(int l, int n, float vel, int32_t wait)
     midi(0x91, (uint32_t)n, (uint32_t)(vel * 110.0f));
 }
 
-EN_FAST static void bell_ring(int l, int slot)
+static void bell_ring(int l, int slot)
 {
     int n = bell_note(l, loop_note[l][slot]);
     float vel = (float)loop_vel[l][slot] * 0.01f;
@@ -1557,7 +1545,7 @@ int en_kick_note(int root)
 }
 #define kick_note en_kick_note
 
-EN_FAST static void drum_fire(int d, float vel)
+static void drum_fire(int d, float vel)
 {
     drum_t *v = &drum[d];
     v->on = 1;
@@ -1923,7 +1911,7 @@ static int dhit(int d, int st, float *vel)
 }
 
 /* the grid: one call a sixteenth (MIDI clock: 6 ticks) */
-EN_FAST static void tick(void)
+static void tick(void)
 {
     int st = (int)(sixteenth & 15u), l, d;
     float r = frand();
@@ -2077,7 +2065,7 @@ static inline void reverb(float in, float *ol, float *or_)
                    tap(&dl[L_D2R], DS(121)));
 }
 
-EN_COLD static void plate_init(void)
+static void plate_init(void)
 {
     float *p = pl_buf;
     int k, i;
@@ -2488,7 +2476,7 @@ static uint32_t ext_age;
 
 static void tempo_set(void) { step_len = EN_SR * 60.0f / ((float)par[P_TEMPO] * 4.0f); }
 
-EN_COLD static void apply(int p, int v)
+static void apply(int p, int v)
 {
     const en_param_t *pi = &PARAMS[p];
     if (v < pi->lo)
@@ -2700,7 +2688,7 @@ static void quiet(void)
     notes_off();
 }
 
-EN_COLD void en_init(void)
+void en_init(void)
 {
     int i;
     for (i = 0; i <= SN; i++)
@@ -2998,7 +2986,7 @@ static inline float wd_read(const int16_t *b, float d)
     return ((float)b[i0] + a * (float)(b[i1] - b[i0])) * (1.0f / 12000.0f);
 }
 static float wd_c;                             /* (its amount, eased: off while shedding) */
-EN_FAST static void widen(uint32_t n)
+static void widen(uint32_t n)
 {
     float c, tl, tr, dl, dr;
     uint32_t j;
@@ -3228,7 +3216,7 @@ static void render_bass(uint32_t n)
     en_bass_level = env;
 }
 
-EN_FAST static void render_bells(uint32_t n)
+static void render_bells(uint32_t n)
 {
     int i;
     const float g = bell_vol * 1.4f, arate = 0.004f + 0.02f * fm_minf(btone * 2.0f, 1.0f);
@@ -3273,7 +3261,7 @@ EN_FAST static void render_bells(uint32_t n)
 /* a hat: the metal and noise, high-passed (Chamberlin SVF, ~1.8 to 5 kHz by Hats) and low-passed (~8 kHz):
  * in the references' 2-8 kHz, not the air above (1.3.0); no pitch; into the echo (metal: the square's share,
  * at: the attack's smoothing) */
-EN_FAST static void render_hat(drum_t *v, uint32_t n, float g, float pl, float pr, float es, float metal, float at)
+static void render_hat(drum_t *v, uint32_t n, float g, float pl, float pr, float es, float metal, float at)
 {
     uint32_t j;
     int k;
@@ -3313,7 +3301,7 @@ EN_FAST static void render_hat(drum_t *v, uint32_t n, float g, float pl, float p
     v->on = amp > 0.0005f;
 }
 
-EN_FAST static void render_drums(uint32_t n)
+static void render_drums(uint32_t n)
 {
     uint32_t j;
     const float g = pulse_vol * KIT[kit].gain, fall = KIT[kit].fall, drive = KIT[kit].drive;
@@ -3843,7 +3831,7 @@ static inline float mfx(float x, float *s)
 }
 
 static float ms_lp1, ms_lp2;                     /* the side's lows (mono below ~150 Hz) */
-EN_FAST static void render_chunk(int32_t *out, uint32_t n, float gain)
+static void render_chunk(int32_t *out, uint32_t n, float gain)
 {
     uint32_t j;
     float epk;
@@ -4067,7 +4055,7 @@ static void control(uint32_t n)                 /* once a chunk: the slow things
         en_drum_glow[i] *= 0.93f;
 }
 
-EN_FAST void en_render(int32_t *out, uint32_t n, uint32_t gain_q12)
+void en_render(int32_t *out, uint32_t n, uint32_t gain_q12)
 {
     const float gain = (float)gain_q12 * (1.0f / 4096.0f) * 2.0f;
     if (en_load > 75u)                           /* (the last block ran heavy: shed for half a second; the classics
