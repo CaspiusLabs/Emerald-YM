@@ -652,6 +652,21 @@ loop held, the kick never leaving, an echo you hear, movement by hand rather tha
 - **Smaller engine features:** hats on the four "ands" (an auto pattern); named bass figures (BCD's x.....x.x.....x.)
   as grooves; kick shapes 3+3+2 and a four leaning on 1 and 3; a dotted-half echo time; a lower chord voicing; a
   reggae offbeat chop (a stab pattern); intro and outro (for a set or a recording).
+- **CPU: the hot DSP code from RAM** (the user's peaks to the low 90s on the FM-1, none on a Mac; a study, 2026-10-23).
+  The wl82 has a 32 KB I-cache (8 ways x 4 KB, 32 B lines) over SPI flash (XIP); the engine's hot code is ~33 KB
+  (render_chunk 26.5 KB with reverb, echoes, stabs, crackle, cloud inlined; render_drums 2.3, fm_sample 1.9,
+  render_bells 0.9, widen 0.9, render_hat 0.8), more than the cache, and the UI between the blocks (draw_main 9 KB,
+  ~60 KB of font read from XIP) evicts it: the likely cause. All internal SRAM runs code (the SDK puts its RTOS and
+  decoders there: .volatile_ram_code into ram0); POOL's "(rw)" is only the linker's label. Plan:
+  1. **Measure first:** the core's counters (C0_IF_UACNT, C0_TL_CKCNT at 0x1EEE200.., to confirm: instruction-fetch
+     misses?) read around render_chunk in a debug build, shown on the CPU page; if misses are the peaks, go on.
+  2. **A FAST region:** POOL 0x54000 -> 0x44000, FAST (rwx) 0x01C64000, 64 KB, holding .ram_text and a new .fast_text
+     (> FAST AT > XIP), copied by main_fm1.c's existing loop before the guard; the PC guard's window 1 over both.
+  3. **Tag** the hot functions .fast_text; -fno-jump-tables for amb.c (its jump tables in XIP); its constant tables
+     into RAM too (or accept their reads).
+  4. **build.py:** calls inside FAST land inside it (the flash-driver part still call-free); FAST's size limit; the
+     pool's 8 KB headroom with the new size.
+  Risks: the ISR's entry stays in flash; the guard no longer protects that range; wait states unconfirmed.
 - **Song structure: an intro and an outro** (the user, 2026-10-23: "a big change, plan it carefully"; not now, to
   plan before building). DUB-1 is endless today: it starts full and never ends. The references: the AI session's
   intros and outros take 24% of its bars (4-58% by song); the classics' US branch 21-27% (Echospace, Intrusion);
