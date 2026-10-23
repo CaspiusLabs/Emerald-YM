@@ -779,6 +779,9 @@ typedef struct {
 static stab_t stab[EN_NPAD];
 static float chord_vol, cut_base = 800.0f, st_dec = 0.9995f, st_fdec = 0.99f, st_t60 = 0.3f;
 static float st_env, st_amp, st_fenv, st_throw, throw_dec, st_cofs;
+#ifndef EN_RUMBLE
+#define EN_RUMBLE 0                              /* (the kick's rumble: off in 1.3.0, its work for 1.4.0) */
+#endif
 #define RB_SR (EN_SR / 16.0f)                    /* (the rumble's rate) */
 static float rb_amt, rb_g = 0.9f, rb_on = 1.0f;   /* (rb_on: eased off while shedding) */                /* (the kick's rumble: its level, its loop's gain) */
 static float ec_dk, ec_dd;                      /* (the classics pass) a strike ducks the echo's returns: its level,
@@ -2554,8 +2557,9 @@ static void apply(int p, int v)
         break;
     case P_HATSLVL: hats_lvl = fm_exp2f((float)(v - 50) * 0.04f); break;   /* x1 at 50, -12 .. +12 dB */
     case P_RUMBLE:                               /* the kick's rumble: none (0) .. a deep roar (100), longer as it rises:
-                                                  * its tail 0.8 s .. 2.5 s (rumble) */
-        rb_amt = (float)v * (float)v * 0.0001f;
+                                                  * its tail 0.8 s .. 2.5 s (rumble); (1.3.0: off, not yet to standard,
+                                                  * the user: EN_RUMBLE 1 for 1.4.0's work; the value kept, saved) */
+        rb_amt = EN_RUMBLE ? (float)v * (float)v * 0.0001f : 0.0f;
         rb_g = fm_exp2f(-9.966f * (180.0f / RB_SR) / (0.8f + 1.7f * (float)v * 0.01f));
         break;
     case P_CGHOST:                               /* the chord's dry: 0 dB (0), -6 dB (50), -20 dB (100); its sends x1 .. x1.7 */

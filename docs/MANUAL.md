@@ -515,9 +515,9 @@ Tune, MIDI out and Lights are the same for all.
 | **Chamber** | A minor, 128, after Fluxion's *Vibrant Forms*: one chord that never moves (Drift on Hold), warm organ stabs up front, a long half-note echo, a drone bass, an even four, the steadiest loop, the noise ringing on the key (Room). |
 | **Steppers** | D Dorian, 126, after Maurizio's *M-Series*: the most frozen loop, one chord held, short saw stabs, a dotted bass, the open hat on the four "ands", real swing, clean. |
 | **Fog** | G minor, 120, after Echospace's *The Coldest Season*: pad stabs lost in a quarter-note echo and a big plate, very wide, hiss (Tape), offbeat hats, a drone bass, a kick that comes and goes, a rare Break; the chord moves every 64 bars. |
-| **Concrete** | C pentatonic minor, 136, after Monolake's *Hongkong*: the fastest. Chords stacked in fourths, short bright noise stabs, glassy pings over them, a rolling bass, loud hats, a clean dotted-eighth echo, deep filter sweeps, a vinyl crackle, the most rumble. |
+| **Concrete** | C pentatonic minor, 136, after Monolake's *Hongkong*: the fastest. Chords stacked in fourths, short bright noise stabs, glassy pings over them, a rolling bass, loud hats, a clean dotted-eighth echo, deep filter sweeps, a vinyl crackle. |
 | **Night Drive** | Bb Dorian, 120, after Intrusion's *The Seduction of Silence*: FM keys, more pings, an offbeat bass with a deep sub, a dotted-quarter echo, very wide, a filter that's played; variations now and then; a new chord every 16 bars. |
-| **Pressure** | E Phrygian, 126, after Porter Ricks' *Biokinetics*: it never breaks; the kick and the bass forward over a heavy rumble, one chord held, a wide tape-noise bed under it, wide. |
+| **Pressure** | E Phrygian, 126, after Porter Ricks' *Biokinetics*: it never breaks; the kick and the bass forward, one chord held, a wide tape-noise bed under it, wide. |
 | **Haze** | Eb major, 116: the sparse intro. Pad stabs, the longest, the most echo, pings an octave up and the most of them, a kick that comes and goes, dry and dusty (Dust), wide; variations, no Breaks. |
 
 The pieces' echo tails run from about 4 to 8 seconds.
@@ -602,7 +602,7 @@ ALGORITHM's view, the scope or the spectrum of its sound), with the chord's name
 | Chord | **Attack**: 0 the voice's strike, up to a slow swell | **Decay**: how long a stab rings, 0–100, from 60 ms to 1.5 s (times the voice's own length) | **Colour**: as each voice has it: the saws' detune, the FM voices' brightness, the organs' upper drawbars, the noise against its saw | **Reso**: the filter's resonance |
 | Pings | **Tone**: round to metallic (moves the piece's Ping tone) | **Ratio**: the FM modulator, from harmonic to clangy | **Length** | **Bend**: the pitch falling at the strike, 0 the voice's own, up to from four times its note |
 | Bass | **Bite**: drive, and Growl's bite | **Shape**: up, towards a square; down, towards a pure sine | **Length**: how long each note holds, against its groove's | **Slide**: the glide between notes, ~1 ms to ~250 ms |
-| Drums | **Kick tune**: semitones from the key's note, −12 to +12 | **Kick len** | **Punch**: the kick's start pitch and its click | **Rumble**: the kick's low roar between the beats, a dark reverb of the kick alone under 150 Hz, ducked as each kick lands; none (0) to a deep roar (100), longer as it rises |
+| Drums | **Kick tune**: semitones from the key's note, −12 to +12 | **Kick len** | **Punch**: the kick's start pitch and its click | **Hat len**: how long the shaker and the open hat ring, from about half the kit's to twice |
 
 The chord's Decay is the voice's length times its own: an Organ or a Pad rings longer than Saws at
 the same Decay. The filter's own envelope is quicker. How far each stab opens the filter comes with
@@ -789,8 +789,8 @@ PERFORM's Wet moves the noise too: its dry down and its plate and echo up, or th
   the Drum sound page's Hat tone).
 
 Duck, how far each beat pushes the rest down, is PERFORM's KNOB 4 now (see [Controls](#3-controls)).
-Swing is on the Key page (HOME, then HOME again). How long the hats ring is each piece's own (its
-recipe): the Drum sound page is the kick's now, with its Rumble.
+Swing is on the Key page (HOME, then HOME again). How long the hats ring is on the Drum sound page
+(Hat len).
 
 **The Pattern page** (SEQ a third time, after the Drum sound page): the drums' five lanes,
 sixteen steps each, to write yourself.
@@ -859,7 +859,7 @@ the FM-1's time the sound takes: 35% now (smoothed), and 61% at the heaviest mom
 two seconds. Under 100% the sound never breaks up; if it ever did, a **!** and a count of the
 dropouts would follow. When a moment runs heavy (past 75%), DUB-1 sheds for half a second what is
 least heard: the quietest tails of the stabs and the pings, the cloud's new grains, the noise's new
-hits, the width and the rumble, eased back as the load falls, so a crowded moment doesn't break
+hits and the width, eased back as the load falls, so a crowded moment doesn't break
 up. Then, next to the battery icon, a rough charge in % (**67%**), or **USB**
 when a computer powers (and charges) the FM-1.
 
@@ -1039,8 +1039,7 @@ The defaults are Basic's; each piece has its own.
 | Chord FM | LFO | 0–100 | 25 |
 | Ping, Bass FM | LFO | 0–100 | 0 |
 | Drum sound | Kick tune | −12 – +12 semitones | 0 |
-| Drum sound | Kick len, Punch | −50 – +50 | 0 |
-| Drum sound | Rumble | 0–100 | 20 |
+| Drum sound | Kick len, Punch, Hat len | −50 – +50 | 0 |
 | OCT− / OCT+ (a layer's page), Mix (PERFORM, white 6) | Levels: chord, pings, bass, drums (and the noise: OCT on its page) | 0–100, 5 a press | 52, 30, 68, 80 (noise 8) |
 
 Set by the piece (no knob of its own): the pings' tone (from a round blip to a metallic clank;

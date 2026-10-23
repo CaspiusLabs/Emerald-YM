@@ -96,7 +96,7 @@ static const uint16_t VIEW_KNOB[NVIEWS][4] = {
     {P_CATT, P_DECAY, P_CCOL, P_CRES},           /* (Env, P_CENV, off the page: the voices and the recipes set it) */
     {P_PTON, P_PRAT, P_PLEN, P_PBEND},
     {P_BBITE, P_BSHAPE, P_BLEN, P_BSLIDE},
-    {P_KTUNE, P_KLEN, P_KPUNCH, P_RUMBLE},       /* (the kick's page: its rumble in Hat len's place, which the recipes keep) */
+    {P_KTUNE, P_KLEN, P_KPUNCH, P_HLEN},         /* (1.4.0: the kick's rumble here, in Hat len's place: EN_RUMBLE) */
     {P_CALG, P_CFRAT, P_CFB, P_CFDEC},
     {P_PALG, P_PFRAT, P_PFB, P_PFDEC},
     {P_BALG, P_BFRAT, P_BFB, P_BFDEC},
@@ -120,7 +120,7 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Attack", "Decay", "Colour", "Reso"},
     {"Tone", "Ratio", "Length", "Bend"},
     {"Bite", "Shape", "Length", "Slide"},
-    {"Kick tune", "Kick len", "Punch", "Rumble"},
+    {"Kick tune", "Kick len", "Punch", "Hat len"},
     {"Algo", "Ratio", "Feedback", "LFO"},
     {"Algo", "Ratio", "Feedback", "LFO"},
     {"Algo", "Ratio", "Feedback", "LFO"},
@@ -156,7 +156,7 @@ static const char *const KNOB_HELP[NVIEWS][4] = {
      "The pitch falling at the strike"},
     {"Drive: clean to growling", "A pure sine, to a square", "How long each note holds", "The glide between notes"},
     {"The kick's pitch, in semitones", "How long the kick booms", "The kick's click and start pitch",
-     "The kick's low roar, between beats"},
+     "How long the hats ring"},
     {"Which operators modulate which", "Operators 3 and 4's pitch", "Op 4 on itself: pure to gritty",
      "The filter swept, over two bars"},
     {"Which operators modulate which", "Operators 3 and 4's pitch", "Op 4 on itself: pure to gritty",
