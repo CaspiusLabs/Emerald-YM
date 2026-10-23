@@ -1621,6 +1621,15 @@ static void arc(int32_t cx, int32_t cy, int32_t r, float v, uint16_t track, uint
 {
     arc_th(cx, cy, r, 3.4f, v, track, fill, bg, bipolar);
 }
+/* a mark across a knob's ring at v (0..1 of its sweep), a little past both its edges: where a knob's behaviour changes
+ * (Motion's regions, 40 and 70) */
+static void arc_mark(int32_t cx, int32_t cy, int32_t r, float v, uint16_t col)
+{
+    const float a = (0.375f + 0.75f * v) * FM_TWO_PI, c = fm_cosf(a), sn = fm_sinf(a);
+    float d;
+    for (d = (float)r - 5.2f; d <= (float)r + 1.6f; d += 0.4f)
+        px_blend(cx + (int32_t)(c * d + 0.5f), cy + (int32_t)(sn * d + 0.5f), col, 16u);
+}
 
 static void caps(char *d, const char *s, int n)  /* s in capitals, at most n - 1 characters */
 {
@@ -2849,6 +2858,10 @@ static void draw_knobs(void)
                 cv_round(cx - w0 / 2 + j * (pw + gap), 33, pw, 8, 2, j == v - lo ? fill : K_LINE);
         } else if (k != K_CPU) {
             arc(cx, 37, 12, hi > lo ? (float)(v - lo) / (float)(hi - lo) : 0.0f, K_LINE, fill, bg, lo < 0);
+            if (k == P_MOTION) {                 /* (Motion's three regions: the loop held, variations, Breaks) */
+                arc_mark(cx, 37, 12, 0.4f, K_TEXT);
+                arc_mark(cx, 37, 12, 0.7f, K_TEXT);
+            }
         }
         if (off && k < P_NPARAMS)
             en_param_text(k, 0, t);

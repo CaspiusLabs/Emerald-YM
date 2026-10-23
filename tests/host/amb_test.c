@@ -777,7 +777,7 @@ int main(void)
         run(120.0f);
         hi = en_throws - t0;
         printf("  throws in 2 min: %u at Evolve 0, %u at Evolve 100\n", lo, hi);
-        CHECK(hi >= 5u && lo == 0u, "throws: %u at Evolve 100, %u at 0", hi, lo);
+        CHECK(hi >= 3u && lo == 0u, "throws: %u at Evolve 100, %u at 0", hi, lo);   /* (fewer fills since the classics pass: a fill throws its last stab) */
     }
 
     /* the loops evolve: with Evolve at 100, the phrases change */

@@ -1678,17 +1678,28 @@ static void section_set(int s)
     en_pulse_rest = (uint8_t)!lay_kick;
 }
 
-static int section_pick(void)                   /* the next phrase: Motion leaves Full; back, mostly */
+/* the next phrase (the classics pass, REPORT9: the classics hold one loop for minutes, the kick never leaving). Motion
+ * in three regions: under 40 the loop holds (Full only: the change is the filter's, the echo's, the texture's); 40-70
+ * a variation now and then (Groove or Thin, a phrase or two; the kick half-time at most); from 70 Breaks too (the
+ * kick and the bass out, a phrase). Within a region, more often as Motion rises; at least four phrases (32 bars) in
+ * Full between departures */
+static uint8_t sec_age;                         /* phrases in Full since the last departure */
+static uint8_t ph_age, ph_reset;                /* phrases since the kick's shape or the plan last changed */
+static int section_pick(void)
 {
-    float r = frand();
-    if (motion < 0.02f)
+    float r = frand(), m;
+    if (motion < 0.4f)
         return SEC_FULL;
-    if (sec != SEC_FULL)
-        return r < 0.75f ? SEC_FULL : sec == SEC_BREAK ? SEC_THIN : SEC_BREAK;
-    if (r >= 0.1f + 0.5f * motion)
+    if (sec != SEC_FULL)                         /* back, mostly; from a Break, a Thin now and then */
+        return r < 0.75f ? SEC_FULL : sec == SEC_BREAK ? SEC_THIN : motion >= 0.7f && frand() < 0.5f ? SEC_BREAK : sec;
+    if (sec_age < 4)
         return SEC_FULL;
-    r = frand();
-    return r < 0.45f ? SEC_BREAK : r < 0.75f ? SEC_GROOVE : SEC_THIN;
+    m = motion < 0.7f ? (motion - 0.4f) * (1.0f / 0.3f) : (motion - 0.7f) * (1.0f / 0.3f);
+    if (r >= 0.15f + 0.35f * m)
+        return SEC_FULL;
+    if (motion >= 0.7f && frand() < 0.4f + 0.3f * m)
+        return SEC_BREAK;
+    return frand() < 0.5f ? SEC_GROOVE : SEC_THIN;
 }
 
 /* (1.3.0) the drums' and the bass's phrase plan (the user: randomness by phrase and bar, not by note): a phrase is
@@ -1779,6 +1790,9 @@ static void bar_start(void)
         cr_dbars--;
     if (pb == 0 && bar > 0) {
         section_set(sec_next);
+        sec_age = sec != SEC_FULL ? 0 : sec_age < 255 ? sec_age + 1 : 255;
+        ph_age = ph_reset ? 0 : ph_age < 255 ? ph_age + 1 : 255;   /* (phrases since the kick or the plan changed) */
+        ph_reset = 0;
         if (!lock) {                             /* (Lock: the kick's shape, the noise's groove, the plan, kept) */
             kick_shape = kick_next;              /* (the phrase's kick and plan, as decided a bar before) */
             hats_publish();
@@ -1793,7 +1807,10 @@ static void bar_start(void)
     if (pb == 7) {
         sec_next = (uint8_t)section_pick();
         /* the last bar before the kick: a fill (the kick drops out halfway, the last stab is thrown) */
-        if (sec_next != SEC_BREAK && (sec == SEC_BREAK || frand() < 0.5f * motion))
+        /* (the classics pass: under Motion 40 none, the kick never leaving; then into or out of a change, or now and
+         * then as Motion rises) */
+        if (sec_next != SEC_BREAK && (sec == SEC_BREAK || (motion >= 0.4f && (sec_next != sec ||
+                                                                             frand() < 0.5f * (motion - 0.4f)))))
             fill = 1;
         /* Energy far down: the next phrase Thin (no bass, no shaker); far up: Full, with a fill into it (after the
          * draws, which stay as they were: at Energy 0 the music is the same) */
@@ -1802,8 +1819,14 @@ static void bar_start(void)
         else if (mac[EN_MAC_ENERGY] >= 25)
             sec_next = SEC_FULL, fill = 1;
         /* (1.3.0) the next phrase's kick and plan, decided now, so the screen can say a change is coming */
-        kick_next = lock ? kick_shape : (uint8_t)kick_draw(sec_next);
-        ph_new_next = (uint8_t)(!lock && evolve > 0.0f && ph_u() < 0.2f + 0.6f * evolve);
+        /* (the classics pass: both held for a few phrases, 2 at Evolve 100 to 6 at 0; a change of section draws the
+         * kick anew) */
+        {
+            const int hold = 2 + (int)(4.0f * (1.0f - evolve));
+            kick_next = lock ? kick_shape : (ph_age + 1 >= hold || sec_next != sec) ? (uint8_t)kick_draw(sec_next) : kick_shape;
+            ph_new_next = (uint8_t)(!lock && evolve > 0.0f && ph_age + 1 >= hold && ph_u() < 0.2f + 0.6f * evolve);
+            ph_reset = (uint8_t)(kick_next != kick_shape || ph_new_next);
+        }
         en_change_next = (uint8_t)(ph_new_next | (kick_next != kick_shape) << 1 | (sec_next != sec) << 2);
     }
     if (!en_frozen && (change_pending || (db && bar > 0 && chord_bars >= (uint32_t)db))) {
@@ -1834,6 +1857,12 @@ static int kick_draw(int next)
     int k;
     if (v >= 100 || phr < 2u || (sec == SEC_BREAK && next != SEC_BREAK && next != SEC_THIN))
         return KS_FOUR;
+    if (v >= 90) {                               /* (the classics pass: the dub pieces' density, four in Full and in a
+                                                  * Groove; a Thin, ghosted or half) */
+        if (next != SEC_THIN)
+            return KS_FOUR;
+        return frand() < 0.5f ? KS_GHOST : KS_HALF;
+    }
     if (phr < 8u)
         x += (4.0f - x) * (float)(8u - phr) * (1.0f / 6.0f);
     if (next == SEC_THIN)
@@ -1846,6 +1875,8 @@ static int kick_draw(int next)
     for (k = 0; k < KS_N - 1; k++)
         if ((r -= w[k]) < 0.0f)
             break;
+    if (k == KS_NONE && next == SEC_FULL && motion < 0.7f)   /* (the kick gone only in a Break, or from Motion 70) */
+        k = KS_ONE;
     return k;
 }
 
