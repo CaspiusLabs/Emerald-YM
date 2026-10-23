@@ -780,7 +780,7 @@ static stab_t stab[EN_NPAD];
 static float chord_vol, cut_base = 800.0f, st_dec = 0.9995f, st_fdec = 0.99f, st_t60 = 0.3f;
 static float st_env, st_amp, st_fenv, st_throw, throw_dec, st_cofs;
 #define RB_SR (EN_SR / 16.0f)                    /* (the rumble's rate) */
-static float rb_amt, rb_g = 0.9f;                /* (the kick's rumble: its level, its loop's gain) */
+static float rb_amt, rb_g = 0.9f, rb_on = 1.0f;   /* (rb_on: eased off while shedding) */                /* (the kick's rumble: its level, its loop's gain) */
 static float ec_dk, ec_dd;                      /* (the classics pass) a strike ducks the echo's returns: its level,
                                                  * eased; the repeats heard in the gaps, not over the stab */
 static float st_s[4], st_c[4], st_h[2];
@@ -2962,7 +2962,7 @@ static inline void rumble(float kick, float duck, float *l, float *r)
     f = (float)rb_ph * (1.0f / 16.0f);
     rb_ol = rb_pl + (rb_cl - rb_pl) * f;         /* (back to the full rate: a line between) */
     rb_or = rb_pr + (rb_cr - rb_pr) * f;
-    f = rb_amt * 2.2f * (1.0f - 0.9f * duck);
+    f = rb_amt * rb_on * 2.2f * (1.0f - 0.9f * duck);
     *l += rb_ol * f;
     *r += rb_or * f;
 }
@@ -2985,11 +2985,15 @@ static inline float wd_read(const int16_t *b, float d)
     a = r - (float)i0;
     return ((float)b[i0] + a * (float)(b[i1] - b[i0])) * (1.0f / 12000.0f);
 }
+static float wd_c;                             /* (its amount, eased: off while shedding) */
 static void widen(uint32_t n)
 {
-    const float c = 0.4f * fm_minf(ec_wide, 2.0f);
-    float tl, tr, dl, dr;
+    float c, tl, tr, dl, dr;
     uint32_t j;
+    wd_c += ((SHED ? 0.0f : 0.4f * fm_minf(ec_wide, 2.0f)) - wd_c) * 0.25f;
+    c = wd_c;
+    if (c < 0.004f)
+        return;
     wd_ph += (float)n * (0.21f / EN_SR);
     if (wd_ph >= 1.0f)
         wd_ph -= 1.0f;
@@ -3033,7 +3037,8 @@ static void render_stabs(uint32_t n)
     if (st_midi_left > 0 && (st_midi_left -= (int32_t)n) <= 0)
         for (i = 0; i < EN_NPAD; i++)
             midi(0x80, stab[i].midi_note, 0);
-    if (env < 3e-4f && amp < 3e-4f) {            /* (1.3.0: done at -70 dB, not -100: past it, nothing heard) */
+    if ((env < 3e-4f && amp < 3e-4f) || (SHED && env < 6e-3f && amp < 6e-3f)) {   /* (1.3.0: done at -70 dB, not -100:
+                                                  * past it, nothing heard; shedding, at -44 dB, as the pings) */
         st_env = st_amp = 0.0f;
         st_throw = thr * fm_expf(-(float)n / (0.5f * EN_SR));
         en_pad_level = 0.0f;
@@ -3521,6 +3526,8 @@ static void noise_step(int s)
     v = (float)nz_vel[nx] * (1.0f / 255.0f);
     nz_wv = v;
     nz_wd = fm_expf(-6.9f / ((0.005f + 0.008f * cr_u()) * EN_SR));   /* (a 5-13 ms burst: struck, staccato) */
+    if (SHED)                                    /* (shedding: no new hits; the rings die, and the combs rest) */
+        return;
     nz_wait = (int32_t)fm_maxf(gap - lead, 0.0f);
     nz_due = 1;
 }
@@ -3580,6 +3587,8 @@ static void render_crackle(uint32_t n)
         float exd = nz_exd;
         const float sw = 0.05f * cont * (1.0f - 0.8f * duck_d);   /* (Tape: the hiss in, between beats) */
         const int32_t sj = nz_wait >= 0 && nz_wait < (int32_t)n ? nz_wait : -1;   /* (a hit strikes in this chunk) */
+        const int rest = SHED && ex < 1e-4f && cont <= 0.0f &&
+                         fm_fabsf(nz_lp[0]) + fm_fabsf(nz_lp[1]) + fm_fabsf(nz_lp[2]) < 2e-4f;
         /* (1.3.0: the noise under the duck, deeper than the music, its sends too: it dips on each beat and swells
          * between, the kick or not; the duck as it is at this chunk's start) */
         const float dn = 1.0f - fm_minf(1.7f * duck_depth, 0.85f) * duck_d;
@@ -3635,7 +3644,7 @@ static void render_crackle(uint32_t n)
                 ph = 0;
                 m = acc * 0.25f;
                 acc = 0.0f;
-                if (dry >= 1.0f)                 /* (Dust: no resonance, the combs not run; CPU) */
+                if (dry >= 1.0f || rest)         /* (Dust: no resonance, the combs not run; shedding, rings quiet) */
                     o[0] = o[1] = o[2] = 0.0f;
                 else
                 for (q = 0; q < 3; q++) {        /* y = x + g LP(y[n - D]), read between two samples */
@@ -3877,6 +3886,7 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
         render_fx(n);
     eg += (1.0f - eg) * fx_wash;                 /* Wash: everything into the echo */
     epk = en_echo_pk;
+    rb_on += ((SHED ? 0.0f : 1.0f) - rb_on) * 0.25f;
     for (j = 0; j < n; j++) {
         float wl, wr, l, r, el, er, xl, xr, dg, dgb, rin, cl, cr, sd, dry = 1.0f - 0.75f * fx_wash;
         duck_d += (duck_x - duck_d) * 0.08f;
@@ -3928,7 +3938,7 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
         cr *= 1.0f + 9.0f * fx_cf;
         l = mixl[j] * dry + 1.2f * el + 1.1f * wl + 1.4f * cl;   /* (1.3.0: the Echoplex's taps out) */
         r = mixr[j] * dry + 1.2f * er + 1.1f * wr + 1.4f * cr;
-        if (rb_amt > 0.0f)                       /* (the kick's rumble, ducked as the kick lands) */
+        if (rb_amt > 0.0f && rb_on > 0.004f)     /* (the kick's rumble, ducked as the kick lands) */
             rumble(kickb[j], duck_d, &l, &r);
         sd = 0.5f * (l - r);                     /* mono below ~80 Hz (the classics pass; was ~150): the side's lows
                                                   * taken out (two poles), so the
@@ -4048,7 +4058,8 @@ static void control(uint32_t n)                 /* once a chunk: the slow things
 void en_render(int32_t *out, uint32_t n, uint32_t gain_q12)
 {
     const float gain = (float)gain_q12 * (1.0f / 4096.0f) * 2.0f;
-    if (en_load > 80u)                           /* (the last block ran heavy: shed for half a second) */
+    if (en_load > 75u)                           /* (the last block ran heavy: shed for half a second; the classics
+                                                  * pass: from 75, was 80, and shedding more) */
         shed_left = (int32_t)(0.5f * EN_SR);
     else if (shed_left > 0)
         shed_left -= (int32_t)n;

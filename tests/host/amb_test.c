@@ -501,6 +501,36 @@ int main(void)
         CHECK(en_playing && en_bars > 16u && peak > 0.02f, "a piece's parameters, then PLAY: not playing (%u)", en_bars);
     }
 
+    /* the safety valve (the classics pass): under load (en_load over 75, the FM-1's meter) the engine sheds: no new
+     * noise hits, the width and the rumble eased off, tails shorter; the music goes on, nothing broken, and back */
+    {
+        int16_t pp[P_NPARAMS];
+        uint16_t pl;
+        int k;
+        uint32_t w0, w1, w2;
+        float p_shed;
+        fresh();
+        en_piece(7, pp, &pl);                    /* (Haze: Dust, the cloud, the widest load on the FM-1) */
+        for (k = 0; k < P_NPARAMS; k++)
+            en_set(k, pp[k]);
+        en_pool(pl);
+        en_regrow();
+        en_play(1);
+        run(10.0f);
+        w0 = en_nev_w;
+        en_load = 95;
+        peak = 0.0f, bad = 0;
+        run(10.0f);
+        p_shed = peak;
+        w1 = en_nev_w;
+        en_load = 40;
+        run(10.0f);
+        w2 = en_nev_w;
+        printf("  the valve: noise events %u in 10 s shedding, %u after; peak %.3f shedding\n", w1 - w0, w2 - w1, (double)p_shed);
+        CHECK(bad == 0 && p_shed > 0.02f && w2 - w1 > w1 - w0, "the valve: bad %d, peak %.3f, events %u then %u",
+              bad, (double)p_shed, w1 - w0, w2 - w1);
+    }
+
     /* the chords' slots, Loop: Fm7, Bb, (a gap: Bb holds), C6, played in turn a change every two bars, round again
      * (the rest gaps: the loop is four long); the slot playing edited, heard at once; to Endless: the one playing up
      * to slot 1; the labels */
