@@ -64,7 +64,7 @@ shot screen-perform.png
 key w6 up
 tap HOME
 turn K3 50
-wait 30000
+wait 166000
 shot screen-groove.png
 # the Echo page (FX, FX again)
 tap FX

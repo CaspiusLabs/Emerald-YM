@@ -288,7 +288,7 @@ GLO held on, RESET (red); SEL held, LOCK. Evolve's own nudges show no card.
 ## 4. The screen
 
 ![The main screen on the Dub page: Basic, F Dorian, tempo 122; FULL and the phrase's eight dots top left, bars 4 and 8 brighter, the line to the next chord under them; DUB and the eight page dots top right; the ripples with the chord's name in the middle, the four level bars on the left, the duck meter on the right, the six lanes below; FILTER Off, EVOLVE 55, MOTION 30 (its ring marked at 40 and 70), DRIFT 64 bars](img/screen-main.png "The Dub page (HOME)")
-![A Groove phrase: GROOVE lit top left, fewer stabs in the top lane; MOTION 100](img/screen-groove.png "A Groove")
+![A Groove phrase: GROOVE lit top left, fewer stabs in the top lane; MOTION 80](img/screen-groove.png "A Groove")
 
 - **Top line:** the piece in a tag, its root and mode. On the right, a beat light (a play triangle
   while resting), the tempo (EXT when it follows MIDI clock), a dot when there are unsaved
