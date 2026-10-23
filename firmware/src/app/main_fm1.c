@@ -4,7 +4,7 @@
 /* AMB-1 on the FM-1 (from X0X's): boot (WDT first, boot-loop guard, guards), LCD, input (TIMER5
  * 10 kHz), audio (ALNK0), USB; then the main loop: UI at ~60 frames/s, input polled in between. */
 extern uint32_t _data_start[], _data_end[], _data_load[], _bss_start[], _bss_end[];
-extern uint32_t _pool_start[], _pool_end[], _rt_start[], _rt_end[], _rt_load[];
+extern uint32_t _pool_start[], _pool_end[], _rt_start[], _rt_end[], _rt_load[], _ft_start[], _ft_end[], _ft_load[];
 
 /* --------------------------------------------------------------- audio --- */
 /* Felucca's 256-frame halves (5.8 ms): AMB-1's render is light, and a strum wants the short latency */
@@ -135,7 +135,7 @@ static void audio_silence(void)                     /* IRQs off (flash erase): t
 
 /* ------------------------------------------------------------ timer --- */
 static uint8_t usb_due;
-void fm1_timer5_irq(void)
+__attribute__((section(".fast_text"))) void fm1_timer5_irq(void)   /* (in RAM: 10 kHz, between the audio blocks) */
 {
     static uint32_t sub;
     fm1_timer5_ack();
@@ -456,6 +456,8 @@ void fm1_cstart(void)
     for (s = _data_load, d = _data_start; d < _data_end; s++, d++)
         *d = *s;
     for (s = _rt_load, d = _rt_start; d < _rt_end; s++, d++)
+        *d = *s;
+    for (s = _ft_load, d = _ft_start; d < _ft_end; s++, d++)   /* (the hot code into RAM: FAST, app.ld) */
         *d = *s;
     fm1_mailbox_clear();
     fm1_guard_enable(FM1_GUARD_STACK | FM1_GUARD_WRITE | FM1_GUARD_BUS | FM1_GUARD_PC);
