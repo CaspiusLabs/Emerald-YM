@@ -1,5 +1,14 @@
 # Co jest sprawdzone
 
+## Rozwinięcie 0.2.3
+
+SELECT/PRESETS regulują osobno FM i perkusję. Unity miks zachowuje bitowo
+brzmienie 0.2.2; dodatkowe testy potwierdzają osobne ścieżki i wyciszanie.
+CPU/XRUN są ukryte na ekranie, lecz liczniki i ochrona pozostają. Testy UI
+potwierdzają brak odświeżeń od zmian tych liczników i pojedyncze kafelki miksera.
+30 s ciągłego podkładu z dwiema/trzema nutami live: CPU MAX 84%, XRUNS 0,
+overload 0, passed=true. Szczegóły w docs/releases/v0.2.3.md.
+
 ## Rozwinięcie 0.2.2
 
 Nowy profil PSG, głosy live i LED-y mają osobne testy desktopowe; opis w

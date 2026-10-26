@@ -2,7 +2,7 @@
 
 - Rozmawiaj z użytkownikiem po polsku. Pracujemy nad firmware'em M-VAVE FM-1 na lokalnym Windows.
 - Bazą do rozbudowy jest zaakceptowana na urządzeniu wersja `v0.1.4`. `VERSION` jest źródłem numeru wydania. Zobacz README, BUILDING, CHANGELOG i docs/ARCHITECTURE.md.
-- Bieżące rozwinięcie to 0.2.2 (PSG/live); opis w docs/releases/v0.2.2.md.
+- Bieżące rozwinięcie to 0.2.3 (mikser FM/PSG/perkusja); opis w docs/releases/v0.2.3.md.
   Zachowaj 0.1.4 jako osobną zaakceptowaną bazę. Nie myl prób 0.2.x z jej dowodami.
 - PSG to ograniczony profil muzyczny Sega: 3 tony i stały biały szum clock/512.
   Nie jest to dowolny interfejs rejestrów/VGM. Optymalizacja jednego zbocza
@@ -16,6 +16,13 @@
 - USB zawiera też Roland UM-ONE. Testy urządzenia kieruj wyłącznie do zweryfikowanej pary Emerald YM FM-1. Protokół statusu jest w YM-USB-PROTOCOL.md. Nie wymyślaj komunikatów SysEx.
 - Audio: 44,1 kHz, bloki 256 ramek, około 5804 us budżetu. Próg ochronny 85% jest celowy; nie usuwaj ani nie podnoś go dla pozornego przejścia testów.
 - Krytyczny kod/tablice są w `.audio_hot`, kopiowane do RAM przed startem. Nie zmieniaj mapy pamięci, far-call i guardów bez kontroli linkera i czasu wykonania. Kod flash-off `.ram_text` nadal nie może wołać do XIP.
+- Od 0.2.3 główne leaf-settery/gettery mają sekcję `.ym_control` w XIP,
+  zbieraną przed wykluczeniem tekstu obiektów emulatora. Wywołuje je pętla
+  główna przez istniejące FL_FAR, nie renderer. Budowanie sprawdza ich adresy.
+  Granice obszarów RAM i startup kopiujący `.audio_hot` są niezmienione.
+- SELECT skaluje pięć torów FM po ich sumie, przed dodaniem DAC. PRESETS
+  skaluje próbki perkusji przed zapisem DAC i szum PSG. 100% zachowuje bitowo
+  audio 0.2.2. Nie przenoś skali FM na wspólne wyjście z DAC.
 - Profil emulatora ma 5 FM + stały DAC. `EMERALD_FIXED_DAC` pomija niesłyszalny szósty tor FM. Nie dodawaj dowolnych zapisów rejestrów/przełączania szóstego FM bez usunięcia lub dostosowania tej optymalizacji.
 - UI: gotowe kafelki poza ekranem, odświeżanie tylko po zmianie. Nie przywracaj okresowego lcd_fill całego ekranu. Tablice LED publikuj gotowymi wierszami.
 - W rendererze nie przydzielaj pamięci i nie dodawaj libm/double. Sprawdzaj no-soft-double, rozmiary, deterministyczność, testy UI/OTA i właściwy zakres zmiany; nie uruchamiaj starych testów scenariuszy DUB-1 jako dowodu działania nowego UI.

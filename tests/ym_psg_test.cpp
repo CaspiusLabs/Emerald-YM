@@ -31,5 +31,8 @@ int main(){
  psg_reset();uint16_t first=psg_lfsr;unsigned shifts=0;
  do{unsigned feedback=(psg_lfsr^(psg_lfsr>>3))&1u;psg_lfsr=(uint16_t)((psg_lfsr>>1)|(feedback<<15));shifts++;}while(psg_lfsr!=first&&shifts<65536);
  check(shifts==57337,"Sega taps 0/3: known 57337-step white-noise cycle");
+ psg_reset();playing=1;psg_noise_hold=44100;drum_gain=0;
+ int muted=1;for(int i=0;i<1000;i++)if(psg_sample()!=0)muted=0;
+ check(muted,"percussion fader also mutes PSG noise");
  return 0;
 }

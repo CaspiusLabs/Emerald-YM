@@ -11,6 +11,7 @@
 | firmware/hal | Obsługa procesora, wyświetlacza, panelu, DMA, flash i guardów |
 | firmware/app.ld | Rozmieszczenie XIP, .ram_text, .audio_hot, danych, puli i stosów |
 | firmware/loader, src/ota.c, src/usb.c | Zachowana platforma aktualizacji Felucca/DUB-1 |
+| firmware/src/ym/ym_engine.cpp: YM_CONTROL_CODE | Od 0.2.3 leaf-settery/gettery pętli głównej w XIP `.ym_control`; bez wywołań z renderera |
 | tools/build.py, fm1pkg_make.py | Kompilacja, kontrola obrazu i składanie .fwsc |
 | tests/ym_stream_test.c, ym_ui_test.c | Aktywne testy nowego silnika i UI na komputerze |
 | releases/v0.1.4 | Niezmienny sprawdzony pakiet, suma kontrolna i dowody weryfikacji |

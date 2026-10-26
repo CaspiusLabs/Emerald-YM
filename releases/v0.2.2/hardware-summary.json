@@ -20,6 +20,7 @@
   "hardware_mix_400_tested": false,
   "physical_note_leds_confirmed_on": "0.2.0",
   "musical_arp_improvement_confirmed_on": "0.2.1",
-  "mix_0_2_2_user_acceptance": "pending",
-  "notes": "30 s hardware test; not all parameter combinations. Desktop maximum mix test is separate."
+  "mix_0_2_2_user_acceptance": "confirmed_by_user",
+  "notes": "30 s hardware test; not all parameter combinations. Desktop maximum mix test is separate.",
+  "mix_control_confirmed_by_user": true
 }

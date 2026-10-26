@@ -4,6 +4,16 @@
 #include "ym_engine.h"
 #include "ymfm/ymfm_opn.h"
 #include "ym_tables.h"
+/* Main-loop-only leaf controls run in XIP; the renderer never calls them.
+ * Keep the small audio RAM region for synthesis, without changing its map. */
+#if defined(__clang__)
+#define YM_CONTROL_CODE __attribute__((section(".ym_control")))
+#else
+#define YM_CONTROL_CODE
+#endif
+uint32_t emerald_fm_gain_q8=256;
+static volatile uint32_t req_fm_gain_q8=256,req_drum_gain_q8=256;
+static uint32_t drum_gain_q8=256;
 
 alignas(8) static uint8_t arena[12288];
 static uint32_t arena_used;
@@ -106,6 +116,7 @@ static void native(){
  if(!(native_count++&3)){
   int v=0;for(int d=0;d<4;d++)if(drums[d].pos<drums[d].len){v+=int(drums[d].p[drums[d].pos++])*int(drums[d].level)/100;}
   if(!playing)v=0;if(v>124)v=124;if(v< -124)v= -124;
+  v=v*(int32_t)drum_gain_q8/256;
   if(128+v!=last_dac){last_dac=128+v;wr(0x2a,last_dac);}
  }
  ymfm::ym2612::output_data o;chip->generate(&o);next_l=o.data[0];next_r=o.data[1];
@@ -115,27 +126,32 @@ extern "C" void ym_init(uint32_t seed){
  // intentionally leaves some free-running emulation counters unchanged; reconstruct
  // here so separate cold starts are sample-exact without changing upstream emulation.
  arena_used=0;auto*iface=new(interface_mem)ymfm::ymfm_interface;chip=new(chip_mem)ymfm::ym2612(*iface);
- req_seed=req_keys=0;req_psg=1;req_psg_level=300;old_keys=live_mask=sequence_mask=key_clock=0;old_psg=1;
+ req_seed=req_keys=0;req_psg=1;req_psg_level=300;req_fm_gain_q8=req_drum_gain_q8=emerald_fm_gain_q8=drum_gain_q8=256;drum_gain=1.0f;old_keys=live_mask=sequence_mask=key_clock=0;old_psg=1;
  for(int k=0;k<27;k++)key_age[k]=0;sequence_gain=0;
  playing=req_play=1;tempo=req_tempo=132;density=req_density=100;mutation=req_mutation=35;transpose=req_transpose=0;
  resample_phase=native_count=0;prev_l=prev_r=next_l=next_r=0;dc_l=dc_r=gain=0;restart(seed);
 }
-extern "C" void ym_control(uint32_t t,uint32_t d,uint32_t m,int32_t tr,uint32_t p){req_tempo=t<80?80:t>180?180:t;req_density=d>100?100:d;req_mutation=m>100?100:m;req_transpose=tr< -12?-12:tr>12?12:tr;req_play=p!=0;}
-extern "C" void ym_reseed(uint32_t s){req_seed=s?s:1;}
-extern "C" void ym_live_keys(uint32_t keys){req_keys=keys&0x07ffffffu;}
-extern "C" void ym_psg_enable(uint32_t enabled){req_psg=enabled!=0;}
-extern "C" void ym_psg_level(uint32_t percent){req_psg_level=percent>400?400:percent;}
-extern "C" uint32_t ym_live_active_keys(){return live_mask;}
-extern "C" uint32_t ym_sequence_keys(){return sequence_mask;}
-extern "C" uint32_t ym_bar(){return steps?((steps-1)/16)+1:1;}
-extern "C" uint32_t ym_step(){return steps?(steps-1)%16u:0u;}
-extern "C" uint32_t ym_seed(){return initial_seed;}
+extern "C" YM_CONTROL_CODE void ym_control(uint32_t t,uint32_t d,uint32_t m,int32_t tr,uint32_t p){req_tempo=t<80?80:t>180?180:t;req_density=d>100?100:d;req_mutation=m>100?100:m;req_transpose=tr< -12?-12:tr>12?12:tr;req_play=p!=0;}
+extern "C" YM_CONTROL_CODE void ym_reseed(uint32_t s){req_seed=s?s:1;}
+extern "C" YM_CONTROL_CODE void ym_live_keys(uint32_t keys){req_keys=keys&0x07ffffffu;}
+extern "C" YM_CONTROL_CODE void ym_psg_enable(uint32_t enabled){req_psg=enabled!=0;}
+extern "C" YM_CONTROL_CODE void ym_psg_level(uint32_t percent){req_psg_level=percent>400?400:percent;}
+extern "C" YM_CONTROL_CODE void ym_mix_levels(uint32_t melody,uint32_t drums){
+ req_fm_gain_q8=((melody>100?100:melody)*256u+50u)/100u;
+ req_drum_gain_q8=((drums>100?100:drums)*256u+50u)/100u;
+}
+extern "C" YM_CONTROL_CODE uint32_t ym_live_active_keys(){return live_mask;}
+extern "C" YM_CONTROL_CODE uint32_t ym_sequence_keys(){return sequence_mask;}
+extern "C" YM_CONTROL_CODE uint32_t ym_bar(){return steps?((steps-1)/16)+1:1;}
+extern "C" YM_CONTROL_CODE uint32_t ym_step(){return steps?(steps-1)%16u:0u;}
+extern "C" YM_CONTROL_CODE uint32_t ym_seed(){return initial_seed;}
 extern "C" uint32_t ym_arena_bytes(){return arena_used;}
 extern "C" uint32_t ym_note_count(){return notes;}
 extern "C" void ym_render(int32_t*out,uint32_t frames,uint32_t master){
  tempo=req_tempo;density=req_density;mutation=req_mutation;transpose=req_transpose;
  uint32_t newseed=req_seed;if(newseed){req_seed=0;restart(newseed);}
  if(playing&&!req_play){for(int c=0;c<5;c++)off(c);}playing=req_play;
+ emerald_fm_gain_q8=req_fm_gain_q8;drum_gain_q8=req_drum_gain_q8;drum_gain=float(drum_gain_q8)*(1.0f/256.0f);
  live_update();psg_targets();
  float target=float(master)/4096.0f,psg_level=float(req_psg_level)*0.01f;
  for(uint32_t i=0;i<frames;i++){

@@ -10,7 +10,7 @@
 #define Y_DIM RGB(121,149,181)
 #define Y_AMBER RGB(255,176,64)
 static uint8_t yui_ready;
-static struct {uint32_t tempo,density,mutation,bar,playing,overload,cpu,xruns,step,psg,mix;int32_t transpose;} yui_old;
+static struct {uint32_t tempo,density,mutation,bar,playing,overload,step,psg,mix,melody,drums;int32_t transpose;} yui_old;
 static void yui_header(void){
  cv_begin(240,44,Y_BG);
  /* Original faceted jewel + striped 16-bit badge, drawn natively. */
@@ -56,26 +56,26 @@ static void yui_card(uint32_t index,int32_t value){
  }
  cv_blit(index&1u?124u:8u,index>=2u?134u:76u);
 }
-static void yui_footer(uint32_t cpu,uint32_t xruns){
- char b[24];cv_begin(224,18,Y_BG);
- str_cpy(b,"CPU ",sizeof b);fmt_int(b+4,(int32_t)cpu);str_cpy(b+str_len(b),"% MAX",sizeof b-str_len(b));
- cv_text(0,2,&FONT_XS,b,cpu>=85?Y_AMBER:Y_DIM);
- str_cpy(b,"XRUN ",sizeof b);fmt_int(b+5,(int32_t)xruns);
- cv_text(142,2,&FONT_XS,b,xruns?Y_AMBER:Y_DIM);cv_blit(8,192);
+static void yui_mixer(uint32_t index,uint32_t value,int enabled){
+ static const char*const labels[]={"SEL MELO","ALG PSG","PRE DRUM"};
+ char b[16];uint16_t accent=enabled?(index==1?Y_GREEN:Y_BLUE):Y_DIM;
+ uint32_t limit=index==1?400u:100u;
+ cv_begin(72,34,Y_CARD);cv_rect(0,0,72,1,Y_EDGE);
+ cv_text(4,2,&FONT_XS,labels[index],Y_DIM);
+ if(enabled){fmt_int(b,(int32_t)value);str_cpy(b+str_len(b),"%",sizeof b-str_len(b));}
+ else str_cpy(b,"OFF",sizeof b);
+ cv_text(4,15,&FONT_S,b,accent);cv_rect(4,31,64,2,Y_EDGE);
+ if(enabled)cv_rect(4,31,(int32_t)(value*64u/limit),2,accent);
+ cv_blit(8u+index*76u,190);
 }
 static void yui_steps(uint32_t step){
  cv_begin(224,12,Y_BG);
  for(uint32_t k=0;k<16;k++)cv_rect((int32_t)(k*14u),4,10,4,yplaying&&k==step?Y_GREEN:k%4u==0u?Y_DIM:Y_EDGE);
- cv_blit(8,212);
+ cv_blit(8,228);
 }
 static void ydisplay_invalidate(void){yui_ready=0;}
-static void yui_hint(void){
- char b[40];str_cpy(b,"ALG PSG ",sizeof b);fmt_int(b+8,(int32_t)ypsg_mix);
- str_cpy(b+str_len(b),"% / LIVE",sizeof b-str_len(b));
- cv_begin(224,12,Y_BG);cv_text(0,0,&FONT_XS,ypsg?b:"ARP PSG OFF / KEYS MUTED",ypsg?Y_GREEN:Y_DIM);cv_blit(8,228);
-}
 static void ydisplay(void){
- uint32_t bar=ym_bar(),step=ym_step(),cpu=audio_cpu_lifetime_peak,xruns=audio_xruns;
+ uint32_t bar=ym_bar(),step=ym_step();
  uint32_t overloaded=ym_overload>=8u,step_key=step|(yplaying<<4)|(overloaded<<5);
  if(!yui_ready){
   lcd_fill(0,0,240,240,Y_BG);yui_header();
@@ -86,7 +86,8 @@ static void ydisplay(void){
  if(yui_old.density!=ydensity){yui_card(1,(int32_t)ydensity);yui_old.density=ydensity;}
  if(yui_old.mutation!=ymutation){yui_card(2,(int32_t)ymutation);yui_old.mutation=ymutation;}
  if(yui_old.transpose!=ytranspose){yui_card(3,ytranspose);yui_old.transpose=ytranspose;}
- if(yui_old.cpu!=cpu||yui_old.xruns!=xruns){yui_footer(cpu,xruns);yui_old.cpu=cpu;yui_old.xruns=xruns;}
  if(yui_old.step!=step_key){yui_steps(step);yui_old.step=step_key;}
- if(yui_old.psg!=ypsg||yui_old.mix!=ypsg_mix){yui_hint();yui_old.psg=ypsg;yui_old.mix=ypsg_mix;}
+ if(yui_old.psg!=ypsg||yui_old.mix!=ypsg_mix){yui_mixer(1,ypsg_mix,ypsg);yui_old.psg=ypsg;yui_old.mix=ypsg_mix;}
+ if(yui_old.melody!=ymelody_mix){yui_mixer(0,ymelody_mix,1);yui_old.melody=ymelody_mix;}
+ if(yui_old.drums!=ydrums_mix){yui_mixer(2,ydrums_mix,1);yui_old.drums=ydrums_mix;}
 }

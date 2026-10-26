@@ -27,8 +27,8 @@ def main():
  backend=I.MidoBackend();up=I.Updater(backend,'Emerald YM FM-1');dev=up.find()
  if dev is None:raise RuntimeError('Explicit Emerald YM MIDI port did not answer identity query')
  identity=dev.id.text;dev.link.close()
- if identity not in ('FM-1_68000102','FM-1_68000103','FM-1_68000104','FM-1_68000200','FM-1_68000201','FM-1_68000202'):raise RuntimeError('Unsupported identity '+identity)
- if a.live_stress and identity not in ('FM-1_68000200','FM-1_68000201','FM-1_68000202'):raise RuntimeError('Live stress requires 0.2.x')
+ if identity not in ('FM-1_68000102','FM-1_68000103','FM-1_68000104','FM-1_68000200','FM-1_68000201','FM-1_68000202','FM-1_68000203'):raise RuntimeError('Unsupported identity '+identity)
+ if a.live_stress and identity not in ('FM-1_68000200','FM-1_68000201','FM-1_68000202','FM-1_68000203'):raise RuntimeError('Live stress requires 0.2.x')
  ins=[n for n in mido.get_input_names() if 'emerald ym fm-1' in n.lower()]
  outs=[n for n in mido.get_output_names() if 'emerald ym fm-1' in n.lower()]
  if len(ins)!=1 or len(outs)!=1:raise RuntimeError('Ambiguous Emerald YM port pair')

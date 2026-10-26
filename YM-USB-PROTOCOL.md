@@ -1,6 +1,6 @@
 # Emerald YM USB status protocol v1 (firmware 0.1.2 and later)
 
-This is the protocol implemented by `firmware/src/ym/ym_loop.c`, not a guessed command for stock M-VAVE or DUB-1. Compatible identities are `FM-1_68000102` (0.1.2), `FM-1_68000103` (0.1.3), `FM-1_68000104` (0.1.4), `FM-1_68000200` (0.2.0), `FM-1_68000201` (0.2.1), and `FM-1_68000202` (0.2.2). The UI update in 0.1.4 does not change the protocol. It never exposes flash erase/write, preset or firmware operations. The existing Felucca updater is separate and unchanged.
+This is the protocol implemented by `firmware/src/ym/ym_loop.c`, not a guessed command for stock M-VAVE or DUB-1. Compatible identities are `FM-1_68000102` (0.1.2), `FM-1_68000103` (0.1.3), `FM-1_68000104` (0.1.4), `FM-1_68000200` (0.2.0), `FM-1_68000201` (0.2.1), `FM-1_68000202` (0.2.2), and `FM-1_68000203` (0.2.3). The UI update in 0.1.4 does not change the protocol. It never exposes flash erase/write, preset or firmware operations. The existing Felucca updater is separate and unchanged.
 
 Send status query bytes: `F0 7D 45 4D 59 01 F7`. Manufacturer byte `7D` is the non-commercial/experimental namespace; `45 4D 59` is ASCII `EMY`.
 
@@ -29,3 +29,5 @@ Query only the explicitly selected Emerald YM FM-1 input/output pair. Do not pro
 ARP toggles all PSG voices, including live keys. PLAY pauses only the backing sequencer: held live keys continue. The live allocator selects the three most recently pressed keys (highest key wins simultaneous mask changes), returning to previously held keys when a voice is released. Physical and USB-held keys are combined. With fewer than three live keys the third PSG voice is available to the generative arp. `ym_hardware_test.py --live-stress` alternates two and three held notes through documented standard Note On/Off, always cleaning them up on exit. No protocol field or private command was added.
 
 In 0.2.2, ALGORITHM controls PSG mix 0..400% (default 300%). This is local UI only; no new SysEx command was added. The bottom hint displays the percentage. PSG off/on retains that mix until reboot; there is no automatic persistent write.
+
+In 0.2.3, SELECT controls the five FM melodic channels (0..100%), and PRESETS controls DAC percussion and PSG noise (0..100%). ALGORITHM retains PSG mix 0..400%. CPU/XRUN counters are hidden on the panel but continue to update through this unchanged status protocol. The 85% guard is unchanged. No new private command was added.

@@ -11,6 +11,8 @@ void ym_control(uint32_t tempo,uint32_t density,uint32_t mutation,int32_t transp
 void ym_live_keys(uint32_t keys);
 void ym_psg_enable(uint32_t enabled);
 void ym_psg_level(uint32_t percent);
+/* FM melodic backing and all percussion, 0..100%, unity by default. */
+void ym_mix_levels(uint32_t melody_percent,uint32_t drums_percent);
 uint32_t ym_live_active_keys(void);
 uint32_t ym_sequence_keys(void);
 void ym_reseed(uint32_t seed);

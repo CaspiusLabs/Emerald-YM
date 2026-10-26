@@ -15,6 +15,7 @@ static uint16_t psg_lfsr;
 static uint8_t psg_note=255;
 static uint32_t psg_gate;
 static int32_t psg_noise_level;
+static float drum_gain=1.0f;
 /* Load the positive clock step from RAM: this old compiler otherwise encodes
  * subtract-immediate as a ROM-window literal, rejected by our strict guard. */
 static volatile int32_t psg_clock_step=3579545;
@@ -91,7 +92,7 @@ static inline float psg_sample(){
    if(bit!=(psg_lfsr&1u))value*=1.0f+float(remaining)*(2.0f/3579545.0f);
    remaining+=512u*44100u;
   }
-  psg_noise_remaining=(uint32_t)remaining;mixed+=value;
+  psg_noise_remaining=(uint32_t)remaining;mixed+=value*drum_gain;
  }
  return mixed;
 }

@@ -1,5 +1,19 @@
 # Historia Emerald YM
 
+## 0.2.3 — 2026-10-26 — mikser melodii i perkusji
+
+- Użytkownik zaakceptował poziom PSG i regulację ALGORITHM w 0.2.2.
+- SELECT: 0–100% pięciu melodycznych torów FM, łącznie z basem i akordami.
+- PRESETS: 0–100% perkusji DAC i szumu PSG. ALGORITHM pozostaje mikserem PSG.
+- Trzy pola z wartościami i paskami zamiast CPU/XRUN i dawnego wiersza podpowiedzi.
+  Diagnostyka USB, liczniki i próg ochronny 85% pozostają aktywne.
+- Głośność FM nakładana przed dodaniem DAC; przy poziomach 100% dźwięk jest
+  bitowo identyczny z 0.2.2. Testowane osobne ścieżki i wyciszanie.
+- Leaf-settery/gettery pętli głównej przeniesione do XIP `.ym_control`;
+  bez zmiany granic RAM. Linker i skrypt budowania kontrolują adresy.
+- Próba na urządzeniu: 30 s ciągłego grania z dwiema/trzema nutami live,
+  CPU MAX 84%, XRUNS 0, overload 0. Szczegóły: docs/releases/v0.2.3.md.
+
 ## 0.2.2 — 2026-10-26 — wersja rozwojowa
 
 - Po drugim odsłuchu: regulacja miksu PSG pokrętłem ALGORITHM, 0–400%,
