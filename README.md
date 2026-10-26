@@ -2,13 +2,14 @@
 
 Generatywny instrument dla M-VAVE FM-1, inspirowany brzmieniem Mega Drive/Genesis. Emuluje YM2612: pięć głosów FM i perkusja przez DAC. Własna muzyka, UI i znak Emerald.
 
-**Bieżąca wersja rozwojowa: 0.2.3 — mikser FM / PSG / perkusja.** Trzy tony PSG,
+**Bieżąca wersja rozwojowa: 0.2.4 — poziomy poszczególnych instrumentów.** Trzy tony PSG,
 szum Sega, generatywne arpeggio i do trzech nut granych na klawiaturze FM-1
 równocześnie z podkładem. ARP włącza/wyłącza PSG; PLAY zatrzymuje tylko podkład.
 Nuty podkładu w zakresie klawiatury świecą słabo, nuty live jasno.
-SELECT reguluje melodyczne FM, PRESETS perkusję, a ALGORITHM PSG. Trzy pola
-miksera zastępują CPU/XRUN na ekranie; diagnostyka USB i ochrona pozostają.
-Opis i zakres prób: [docs/releases/v0.2.3.md](docs/releases/v0.2.3.md).
+SELECT wybiera jedno z 12 źródeł (FM, poszczególne bębny, arp/live/szum PSG),
+a ALGORITHM reguluje jego poziom 0–100%. PRESETS pozostaje dodatkową
+głośnością całej perkusji. CPU/XRUN są ukryte; diagnostyka i ochrona pozostają.
+Opis i zakres prób: [docs/releases/v0.2.4.md](docs/releases/v0.2.4.md).
 
 **Baza do dalszej rozbudowy: v0.1.4**, zaakceptowana na urządzeniu. Tożsamość FM-1_68000104. Sprawdzony pakiet i dowody są w releases/v0.1.4. W próbach: CPU MAX 80%, XRUNS 0; użytkownik potwierdził dźwięk, ekran bez migotania, LED-y oraz wskaźniki pokręteł. Zakres i ograniczenia: [docs/VERIFICATION.md](docs/VERIFICATION.md).
 
@@ -30,14 +31,14 @@ Lokalna .runtime zawiera gotowy Python, toolchain i minimalny SDK, niezależne o
 - SEQ: przełączenie mutacji 0 / 35.
 - K1: tempo, K2: gęstość, K3: mutacja, K4: transpozycja.
 - MASTER: głośność.
-- Od 0.2.2 ALGORITHM: poziom PSG 0–400%, startowo 300%; wartość na dole ekranu.
-- Od 0.2.3 SELECT: sekcja melodyczna FM (bas, melodia i akordy), 0–100%.
-- PRESETS: perkusja DAC i szum PSG, 0–100%. Oba nowe poziomy startują od 100%.
+- SELECT: wybór instrumentu; ALGORITHM: jego indywidualny poziom, 0–100%.
+- Poziomy pozostają ustawione po wybraniu innego instrumentu; domyślnie 100%.
+- PRESETS: perkusja DAC i szum PSG, 0–100%. Magistrala perkusji startuje od 100%.
 - Od 0.2.0: klawiatura F3–G5 gra przez PSG (do trzech nut), również w pauzie.
 - ARP: PSG włączony/wyłączony. Przy trzech nutach live ustępuje arpeggio PSG;
   pięć torów FM i perkusja DAC nadal grają. K4 transponuje również klawiaturę.
 
-Ekran 0.2.3 pokazuje parametry, takt, kroki i trzy pola miksera. Liczniki CPU/XRUN są dostępne przez USB. Świecą używane przyciski i nuty. Opis zaakceptowanej bazy: [docs/releases/v0.1.4.md](docs/releases/v0.1.4.md).
+Ekran 0.2.4 pokazuje parametry, takt, kroki, wybrany instrument i poziom perkusji. Liczniki CPU/XRUN są dostępne przez USB. Świecą używane przyciski i nuty. Opis zaakceptowanej bazy: [docs/releases/v0.1.4.md](docs/releases/v0.1.4.md).
 
 ## Rozbudowa i Git
 

@@ -1,0 +1,22 @@
+{
+  "firmware": "emerald-ym-0.2.4.fwsc",
+  "sha256": "a0331725a940710f0974ea483016750288a88277e4996a9844193aaa03684f88",
+  "identity": "FM-1_68000204",
+  "installed": true,
+  "passed": true,
+  "seconds_requested": 30,
+  "continuous_playback_observed": true,
+  "cpu_max_pct": 85,
+  "max_block_us": 4985,
+  "xruns": 0,
+  "overload_blocks": 0,
+  "failed_boots": 0,
+  "instrument_count": 12,
+  "individual_levels_default_percent": 100,
+  "hardware_test_levels": "default balance; 2/3 USB-held live notes",
+  "all_level_combinations_hardware_tested": false,
+  "individual_sources_desktop_tested": true,
+  "physical_select_algorithm_confirmation": "pending",
+  "prototype_report": "separate prototype-hardware-live-stress.json; different build, same version identity",
+  "headroom_note": "CPU MAX 85%; very little margin; overload guard unchanged."
+}

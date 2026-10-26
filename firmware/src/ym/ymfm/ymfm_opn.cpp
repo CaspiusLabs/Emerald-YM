@@ -2400,16 +2400,19 @@ void ym2612::generate(output_data *output, uint32_t numsamples)
 		for (int chan = 0; chan < last_fm_channel; chan++)
 		{
 			m_fm.output_single_4op(temp.clear(), 5, 256, chan);
-			output->data[0] += dac_discontinuity(temp.data[0]);
-			output->data[1] += dac_discontinuity(temp.data[1]);
+			#if defined(EMERALD_FIXED_DAC)
+            int32_t mix = int32_t(emerald_fm_gain_q8[chan]);
+            int32_t left = dac_discontinuity(temp.data[0]), right = dac_discontinuity(temp.data[1]);
+            if (mix != 256) { left = (left * mix) >> 8; right = (right * mix) >> 8; }
+            output->data[0] += left;
+            output->data[1] += right;
+#else
+            output->data[0] += dac_discontinuity(temp.data[0]);
+            output->data[1] += dac_discontinuity(temp.data[1]);
+#endif
 		}
 
-#if defined(EMERALD_FIXED_DAC)
-        // Emerald mixer: scale the five FM channels without changing DAC.
-        // Unity (256) is bit-exact; no extra channel scan or allocation.
-        output->data[0] = (output->data[0] * int32_t(emerald_fm_gain_q8)) >> 8;
-        output->data[1] = (output->data[1] * int32_t(emerald_fm_gain_q8)) >> 8;
-#endif
+
 		// add in DAC
 		if (m_dac_enable)
 		{

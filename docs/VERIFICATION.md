@@ -1,5 +1,15 @@
 # Co jest sprawdzone
 
+## Rozwinięcie 0.2.4
+
+SELECT wybiera jedno z 12 źródeł, ALGORITHM zmienia tylko jego poziom.
+Test słyszalności wyklucza początkowy stan przejściowy: każde źródło jest
+słyszalne po wyciszeniu pozostałych jedenastu. Domyślny balans nadal jest
+bitowo identyczny z 0.2.2. Końcowy test fizyczny: 30 s ciągłego podkładu
+z dwiema/trzema nutami live, CPU MAX 85%, XRUNS 0, overload 0. Margines jest
+bardzo mały; nie jest to test wszystkich kombinacji regulatorów. Szczegóły
+i rozróżnienie prototypu/końcowego pakietu: docs/releases/v0.2.4.md.
+
 ## Rozwinięcie 0.2.3
 
 SELECT/PRESETS regulują osobno FM i perkusję. Unity miks zachowuje bitowo

@@ -8,8 +8,9 @@
  */
 #pragma once
 static const uint16_t psg_attenuation[16]={640,508,404,321,255,202,161,128,101,81,64,51,40,32,25,0};
-struct PSGTone { int32_t remaining; uint32_t period; int32_t level,target; uint8_t high; };
+struct PSGTone { int32_t remaining; uint32_t period; int32_t level,target; uint8_t high; float mix; };
 static PSGTone psg_tone[3];
+static float psg_arp_mix=1.0f,psg_live_mix=1.0f,psg_noise_mix=1.0f;
 static uint32_t psg_noise_remaining,psg_noise_hold;
 static uint16_t psg_lfsr;
 static uint8_t psg_note=255;
@@ -24,12 +25,19 @@ static uint32_t old_keys,old_psg,key_age[27],key_clock,live_mask,sequence_mask;
 static uint8_t live_key[3];
 /* Generated offline: round(3579545/(32*440*2^((n-69)/12))), clamped
  * to the hardware's ten-bit range. F3..G5 keyboard + transposition. */
-static const uint16_t psg_divider[128]={
+/* Control-rate lookup, used only when installing a tone period, not in the
+ * oscillator sample loop. It can stay in XIP; active periods stay in RAM. */
+#if defined(__clang__)
+#define PSG_PITCH_DATA __attribute__((section(".ym_pitch")))
+#else
+#define PSG_PITCH_DATA
+#endif
+static const uint16_t psg_divider[128] PSG_PITCH_DATA={
 1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1023,1017,960,906,855,807,762,719,679,641,605,571,539,508,480,453,428,404,381,360,339,320,302,285,269,254,240,226,214,202,190,180,170,160,151,143,135,127,120,113,107,101,95,90,85,80,76,71,67,64,60,57,53,50,48,45,42,40,38,36,34,32,30,28,27,25,24,22,21,20,19,18,17,16,15,14,13,13,12,11,11,10,9,9
 };
 static void psg_reset(){
  old_psg=2; /* Rebuild live assignments after reseeding even if keys did not change. */
- for(int c=0;c<3;c++){psg_tone[c]={705600,705600,0,0,1};live_key[c]=255;}
+ for(int c=0;c<3;c++){psg_tone[c]={705600,705600,0,0,1,1.0f};live_key[c]=255;}
  psg_noise_remaining=512u*44100u;psg_noise_hold=0;psg_lfsr=0x8000;
  psg_note=255;psg_gate=0;psg_noise_level=0;
 }
@@ -56,6 +64,7 @@ static void live_update(){
 }
 static void psg_targets(){
  for(int c=0;c<3;c++){
+  psg_tone[c].mix=live_key[c]!=255?psg_live_mix:psg_arp_mix;
   if(req_psg&&live_key[c]!=255)psg_pitch(c,53+live_key[c]+transpose,2);
   else if(req_psg&&playing&&c==2&&psg_gate)psg_pitch(c,psg_note,4);
   else psg_tone[c].target=0;
@@ -77,7 +86,7 @@ static inline float psg_sample(){
    value*=1.0f+float(t.remaining)*(2.0f/3579545.0f);
    t.remaining+=(int32_t)t.period;t.high^=1;
   }
-  mixed+=value;
+  mixed+=value*t.mix;
  }
  if(psg_noise_hold)psg_noise_hold--;
  int32_t target=req_psg&&playing&&psg_noise_hold?64:0;
@@ -92,7 +101,7 @@ static inline float psg_sample(){
    if(bit!=(psg_lfsr&1u))value*=1.0f+float(remaining)*(2.0f/3579545.0f);
    remaining+=512u*44100u;
   }
-  psg_noise_remaining=(uint32_t)remaining;mixed+=value*drum_gain;
+  psg_noise_remaining=(uint32_t)remaining;mixed+=value*drum_gain*psg_noise_mix;
  }
  return mixed;
 }

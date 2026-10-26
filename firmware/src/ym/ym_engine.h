@@ -12,6 +12,9 @@ void ym_live_keys(uint32_t keys);
 void ym_psg_enable(uint32_t enabled);
 void ym_psg_level(uint32_t percent);
 /* FM melodic backing and all percussion, 0..100%, unity by default. */
+/* 0..4 FM voices, 5..8 DAC drums, 9 arp, 10 live, 11 PSG noise. */
+void ym_instrument_level(uint32_t instrument,uint32_t percent);
+void ym_drum_level(uint32_t percent);
 void ym_mix_levels(uint32_t melody_percent,uint32_t drums_percent);
 uint32_t ym_live_active_keys(void);
 uint32_t ym_sequence_keys(void);

@@ -1,5 +1,18 @@
 # Historia Emerald YM
 
+## 0.2.4 — 2026-10-26 — indywidualne poziomy
+
+- Po doprecyzowaniu użytkownika: SELECT wybiera instrument, ALGORITHM zmienia
+  tylko jego poziom. 12 źródeł: 5 FM, 4 próbki perkusji, PSG ARP, LIVE, NOISE.
+- Każde źródło 0–100% domyślnego balansu; PRESETS pozostaje magistralą perkusji.
+- Nowy kafelek pokazuje nazwę i poziom wybranego instrumentu. Wybór nie zmienia
+  zapisanych w RAM poziomów innych źródeł. CPU/XRUN nadal tylko przez USB.
+- Oddzielne testy słyszalności wszystkich 12 źródeł i wyciszania nut live.
+- Domyślny balans bitowo identyczny z zaakceptowaną 0.2.2. Tablica strojenia PSG
+  przeniesiona do kontrolnego XIP; renderer i okresy tonów nadal w RAM.
+- Szczegóły i zakres pomiarów: docs/releases/v0.2.4.md.
+
+
 ## 0.2.3 — 2026-10-26 — mikser melodii i perkusji
 
 - Użytkownik zaakceptował poziom PSG i regulację ALGORITHM w 0.2.2.

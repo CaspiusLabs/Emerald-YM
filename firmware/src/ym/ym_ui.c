@@ -10,7 +10,7 @@
 #define Y_DIM RGB(121,149,181)
 #define Y_AMBER RGB(255,176,64)
 static uint8_t yui_ready;
-static struct {uint32_t tempo,density,mutation,bar,playing,overload,step,psg,mix,melody,drums;int32_t transpose;} yui_old;
+static struct {uint32_t tempo,density,mutation,bar,playing,overload,step,psg,selected,level,drums;int32_t transpose;} yui_old;
 static void yui_header(void){
  cv_begin(240,44,Y_BG);
  /* Original faceted jewel + striped 16-bit badge, drawn natively. */
@@ -56,17 +56,22 @@ static void yui_card(uint32_t index,int32_t value){
  }
  cv_blit(index&1u?124u:8u,index>=2u?134u:76u);
 }
-static void yui_mixer(uint32_t index,uint32_t value,int enabled){
- static const char*const labels[]={"SEL MELO","ALG PSG","PRE DRUM"};
- char b[16];uint16_t accent=enabled?(index==1?Y_GREEN:Y_BLUE):Y_DIM;
- uint32_t limit=index==1?400u:100u;
- cv_begin(72,34,Y_CARD);cv_rect(0,0,72,1,Y_EDGE);
- cv_text(4,2,&FONT_XS,labels[index],Y_DIM);
- if(enabled){fmt_int(b,(int32_t)value);str_cpy(b+str_len(b),"%",sizeof b-str_len(b));}
- else str_cpy(b,"OFF",sizeof b);
- cv_text(4,15,&FONT_S,b,accent);cv_rect(4,31,64,2,Y_EDGE);
- if(enabled)cv_rect(4,31,(int32_t)(value*64u/limit),2,accent);
- cv_blit(8u+index*76u,190);
+static void yui_voice(void){
+ static const char*const names[]={"FM BASS","FM LEAD","FM CHORD 1","FM CHORD 2","FM CHORD 3","KICK","SNARE","CLOSED HAT","OPEN HAT","PSG ARP","PSG LIVE","PSG NOISE"};
+ char b[32];uint32_t value=ylevels[yinstrument];int enabled=yinstrument<9u||ypsg;
+ cv_begin(148,34,Y_CARD);cv_rect(0,0,148,1,Y_EDGE);
+ str_cpy(b,"SEL ",sizeof b);str_cpy(b+4,names[yinstrument],sizeof b-4);
+ cv_text(4,2,&FONT_XS,b,Y_DIM);
+ if(enabled){str_cpy(b,"ALG ",sizeof b);fmt_int(b+4,(int32_t)value);str_cpy(b+str_len(b),"%",sizeof b-str_len(b));}
+ else str_cpy(b,"PSG OFF",sizeof b);
+ cv_text(4,15,&FONT_S,b,enabled?Y_GREEN:Y_DIM);
+ cv_rect(80,26,64,3,Y_EDGE);if(enabled)cv_rect(80,26,(int32_t)(value*64u/100u),3,Y_GREEN);
+ cv_blit(8,190);
+}
+static void yui_drumbus(void){
+ char b[16];cv_begin(72,34,Y_CARD);cv_rect(0,0,72,1,Y_EDGE);
+ cv_text(4,2,&FONT_XS,"PRE DRUM",Y_DIM);fmt_int(b,(int32_t)ydrums_mix);str_cpy(b+str_len(b),"%",sizeof b-str_len(b));
+ cv_text(4,15,&FONT_S,b,Y_BLUE);cv_rect(4,31,64,2,Y_EDGE);cv_rect(4,31,(int32_t)(ydrums_mix*64u/100u),2,Y_BLUE);cv_blit(160,190);
 }
 static void yui_steps(uint32_t step){
  cv_begin(224,12,Y_BG);
@@ -87,7 +92,7 @@ static void ydisplay(void){
  if(yui_old.mutation!=ymutation){yui_card(2,(int32_t)ymutation);yui_old.mutation=ymutation;}
  if(yui_old.transpose!=ytranspose){yui_card(3,ytranspose);yui_old.transpose=ytranspose;}
  if(yui_old.step!=step_key){yui_steps(step);yui_old.step=step_key;}
- if(yui_old.psg!=ypsg||yui_old.mix!=ypsg_mix){yui_mixer(1,ypsg_mix,ypsg);yui_old.psg=ypsg;yui_old.mix=ypsg_mix;}
- if(yui_old.melody!=ymelody_mix){yui_mixer(0,ymelody_mix,1);yui_old.melody=ymelody_mix;}
- if(yui_old.drums!=ydrums_mix){yui_mixer(2,ydrums_mix,1);yui_old.drums=ydrums_mix;}
+ if(yui_old.psg!=ypsg||yui_old.selected!=yinstrument||yui_old.level!=ylevels[yinstrument]){
+  yui_voice();yui_old.psg=ypsg;yui_old.selected=yinstrument;yui_old.level=ylevels[yinstrument];}
+ if(yui_old.drums!=ydrums_mix){yui_drumbus();yui_old.drums=ydrums_mix;}
 }

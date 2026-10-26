@@ -77,5 +77,23 @@ int main(int argc,char**argv){
  for(int n=0;n<40;n++)ym_render(audio,256,4096);
  peak=0;for(int i=0;i<512;i++){int32_t v=audio[i]<0?-audio[i]:audio[i];if(v>peak)peak=v;}
  check(peak>50000,"muted FM and drums preserve independent PSG live voice");
+ {int every_voice=1;
+  for(uint32_t voice=0;voice<12;voice++){
+   ym_init(20261026);for(uint32_t k=0;k<12;k++)ym_instrument_level(k,k==voice?100:0);
+   if(voice==10)ym_live_keys(1);
+   int64_t energy=0;for(int block=0;block<1800;block++){
+    ym_render(audio,256,4096);if(block>172)for(int i=0;i<512;i++)energy+=audio[i]<0?-audio[i]:audio[i];
+   }
+   if(energy<1000000)every_voice=0;
+  }
+  check(every_voice,"each of twelve instruments is independently audible with the other eleven muted");
+ }
+ ym_init(20261026);ym_control(132,100,35,0,0);ym_live_keys(1);ym_instrument_level(10,0);
+ for(int n=0;n<100;n++)ym_render(audio,256,4096);
+ peak=0;for(int i=0;i<512;i++){int32_t v=audio[i]<0?-audio[i]:audio[i];if(v>peak)peak=v;}
+ check(peak<100,"individual PSG live level zero mutes held notes");
+ ym_instrument_level(10,100);for(int n=0;n<40;n++)ym_render(audio,256,4096);
+ peak=0;for(int i=0;i<512;i++){int32_t v=audio[i]<0?-audio[i]:audio[i];if(v>peak)peak=v;}
+ check(peak>50000,"individual level restores held PSG voice without retrigger");
  printf("PASS: 180+ seconds streamed, %.3f s desktop CPU time (not a target benchmark).\n",(double)(clock()-start)/CLOCKS_PER_SEC);return 0;
 }

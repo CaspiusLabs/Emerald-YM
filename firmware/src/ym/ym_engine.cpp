@@ -11,8 +11,9 @@
 #else
 #define YM_CONTROL_CODE
 #endif
-uint32_t emerald_fm_gain_q8=256;
-static volatile uint32_t req_fm_gain_q8=256,req_drum_gain_q8=256;
+uint32_t emerald_fm_gain_q8[5]={256,256,256,256,256};
+static volatile uint32_t req_voice_gain[12]={256,256,256,256,256,256,256,256,256,256,256,256};
+static volatile uint32_t req_drum_gain_q8=256;
 static uint32_t drum_gain_q8=256;
 
 alignas(8) static uint8_t arena[12288];
@@ -57,9 +58,9 @@ static void note(int c,int n,uint32_t gate){
  n+=transpose;if(n<12)n=12;if(n>115)n=115;int f=ym_pitch[n];off(c);
  cw(c,0xa4,f>>8);cw(c,0xa0,f&255);wr(0x28,0xf0|key(c));hold[c]=gate;fm_note[c]=(int16_t)n;notes++;
 }
-struct Drum {const int8_t*p;uint32_t len,pos,level;};
+struct Drum {const int8_t*p;uint32_t len,pos,level,velocity;};
 static Drum drums[4];
-static void hit(int d,uint32_t level){drums[d].pos=0;drums[d].level=level;}
+static void hit(int d,uint32_t level){drums[d].pos=0;drums[d].velocity=level;drums[d].level=(level*req_voice_gain[d+5]+128u)>>8;}
 static void make_motifs(){
  static const int8_t base[4][8]={{2,4,5,4,2,1,0,1},{1,2,4,3,2,1,2,4},{4,5,6,5,4,2,1,0},{3,2,1,0,1,2,4,3}};
  uint32_t rot=pick(4);for(int m=0;m<4;m++)for(int k=0;k<8;k++)motifs[m][k]=base[(m+rot)%4][k];
@@ -70,8 +71,8 @@ static void restart(uint32_t seed){
  chip->reset();wr(0x22,0);wr(0x27,0);wr(0x2a,128);wr(0x2b,128);last_dac=128;
  for(int c=0;c<5;c++)off(c);
  patch(0,bass,0xc0);patch(1,lead,0xc0);patch(2,keys,0x80);patch(3,keys,0xc0);patch(4,keys,0x40);cw(5,0xb4,0xc0);
- drums[0]={ym_kick,sizeof(ym_kick),sizeof(ym_kick),100};drums[1]={ym_snare,sizeof(ym_snare),sizeof(ym_snare),100};
- drums[2]={ym_hat,sizeof(ym_hat),sizeof(ym_hat),100};drums[3]={ym_open,sizeof(ym_open),sizeof(ym_open),100};make_motifs();
+ drums[0]={ym_kick,sizeof(ym_kick),sizeof(ym_kick),100,100};drums[1]={ym_snare,sizeof(ym_snare),sizeof(ym_snare),100,100};
+ drums[2]={ym_hat,sizeof(ym_hat),sizeof(ym_hat),100,100};drums[3]={ym_open,sizeof(ym_open),sizeof(ym_open),100,100};make_motifs();
 }
 static void tick(){
  uint32_t b=steps/16,pos=steps%16,section=b%32;bool intro=section<4,bridge=section>=16&&section<24;
@@ -126,7 +127,9 @@ extern "C" void ym_init(uint32_t seed){
  // intentionally leaves some free-running emulation counters unchanged; reconstruct
  // here so separate cold starts are sample-exact without changing upstream emulation.
  arena_used=0;auto*iface=new(interface_mem)ymfm::ymfm_interface;chip=new(chip_mem)ymfm::ym2612(*iface);
- req_seed=req_keys=0;req_psg=1;req_psg_level=300;req_fm_gain_q8=req_drum_gain_q8=emerald_fm_gain_q8=drum_gain_q8=256;drum_gain=1.0f;old_keys=live_mask=sequence_mask=key_clock=0;old_psg=1;
+ req_seed=req_keys=0;req_psg=1;req_psg_level=300;req_drum_gain_q8=drum_gain_q8=256;
+ for(int k=0;k<12;k++)req_voice_gain[k]=256;
+ for(int k=0;k<5;k++)emerald_fm_gain_q8[k]=256;drum_gain=1.0f;old_keys=live_mask=sequence_mask=key_clock=0;old_psg=1;
  for(int k=0;k<27;k++)key_age[k]=0;sequence_gain=0;
  playing=req_play=1;tempo=req_tempo=132;density=req_density=100;mutation=req_mutation=35;transpose=req_transpose=0;
  resample_phase=native_count=0;prev_l=prev_r=next_l=next_r=0;dc_l=dc_r=gain=0;restart(seed);
@@ -137,9 +140,13 @@ extern "C" YM_CONTROL_CODE void ym_live_keys(uint32_t keys){req_keys=keys&0x07ff
 extern "C" YM_CONTROL_CODE void ym_psg_enable(uint32_t enabled){req_psg=enabled!=0;}
 extern "C" YM_CONTROL_CODE void ym_psg_level(uint32_t percent){req_psg_level=percent>400?400:percent;}
 extern "C" YM_CONTROL_CODE void ym_mix_levels(uint32_t melody,uint32_t drums){
- req_fm_gain_q8=((melody>100?100:melody)*256u+50u)/100u;
+ for(int c=0;c<5;c++)req_voice_gain[c]=((melody>100?100:melody)*256u+50u)/100u;
  req_drum_gain_q8=((drums>100?100:drums)*256u+50u)/100u;
 }
+extern "C" YM_CONTROL_CODE void ym_instrument_level(uint32_t instrument,uint32_t percent){
+ if(instrument<12)req_voice_gain[instrument]=((percent>100?100:percent)*256u+50u)/100u;
+}
+extern "C" YM_CONTROL_CODE void ym_drum_level(uint32_t percent){req_drum_gain_q8=((percent>100?100:percent)*256u+50u)/100u;}
 extern "C" YM_CONTROL_CODE uint32_t ym_live_active_keys(){return live_mask;}
 extern "C" YM_CONTROL_CODE uint32_t ym_sequence_keys(){return sequence_mask;}
 extern "C" YM_CONTROL_CODE uint32_t ym_bar(){return steps?((steps-1)/16)+1:1;}
@@ -151,7 +158,9 @@ extern "C" void ym_render(int32_t*out,uint32_t frames,uint32_t master){
  tempo=req_tempo;density=req_density;mutation=req_mutation;transpose=req_transpose;
  uint32_t newseed=req_seed;if(newseed){req_seed=0;restart(newseed);}
  if(playing&&!req_play){for(int c=0;c<5;c++)off(c);}playing=req_play;
- emerald_fm_gain_q8=req_fm_gain_q8;drum_gain_q8=req_drum_gain_q8;drum_gain=float(drum_gain_q8)*(1.0f/256.0f);
+ for(int c=0;c<5;c++)emerald_fm_gain_q8[c]=req_voice_gain[c];
+ for(int d=0;d<4;d++)drums[d].level=(drums[d].velocity*req_voice_gain[d+5]+128u)>>8;
+ psg_arp_mix=float(req_voice_gain[9])*(1.0f/256.0f);psg_live_mix=float(req_voice_gain[10])*(1.0f/256.0f);psg_noise_mix=float(req_voice_gain[11])*(1.0f/256.0f);drum_gain_q8=req_drum_gain_q8;drum_gain=float(drum_gain_q8)*(1.0f/256.0f);
  live_update();psg_targets();
  float target=float(master)/4096.0f,psg_level=float(req_psg_level)*0.01f;
  for(uint32_t i=0;i<frames;i++){

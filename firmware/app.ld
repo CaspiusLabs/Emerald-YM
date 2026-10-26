@@ -21,6 +21,7 @@ SECTIONS
     .text : {
         KEEP(*(.text.crt0))
         *(.ym_control)
+        *(.ym_pitch)
         *(EXCLUDE_FILE (*ym_ymfm_ymfm_opn.o *ym_ym_engine.o) .text*)
         *(EXCLUDE_FILE (*ym_ymfm_ymfm_opn.o *ym_ym_engine.o) .rodata*)
         . = ALIGN(4); _etext = .;

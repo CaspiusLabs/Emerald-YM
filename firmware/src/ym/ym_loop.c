@@ -57,15 +57,12 @@ static void fm1_main(void){
    if(pressed&(1u<<B_REC)){uint32_t f=irq_save();seed^=fm1_ms+0x9e3779b9u;ym_reseed(seed?seed:1);irq_restore(f);yrec_until=fm1_ms+180u;}
    if(pressed&(1u<<B_SEQ)){ymutation=ymutation?0:35;ypost();}
    if(pressed&(1u<<B_ARP)){ypsg^=1u;ym_psg_enable(ypsg);}
+   d=fm1_enc_take(panel.enc[EN_SELECT])*panel.dir[EN_SELECT];
+   if(d){int32_t next=((int32_t)yinstrument+d)%12;if(next<0)next+=12;yinstrument=(uint32_t)next;}
    d=fm1_enc_take(panel.enc[EN_ALGO])*panel.dir[EN_ALGO];
-   if(d){ypsg_mix=(uint32_t)clamp((int32_t)ypsg_mix+d*5,0,400);ym_psg_level(ypsg_mix);}
-   {int changed=0;
-    d=fm1_enc_take(panel.enc[EN_SELECT])*panel.dir[EN_SELECT];
-    if(d){ymelody_mix=(uint32_t)clamp((int32_t)ymelody_mix+d*5,0,100);changed=1;}
-    d=fm1_enc_take(panel.enc[EN_PRESET])*panel.dir[EN_PRESET];
-    if(d){ydrums_mix=(uint32_t)clamp((int32_t)ydrums_mix+d*5,0,100);changed=1;}
-    if(changed){uint32_t flags=irq_save();ym_mix_levels(ymelody_mix,ydrums_mix);irq_restore(flags);}
-   }
+   if(d){ylevels[yinstrument]=(uint32_t)clamp((int32_t)ylevels[yinstrument]+d*5,0,100);ym_instrument_level(yinstrument,ylevels[yinstrument]);}
+   d=fm1_enc_take(panel.enc[EN_PRESET])*panel.dir[EN_PRESET];
+   if(d){ydrums_mix=(uint32_t)clamp((int32_t)ydrums_mix+d*5,0,100);ym_drum_level(ydrums_mix);}
    d=fm1_enc_take(panel.enc[EN_K1])*panel.dir[EN_K1];ytempo=(uint32_t)clamp((int32_t)ytempo+d,80,180);
    d=fm1_enc_take(panel.enc[EN_K2])*panel.dir[EN_K2];ydensity=(uint32_t)clamp((int32_t)ydensity+d*2,0,100);
    d=fm1_enc_take(panel.enc[EN_K3])*panel.dir[EN_K3];ymutation=(uint32_t)clamp((int32_t)ymutation+d*2,0,100);

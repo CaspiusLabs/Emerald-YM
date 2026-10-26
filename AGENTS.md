@@ -2,7 +2,7 @@
 
 - Rozmawiaj z użytkownikiem po polsku. Pracujemy nad firmware'em M-VAVE FM-1 na lokalnym Windows.
 - Bazą do rozbudowy jest zaakceptowana na urządzeniu wersja `v0.1.4`. `VERSION` jest źródłem numeru wydania. Zobacz README, BUILDING, CHANGELOG i docs/ARCHITECTURE.md.
-- Bieżące rozwinięcie to 0.2.3 (mikser FM/PSG/perkusja); opis w docs/releases/v0.2.3.md.
+- Bieżące rozwinięcie to 0.2.4 (indywidualne poziomy instrumentów); opis w docs/releases/v0.2.4.md.
   Zachowaj 0.1.4 jako osobną zaakceptowaną bazę. Nie myl prób 0.2.x z jej dowodami.
 - PSG to ograniczony profil muzyczny Sega: 3 tony i stały biały szum clock/512.
   Nie jest to dowolny interfejs rejestrów/VGM. Optymalizacja jednego zbocza
@@ -20,9 +20,12 @@
   zbieraną przed wykluczeniem tekstu obiektów emulatora. Wywołuje je pętla
   główna przez istniejące FL_FAR, nie renderer. Budowanie sprawdza ich adresy.
   Granice obszarów RAM i startup kopiujący `.audio_hot` są niezmienione.
-- SELECT skaluje pięć torów FM po ich sumie, przed dodaniem DAC. PRESETS
-  skaluje próbki perkusji przed zapisem DAC i szum PSG. 100% zachowuje bitowo
-  audio 0.2.2. Nie przenoś skali FM na wspólne wyjście z DAC.
+- Od 0.2.4 SELECT wybiera jedną z 12 ścieżek, ALGORITHM zmienia jej poziom.
+  FM ma osobny gain każdego kanału przed sumą z DAC. PRESETS jest dodatkową
+  magistralą całej perkusji. Nie skaluj wspólnego wyjścia YM jako głośności FM.
+- Tablica psg_divider ma sekcję `.ym_pitch` w XIP, odczytywaną przy instalacji
+  okresu, poza pętlą próbek oscylatora. Okresy pozostają w RAM. Linker i test
+  sprzętowy pilnują położenia i czasu; nie zmieniaj zakazu XIP w `.ram_text`.
 - Profil emulatora ma 5 FM + stały DAC. `EMERALD_FIXED_DAC` pomija niesłyszalny szósty tor FM. Nie dodawaj dowolnych zapisów rejestrów/przełączania szóstego FM bez usunięcia lub dostosowania tej optymalizacji.
 - UI: gotowe kafelki poza ekranem, odświeżanie tylko po zmianie. Nie przywracaj okresowego lcd_fill całego ekranu. Tablice LED publikuj gotowymi wierszami.
 - W rendererze nie przydzielaj pamięci i nie dodawaj libm/double. Sprawdzaj no-soft-double, rozmiary, deterministyczność, testy UI/OTA i właściwy zakres zmiany; nie uruchamiaj starych testów scenariuszy DUB-1 jako dowodu działania nowego UI.

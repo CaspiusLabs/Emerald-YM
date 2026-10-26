@@ -11,7 +11,7 @@
  * No MIDI/register API exposes channel 6 FM or toggling DAC during a song. */
 #define EMERALD_FIXED_DAC 1
 /* App mix gain after summing the five FM channels, before adding DAC. */
-extern uint32_t emerald_fm_gain_q8;
+extern uint32_t emerald_fm_gain_q8[5];
 #define assert(x) ((void)0)
 void *operator new(size_t n);
 void *operator new(size_t, void *p) noexcept;
