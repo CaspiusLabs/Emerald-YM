@@ -1,5 +1,42 @@
 # Historia Emerald YM
 
+## 0.2.2 — 2026-10-26 — wersja rozwojowa
+
+- Po drugim odsłuchu: regulacja miksu PSG pokrętłem ALGORITHM, 0–400%,
+  startowo 300% (+9,54 dB względem 0.2.1). Obejmuje arp, live i szum.
+- Aktualny poziom widoczny w dolnym kafelku; bez powtarzanych transmisji LCD
+  przy braku zmian i bez automatycznego zapisu ustawień.
+- Test miksu z trzema głosami live przy 400% bez trafień w limiter.
+- Wzór arpeggio 0.2.1 zachowany. Szczegóły: docs/releases/v0.2.2.md.
+
+## 0.2.1 — 2026-10-26 — poprawa arpeggio
+
+- Arpeggio PSG głośniejsze o 6 dB, oktawę niżej, dłuższe nuty i stały wzór
+  0–1–2–1 zgodny z akordem podkładu.
+- Użytkownik: lepiej muzycznie, lecz nadal za cicho. Podświetlenie klawiszy
+  potwierdzone wcześniej w 0.2.0.
+- Próba interaktywna ze stress MIDI zachowuje passed=false (PLAY/REC).
+  Osobny czysty podkład: 60 sekund ciągłego grania, passed=true, XRUNS 0,
+  overload 0; maksimum od bootu 84% obejmuje także wcześniejsze głosy live.
+- Skrypt testu zachowuje częściowy raport przy błędzie transportu i pozwala
+  wymagać ciągłego grania. Szczegóły: docs/releases/v0.2.1.md.
+
+## 0.2.0 — 2026-10-26 — PSG i klawiatura live
+
+- Własny profil Sega PSG NTSC: trzy dziesięciobitowe dzielniki tonu,
+  tłumienie 2 dB, 16-bitowy LFSR i zegar 3579545 Hz. Stały biały szum clock/512.
+- Generatywne arpeggio PSG i szum perkusyjny bez odbierania torów FM.
+- Klawiatura FM-1 i USB MIDI F3–G5: do trzech głosów live, pierwszeństwo
+  nowych klawiszy i powrót do wcześniej trzymanych nut. Live działa w pauzie.
+- ARP przełącza PSG. Trzy głosy live zastępują tylko arpeggio PSG.
+- LED nut: sekwencer słabo, live jasno. Zachowane gotowe wiersze i kafelkowe UI.
+- Testy PSG, allocatora, reseed, zwalniania nut, LED, UI, OTA i loadera.
+- Mapa pamięci, próg 85%, bloki 256 i profil pięć FM + stały DAC bez zmian.
+- Końcowa próba interaktywna: CPU MAX 84%, XRUNS 0, 47 aktywnych odczytów
+  z 60. Osobny pomiar ciągły przerwany timeoutem statusu USB, niezaliczony.
+- Pierwszy prototyp przed optymalizacją dochodził do 85%; zachowano rozróżnienie
+  wyników. Szczegóły i uwagi odsłuchowe: docs/releases/v0.2.0.md.
+
 ## 0.1.4 — 2026-10-26 — zaakceptowana baza
 
 - Prawdziwa emulacja YM2612, pięć głosów FM i perkusja przez DAC; generatywny sekwencer.

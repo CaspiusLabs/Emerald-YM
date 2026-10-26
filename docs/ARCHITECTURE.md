@@ -3,6 +3,7 @@
 | Obszar | Rola |
 |---|---|
 | firmware/src/ym/ym_engine.cpp | Strumieniowy sekwencer, 5 FM + DAC, konwersja próbkowania, stała arena inicjalizacji |
+| firmware/src/ym/ym_psg.h | Od 0.2.0: profil Sega PSG, trzy tony i stały biały szum, przydział głosów live |
 | firmware/src/ym/ymfm | Rdzeń ymfm i lokalne optymalizacje dla używanego profilu |
 | firmware/src/ym/ym_tables.h | Zatwierdzone tablice strojenia i oryginalne krótkie sample |
 | firmware/src/ym/main.c, ym_loop.c | Start, przerwania audio, watchdog, pomiar czasu, obsługa panelu i USB |

@@ -1,5 +1,16 @@
 # Co jest sprawdzone
 
+## Rozwinięcie 0.2.2
+
+Nowy profil PSG, głosy live i LED-y mają osobne testy desktopowe; opis w
+docs/releases/v0.2.2.md. Bieżący pakiet wgrano na zweryfikowany Emerald YM FM-1.
+30 s ciągłego sekwencera z dwiema/trzema nutami live: CPU MAX 84%, XRUNS 0,
+overload 0. Miks 400% bez limiter hits sprawdzono na komputerze, nie jako
+osobny test wszystkich ustawień urządzenia. RAMTEXT ma tylko 68 B zapasu.
+Nie przenosimy oceny akceptacji 0.1.4 automatycznie na 0.2.2.
+
+## Zaakceptowana baza 0.1.4
+
 Wersja 0.1.4 została wgrana na egzemplarz użytkownika, identyfikator FM-1_68000104. Użytkownik potwierdził muzykę, brak migotania, LED-y i wskaźniki pokręteł. Binarna baza ma SHA-256:
 
 ```

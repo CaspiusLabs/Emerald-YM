@@ -2,6 +2,12 @@
 
 - Rozmawiaj z użytkownikiem po polsku. Pracujemy nad firmware'em M-VAVE FM-1 na lokalnym Windows.
 - Bazą do rozbudowy jest zaakceptowana na urządzeniu wersja `v0.1.4`. `VERSION` jest źródłem numeru wydania. Zobacz README, BUILDING, CHANGELOG i docs/ARCHITECTURE.md.
+- Bieżące rozwinięcie to 0.2.2 (PSG/live); opis w docs/releases/v0.2.2.md.
+  Zachowaj 0.1.4 jako osobną zaakceptowaną bazę. Nie myl prób 0.2.x z jej dowodami.
+- PSG to ograniczony profil muzyczny Sega: 3 tony i stały biały szum clock/512.
+  Nie jest to dowolny interfejs rejestrów/VGM. Optymalizacja jednego zbocza
+  na próbkę zakłada dzielnik >=9 (cały obsługiwany zakres MIDI); test pilnuje
+  tej granicy. Live używa PSG, nie dodaje szóstego toru FM.
 - Kod aktywnej aplikacji: `firmware/src/ym/`; wybrany przez `EN_YM2612` w `firmware/src/main.c`. `firmware/src/app/` i `dsp/` zawierają również odziedziczony kod DUB-1 — nie zakładaj, że opisuje obecną aplikację.
 - Buduj: `powershell -ExecutionPolicy Bypass -File .\build-ym-windows.ps1`. Testuj: `powershell -ExecutionPolicy Bypass -File .\test-ym-windows.ps1`. W PowerShell 7 wystarczy wywołać pliki bezpośrednio. Te skrypty nie otwierają MIDI ani nie flashują urządzenia.
 - Lokalne zależności są w ignorowanym `.runtime/`: python, toolchain i minimalny sdk. Nie zależ od folderów wcześniejszego czatu. Narzędzia hostowe MSVC są wykrywane przez vswhere.

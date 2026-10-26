@@ -1,0 +1,25 @@
+{
+  "identity": "FM-1_68000202",
+  "firmware": "emerald-ym-0.2.2.fwsc",
+  "sha256": "1bde050919b36bac24341ca0b8dfbc326037375417a1d58ab551723c3c58f832",
+  "installed": true,
+  "duration_requested_seconds": 30,
+  "continuous_playback_observed": true,
+  "live_stress_notes": [
+    64,
+    71,
+    76
+  ],
+  "cpu_max_pct": 84,
+  "max_block_us": 4918,
+  "xruns": 0,
+  "overload_blocks": 0,
+  "failed_boots": 0,
+  "passed": true,
+  "default_psg_mix_percent": 300,
+  "hardware_mix_400_tested": false,
+  "physical_note_leds_confirmed_on": "0.2.0",
+  "musical_arp_improvement_confirmed_on": "0.2.1",
+  "mix_0_2_2_user_acceptance": "pending",
+  "notes": "30 s hardware test; not all parameter combinations. Desktop maximum mix test is separate."
+}

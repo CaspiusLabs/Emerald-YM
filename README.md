@@ -2,6 +2,12 @@
 
 Generatywny instrument dla M-VAVE FM-1, inspirowany brzmieniem Mega Drive/Genesis. Emuluje YM2612: pięć głosów FM i perkusja przez DAC. Własna muzyka, UI i znak Emerald.
 
+**Bieżąca wersja rozwojowa: 0.2.2 — PSG i klawiatura na żywo.** Trzy tony PSG,
+szum Sega, generatywne arpeggio i do trzech nut granych na klawiaturze FM-1
+równocześnie z podkładem. ARP włącza/wyłącza PSG; PLAY zatrzymuje tylko podkład.
+Nuty podkładu w zakresie klawiatury świecą słabo, nuty live jasno.
+Opis i zakres prób: [docs/releases/v0.2.2.md](docs/releases/v0.2.2.md).
+
 **Baza do dalszej rozbudowy: v0.1.4**, zaakceptowana na urządzeniu. Tożsamość FM-1_68000104. Sprawdzony pakiet i dowody są w releases/v0.1.4. W próbach: CPU MAX 80%, XRUNS 0; użytkownik potwierdził dźwięk, ekran bez migotania, LED-y oraz wskaźniki pokręteł. Zakres i ograniczenia: [docs/VERIFICATION.md](docs/VERIFICATION.md).
 
 ## Szybki start na tym Windowsie
@@ -22,6 +28,10 @@ Lokalna .runtime zawiera gotowy Python, toolchain i minimalny SDK, niezależne o
 - SEQ: przełączenie mutacji 0 / 35.
 - K1: tempo, K2: gęstość, K3: mutacja, K4: transpozycja.
 - MASTER: głośność.
+- Od 0.2.2 ALGORITHM: poziom PSG 0–400%, startowo 300%; wartość na dole ekranu.
+- Od 0.2.0: klawiatura F3–G5 gra przez PSG (do trzech nut), również w pauzie.
+- ARP: PSG włączony/wyłączony. Przy trzech nutach live ustępuje arpeggio PSG;
+  pięć torów FM i perkusja DAC nadal grają. K4 transponuje również klawiaturę.
 
 Ekran pokazuje wartości, paski, takt, kroki, CPU MAX i XRUN. Świecą używane przyciski i ich stany. Szczegółowy opis zaakceptowanej wersji: [docs/releases/v0.1.4.md](docs/releases/v0.1.4.md).
 

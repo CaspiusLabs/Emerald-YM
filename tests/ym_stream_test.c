@@ -34,5 +34,25 @@ int main(int argc,char**argv){
  check(ym_bar()>bar,"tempo and transpose extremes keep running");
  uint32_t before=ym_arena_bytes();ym_reseed(1234567);ym_render(audio,256,4096);
  check(ym_seed()==1234567&&ym_arena_bytes()==before,"new seed without allocating");
+ ym_init(20261026);ym_control(132,100,35,0,0);
+ ym_live_keys(1u);for(int n=0;n<40;n++)ym_render(audio,256,4096);
+ check(ym_live_active_keys()==1u&&ym_bar()==1,"live keyboard plays while sequencer paused");
+ peak=0;for(int n=0;n<512;n++){int32_t v=audio[n]<0?-audio[n]:audio[n];if(v>peak)peak=v;}
+ check(peak>50000,"paused live voice is audible");
+ ym_live_keys(3u);ym_render(audio,256,4096);check(ym_live_active_keys()==3u,"two live voices");
+ ym_live_keys(15u);ym_render(audio,256,4096);check(ym_live_active_keys()==14u,"three voices: newest keys take priority");
+ ym_live_keys(7u);ym_render(audio,256,4096);check(ym_live_active_keys()==7u,"released voice restores held stolen key");
+ ym_psg_enable(0);for(int n=0;n<40;n++)ym_render(audio,256,4096);
+ check(ym_live_active_keys()==0,"PSG off clears live indication");
+ ym_psg_enable(1);ym_render(audio,256,4096);check(ym_live_active_keys()==7u,"PSG on restores held keys");
+ ym_reseed(9876);ym_render(audio,256,4096);check(ym_live_active_keys()==7u,"reseed preserves held live keys");
+ ym_live_keys(0);for(int n=0;n<100;n++)ym_render(audio,256,4096);
+ peak=0;for(int n=0;n<512;n++){int32_t v=audio[n]<0?-audio[n]:audio[n];if(v>peak)peak=v;}
+ check(ym_live_active_keys()==0&&peak<100,"all live keys released: no stuck sound");
+ ym_control(180,100,100,12,1);ym_live_keys(0x07ffffffu);ym_psg_level(400);
+ before=ym_arena_bytes();int bounded=1;
+ for(int n=0;n<2000;n++){ym_render(audio,256,4096);for(int i=0;i<512;i++)if(audio[i]>=8300000||audio[i]<=-8300000)bounded=0;}
+ check(bounded,"three PSG voices plus FM/DAC: no limiter hits");
+ check(ym_arena_bytes()==before,"full held keyboard and sequencer: no allocations");
  printf("PASS: 180+ seconds streamed, %.3f s desktop CPU time (not a target benchmark).\n",(double)(clock()-start)/CLOCKS_PER_SEC);return 0;
 }

@@ -9,11 +9,17 @@
 #define ym_reseed(...) FL_FAR(ym_reseed)(__VA_ARGS__)
 #define ym_seed(...) FL_FAR(ym_seed)(__VA_ARGS__)
 #define ym_step(...) FL_FAR(ym_step)(__VA_ARGS__)
+#define ym_live_keys(...) FL_FAR(ym_live_keys)(__VA_ARGS__)
+#define ym_psg_enable(...) FL_FAR(ym_psg_enable)(__VA_ARGS__)
+#define ym_psg_level(...) FL_FAR(ym_psg_level)(__VA_ARGS__)
+#define ym_live_active_keys(...) FL_FAR(ym_live_active_keys)(__VA_ARGS__)
+#define ym_sequence_keys(...) FL_FAR(ym_sequence_keys)(__VA_ARGS__)
 static volatile uint32_t audio_cpu_pct,audio_xruns,audio_cpu_peak,audio_cpu_lifetime_peak;
 static volatile uint32_t ym_overload;
 static uint32_t master_q12=256; /* start quietly, master pot updates after boot */
 static uint32_t ytempo=132,ydensity=100,ymutation=35,yplaying=0;
 static int32_t ytranspose;
+static uint32_t ypsg=1,ypsg_mix=300,ymidi_keys;
 int plat_store_load(uint32_t obj,void*dst,uint32_t max){return flash_ok?st_load(obj,dst,max):-1;}
 int plat_store_save(uint32_t obj,const void*src,uint32_t len){return flash_ok?st_save(obj,src,len):-9;}
 #include "app/panel.c"

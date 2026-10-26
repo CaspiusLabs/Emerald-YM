@@ -10,7 +10,7 @@
 #define Y_DIM RGB(121,149,181)
 #define Y_AMBER RGB(255,176,64)
 static uint8_t yui_ready;
-static struct {uint32_t tempo,density,mutation,bar,playing,overload,cpu,xruns,step;int32_t transpose;} yui_old;
+static struct {uint32_t tempo,density,mutation,bar,playing,overload,cpu,xruns,step,psg,mix;int32_t transpose;} yui_old;
 static void yui_header(void){
  cv_begin(240,44,Y_BG);
  /* Original faceted jewel + striped 16-bit badge, drawn natively. */
@@ -22,7 +22,7 @@ static void yui_header(void){
  cv_line(7,20,37,20,Y_GREEN);cv_line(22,5,22,35,Y_GREEN);
  cv_text(45,2,&FONT_M,"EMERALD",RGB(14,68,122));
  cv_text(44,1,&FONT_M,"EMERALD",Y_WHITE);
- cv_text(45,28,&FONT_XS,"YM / GENERATIVE FM",Y_BLUE);
+ cv_text(45,28,&FONT_XS,"YM + PSG / LIVE",Y_BLUE);
  cv_rect(171,5,62,27,Y_EDGE);cv_rect(173,7,58,23,Y_CARD);
  cv_text(184,10,&FONT_XS,"16-BIT",Y_WHITE);
  for(int k=0;k<3;k++)cv_rect(178,24+k*2,48,1,k==1?Y_BLUE:Y_DIM);
@@ -69,12 +69,16 @@ static void yui_steps(uint32_t step){
  cv_blit(8,212);
 }
 static void ydisplay_invalidate(void){yui_ready=0;}
+static void yui_hint(void){
+ char b[40];str_cpy(b,"ALG PSG ",sizeof b);fmt_int(b+8,(int32_t)ypsg_mix);
+ str_cpy(b+str_len(b),"% / LIVE",sizeof b-str_len(b));
+ cv_begin(224,12,Y_BG);cv_text(0,0,&FONT_XS,ypsg?b:"ARP PSG OFF / KEYS MUTED",ypsg?Y_GREEN:Y_DIM);cv_blit(8,228);
+}
 static void ydisplay(void){
  uint32_t bar=ym_bar(),step=ym_step(),cpu=audio_cpu_lifetime_peak,xruns=audio_xruns;
  uint32_t overloaded=ym_overload>=8u,step_key=step|(yplaying<<4)|(overloaded<<5);
  if(!yui_ready){
   lcd_fill(0,0,240,240,Y_BG);yui_header();
-  cv_begin(224,12,Y_BG);cv_text(0,0,&FONT_XS,"REC NEW SEED / SEQ MUTATE",Y_DIM);cv_blit(8,228);
   memset(&yui_old,255,sizeof yui_old);yui_old.transpose=1000;yui_ready=1;
  }
  if(yui_old.playing!=yplaying||yui_old.bar!=bar||yui_old.overload!=overloaded){yui_transport(bar);yui_old.playing=yplaying;yui_old.bar=bar;yui_old.overload=overloaded;}
@@ -84,4 +88,5 @@ static void ydisplay(void){
  if(yui_old.transpose!=ytranspose){yui_card(3,ytranspose);yui_old.transpose=ytranspose;}
  if(yui_old.cpu!=cpu||yui_old.xruns!=xruns){yui_footer(cpu,xruns);yui_old.cpu=cpu;yui_old.xruns=xruns;}
  if(yui_old.step!=step_key){yui_steps(step);yui_old.step=step_key;}
+ if(yui_old.psg!=ypsg||yui_old.mix!=ypsg_mix){yui_hint();yui_old.psg=ypsg;yui_old.mix=ypsg_mix;}
 }

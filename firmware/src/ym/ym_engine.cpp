@@ -21,17 +21,19 @@ static uint32_t hold[5];
 static int8_t motifs[4][8];
 static int32_t prev_l,prev_r,next_l,next_r;
 static int32_t last_dac;
-static float dc_l,dc_r,gain;
+static float dc_l,dc_r,gain,sequence_gain;
+static int16_t fm_note[5];
 static uint32_t tempo=132,density=100,mutation=35,playing=1;
 static int32_t transpose;
 static volatile uint32_t req_tempo=132,req_density=100,req_mutation=35,req_play=1,req_seed;
 static volatile int32_t req_transpose;
+#include "ym_psg.h"
 static uint32_t random32(){state^=state<<13;state^=state>>17;state^=state<<5;return state;}
 static uint32_t pick(uint32_t n){return random32()%n;}
 static void wr(int r,int v){chip->write(r>=256?2:0,uint8_t(r));chip->write(r>=256?3:1,uint8_t(v));}
 static void cw(int c,int r,int v){wr((c>=3?256:0)+r+c%3,v);}
 static int key(int c){return c%3+(c>=3?4:0);}
-static void off(int c){wr(0x28,key(c));hold[c]=0;}
+static void off(int c){wr(0x28,key(c));hold[c]=0;fm_note[c]=-1;}
 struct Patch {uint8_t fb,mul[4],tl[4],ar[4],dr[4],sr[4],sl[4],rr[4];};
 static const Patch bass={5,{1,1,1,1},{29,7,37,12},{31,31,31,31},{17,13,19,14},{5,6,5,6},{5,5,5,5},{10,10,10,10}};
 static const Patch lead={3,{2,1,1,1},{34,9,42,15},{31,30,31,30},{13,9,16,10},{3,2,4,2},{5,3,6,3},{10,10,10,10}};
@@ -43,7 +45,7 @@ static void patch(int c,const Patch&p,int pan){
 }
 static void note(int c,int n,uint32_t gate){
  n+=transpose;if(n<12)n=12;if(n>115)n=115;int f=ym_pitch[n];off(c);
- cw(c,0xa4,f>>8);cw(c,0xa0,f&255);wr(0x28,0xf0|key(c));hold[c]=gate;notes++;
+ cw(c,0xa4,f>>8);cw(c,0xa0,f&255);wr(0x28,0xf0|key(c));hold[c]=gate;fm_note[c]=(int16_t)n;notes++;
 }
 struct Drum {const int8_t*p;uint32_t len,pos,level;};
 static Drum drums[4];
@@ -54,7 +56,7 @@ static void make_motifs(){
  for(int m=0;m<4;m++){int k=1+pick(6),n=motifs[m][k]+(pick(2)?1:-1);motifs[m][k]=n<0?0:n>6?6:n;}
 }
 static void restart(uint32_t seed){
- state=initial_seed=seed?seed:1;steps=step_phase=notes=0;
+ state=initial_seed=seed?seed:1;steps=step_phase=notes=0;psg_reset();
  chip->reset();wr(0x22,0);wr(0x27,0);wr(0x2a,128);wr(0x2b,128);last_dac=128;
  for(int c=0;c<5;c++)off(c);
  patch(0,bass,0xc0);patch(1,lead,0xc0);patch(2,keys,0x80);patch(3,keys,0xc0);patch(4,keys,0x40);cw(5,0xb4,0xc0);
@@ -86,10 +88,18 @@ static void tick(){
  if(bridge?pos==8:(pos==4||pos==12))hit(1,100);
  if(!(pos&1))hit(pos==14?3:2,pos%4?65:90);
  if(b%8==7&&pos>=12)hit(1,35+(pos-12)*15);
+ if(req_psg){
+  /* Stable up/down chord arp, one octave below the original short bleeps. */
+  static const uint8_t arp[]={0,1,2,1,0,1,2,1};
+  if((pos&1u)==0u){psg_note=(uint8_t)(chords[idx][arp[pos/2]]+transpose);psg_gate=unit*7/4;}
+  if((pos&3u)==2u){psg_lfsr=0x8000;psg_noise_hold=2205;}
+ }
+ psg_targets();
  steps++;
 }
 static void native(){
  if(playing){
+  if(psg_gate&&!--psg_gate)psg_note=255;
   for(int c=0;c<5;c++)if(hold[c]&&!--hold[c])off(c);
   if(steps==0)tick();step_phase+=tempo*4u*144u;if(step_phase>=7670454u*60u){step_phase-=7670454u*60u;tick();}
  }
@@ -105,11 +115,18 @@ extern "C" void ym_init(uint32_t seed){
  // intentionally leaves some free-running emulation counters unchanged; reconstruct
  // here so separate cold starts are sample-exact without changing upstream emulation.
  arena_used=0;auto*iface=new(interface_mem)ymfm::ymfm_interface;chip=new(chip_mem)ymfm::ym2612(*iface);
- req_seed=0;playing=req_play=1;tempo=req_tempo=132;density=req_density=100;mutation=req_mutation=35;transpose=req_transpose=0;
+ req_seed=req_keys=0;req_psg=1;req_psg_level=300;old_keys=live_mask=sequence_mask=key_clock=0;old_psg=1;
+ for(int k=0;k<27;k++)key_age[k]=0;sequence_gain=0;
+ playing=req_play=1;tempo=req_tempo=132;density=req_density=100;mutation=req_mutation=35;transpose=req_transpose=0;
  resample_phase=native_count=0;prev_l=prev_r=next_l=next_r=0;dc_l=dc_r=gain=0;restart(seed);
 }
 extern "C" void ym_control(uint32_t t,uint32_t d,uint32_t m,int32_t tr,uint32_t p){req_tempo=t<80?80:t>180?180:t;req_density=d>100?100:d;req_mutation=m>100?100:m;req_transpose=tr< -12?-12:tr>12?12:tr;req_play=p!=0;}
 extern "C" void ym_reseed(uint32_t s){req_seed=s?s:1;}
+extern "C" void ym_live_keys(uint32_t keys){req_keys=keys&0x07ffffffu;}
+extern "C" void ym_psg_enable(uint32_t enabled){req_psg=enabled!=0;}
+extern "C" void ym_psg_level(uint32_t percent){req_psg_level=percent>400?400:percent;}
+extern "C" uint32_t ym_live_active_keys(){return live_mask;}
+extern "C" uint32_t ym_sequence_keys(){return sequence_mask;}
 extern "C" uint32_t ym_bar(){return steps?((steps-1)/16)+1:1;}
 extern "C" uint32_t ym_step(){return steps?(steps-1)%16u:0u;}
 extern "C" uint32_t ym_seed(){return initial_seed;}
@@ -119,14 +136,22 @@ extern "C" void ym_render(int32_t*out,uint32_t frames,uint32_t master){
  tempo=req_tempo;density=req_density;mutation=req_mutation;transpose=req_transpose;
  uint32_t newseed=req_seed;if(newseed){req_seed=0;restart(newseed);}
  if(playing&&!req_play){for(int c=0;c<5;c++)off(c);}playing=req_play;
- float target=playing?float(master)/4096.0f:0.0f;
+ live_update();psg_targets();
+ float target=float(master)/4096.0f,psg_level=float(req_psg_level)*0.01f;
  for(uint32_t i=0;i<frames;i++){
   resample_phase+=7670454u;while(resample_phase>=44100u*144u){prev_l=next_l;prev_r=next_r;native();resample_phase-=44100u*144u;}
+  if(psg_gate==0&&psg_tone[2].target&&live_key[2]==255)psg_tone[2].target=0;
   float alpha=float(resample_phase)*(1.0f/6350400.0f);
   float l=float(prev_l)+float(next_l-prev_l)*alpha,r=float(prev_r)+float(next_r-prev_r)*alpha;
   dc_l+=(l-dc_l)*0.00256f;dc_r+=(r-dc_r)*0.00256f;gain+=(target-gain)*0.001f;
-  l=(l-dc_l)*gain*512.0f;r=(r-dc_r)*gain*512.0f;
+  sequence_gain+=((playing?1.0f:0.0f)-sequence_gain)*0.001f;
+  float psg=psg_sample()*psg_level;
+  l=((l-dc_l)*sequence_gain*0.85f+psg)*gain*512.0f;r=((r-dc_r)*sequence_gain*0.85f+psg)*gain*512.0f;
   out[2*i]=int32_t(l>8300000.0f?8300000.0f:l< -8300000.0f?-8300000.0f:l);
   out[2*i+1]=int32_t(r>8300000.0f?8300000.0f:r< -8300000.0f?-8300000.0f:r);
  }
+ uint32_t mask=0;
+ if(playing){for(int c=0;c<5;c++)if(hold[c]&&fm_note[c]>=53&&fm_note[c]<=79)mask|=1u<<(fm_note[c]-53);
+ if(req_psg&&psg_gate&&live_key[2]==255&&psg_note>=53&&psg_note<=79)mask|=1u<<(psg_note-53);}
+ sequence_mask=mask;
 }
