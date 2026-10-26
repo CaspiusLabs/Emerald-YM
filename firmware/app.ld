@@ -18,9 +18,23 @@ MEMORY
 }
 SECTIONS
 {
-    .text : { KEEP(*(.text.crt0)) *(.text*) *(.rodata*) . = ALIGN(4); _etext = .; } > XIP
+    .text : {
+        KEEP(*(.text.crt0))
+        *(EXCLUDE_FILE (*ym_ymfm_ymfm_opn.o *ym_ym_engine.o) .text*)
+        *(EXCLUDE_FILE (*ym_ymfm_ymfm_opn.o *ym_ym_engine.o) .rodata*)
+        . = ALIGN(4); _etext = .;
+    } > XIP
     .ram_text : { _rt_start = .; KEEP(*(.ram_text*)) . = ALIGN(4); _rt_end = .; } > RAMTEXT AT > XIP
     _rt_load = LOADADDR(.ram_text);
+    /* Emulator hot code and lookup tables: separate from flash-off RAM code.
+       It runs only during normal audio operation, and may call XIP helpers. */
+    .audio_hot : {
+        _audio_start = .;
+        *ym_ymfm_ymfm_opn.o(.text* .rodata*)
+        *ym_ym_engine.o(.text* .rodata*)
+        . = ALIGN(4); _audio_end = .;
+    } > RAMTEXT AT > XIP
+    _audio_load = LOADADDR(.audio_hot);
     .data : { . = ALIGN(4); _data_start = .; *(.data*) *(.sdata*) . = ALIGN(4); _data_end = .; } > RAM AT > XIP
     _data_load = LOADADDR(.data);
     .bss (NOLOAD) : { _bss_start = .; *(.bss*) *(.sbss*) *(COMMON) . = ALIGN(4); _bss_end = .; } > RAM

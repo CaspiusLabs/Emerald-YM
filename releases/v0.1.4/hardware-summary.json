@@ -1,0 +1,25 @@
+{
+  "firmware": "emerald-ym-0.1.4.fwsc",
+  "identity": "FM-1_68000104",
+  "sha256": "5fcae705878056c52588b4af9a98902a556c26488926a98d0cbcd7e6e79bd52a",
+  "installed": true,
+  "cpu_max_pct": 80.0,
+  "xruns": 0.0,
+  "overload_blocks": 0.0,
+  "ui_flicker_fixed_confirmed_by_user": true,
+  "button_lighting_confirmed_by_user": true,
+  "knob_value_and_bar_updates_confirmed_by_user": true,
+  "renderer_bounds_and_dirty_update_tests_passed": true,
+  "audio_trial": "interactive observation, 62 samples; user toggled playback and selected new seed; not continuous playback",
+  "automated_original_completion_criterion": false,
+  "completion_criterion_note": "Final bar returned to 1 after physical REC; not an audio underrun or overload",
+  "audio_performance_checks_passed": true,
+  "physical_audio_previously_confirmed": true,
+  "previous_continuous_test": {
+    "version": "0.1.3",
+    "seconds": 60,
+    "cpu_max_pct": 80,
+    "xruns": 0,
+    "passed": true
+  }
+}

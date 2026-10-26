@@ -5,3 +5,13 @@ __pycache__/
 .serena/
 docs/superpowers/
 .venv/
+.runtime/
+dist/
+*.obj
+*.exe
+*.pdb
+*.ilk
+*.idb
+*.log
+# Preserve test evidence attached to releases.
+!releases/**/*.log

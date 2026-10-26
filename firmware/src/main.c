@@ -122,6 +122,9 @@ static void ota_commit(const uint8_t *parm)
     fm1_enter_update(parm);
 }
 
+#ifdef EN_YM2612
+#include "ym/main.c"
+#else
 #include "app/app.h"
 #define ANN_NAME "DUB-1 " EN_VERSION
 #include "ann_words.h"            /* the link to AMB-1's words file (tools/gen_words.py, from firmware/words.tsv) */
@@ -137,3 +140,5 @@ static int ann_wire_send(const uint8_t *p, uint32_t n)   /* never waits: no room
 #include "app/project.c"
 #include "app/ui.c"
 #include "app/main_fm1.c"
+
+#endif /* EN_YM2612 */

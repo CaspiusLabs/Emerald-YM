@@ -1,0 +1,8 @@
+ym_ui_test.c
+idle: zero repeated LCD writes: PASS
+one knob: exactly one atomic tile: PASS
+transport change: transport + steps only: PASS
+one step: small strip only: PASS
+no visible clears while playing or updating: PASS
+full redraw only on explicit invalidation: PASS
+Renderer bounds and redraw checks passed.

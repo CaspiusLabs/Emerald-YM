@@ -41,7 +41,7 @@ CFLAGS = ["-Os", "-ffunction-sections", "-fno-builtin", "-Wall", "-Wno-unused-fu
 # build (-ffp-contract=off) computes the same samples
 FPU = ["-mcpu=r3", "-mfprev1", "-ffp-contract=off"]
 # the instrument: a separate unit at -O2
-O2_UNITS = ["dsp/amb.c"]
+O2_UNITS = ["ym/ym_engine.cpp", "ym/ymfm/ymfm_opn.cpp", "ym/ymfm/ymfm_adpcm.cpp", "ym/ymfm/ymfm_ssg.cpp"]
 LINE = re.compile(r"^\s*([0-9a-f]+):\s+((?:[0-9a-f]{2} )+)\s*\t(.*)$")
 
 # SDK files of AC79NN_SDK_V1.2.1_2023-12-13 (the tested version)
@@ -57,14 +57,14 @@ VERSION = None                      # FELUCCA_VERSION for release builds (defaul
 
 def toolchain():
     tc = os.environ.get("JIELI_TOOLCHAIN")
-    if not tc or not (Path(tc) / "pi32v2" / "bin" / "clang").exists():
+    if not tc or not ((Path(tc) / "pi32v2" / "bin" / "clang").exists() or (Path(tc) / "pi32" / "bin" / "clang.exe").exists()):
         raise SystemExit("JIELI_TOOLCHAIN must point at the JieLi Linux toolchain "
                          "(the directory with pi32v2/ and common/; see tools/get_toolchain.sh)")
     return Path(tc).resolve()
 
 
 def use_docker():
-    native = platform.system() == "Linux" and platform.machine() in ("x86_64", "AMD64")
+    native = platform.system() in ("Linux", "Windows") and platform.machine() in ("x86_64", "AMD64")
     return os.environ.get("JIELI_DOCKER", "0" if native else "1") == "1"
 
 
@@ -105,6 +105,11 @@ def tc(tool, *args):
     rel = [str(Path(a).resolve().relative_to(SRC)) if isinstance(a, Path) else a for a in args]
     if tool == "cc":                # the toolchain's cc wrapper needs python3; call clang directly
         tool, rel = "pi32v2/bin/clang", ["-target", "pi32v2", *rel]
+        if platform.system() == "Windows":
+            rel += ["-I" + str(toolchain() / "pi32" / "include" / "libc")]
+    if platform.system() == "Windows":
+        windows_tools = {"pi32v2/bin/clang": "pi32/bin/clang.exe", "pi32v2/bin/ld": "pi32/bin/pi32v2-ld.exe", "common/bin/objcopy": "pi32/bin/llvm-objcopy.exe", "common/bin/objdump": "pi32/bin/llvm-objdump.exe"}
+        tool = windows_tools.get(tool, tool)
     if use_docker():
         cmd = ["docker", "exec", "-w", "/work", builder(), f"/opt/jieli/{tool}", *rel]
     else:
@@ -202,7 +207,7 @@ def build_loader():
 # ---- app
 
 def build_app():
-    flags = [*CFLAGS, *FPU, "-Ifirmware/hal", "-Ifirmware/src", "-Ibuild/gen"]
+    flags = [*CFLAGS, *FPU, "-DEN_YM2612=1", "-DEN_UAC=0", "-DEN_TRS=0", "-DNDEBUG", "-DYMFM_FREESTANDING=1", "-Ifirmware/hal", "-Ifirmware/src", "-Ibuild/gen"]
     for flag in ("EN_CDC",):
         v = os.environ.get(flag)    # unset: the default in firmware/src/main.c
         if v in ("0", "1"):
@@ -218,19 +223,20 @@ def build_app():
     objs = [OUT / "crt0.o", OUT / "fm1_vec.o", OUT / "fm1_isr.o", OUT / "main.o"]
     (OUT / "o2").mkdir(parents=True, exist_ok=True)
     for u in O2_UNITS:
-        o = OUT / "o2" / (u.replace("/", "_")[:-2] + ".o")
-        units.append(("cc", *o2, "-c", FW / "src" / u, "-o", o))
+        o = OUT / "o2" / (u.replace("/", "_").rsplit(".",1)[0] + ".o")
+        units.append(("cc", *o2, *(["-std=c++14", "-fno-exceptions", "-fno-rtti", "-fno-threadsafe-statics", "-fno-use-cxa-atexit"] if u.endswith(".cpp") else []), "-c", FW / "src" / u, "-o", o))
         objs.append(o)
     tc_all(*units)
     elf = OUT / "amb.elf"
     # unreferenced functions (each in its own section: -ffunction-sections) are dropped: the DSP keeps
     # mono reference paths for the host tests that the firmware no longer calls
     tc("pi32v2/bin/ld", "--gc-sections", "-e", "_start", "-T", FW / "app.ld", *objs, "-o", elf)
-    for sect in ("text.bin", "data.bin", "ramtext.bin"):
+    for sect in ("text.bin", "data.bin", "ramtext.bin", "audiohot.bin"):
         (OUT / sect).unlink(missing_ok=True)
     *_, syms, dis, rt = tc_all(("common/bin/objcopy", "-O", "binary", "-j", ".text", elf, OUT / "text.bin"),
                                ("common/bin/objcopy", "-O", "binary", "-j", ".data", elf, OUT / "data.bin"),
                                ("common/bin/objcopy", "-O", "binary", "-j", ".ram_text", elf, OUT / "ramtext.bin"),
+                               ("common/bin/objcopy", "-O", "binary", "-j", ".audio_hot", elf, OUT / "audiohot.bin"),
                                ("common/bin/objdump", "-t", elf),
                                ("common/bin/objdump", "-d", elf),
                                ("common/bin/objdump", "-d", "-j", ".ram_text", elf))
@@ -240,7 +246,7 @@ def build_app():
         return int(re.search(r"^([0-9a-f]+) .*\s" + name + r"$", syms, re.M).group(1), 16)
     img = bytearray((OUT / "text.bin").read_bytes())
     # .ram_text and .data follow .text at their load addresses; crt0 copies them by words
-    for sect, lname in (("ramtext.bin", "_rt_load"), ("data.bin", "_data_load")):
+    for sect, lname in (("ramtext.bin", "_rt_load"), ("audiohot.bin", "_audio_load"), ("data.bin", "_data_load")):
         load = symv(lname)
         if load % 4:
             raise SystemExit(f"{lname} {load:#x} is not word aligned")
@@ -289,6 +295,12 @@ def check(img, syms, dis, rt):
         return int(mm.group(1), 16) if mm else 0
     bss = sym("_bss_end") - 0x01C08000
     pool = sym("_pool_end") - sym("_pool_start")
+    audio_start, audio_end = sym("_audio_start"), sym("_audio_end")
+    if not (0x01C00000 <= audio_start < audio_end <= 0x01C06000):
+        errors.append("audio hot code not inside executable RAMTEXT")
+    if audio_start < sym("_rt_end"):
+        errors.append("audio hot code overlaps flash driver")
+    notes.append(f"audio hot code+tables {audio_end-audio_start} B in RAM; RAMTEXT total {audio_end-0x01C00000} of 24576")
     notes.append(f"image {len(img)} B; RAM .data+.bss {bss} B of 98304; pool {pool} B of {0x54000}")
     if bss > 96 * 1024:
         errors.append("RAM region overflow")
@@ -355,9 +367,9 @@ def main():
         m = re.fullmatch(r"(\d{1,2})\.(\d{1,2})(?:\.(\d{1,2}))?(-[A-Za-z0-9]+)?", a.release)
         if not m:
             raise SystemExit(f"--release {a.release}: use X.Y[.Z][-suffix], up to two digits each")
-        PRODUCT = "FM-1_8%02d%02d%02d" % (int(m[1]), int(m[2]), int(m[3] or 0))
+        PRODUCT = "FM-1_68%02d%02d%02d" % (int(m[1]), int(m[2]), int(m[3] or 0))
         VERSION = a.release.upper()
-        name = f"dub-{a.release}.fwsc"
+        name = f"emerald-ym-{a.release}.fwsc"
     fm1pkg_make.SDK = a.sdk
     for rel, sha in SDK_SHA256.items():          # fail early without the SDK
         if hashlib.sha256(fm1pkg_make.sdk_file(rel)).hexdigest() != sha:

@@ -36,6 +36,9 @@
 
 extern char _guard0[], _ustack_lo[], _guard1[], _sstack_lo[], _sstack_top[], _etext[];
 extern uint32_t _rt_start[], _rt_end[];
+#ifdef EN_YM2612
+extern uint32_t _audio_end[];
+#endif
 
 enum { FM1_GUARD_STACK = 1, FM1_GUARD_WRITE = 2, FM1_GUARD_BUS = 4, FM1_GUARD_PC = 8 };
 
@@ -77,6 +80,12 @@ static void fm1_guard_enable(uint32_t which)
         FM1_PC_LIMIT0_H = (uint32_t)(uintptr_t)_etext;
         {   /* RAM code (.ram_text); with none, repeat the XIP window */
             volatile uint32_t rs = (uint32_t)(uintptr_t)_rt_start, re = (uint32_t)(uintptr_t)_rt_end;
+#ifdef EN_YM2612
+            /* One contiguous RAM execution window: flash driver followed by
+               audio code. Stack/data regions remain outside this window. */
+            if ((uint32_t)(uintptr_t)_audio_end > re)
+                re = (uint32_t)(uintptr_t)_audio_end;
+#endif
             FM1_PC_LIMIT1_L = re > rs ? rs : 0x02000120u;
             FM1_PC_LIMIT1_H = re > rs ? re - 1u : (uint32_t)(uintptr_t)_etext;
         }
