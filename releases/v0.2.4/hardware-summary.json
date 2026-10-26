@@ -16,7 +16,7 @@
   "hardware_test_levels": "default balance; 2/3 USB-held live notes",
   "all_level_combinations_hardware_tested": false,
   "individual_sources_desktop_tested": true,
-  "physical_select_algorithm_confirmation": "pending",
+  "physical_select_algorithm_confirmation": "confirmed_by_user",
   "prototype_report": "separate prototype-hardware-live-stress.json; different build, same version identity",
   "headroom_note": "CPU MAX 85%; very little margin; overload guard unchanged."
 }
