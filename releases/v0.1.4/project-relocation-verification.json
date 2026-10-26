@@ -1,0 +1,18 @@
+{
+  "baseline_version": "0.1.4",
+  "firmware_identity": "FM-1_68000104",
+  "package_sha256": "5fcae705878056c52588b4af9a98902a556c26488926a98d0cbcd7e6e79bd52a",
+  "standalone_build_matches_accepted_package_bit_for_bit": true,
+  "firmware_sources_changed_during_organization": false,
+  "standalone_local_runtime": ".runtime/{python,toolchain,sdk}",
+  "desktop_stream_tests": "passed",
+  "desktop_ui_tests": "passed",
+  "ota_entry_simulation": "passed",
+  "different_image_loader_simulation": "passed",
+  "fake_backend_installer_tests": "passed",
+  "javascript_logical_image_comparison": "skipped by upstream test; Node.js unavailable in command environment",
+  "device_access_during_organization": false,
+  "flashed_during_organization": false,
+  "published_to_remote": false,
+  "note": "Historical hardware evidence is separate from the new desktop relocation checks."
+}

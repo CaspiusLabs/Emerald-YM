@@ -5,10 +5,12 @@ sys.path.insert(0,str(Path(__file__).resolve().parent))
 import fm1pkg_make as P
 import fm1_install as I
 ROOT=Path(__file__).resolve().parents[1]
-pkg=ROOT/'build/emerald-ym-0.1.4.fwsc'
+version=(ROOT/'VERSION').read_text().strip()
+pkg=ROOT/f'build/emerald-ym-{version}.fwsc'
 raw=pkg.read_bytes()
 identity=I.product_of(raw)
-assert identity=='FM-1_68000104',identity
+expected='FM-1_68'+''.join(f'{int(n):02d}' for n in version.split('.'))
+assert identity==expected,identity
 logical=I.logical_image(raw)
 assert len(logical)>len((ROOT/'build/amb.bin').read_bytes())
 sdk=Path(os.environ['AC79_SDK'])
@@ -38,6 +40,10 @@ info={'name':pkg.name,'identity':identity,'bytes':len(raw),'sha256':hashlib.sha2
  'ota_entry_simulation':'passed','loader_simulation_different_image':'passed','flashed':False,
  'hardware_realtime_verified':False,'ymfm_commit':'81aec25ccbb98f4873a255f7551ac4dadac59b4a',
  'dub_base_commit':'e6fe7b8f8f3114019bb36b5b536ad458eacd2c2d','toolchain':'JieLi Windows 2.5.3; clang 4.0.1 pi32v2 r3'}
+baseline=ROOT/f'releases/v{version}/emerald-ym-{version}.fwsc'
+if baseline.exists():
+ assert baseline.read_bytes()==raw,'Build differs from the preserved tested release; do not replace its baseline'
+ info['matches_preserved_release_bit_for_bit']=True
 (ROOT/'build/firmware-verification.json').write_text(json.dumps(info,indent=2)+'\n')
 print(r.stdout)
 print(json.dumps(info,indent=2))

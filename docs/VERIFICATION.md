@@ -1,0 +1,15 @@
+# Co jest sprawdzone
+
+Wersja 0.1.4 została wgrana na egzemplarz użytkownika, identyfikator FM-1_68000104. Użytkownik potwierdził muzykę, brak migotania, LED-y i wskaźniki pokręteł. Binarna baza ma SHA-256:
+
+```
+5fcae705878056c52588b4af9a98902a556c26488926a98d0cbcd7e6e79bd52a
+```
+
+`releases/v0.1.4/hardware-summary.json` zawiera wynik podsumowania. Surowy `hardware-interactive-trace.json` zachowuje `passed=false`: użytkownik testował PLAY i REC, więc takt wrócił do 1 i nie spełnił starego kryterium końcowego numeru taktu. W 62 próbkach, przez około 60,6 s, odtwarzanie było aktywne w 48 próbkach; CPU MAX 80%, XRUNS 0, brak przeciążenia. To próba interaktywna, a nie minuta nieprzerwanego grania. Pełny wcześniejszy ciągły test 0.1.3 z tym samym algorytmem jest w docs/history/hardware-0.1.3-continuous.json.
+
+Kontrole komputerowe obejmują deterministyczność dźwięku przy różnych wielkościach bloków, warianty seedów, pauzę, skrajne parametry, stałe zużycie areny oraz granice sygnału. Test UI uruchamia rzeczywisty renderer z tymi samymi czcionkami przeciw pamięciowemu LCD: brak zbędnych transmisji, atomowe kafelki, brak okresowego czyszczenia i granice ekranu. Testy OTA i loadera symulują transport/flash; nie programują urządzenia.
+
+Po skopiowaniu projektu do samodzielnego folderu powtórzono budowanie z lokalnej .runtime oraz testy. Nowy pakiet jest identyczny bit po bicie z zachowaną bazą. Wyniki nowych uruchomień zapisują się w ignorowanym build/, a nie nadpisują historycznych dowodów wydania.
+
+Nie potwierdzono wszystkich kombinacji parametrów, wielogodzinnego grania ani odporności na przerwanie programowania. Test symulowany nie zastępuje fizycznego pomiaru. Wydania roboczego nie uznawaj za poprawę tylko dlatego, że kompiluje się lub podniesiono próg ochronny.

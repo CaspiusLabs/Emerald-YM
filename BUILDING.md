@@ -1,91 +1,47 @@
-# Building AMB-1
+# Budowanie Emerald YM na Windows
 
-The build makes three files in `build/`:
+## Gotowe środowisko lokalne
 
-| File | What |
-| --- | --- |
-| `amb.bin` | the firmware app |
-| `loader/ota.bin` | the update loader |
-| `amb.fwsc` | the installable package (app + loader) |
+    .\build-ym-windows.ps1
+    .\test-ym-windows.ps1
 
-## Prerequisites (macOS)
+VERSION określa numer pakietu; bazą jest 0.1.4. Wynik: build/emerald-ym-0.1.4.fwsc. Logi, obrazy testów UI i render WAV są w ignorowanym build/. Test pakietu wymaga identyczności ze sprawdzonym releases/v0.1.4/emerald-ym-0.1.4.fwsc. Nie podmieniaj tego pliku, jeśli nowy kod zmienia zachowanie — nadaj nową wersję.
 
-- Python 3 with Pillow: `pip3 install Pillow`
-- Docker Desktop. The JieLi toolchain is Linux x86-64 only; the build runs each tool in a
-  `linux/amd64` `debian:bookworm-slim` container (Rosetta on Apple silicon). Keep the source
-  tree in a folder Docker can share, e.g. under `/Users`.
-- The JieLi Linux toolchain (clang 4.0.1 for pi32v2, from JieLi's package server):
+Skrypty budowania/testów komputerowych nie używają urządzenia USB/MIDI. Nie uruchamiaj starych tests/run_tests.sh lub host/build_host.sh jako walidacji nowego instrumentu: dotyczą również dawnego DUB-1.
 
-  ```
-  tools/get_toolchain.sh            # installs to ~/.jieli/toolchain
-  ```
+## Zależności
 
-- The JieLi AC79 SDK (Apache-2.0). The package uses three of its files
-  (`cpu/wl82/tools/uboot.boot`, `cfg_tool.bin`, `cfg/eq_cfg_hw.bin`); they are not part of this tree.
+Lokalnie przygotowano:
 
-  ```
-  git clone --depth 1 --branch AC79NN_SDK_V1.2.1_2023-12-13 \
-      https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git ~/fw-AC79_AIoT_SDK
-  ```
+- .runtime/python: przenośny Python 3.12.10, Pillow 13.0.0, mido 1.3.3, python-rtmidi 1.5.8, packaging 26.3.
+- .runtime/toolchain: oficjalny JieLi Windows 2.5.3, clang 4.0.1, pi32v2 r3.
+- .runtime/sdk: uboot.boot, cfg_tool.bin i cfg/eq_cfg_hw.bin z AC79NN_SDK_V1.2.1_2023-12-13; budowanie sprawdza referencyjne sumy.
+- Zainstalowane Visual Studio / Build Tools z C++, wykrywane przez vswhere; są potrzebne do testów desktopowych, nie do samego firmware'u.
 
-- Node.js (optional, for the web tests).
+Narzędzia są pomijane w Git, nie kopiują się w zwykłym clone ani w eksporcie źródeł. Ich wersje i źródła: tools/runtime-manifest.json. Oficjalny toolchain: https://pkgman.jieliapp.com/s/win-toolchain . SDK: https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK . Python: https://www.python.org/ftp/python/3.12.10/ .
 
-On Linux x86-64 the toolchain runs natively and Docker is not needed.
+Przy przygotowaniu innego komputera umieść przenośne narzędzia w powyższej strukturze lub podaj własne ścieżki:
 
-## Build
+    .\build-ym-windows.ps1 -Python C:\tools\python\python.exe -Toolchain C:\tools\jieli -Sdk C:\tools\ac79
 
-```
-./build.sh
-```
+Nie trzeba instalować WSL ani Dockera dla sprawdzonego wariantu Windows. Kompilator może wymagać uruchomienia poza ograniczeniami procesu agenta; to nadal lokalne budowanie, nie programowanie urządzenia.
 
-`JIELI_TOOLCHAIN` and `AC79_SDK` override the default locations
-(`~/.jieli/toolchain`, `~/fw-AC79_AIoT_SDK`).
+## Kontrole
 
-`./build.sh --release 0.9` makes a release build; the package is `build/amb-0.9.fwsc`.
+Budowanie sprawdza mapę pamięci, rozmiary obrazu i RAM, kod flash-off, zakresy oraz brak soft-double. Testy desktopowe obejmują deterministyczność i strumieniowanie dźwięku, renderowanie UI, symulacje OTA/loadera i udawany transport instalatora. Są odpowiednie dla tego projektu, lecz nie dowodzą czasu wykonania na procesorze FM-1.
 
-On macOS with podman instead of Docker, put a `docker` script that runs `exec podman "$@"` first
-on your PATH. `EN_JOBS` (default 4) limits parallel compiles: a podman machine drops
-connections when many containers start at once.
+Historyczne dowody sprzętowe i ograniczenia opisano w docs/VERIFICATION.md. Oryginalna instrukcja bazowego DUB-1 jest w docs/history/dub-1/BUILDING.md i nie jest bieżącym quickstartem.
 
-Build option: `EN_CDC=1` adds Felucca's USB serial function (off by default: one plain
-MIDI interface).
+## Eksport i powrót do bazy
 
-The build also generates `build/gen/` (the font). It fails if a soft-double routine is linked
-(a `double` crept in) and checks the image, RAM and pool sizes.
+Po zapisaniu zmian w Git:
 
-## Tests
+    .runtime\python\python.exe tools\export_ym.py --ref v0.1.4
 
-```
-tests/run_tests.sh
-```
+Powstają archiwum źródeł wskazanego commitu/tagu, lokalny Git bundle i sumy kontrolne w dist/. Bundle przechowuje historię Git bez zależności .runtime.
 
-Runs, on the build machine: the maths library against libm; the instrument (`tests/host/amb_test.c`:
-Euclidean patterns, scales and chords, voice leading, the render's levels, drift, evolving loops, freeze); flash
-storage; Felucca's update-path tests against `build/amb.fwsc`; and the whole app in the simulator
-(`tests/scenarios/*.amb`), with its screenshots and audio in `build/scenarios/`.
+Do sprawdzenia bazy bez nadpisywania bieżącej pracy:
 
-`host/build_host.sh` builds the simulator alone; `build/host/amb_host SCRIPT OUTDIR` runs one
-script (the command list is at the top of `host/amb_host.c`).
+    git switch -c inspect-v0.1.4 v0.1.4
 
-## Install
-
-From the command line (needs `pip3 install mido python-rtmidi`):
-
-```
-python3 tools/fm1_install.py build/amb.fwsc
-python3 tools/fm1_install.py --info          # identity of the connected FM-1
-```
-
-Installing firmware is at your own risk. Hold OCT− and OCT+ for 5 seconds for Felucca's update
-mode. If the FM-1 no longer starts but reaches the chip's update mode (4C4A:8057 on USB),
-`tools/fm1_rescue.sh` puts stock firmware back from a Mac; otherwise recovery needs
-[FM-1-transporter](https://github.com/kurogedelic/FM-1-transporter).
-
-## Publishing a release
-
-1. `./build.sh --release X.Y` (the identity, FM-1_7XXYYZZ, is what the installer checks).
-2. `tools/publish_pages.sh X.Y`: builds the site (landing page, manual, browser emulator, web
-   installer, firmware) with `tools/make_pages.py` and pushes it to the `gh-pages` branch, which
-   GitHub Pages serves at <https://charlesvestal.github.io/fm1-amb/>. The manual's source is
-   `docs/MANUAL.md` (`tools/manual_html.py` turns it into the page).
-3. `gh release create vX.Y build/amb-X.Y.fwsc` for the command-line download.
+Wgrywanie nie jest częścią tych poleceń. Gdy jest zlecone, używa się tools/fm1_install.py z konkretnym portem FM-1 i sprawdzonym pakietem. Protokół diagnostyki i MIDI Start/Stop opisuje YM-USB-PROTOCOL.md.
