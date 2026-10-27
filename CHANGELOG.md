@@ -1,5 +1,11 @@
 # Emerald YM changelog
 
+## 0.4.7 — unreleased — 2026-10-27 — author display name
+
+- Correct the author/creator display name to Caspius Labs in README and Firmware Hub submission details; preserve GitHub account names, repository identifiers and URLs.
+- Record the display-name convention in the developer handoff. Documentation only; firmware 0.4.3, release assets and tags are unchanged.
+- Commit directly to main as explicitly requested by the owner for this correction; the normal branch/PR policy remains in place for subsequent work.
+
 ## 0.4.6 — unreleased — 2026-10-27 — release downloads and public repository
 
 - Publish the unchanged, physically tested 0.4.3 package as a GitHub beta release, with tag v0.4.3 at its matching source commit b5848cd40b4d8dda4612cb9b8c3dc9687e29abc6. Keep all previous release bytes and tags unchanged.

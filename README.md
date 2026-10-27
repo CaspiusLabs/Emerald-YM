@@ -1,6 +1,6 @@
 # Emerald YM
 
-Generative 16-bit music firmware for the **M-VAVE FM-1**, by **CaspiusLabs**. A real YM2612 emulator, a lightweight Sega-style PSG and an endless sequencer turn the FM-1 into a small chiptune instrument. Play along on its keyboard and shape each instrument independently.
+Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A real YM2612 emulator, a lightweight Sega-style PSG and an endless sequencer turn the FM-1 into a small chiptune instrument. Play along on its keyboard and shape each instrument independently.
 
 **Current validated firmware: 0.4.3 (beta).** [Download firmware (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.4.3/emerald-ym-0.4.3.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.4.3/SHA256SUMS) · [Release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.3) · [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
 
@@ -8,7 +8,7 @@ Generative 16-bit music firmware for the **M-VAVE FM-1**, by **CaspiusLabs**. A 
 
 *240 × 240 render of the firmware UI, not a photograph or a browser emulator.*
 
-The [0.4.3 beta release](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.3) contains the accepted, unchanged binary tested below. Tag `v0.4.3` points to its matching source commit `b5848cd40b4d8dda4612cb9b8c3dc9687e29abc6`. Source/documentation version 0.4.6 records verification and publication updates; it does not create a new firmware image or replace the firmware on the device.
+The [0.4.3 beta release](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.3) contains the accepted, unchanged binary tested below. Tag `v0.4.3` points to its matching source commit `b5848cd40b4d8dda4612cb9b8c3dc9687e29abc6`. Source/documentation version 0.4.7 records verification and publication updates; it does not create a new firmware image or replace the firmware on the device.
 
 ## What it does
 

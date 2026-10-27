@@ -8,7 +8,7 @@ Emerald does not import stock or other custom firmware's presets, projects or sa
 
 ## Get and check the package
 
-Download [emerald-ym-0.4.3.fwsc](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.4.3/emerald-ym-0.4.3.fwsc) and [SHA256SUMS](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.4.3/SHA256SUMS) from the public [0.4.3 beta release](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.3). Choose the `.fwsc` asset, not a source-code archive. Tag `v0.4.3` identifies its matching firmware source. The file is the unchanged package used for the documented physical tests; older release 0.4.0 is a different binary. Source/documentation version 0.4.6 is not a newer firmware download. No Firmware Hub listing or browser installation has been verified.
+Download [emerald-ym-0.4.3.fwsc](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.4.3/emerald-ym-0.4.3.fwsc) and [SHA256SUMS](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.4.3/SHA256SUMS) from the public [0.4.3 beta release](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.3). Choose the `.fwsc` asset, not a source-code archive. Tag `v0.4.3` identifies its matching firmware source. The file is the unchanged package used for the documented physical tests; older release 0.4.0 is a different binary. Source/documentation version 0.4.7 is not a newer firmware download. No Firmware Hub listing or browser installation has been verified.
 
 Expected SHA-256:
 

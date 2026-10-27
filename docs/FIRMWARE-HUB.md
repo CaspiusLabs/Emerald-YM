@@ -5,7 +5,7 @@ Prepared against the [submission requirements](https://thefirmwarehub.com/submit
 ## Submission details
 
 - Firmware: **Emerald YM**
-- Creator display name: **CaspiusLabs** (repository owner; confirm before sending)
+- Creator display name: **Caspius Labs** (owner-confirmed display name; GitHub account: `CaspiusLabs`)
 - Repository: https://github.com/CaspiusLabs/Emerald-YM
 - Tested package: releases/v0.4.3/emerald-ym-0.4.3.fwsc on merged main (exact hash in the test report).
 - Current validated beta release: https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.3 (exact tested package, matching source tag).
