@@ -1,5 +1,11 @@
 # Emerald YM changelog
 
+## 0.4.1 — unreleased — 2026-10-27 — contribution workflow
+
+- Require a VERSION increment for each change, including documentation, on a separate branch with a GitHub pull request targeting main.
+- Leave pull requests for review; no direct pushes to main or automatic merging. Merge only at the owner's request.
+- Documentation and version metadata only. Installed firmware and the published 0.4.0 package/tag remain unchanged; no new binary or release is created.
+
 ## 0.4.0 — 2026-10-27 — persistent mixer and startup screen
 
 - Save/restore all twelve instrument levels and 36 FX values in the existing A/B project sectors, with schema/range validation and CRC/header-last commit.
