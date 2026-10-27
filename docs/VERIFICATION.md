@@ -2,6 +2,10 @@
 
 Desktop tests, flash/update simulations, user feedback and physical FM-1 measurements are separate evidence. The reports in releases/ retain their original values; an offline report intentionally says flashed=false even when a separate hardware report records installation.
 
+## Proposed 0.4.3 — uppercase header follow-up
+
+The user confirmed K1–K4 retention and prior mixer/FX settings on 0.4.2, but requested the earlier large font in uppercase and a second badge stripe. The 0.4.3 renderer preview has been inspected: EMERALD YM fits beside the 48×21 badge, with two stripes and a version gap. Build and full desktop tests passed. Storage/audio DSP are unchanged. Prior 0.4.2 hardware measurements are referenced as prior evidence, not relabeled as 0.4.3 results.
+
 ## Proposed 0.4.2 — header and K1–K4 persistence
 
 Desktop build, streaming/FX/settings/UI/LED tests and update/loader/installer simulations passed. Settings tests restore all four knobs and the complete mixer, reject invalid tempo/density/mutation/transpose, exercise valid extrema including signed transpose, migrate schema 1 without a boot-time write and commit the migrated snapshot on the next edit. The actual UI renderer confirms the full title fits before the smaller badge; its preview is in releases/v0.4.2/ui-preview.png.
@@ -9,7 +13,7 @@ Desktop build, streaming/FX/settings/UI/LED tests and update/loader/installer si
 The DSP and guarded RAM regions are unchanged. This is a PR candidate based on workflow PR #1, not an automatic merge or published release. New physical audio results and power-cycle feedback must be recorded independently; prior 0.4.0 confirmation does not prove K1–K4 retention in 0.4.2.
 
 
-Physical FM-1_68000402: 30 seconds continuous backing with alternating two/three live notes, passed=true; CPU MAX 67%, longest block 3945 us, XRUN 0, overload 0, failed boots 0. The test preserved loaded settings and sent no effect CCs, so it is not labeled a neutral-FX test. Physical K1–K4 power-cycle/header confirmation was requested and is pending; desktop migration/retention tests do not substitute for it.
+Physical FM-1_68000402: 30 seconds continuous backing with alternating two/three live notes, passed=true; CPU MAX 67%, longest block 3945 us, XRUN 0, overload 0, failed boots 0. The test preserved loaded settings and sent no effect CCs, so it is not labeled a neutral-FX test. The user subsequently confirmed K1–K4 retention and preservation of previous mixer/FX settings after the requested complete power-cycle test. They requested a larger uppercase title and second badge stripe as a follow-up (0.4.3). The original summary preserves the pending state at the first candidate commit; dated feedback is in releases/v0.4.2/user-confirmation.json.
 
 ## Accepted 0.4.0 — persistent settings and startup screen
 

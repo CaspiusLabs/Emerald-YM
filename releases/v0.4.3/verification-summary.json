@@ -1,0 +1,23 @@
+{
+  "version": "0.4.3",
+  "desktop_tests_passed": true,
+  "UI_preview_inspected": true,
+  "changes_from_0_4_2": "UI title size/case and badge stripe only; storage schema and audio DSP unchanged.",
+  "physical_audio_measurement_for_this_binary": false,
+  "prior_physical_audio_report": "../v0.4.2/hardware-live-stress.json",
+  "prior_power_cycle_confirmation": "../v0.4.2/user-confirmation.json",
+  "note": "Owner requested one-pixel badge extension within PR #3, same version 0.4.3. Targeted checks passed; no new audio timing or power-cycle claim.",
+  "installed_identity": "FM-1_68000403",
+  "installation_verified": true,
+  "current_candidate_sha256": "6669787e1d7a3b56f37bd0494c992fbdba5cb59e5dc13d5f2380d7c4fbd64925",
+  "previous_candidate_installed_sha256": "c4a9c4c47a93ff090c018e53c8e6453c9a6967f551264438c034ce0175fc0d9f",
+  "previous_candidate_installation_log": "ota-aligned-review.log",
+  "latest_revision_checks": [
+    "Windows build with linker/no-soft-double checks",
+    "real UI/LED tests",
+    "pixel verification of row below stripe and equal stripe colors",
+    "package/update-loader simulations"
+  ],
+  "full_desktop_suite_reference": "desktop-tests.log (prior revision; audio/settings unchanged)",
+  "current_installation_log": "ota-badge-review.log"
+}
