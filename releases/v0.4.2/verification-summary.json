@@ -1,0 +1,16 @@
+{
+  "version": "0.4.2",
+  "installed_identity": "FM-1_68000402",
+  "physical_audio_report": "hardware-live-stress.json",
+  "physical_audio_passed": true,
+  "max_cpu_pct": 67,
+  "max_block_us": 3945,
+  "xruns": 0,
+  "overload_blocks": 0,
+  "desktop_tests_passed": true,
+  "schema_1_migration_simulation_passed": true,
+  "knob_retention_simulation_passed": true,
+  "physical_knob_power_cycle_confirmed": false,
+  "header_user_confirmed": false,
+  "note": "User power-cycle/header check requested. Test used loaded settings and did not send/reset effect CCs; neutral FX is not assumed. No physical interrupted-write or cross-firmware transition test."
+}

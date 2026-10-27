@@ -1,4 +1,4 @@
-# Emerald YM 0.4.0 user manual
+# Emerald YM 0.4.2 user manual (PR candidate)
 
 Emerald YM makes original, continuously generated music with five YM2612 FM voices, DAC percussion and a Sega-style PSG. It starts paused. Turn MASTER down, press PLAY, then raise the level gradually. Audio comes from the FM-1 speaker/headphone output, not USB audio.
 
@@ -48,7 +48,7 @@ All sources start at 100% of the calibrated default balance. Each has three inde
 
 The FX LED is dim when all effects for the selected instrument are zero, bright when any is active. `PRE` labels the instrument level; `ALG` labels the edited FX amount. Instrument levels and all 36 effect amounts are persistent. They load before audio starts. After an edit the transport tile shows **SAVE *** and SAVE lights brightly. Saving waits until there have been no edits, backing playback or held keys for three seconds. Thus no erase is attempted in the middle of music. Press SAVE to pause the backing and request saving; release live keys, then wait for **SAVED** before turning off. **SAVING** means do not remove power; **SAVE ERR** keeps changes in RAM and requires a new edit or SAVE to retry. There is no automatic erase/retry loop.
 
-The first boot without compatible settings uses 100% levels and zero effects without writing flash. Reverting an edit to the saved value cancels the pending save. Tempo, seed, transpose, PSG enable, selected instrument and FX cursor are not stored. REC does not erase saved levels/FX. Inherited DUB-1 menus and project saving are not implemented.
+The first boot without compatible settings uses 100% levels, zero effects and knob defaults (132 BPM, density 100%, mutation 35%, transpose 0) without writing flash. Existing 0.4.0 schema 1 settings keep all levels/FX and use those knob defaults until you change/save settings. Schema 2 is committed only after an actual edit and a quiet save. Older 0.4.0 firmware cannot read schema 2 and will use defaults if downgraded. Reverting an edit to the saved value cancels the pending save. K1 tempo, K2 density, K3 mutation and K4 signed transpose are also stored in 0.4.2, including mutation changes through SEQ. These restore before audio starts. Seed, master, PSG enable, selected instrument and FX cursor are not stored. REC does not erase saved levels/FX. Inherited DUB-1 menus and project saving are not implemented.
 
 ## Live keyboard and LEDs
 

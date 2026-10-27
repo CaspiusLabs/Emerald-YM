@@ -2,11 +2,13 @@
 
 Generative 16-bit music firmware for the **M-VAVE FM-1**, by **CaspiusLabs**. A real YM2612 emulator, a lightweight Sega-style PSG and an endless sequencer turn the FM-1 into a small chiptune instrument. Play along on its keyboard and shape each instrument independently.
 
-**Current development release: 0.4.0 (beta).** [Download](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.0) · [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
+**Current published release: 0.4.0 (beta).** [Download](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.0) · [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
 
 ![Emerald YM 0.4.0 screen, rendered by the desktop UI test](releases/v0.4.0/ui-preview.png)
 
 *240 × 240 render of the firmware UI, not a photograph or a browser emulator.*
+
+**Proposed 0.4.2:** clearer Emerald YM header and saved K1–K4 values (tempo, density, mutation, transpose). Package and test evidence are in `releases/v0.4.2/` on the feature branch; the PR remains separate from the published 0.4.0 release.
 
 ## What it does
 
@@ -37,7 +39,7 @@ Start with MASTER low, then press PLAY. The sequencer is paused after boot.
 | Keyboard | Up to three live PSG notes, F3–G5 |
 | MASTER | Overall output level |
 
-Effect amounts and levels remain independent when changing selections. All twelve levels and 36 effect amounts are restored after power-off. Changes are saved after three seconds without edits, playback or held live keys. Press SAVE to pause and wait for **SAVED** before switching off. Tempo, seed, transpose, effect cursor and other performance settings are not saved. With three live notes, the PSG arpeggio yields its voice; FM and DAC continue. See the [manual](docs/MANUAL.md) for details.
+Effect amounts and levels remain independent when changing selections. All twelve levels and 36 effect amounts are restored after power-off. Changes are saved after three seconds without edits, playback or held live keys. Press SAVE to pause and wait for **SAVED** before switching off. In proposed 0.4.2, tempo, density, mutation and transpose also restore after reboot. Seed, master, PSG enable and selection/cursor are not saved. With three live notes, the PSG arpeggio yields its voice; FM and DAC continue. See the [manual](docs/MANUAL.md) for details.
 
 ## Compatibility and data
 

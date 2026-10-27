@@ -2,7 +2,16 @@
 
 Desktop tests, flash/update simulations, user feedback and physical FM-1 measurements are separate evidence. The reports in releases/ retain their original values; an offline report intentionally says flashed=false even when a separate hardware report records installation.
 
-## Current 0.4.0 — persistent settings and startup screen
+## Proposed 0.4.2 — header and K1–K4 persistence
+
+Desktop build, streaming/FX/settings/UI/LED tests and update/loader/installer simulations passed. Settings tests restore all four knobs and the complete mixer, reject invalid tempo/density/mutation/transpose, exercise valid extrema including signed transpose, migrate schema 1 without a boot-time write and commit the migrated snapshot on the next edit. The actual UI renderer confirms the full title fits before the smaller badge; its preview is in releases/v0.4.2/ui-preview.png.
+
+The DSP and guarded RAM regions are unchanged. This is a PR candidate based on workflow PR #1, not an automatic merge or published release. New physical audio results and power-cycle feedback must be recorded independently; prior 0.4.0 confirmation does not prove K1–K4 retention in 0.4.2.
+
+
+Physical FM-1_68000402: 30 seconds continuous backing with alternating two/three live notes, passed=true; CPU MAX 67%, longest block 3945 us, XRUN 0, overload 0, failed boots 0. The test preserved loaded settings and sent no effect CCs, so it is not labeled a neutral-FX test. Physical K1–K4 power-cycle/header confirmation was requested and is pending; desktop migration/retention tests do not substitute for it.
+
+## Accepted 0.4.0 — persistent settings and startup screen
 
 Installed as FM-1_68000400. A 30-second continuous physical backing + two/three live-note test with neutral FX passed: CPU MAX 65%, longest block 3827 us, XRUN 0, overload 0, failed boots 0. It did not alter persistent levels/FX. DSP is unchanged from 0.3.1; the 85% guard remains.
 

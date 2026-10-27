@@ -71,7 +71,7 @@ static void fm1_main(void){
    d=fm1_enc_take(panel.enc[EN_K2])*panel.dir[EN_K2];ydensity=(uint32_t)clamp((int32_t)ydensity+d*2,0,100);
    d=fm1_enc_take(panel.enc[EN_K3])*panel.dir[EN_K3];ymutation=(uint32_t)clamp((int32_t)ymutation+d*2,0,100);
    d=fm1_enc_take(panel.enc[EN_K4])*panel.dir[EN_K4];ytranspose=clamp(ytranspose+d,-12,12);
-   if(oldtempo!=ytempo||olddensity!=ydensity||oldmutation!=ymutation||oldtranspose!=ytranspose)ypost();
+   if(oldtempo!=ytempo||olddensity!=ydensity||oldmutation!=ymutation||oldtranspose!=ytranspose){ypost();ys_changed(fm1_ms);}
    if(ys_due(fm1_ms,yplaying||fm1_in.notes||ymidi_keys)){ys_state=YS_WRITING;ydisplay();lcd_sync();ys_commit(fm1_ms);}
    yled_update();
    if(boot_until&&((int32_t)(boot_until-fm1_ms)>0)&&!pressed&&!yplaying&&!fm1_in.notes&&!ymidi_keys){}

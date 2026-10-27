@@ -1,0 +1,47 @@
+In file included from firmware\src\ym\ymfm\ymfm_opn.cpp:32:
+firmware\src\ym\ymfm/ymfm_fm.ipp:815:8: warning: suggest braces around initialization of subobject [-Wmissing-braces]
+        m_op{ nullptr, nullptr, nullptr, nullptr },
+              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+              {                                 }
+firmware\src\ym\ymfm/../ym_compat.h:43:91: note: in instantiation of member function 'ymfm::fm_channel<ymfm::opn_registers_base<false> >::fm_channel' requested here
+template<class T,class... A> unique_ptr<T> make_unique(A&&... a){return unique_ptr<T>(new T(static_cast<A&&>(a)...));}
+                                                                                          ^
+firmware\src\ym\ymfm/ymfm_fm.ipp:1214:27: note: in instantiation of function template specialization 'std::make_unique<ymfm::fm_channel<ymfm::opn_registers_base<false> >, ymfm::fm_engine_base<ymfm::opn_registers_base<false> > &, unsigned int>' requested here
+                m_channel[chnum] = std::make_unique<fm_channel<RegisterType>>(*this, RegisterType::channel_offset(chnum));
+                                        ^
+firmware\src\ym\ymfm\ymfm_opn.cpp:696:2: note: in instantiation of member function 'ymfm::fm_engine_base<ymfm::opn_registers_base<false> >::fm_engine_base' requested here
+        m_fm(intf),
+        ^
+In file included from firmware\src\ym\ymfm\ymfm_opn.cpp:32:
+firmware\src\ym\ymfm/ymfm_fm.ipp:815:8: warning: suggest braces around initialization of subobject [-Wmissing-braces]
+        m_op{ nullptr, nullptr, nullptr, nullptr },
+              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+              {                                 }
+firmware\src\ym\ymfm/../ym_compat.h:43:91: note: in instantiation of member function 'ymfm::fm_channel<ymfm::opn_registers_base<true> >::fm_channel' requested here
+template<class T,class... A> unique_ptr<T> make_unique(A&&... a){return unique_ptr<T>(new T(static_cast<A&&>(a)...));}
+                                                                                          ^
+firmware\src\ym\ymfm/ymfm_fm.ipp:1214:27: note: in instantiation of function template specialization 'std::make_unique<ymfm::fm_channel<ymfm::opn_registers_base<true> >, ymfm::fm_engine_base<ymfm::opn_registers_base<true> > &, unsigned int>' requested here
+                m_channel[chnum] = std::make_unique<fm_channel<RegisterType>>(*this, RegisterType::channel_offset(chnum));
+                                        ^
+firmware\src\ym\ymfm\ymfm_opn.cpp:978:2: note: in instantiation of member function 'ymfm::fm_engine_base<ymfm::opn_registers_base<true> >::fm_engine_base' requested here
+        m_fm(intf),
+        ^
+2 warnings generated.
+font XS: ter-u12n.bdf 12px h 12, digit adv 6, 5700 B
+font S: ter-u16n.bdf 16px h 16, digit adv 8, 9120 B
+font B: ter-u16b.bdf 16px h 16, digit adv 8, 9120 B
+font M: ter-u24b.bdf 24px h 24, digit adv 12, 12288 B
+font L: ter-u32b.bdf 32px h 32, digit adv 16, 20480 B
+font C: ter-u24b.bdf 24px h 24, digit adv 12, 18240 B
+font set terminus: 76510 B (approx)
+words: 20 own + 51 common -> C:\Users\radek\Documents\Emerald-YM\web\words\b2da58e134.json (1589 B)
+loader: image 7764 B at 0x1c0a800, bss end 0x1c0f428
+loader: ota.bin 6510 B
+  ok    .ram_text: 909 insns, no calls
+  ok    no soft-double routines (single-precision FPU only)
+  ok    audio hot code+tables 21604 B in RAM; RAMTEXT total 24492 of 24576
+  ok    image 105352 B; RAM .data+.bss 30416 B of 98304; pool 101888 B of 344064
+  ok    register access: hal/ only (src/, loader/ clean)
+app      C:\Users\radek\Documents\Emerald-YM\build\amb.bin  105352 B
+loader   C:\Users\radek\Documents\Emerald-YM\build\loader\ota.bin  6510 B
+package  C:\Users\radek\Documents\Emerald-YM\build\emerald-ym-0.4.2.fwsc  609666 B, identity FM-1_68000402
