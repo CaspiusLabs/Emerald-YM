@@ -4,7 +4,7 @@ The canonical repository is [CaspiusLabs/Emerald-YM](https://github.com/CaspiusL
 
 Keep changes focused, explain the resulting behavior, and state which checks actually ran. Build and desktop tests do not flash or open MIDI. Physical testing and installation are separate actions; never target unrelated MIDI devices.
 
-`VERSION` controls the firmware version. Documentation changes may retain 0.3.1; changed firmware behavior requires a new version, preserved package and matching source tag. Never replace the v0.1.4 package or tag. Avoid rewriting published history or moving release tags.
+`VERSION` controls the firmware version. Each change, including documentation, increments VERSION and uses its own branch and pull request to main. Leave the PR for review; no direct pushes to main or automatic merging. Documentation-only bumps do not rebuild or flash the hardware. Firmware releases require a preserved package and matching source tag. Never replace the v0.1.4 package or tag. Avoid rewriting published history or moving release tags.
 
 Keep desktop tests, flash simulations, user feedback and physical FM-1 measurements separate. Preserve raw failed/interrupted evidence and report what it means. Include version, exact package hash, actions and status counters in bug reports; do not include credentials or unrelated device data.
 

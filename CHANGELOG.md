@@ -1,5 +1,12 @@
 # Emerald YM changelog
 
+## 0.4.4 — unreleased — 2026-10-27 — installation verification and documentation
+
+- Documentation/source version only; physical cross-firmware tests target the accepted, unchanged Emerald 0.4.3 package from merged main.
+- Verify merge of PRs #1–#3, package provenance/hashes, and ordinary USB MIDI update transitions with official V15 and Dinghy 0.3. Record per-step evidence and user boot/audio observations separately.
+- Refresh README/install/verification guidance from actual results. No deliberate interrupted write, recovery shortcut, new firmware build or automatic main merge.
+
+
 ## 0.4.3 — unreleased — 2026-10-27 — uppercase title and badge detail
 
 - Further PR #3 review, same version by owner request: extend the badge and its inner fill by one pixel downward, leaving one inner-background row below the second stripe.

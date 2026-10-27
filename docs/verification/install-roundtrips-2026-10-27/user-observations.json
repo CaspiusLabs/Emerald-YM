@@ -1,0 +1,14 @@
+{
+  "official_v15": {
+    "confirmed": true,
+    "date": "2026-10-27",
+    "question": "Normal official V15 screen and audible key at low volume, without editing/saving presets",
+    "reply": "tak"
+  },
+  "dinghy_0_3": {
+    "confirmed": true,
+    "date": "2026-10-27",
+    "question": "Normal Dinghy screen and audible key at low volume, without OCT changes or saves",
+    "reply": "tak"
+  }
+}

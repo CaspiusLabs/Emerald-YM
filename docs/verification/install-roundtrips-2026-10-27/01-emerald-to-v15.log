@@ -1,0 +1,19 @@
+{"event": "start", "value": "FM-1_68000403", "at_utc": "2026-10-27T17:20:03.986525+00:00"}
+{"event": "check", "value": 1, "at_utc": "2026-10-27T17:20:06.008817+00:00"}
+{"event": "loader", "value": null, "at_utc": "2026-10-27T17:20:08.205120+00:00"}
+{"event": "write", "value": 0, "at_utc": "2026-10-27T17:20:11.641847+00:00"}
+{"event": "write", "value": 85, "at_utc": "2026-10-27T17:20:13.808140+00:00"}
+{"event": "write", "value": 0, "at_utc": "2026-10-27T17:20:13.849608+00:00"}
+{"event": "write", "value": 86, "at_utc": "2026-10-27T17:20:14.278820+00:00"}
+{"event": "write", "value": 79, "at_utc": "2026-10-27T17:20:15.665258+00:00"}
+{"event": "write", "value": 69, "at_utc": "2026-10-27T17:20:17.903084+00:00"}
+{"event": "write", "value": 59, "at_utc": "2026-10-27T17:20:20.132281+00:00"}
+{"event": "write", "value": 49, "at_utc": "2026-10-27T17:20:22.370075+00:00"}
+{"event": "write", "value": 39, "at_utc": "2026-10-27T17:20:24.636746+00:00"}
+{"event": "write", "value": 29, "at_utc": "2026-10-27T17:20:26.851952+00:00"}
+{"event": "write", "value": 19, "at_utc": "2026-10-27T17:20:29.145648+00:00"}
+{"event": "write", "value": 9, "at_utc": "2026-10-27T17:20:31.435356+00:00"}
+{"event": "write", "value": 100, "at_utc": "2026-10-27T17:20:33.971851+00:00"}
+{"event": "reboot", "value": null, "at_utc": "2026-10-27T17:20:33.972858+00:00"}
+{"event": "done", "value": "FM-1_015", "at_utc": "2026-10-27T17:20:37.413721+00:00"}
+RESULT {"test": "01-emerald-to-v15", "passed": true, "before": {"identity": "FM-1_68000403", "port": "Emerald YM FM-1 1", "loader": false}, "after": {"identity": "FM-1_015", "model": "FM-1", "version_number": 15, "port": "FM-1 Midi 1"}, "error": null}

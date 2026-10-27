@@ -2,13 +2,13 @@
 
 Generative 16-bit music firmware for the **M-VAVE FM-1**, by **CaspiusLabs**. A real YM2612 emulator, a lightweight Sega-style PSG and an endless sequencer turn the FM-1 into a small chiptune instrument. Play along on its keyboard and shape each instrument independently.
 
-**Current published release: 0.4.0 (beta).** [Download](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.0) · [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
+**Current validated firmware: 0.4.3 (beta).** [Firmware package](releases/v0.4.3/emerald-ym-0.4.3.fwsc) · [SHA-256](releases/v0.4.3/SHA256SUMS) · [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
 
-![Emerald YM 0.4.0 screen, rendered by the desktop UI test](releases/v0.4.0/ui-preview.png)
+![Emerald YM 0.4.3 screen, rendered by the desktop UI test](releases/v0.4.3/ui-preview.png)
 
 *240 × 240 render of the firmware UI, not a photograph or a browser emulator.*
 
-**Proposed 0.4.3:** larger uppercase EMERALD YM header with a two-stripe badge, plus the saved K1–K4 values introduced and user-confirmed in 0.4.2. Candidate package/evidence: `releases/v0.4.3/`; earlier persistence evidence: `releases/v0.4.2/`. The PRs remain separate from the published 0.4.0 release.
+PRs #1–#3 are merged into main. The linked 0.4.3 package is the accepted, unchanged binary tested below. The latest GitHub Releases entry is still [0.4.0](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.0); 0.4.3 is currently distributed as a committed package, without a new release tag. Source/documentation version 0.4.4 records the installation tests and does not replace the firmware on the device.
 
 ## What it does
 
@@ -24,11 +24,11 @@ This is original generative music inspired by the Mega Drive/Genesis sound palet
 
 Start with MASTER low, then press PLAY. The sequencer is paused after boot.
 
-| Control | Function in 0.4.0 |
+| Control | Function in 0.4.3 |
 |---|---|
 | PLAY | Start/pause the backing sequencer; live keys still work in pause |
 | REC | Generate a new seed and sequence |
-| SAVE | Pause the backing and save instrument levels/effects after notes have settled |
+| SAVE | Pause the backing and save instrument levels/effects and K1–K4 after notes have settled |
 | SEQ | Toggle mutation between 0 and 35 |
 | K1 / K2 / K3 / K4 | Tempo / melody density / mutation / transpose |
 | SELECT | Select one of twelve instruments |
@@ -39,29 +39,38 @@ Start with MASTER low, then press PLAY. The sequencer is paused after boot.
 | Keyboard | Up to three live PSG notes, F3–G5 |
 | MASTER | Overall output level |
 
-Effect amounts and levels remain independent when changing selections. All twelve levels and 36 effect amounts are restored after power-off. Changes are saved after three seconds without edits, playback or held live keys. Press SAVE to pause and wait for **SAVED** before switching off. In proposed 0.4.2, tempo, density, mutation and transpose also restore after reboot. Seed, master, PSG enable and selection/cursor are not saved. With three live notes, the PSG arpeggio yields its voice; FM and DAC continue. See the [manual](docs/MANUAL.md) for details.
+Effect amounts and levels remain independent when changing selections. All twelve levels and 36 effect amounts are restored after power-off. Changes are saved after three seconds without edits, playback or held live keys. Press SAVE to pause and wait for **SAVED** before switching off. Tempo, density, mutation and transpose also restore after reboot. Seed, master, PSG enable and selection/cursor are not saved. With three live notes, the PSG arpeggio yields its voice; FM and DAC continue. See the [manual](docs/MANUAL.md) for details.
 
 ## Compatibility and data
 
-Target: M-VAVE **FM-1**, not SMK-37 or other models. USB MIDI name: `Emerald YM FM-1`. Release identity: `FM-1_68000400`. The `.fwsc` includes the inherited Felucca update loader.
+Target: M-VAVE **FM-1**, not SMK-37 or other models. USB MIDI name: `Emerald YM FM-1`. Package identity: `FM-1_68000403`. The `.fwsc` includes the inherited Felucca update loader.
 
 Emerald YM does **not** import stock, DUB-1 or other firmware's presets, projects or samples. It does not provide a way to back them up or restore them. Back up with your existing firmware's tools before switching. Firmware installation writes flash; do not assume another firmware's data will survive switching or recovery. From 0.4.0, instrument levels/FX are stored in the existing project-sector pair at `0xFC000` / `0xFD000`. Saving may replace another firmware's data there; panel calibration and the update-loader area are separate.
 
 USB audio is disabled: listen on the FM-1 speaker or headphone output. This is a restricted musical chip profile, not a general VGM/register player or a full Genesis emulator. There is currently no Emerald browser player or editor; inherited DUB-1 web tools are historical code.
 
-## Release status
+## Verified installation paths
 
-0.4.0 adds persistent instrument settings, a version label below the 16-BIT badge and an original console-inspired boot screen. It preserves the 0.3.1 audio DSP and the 85% guard. Desktop tests include real A/B storage with interrupted-write/corruption simulations and UI/LED checks. Current physical results and limits are recorded separately in [verification](docs/VERIFICATION.md).
+Physical tests on 2026-10-27 used the exact 0.4.3 package linked above, official M-VAVE V15 and Dinghy 0.3:
 
-The earlier identical DSP in 0.3.1 recorded 65% / XRUNS 0 with backing and live notes; 0.3.0 recorded 68% / XRUNS 0 with an all-source FX scene. These are specific prior measurements, not fresh 0.4.0 results or proof of every setting.
+| Transition | Result |
+|---|---|
+| Emerald 0.4.3 → official V15 | Passed |
+| Official V15 → Emerald 0.4.3 | Passed |
+| Emerald 0.4.3 → Dinghy 0.3 | Passed |
+| Dinghy 0.3 → Emerald 0.4.3 | Passed |
 
-The immutable, user-accepted **v0.1.4** remains the development baseline. Older interactive reports retain their original failed continuity results. [Verification](docs/VERIFICATION.md) separates desktop tests, simulations and physical evidence.
+All four used normal USB MIDI updating and returned the expected running identity, without a rescue shortcut or manual power cycle. The owner confirmed screens and audible keys in V15 and Dinghy. After each return, Emerald passed 20 seconds of continuous playback: **CPU MAX 67%, XRUNS 0, overload 0**. Emerald 0.4.3 was restored at the end. [Package hashes, raw reports and scope](docs/verification/install-roundtrips-2026-10-27/README.md).
 
-**Firmware Hub preparation:** metadata and a release package are provided, but listing readiness still requires the physical V15 → Emerald, another firmware → Emerald, and Emerald → another firmware checks. See the [submission checklist](docs/FIRMWARE-HUB.md). The repository remains private until the owner chooses to publish it.
+These results apply to the exact linked package, not earlier review builds with the same 0.4.3 identity, release 0.4.0, arbitrary firmware versions or every device. They do not establish interrupted-write recovery or compatibility/preservation of other firmware's data.
+
+Levels/FX and K1–K4 retention after full power-off were user-confirmed in the preceding 0.4.x checks. Desktop tests cover the renderer, storage migration, interrupted/corrupt simulated saves and UI/LED/update logic. [Verification](docs/VERIFICATION.md) separates those tests from physical measurements. The immutable accepted baseline **v0.1.4**, its tag and original evidence remain preserved.
+
+**Firmware Hub:** the requested normal installation round trips are now verified for the linked 0.4.3 package. Remaining steps include making the repository public when authorized, attaching these exact bytes to an appropriate GitHub release, checking the live identity catalogue and Hub browser connection, and reviewing the separate interrupted-update check. [Submission checklist](docs/FIRMWARE-HUB.md). No submission has been sent; the repository remains private.
 
 ## Development
 
-The canonical repository is [CaspiusLabs/Emerald-YM](https://github.com/CaspiusLabs/Emerald-YM). Work in a local clone, commit changes and push to this repository. The original DUB-1 remote is reference-only.
+The canonical repository is [CaspiusLabs/Emerald-YM](https://github.com/CaspiusLabs/Emerald-YM). Work in a local clone. Every change increments VERSION, uses a separate branch and opens a pull request to main for review; do not push directly to main or auto-merge. The original DUB-1 remote is reference-only.
 
 ```powershell
 git clone https://github.com/CaspiusLabs/Emerald-YM.git

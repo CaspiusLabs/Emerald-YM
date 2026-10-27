@@ -1,6 +1,6 @@
 # Building Emerald YM on Windows
 
-The supported, tested build environment is Windows with the official JieLi toolchain. `VERSION` is the version source; the current output is `build/emerald-ym-0.3.1.fwsc`. Neither build nor desktop tests opens MIDI or installs firmware.
+The supported, tested build environment is Windows with the official JieLi toolchain. `VERSION` is the version source; the output is `build/emerald-ym-<VERSION>.fwsc`. Neither build nor desktop tests opens MIDI or installs firmware.
 
 ## Dependencies
 

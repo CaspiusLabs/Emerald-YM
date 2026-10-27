@@ -1,0 +1,23 @@
+{"playing": 0, "cpu_avg_pct": 29, "cpu_max_pct": 35, "xruns": 0, "overload_blocks": 0, "bar": 1, "seed": 20261026, "uptime_ms": 60427, "audio_halves": 10325, "max_block_us": 2064, "failed_boots": 0}
+{"playing": 1, "cpu_avg_pct": 37, "cpu_max_pct": 44, "xruns": 0, "overload_blocks": 0, "bar": 1, "seed": 20261026, "uptime_ms": 61434, "audio_halves": 10499, "max_block_us": 2592, "failed_boots": 0}
+{"playing": 1, "cpu_avg_pct": 37, "cpu_max_pct": 45, "xruns": 0, "overload_blocks": 0, "bar": 2, "seed": 20261026, "uptime_ms": 62440, "audio_halves": 10672, "max_block_us": 2619, "failed_boots": 0}
+{"playing": 1, "cpu_avg_pct": 38, "cpu_max_pct": 45, "xruns": 0, "overload_blocks": 0, "bar": 2, "seed": 20261026, "uptime_ms": 63448, "audio_halves": 10846, "max_block_us": 2619, "failed_boots": 0}
+{"playing": 1, "cpu_avg_pct": 37, "cpu_max_pct": 61, "xruns": 0, "overload_blocks": 0, "bar": 3, "seed": 20261026, "uptime_ms": 64453, "audio_halves": 11019, "max_block_us": 3566, "failed_boots": 0}
+{"playing": 1, "cpu_avg_pct": 44, "cpu_max_pct": 61, "xruns": 0, "overload_blocks": 0, "bar": 3, "seed": 20261026, "uptime_ms": 65462, "audio_halves": 11193, "max_block_us": 3582, "failed_boots": 0}
+{"playing": 1, "cpu_avg_pct": 49, "cpu_max_pct": 61, "xruns": 0, "overload_blocks": 0, "bar": 4, "seed": 20261026, "uptime_ms": 66465, "audio_halves": 11366, "max_block_us": 3582, "failed_boots": 0}
+{"playing": 1, "cpu_avg_pct": 47, "cpu_max_pct": 67, "xruns": 0, "overload_blocks": 0, "bar": 4, "seed": 20261026, "uptime_ms": 67471, "audio_halves": 11539, "max_block_us": 3903, "failed_boots": 0}
+{"playing": 1, "cpu_avg_pct": 43, "cpu_max_pct": 67, "xruns": 0, "overload_blocks": 0, "bar": 5, "seed": 20261026, "uptime_ms": 68478, "audio_halves": 11713, "max_block_us": 3903, "failed_boots": 0}
+{"playing": 1, "cpu_avg_pct": 44, "cpu_max_pct": 67, "xruns": 0, "overload_blocks": 0, "bar": 5, "seed": 20261026, "uptime_ms": 69484, "audio_halves": 11886, "max_block_us": 3921, "failed_boots": 0}
+{"playing": 1, "cpu_avg_pct": 53, "cpu_max_pct": 67, "xruns": 0, "overload_blocks": 0, "bar": 6, "seed": 20261026, "uptime_ms": 70492, "audio_halves": 12060, "max_block_us": 3921, "failed_boots": 0}
+{"playing": 1, "cpu_avg_pct": 42, "cpu_max_pct": 67, "xruns": 0, "overload_blocks": 0, "bar": 6, "seed": 20261026, "uptime_ms": 71497, "audio_halves": 12233, "max_block_us": 3921, "failed_boots": 0}
+{"playing": 1, "cpu_avg_pct": 43, "cpu_max_pct": 67, "xruns": 0, "overload_blocks": 0, "bar": 7, "seed": 20261026, "uptime_ms": 72506, "audio_halves": 12407, "max_block_us": 3921, "failed_boots": 0}
+{"playing": 1, "cpu_avg_pct": 54, "cpu_max_pct": 67, "xruns": 0, "overload_blocks": 0, "bar": 8, "seed": 20261026, "uptime_ms": 73510, "audio_halves": 12580, "max_block_us": 3921, "failed_boots": 0}
+{"playing": 1, "cpu_avg_pct": 44, "cpu_max_pct": 67, "xruns": 0, "overload_blocks": 0, "bar": 8, "seed": 20261026, "uptime_ms": 74519, "audio_halves": 12754, "max_block_us": 3921, "failed_boots": 0}
+{"playing": 1, "cpu_avg_pct": 41, "cpu_max_pct": 67, "xruns": 0, "overload_blocks": 0, "bar": 9, "seed": 20261026, "uptime_ms": 75523, "audio_halves": 12927, "max_block_us": 3921, "failed_boots": 0}
+{"playing": 1, "cpu_avg_pct": 49, "cpu_max_pct": 67, "xruns": 0, "overload_blocks": 0, "bar": 9, "seed": 20261026, "uptime_ms": 76529, "audio_halves": 13100, "max_block_us": 3921, "failed_boots": 0}
+{"playing": 1, "cpu_avg_pct": 55, "cpu_max_pct": 67, "xruns": 0, "overload_blocks": 0, "bar": 10, "seed": 20261026, "uptime_ms": 77537, "audio_halves": 13274, "max_block_us": 3922, "failed_boots": 0}
+{"playing": 1, "cpu_avg_pct": 48, "cpu_max_pct": 67, "xruns": 0, "overload_blocks": 0, "bar": 10, "seed": 20261026, "uptime_ms": 78542, "audio_halves": 13447, "max_block_us": 3922, "failed_boots": 0}
+{"playing": 1, "cpu_avg_pct": 43, "cpu_max_pct": 67, "xruns": 0, "overload_blocks": 0, "bar": 11, "seed": 20261026, "uptime_ms": 79550, "audio_halves": 13621, "max_block_us": 3922, "failed_boots": 0}
+{"playing": 1, "cpu_avg_pct": 44, "cpu_max_pct": 67, "xruns": 0, "overload_blocks": 0, "bar": 11, "seed": 20261026, "uptime_ms": 80554, "audio_halves": 13794, "max_block_us": 3922, "failed_boots": 0}
+{"playing": 0, "cpu_avg_pct": 35, "cpu_max_pct": 67, "xruns": 0, "overload_blocks": 0, "bar": 11, "seed": 20261026, "uptime_ms": 80762, "audio_halves": 13830, "max_block_us": 3922, "failed_boots": 0}
+RESULT {"identity": "FM-1_68000403", "seconds_requested": 20, "live_stress": false, "effects_stress": false, "effect_values": null, "live_test_notes": [], "failure": null, "continuous_playback_observed": true, "passed": true}

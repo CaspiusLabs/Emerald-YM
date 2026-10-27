@@ -1,25 +1,25 @@
 # Installing and leaving Emerald YM
 
-Target: M-VAVE FM-1 only. Current package: `emerald-ym-0.4.0.fwsc`, identity `FM-1_68000400`, USB MIDI name `Emerald YM FM-1`. This is beta firmware. Read the [test scope](VERIFICATION.md) before installing.
+Target: M-VAVE FM-1 only. Current validated package: `emerald-ym-0.4.3.fwsc`, identity `FM-1_68000403`, USB MIDI name `Emerald YM FM-1`. This is beta firmware. Read the [test scope](VERIFICATION.md) before installing.
 
 ## Back up first
 
-Emerald does not import stock or other custom firmware's presets, projects or samples. It does not provide a backup/restore tool for them and does not promise that switching back recovers them. Use your current firmware's backup tools first. From 0.4.0, instrument levels/FX are saved to the existing FC000/FD000 project-sector pair while paused; this may overwrite another firmware's data there. Other performance settings remain volatile. Installation and recovery also write flash.
+Emerald does not import stock or other custom firmware's presets, projects or samples. It does not provide a backup/restore tool for them and does not promise that switching back recovers them. Use your current firmware's backup tools first. From 0.4.0, instrument levels/FX are saved to the existing FC000/FD000 project-sector pair while paused; this may overwrite another firmware's data there. K1–K4 are persistent since 0.4.2; seed, master, PSG enable and selection/cursor remain outside the snapshot. Installation and recovery also write flash.
 
 ## Get and check the package
 
-Download the `.fwsc` and `SHA256SUMS` from the [0.4.0 release](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.0). While this repository is private, GitHub requires authorized access; it is not yet installable from a public Firmware Hub card.
+Download the committed [0.4.3 package](../releases/v0.4.3/emerald-ym-0.4.3.fwsc) and [SHA256SUMS](../releases/v0.4.3/SHA256SUMS). The older GitHub release 0.4.0 is a different binary; these installation tests apply only to the linked 0.4.3 bytes. No new release tag has been created. While this repository is private, GitHub requires authorized access; it is not yet installable from a public Firmware Hub card.
 
 Expected SHA-256:
 
 ```text
-0f9d39e6cb5158fbc066ad63dfdc8932ab103014f1d0b4218acc5d88b0d3c6af
+6669787e1d7a3b56f37bd0494c992fbdba5cb59e5dc13d5f2380d7c4fbd64925
 ```
 
 On PowerShell:
 
 ```powershell
-Get-FileHash .\emerald-ym-0.4.0.fwsc -Algorithm SHA256
+Get-FileHash .\emerald-ym-0.4.3.fwsc -Algorithm SHA256
 ```
 
 The package includes the inherited Felucca update loader. Do not substitute a raw application `.bin` for it.
@@ -37,19 +37,21 @@ Connect the FM-1 with a USB data cable. Verify its exact MIDI port; exclude unre
 
 ```powershell
 python tools/fm1_install.py --info --port "YOUR VERIFIED FM-1 PORT"
-python tools/fm1_install.py .\emerald-ym-0.4.0.fwsc --port "YOUR VERIFIED FM-1 PORT"
+python tools/fm1_install.py .\emerald-ym-0.4.3.fwsc --port "YOUR VERIFIED FM-1 PORT"
 ```
 
-The installer asks before writing. Keep power and USB connected until it reports completion. Do not use `--force` to skip the loader check. After reboot, verify `FM-1_68000400`, turn MASTER low and press PLAY.
+The installer asks before writing. Keep power and USB connected until it reports completion. Do not use `--force` to skip the loader check. After reboot, verify `FM-1_68000403`, turn MASTER low and press PLAY.
 
 ## Leaving Emerald and recovery
 
-The running application retains the Felucca update handler. Install another compatible, checked `.fwsc` with the same installer, selecting `Emerald YM FM-1` as the current port. **The release-specific physical round trip to another firmware and the V15 → Emerald path still need recorded verification**; simulations and successful Emerald-to-Emerald updates do not replace those checks.
+The running application retains the Felucca update handler. Install another compatible, checked `.fwsc` with the same installer, selecting `Emerald YM FM-1` as the current port. **Physical round trips passed on 2026-10-27:** Emerald 0.4.3 ↔ official V15 and Emerald 0.4.3 ↔ Dinghy 0.3, using normal USB MIDI updates with no rescue shortcut. [Exact packages, user observations and reports](verification/install-roundtrips-2026-10-27/README.md). This is not a guarantee for arbitrary versions or interrupted writes.
 
 The inherited OCT− + OCT+ hold (five seconds) enters update mode. There is no guaranteed automatic rollback. If normal updating fails, consult the [Firmware Hub recovery guidance](https://thefirmwarehub.com/kb/) and the official M-VAVE recovery instructions for your device. Do not intentionally interrupt a write as part of ordinary installation.
 
 No public Emerald browser installer/player is provided yet. Files under `web/` are inherited DUB-1 tools, not a supported Emerald installation page.
 
-## Proposed 0.4.2 in a pull request
+## Persistent settings since 0.4.2
 
-The header/K1–K4 candidate package is committed under releases/v0.4.2 on its feature branch, not a new GitHub release. Its checksum and desktop/physical evidence accompany it. Schema 1 from 0.4.0 keeps saved mixer/FX values; schema 2 adds tempo/density/mutation/transpose. Migration does not write on boot. Save after an actual edit and wait for SAVED before power-off. Older 0.4.0 cannot load schema 2 and uses defaults when downgraded.
+PRs #1–#3 are merged. Accepted 0.4.3 includes the K1–K4 persistence introduced in 0.4.2. Schema 1 from 0.4.0 keeps saved mixer/FX values; schema 2 adds tempo/density/mutation/transpose. Migration does not write on boot. Save after an actual edit and wait for SAVED before power-off. Older 0.4.0 cannot load schema 2 and uses defaults when downgraded.
+
+For returning to official V15, use M-VAVE's updater or the Firmware Hub's official-image path with the genuine stock file. The generic custom-package CLI loader-marker check is not a reason to accept arbitrary markerless files. Our audit used only the exact manufacturer image/hash through its documented stock-update path.

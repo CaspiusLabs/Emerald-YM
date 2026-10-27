@@ -1,0 +1,71 @@
+{
+  "date": "2026-10-27",
+  "test_type": "physical_fm1_normal_usb_midi_update_round_trips",
+  "hardware_firmware_tested": "0.4.3",
+  "documentation_source_version": "0.4.4",
+  "emerald_sha256": "6669787e1d7a3b56f37bd0494c992fbdba5cb59e5dc13d5f2380d7c4fbd64925",
+  "merged_source_commit": "b5848cd40b4d8dda4612cb9b8c3dc9687e29abc6",
+  "all_four_transitions_passed": true,
+  "transitions": [
+    {
+      "report": "01-emerald-to-v15.json",
+      "from": "FM-1_68000403",
+      "to": "FM-1_015",
+      "passed": true
+    },
+    {
+      "report": "02-v15-to-emerald.json",
+      "from": "FM-1_015",
+      "to": "FM-1_68000403",
+      "passed": true
+    },
+    {
+      "report": "03-emerald-to-dinghy.json",
+      "from": "FM-1_68000403",
+      "to": "FM-1_993",
+      "passed": true
+    },
+    {
+      "report": "04-dinghy-to-emerald.json",
+      "from": "FM-1_993",
+      "to": "FM-1_68000403",
+      "passed": true
+    }
+  ],
+  "audio_after_returns": {
+    "after_v15": {
+      "report": "02-emerald-after-v15-audio.json",
+      "seconds": 20,
+      "passed": true,
+      "cpu_max_pct": 67,
+      "max_block_us": 3929,
+      "xruns": 0,
+      "overload_blocks": 0,
+      "failed_boots": 0
+    },
+    "after_dinghy": {
+      "report": "04-emerald-after-dinghy-audio.json",
+      "seconds": 20,
+      "passed": true,
+      "cpu_max_pct": 67,
+      "max_block_us": 3922,
+      "xruns": 0,
+      "overload_blocks": 0,
+      "failed_boots": 0
+    }
+  },
+  "official_v15_ui_key_audio_user_confirmed": true,
+  "dinghy_ui_key_audio_user_confirmed": true,
+  "final_firmware": "FM-1_68000403",
+  "unrelated_midi_ports_opened": false,
+  "manual_power_cycle_or_boot_shortcut_required": false,
+  "interrupted_write_tested": false,
+  "hub_browser_connect_tested": false,
+  "data_format_compatibility_claimed": false,
+  "notes": [
+    "Exact official V15 hash accepted via documented manufacturer-stock path; no generic force option used.",
+    "Dinghy 0.3 release asset hash matched its GitHub digest.",
+    "Tests apply to the exact linked Emerald 0.4.3 bytes, not earlier same-version review packages or release 0.4.0.",
+    "No third-party package binaries are redistributed here."
+  ]
+}
