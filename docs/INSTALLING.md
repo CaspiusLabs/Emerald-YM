@@ -49,3 +49,7 @@ The running application retains the Felucca update handler. Install another comp
 The inherited OCT− + OCT+ hold (five seconds) enters update mode. There is no guaranteed automatic rollback. If normal updating fails, consult the [Firmware Hub recovery guidance](https://thefirmwarehub.com/kb/) and the official M-VAVE recovery instructions for your device. Do not intentionally interrupt a write as part of ordinary installation.
 
 No public Emerald browser installer/player is provided yet. Files under `web/` are inherited DUB-1 tools, not a supported Emerald installation page.
+
+## Proposed 0.4.2 in a pull request
+
+The header/K1–K4 candidate package is committed under releases/v0.4.2 on its feature branch, not a new GitHub release. Its checksum and desktop/physical evidence accompany it. Schema 1 from 0.4.0 keeps saved mixer/FX values; schema 2 adds tempo/density/mutation/transpose. Migration does not write on boot. Save after an actual edit and wait for SAVED before power-off. Older 0.4.0 cannot load schema 2 and uses defaults when downgraded.

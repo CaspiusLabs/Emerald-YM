@@ -1,5 +1,13 @@
 # Emerald YM changelog
 
+## 0.4.2 — unreleased — 2026-10-27 — header and K1–K4 persistence
+
+- Main title reads Emerald YM; smaller 16-BIT badge with more space above the version.
+- Schema 2 stores tempo, density, mutation and signed transpose with instrument levels/FX. Load schema 1 without losing the mixer or writing on boot; new knob fields use defaults until saved.
+- Knob and SEQ edits use the existing quiet/debounce SAVE policy; no writes while playing or holding keys. Seed, master, PSG enable and selection remain outside the snapshot.
+- Firmware DSP, guard, memory regions and old package/tag are unchanged. Desktop checks include migration, all four knobs, boundary validation, interrupted writes and UI layout.
+
+
 ## 0.4.1 — unreleased — 2026-10-27 — contribution workflow
 
 - Require a VERSION increment for each change, including documentation, on a separate branch with a GitHub pull request targeting main.

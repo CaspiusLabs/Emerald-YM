@@ -34,6 +34,7 @@ static void check(int v,const char*s){printf("%s: %s\n",s,v?"PASS":"FAIL");if(!v
 static void image(const char*path){FILE*f=fopen(path,"wb");if(!f)exit(5);fprintf(f,"P6\n240 240\n255\n");for(int i=0;i<240*240;i++){uint16_t c=screen[i];uint8_t p[3]={(uint8_t)(((c>>11)&31)*255/31),(uint8_t)(((c>>5)&63)*255/63),(uint8_t)((c&31)*255/31)};fwrite(p,1,3,f);}fclose(f);}
 int main(void){
  FILE*vf=fopen("VERSION","r");if(!vf||fscanf(vf,"%15s",test_version)!=1)exit(6);fclose(vf);
+ check(44+text_w(&FONT_S,"Emerald YM")<185,"full header title fits before the smaller badge");
  palette_set(0);yui_boot();lcd_sync();image("build/host/ui-boot.ppm");ydisplay();lcd_sync();image("build/host/ui-paused.ppm");unsigned initial=blits,clears=fills;
  for(int i=0;i<100;i++)ydisplay();check(blits==initial&&fills==clears,"idle: zero repeated LCD writes");
  ytempo=145;ydisplay();check(blits==initial+1&&last_w==108&&last_h==52,"one knob: exactly one atomic tile");
