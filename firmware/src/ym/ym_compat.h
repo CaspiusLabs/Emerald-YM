@@ -10,8 +10,13 @@
 /* Supported instrument profile: five FM channels, permanently enabled DAC.
  * No MIDI/register API exposes channel 6 FM or toggling DAC during a song. */
 #define EMERALD_FIXED_DAC 1
+/* Current patches never use SSG-EG, AM or PM. FX keeps these disabled. */
+#ifndef EMERALD_GENERIC_OPN
+#define EMERALD_STATIC_OPN 1
+#endif
 /* App mix gain after summing the five FM channels, before adding DAC. */
 extern uint32_t emerald_fm_gain_q8[5];
+extern int32_t emerald_echo_gain[5],emerald_echo_left,emerald_echo_right;
 #define assert(x) ((void)0)
 void *operator new(size_t n);
 void *operator new(size_t, void *p) noexcept;

@@ -12,6 +12,14 @@ static void stem(uint32_t melody,uint32_t drums,int32_t *out){
  for(int n=0;n<1400;n++)ym_render(audio,256,4096);
  memcpy(out,audio,sizeof audio);
 }
+static uint32_t effects_render(unsigned block,unsigned kinds){
+ ym_init(20261026);for(unsigned s=0;s<12;s++){ym_effect(s,0,(kinds&1u)?((kinds&8u)?100:25):0);ym_effect(s,1,(kinds&2u)?100:0);ym_effect(s,2,(kinds&4u)?100:0);}ym_live_keys(7);
+ unsigned done=0,total=44100u*16u,hash=2166136261u;uint32_t arena=ym_arena_bytes();int bounded=1;
+ while(done<total){unsigned n=block;if(n>total-done)n=total-done;ym_render(audio,n,4096);
+  for(unsigned i=0;i<n*2;i++){int32_t v=audio[i];if(v>=8300000||v<=-8300000)bounded=0;hash^=(uint32_t)v;hash*=16777619u;}done+=n;}
+ check(bounded,"all instruments with three effects: no output limiter hits");
+ check(ym_arena_bytes()==arena,"all effects: no allocations during rendering");return hash;
+}
 static uint32_t render(uint32_t seed,int block,const char*file){
  FILE*f=0;uint32_t hash=2166136261u,total=44100u*60u,done=0;int32_t peak=0;uint32_t limited=0,arena;
  if(file){unsigned char head[44]={0};uint32_t val;memcpy(head,"RIFF",4);val=36+total*4;memcpy(head+4,&val,4);memcpy(head+8,"WAVEfmt ",8);head[16]=16;head[20]=1;head[22]=2;val=44100;memcpy(head+24,&val,4);val=44100*4;memcpy(head+28,&val,4);head[32]=4;head[34]=16;memcpy(head+36,"data",4);val=total*4;memcpy(head+40,&val,4);f=fopen(file,"wb");check(f!=0,"open WAV");fwrite(head,1,44,f);}
@@ -95,5 +103,8 @@ int main(int argc,char**argv){
  ym_instrument_level(10,100);for(int n=0;n<40;n++)ym_render(audio,256,4096);
  peak=0;for(int i=0;i<512;i++){int32_t v=audio[i]<0?-audio[i]:audio[i];if(v>peak)peak=v;}
  check(peak>50000,"individual level restores held PSG voice without retrigger");
+ uint32_t fxa=effects_render(256,7),fxb=effects_render(63,7);check(fxa==fxb,"three effects are deterministic across block sizes");printf("FX hash=%08x\n",fxa);
+ uint32_t dryfx=effects_render(256,0);check(effects_render(256,1)!=dryfx,"DECAY alone changes actual rendered audio");check(effects_render(256,2)!=dryfx,"COLOR alone changes actual rendered audio");check(effects_render(256,4)!=dryfx,"ECHO alone changes actual rendered audio");
+ effects_render(256,15);
  printf("PASS: 180+ seconds streamed, %.3f s desktop CPU time (not a target benchmark).\n",(double)(clock()-start)/CLOCKS_PER_SEC);return 0;
 }

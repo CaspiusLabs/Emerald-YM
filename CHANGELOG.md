@@ -1,5 +1,27 @@
 # Historia Emerald YM
 
+## 0.3.1 — 2026-10-26 — zamiana enkoderów
+
+- Po akceptacji efektów przez użytkownika: PRESETS = głośność instrumentu,
+  ALGORITHM = wartość edytowanego FX. SELECT i przycisk FX bez zmian.
+- Nowe oznaczenia PRE / ALG na kafelkach. Silnik audio i MIDI bez zmian.
+
+## 0.3.0 — 2026-10-26 — trzy efekty jednocześnie
+
+- Niezależne DECAY, COLOR i ECHO dla każdego z 12 instrumentów; FX wybiera
+  edytowany parametr, nie wyłącza pozostałych. Wszystko neutralnie 0%.
+- Stałe echo stereo ~186 ms: osobne wysyłki, wspólny powrót, bounded feedback.
+- FX LED, osobny kafelek efektu, standardowe MIDI CC20–22 na kanałach 1–12.
+- EMERALD_STATIC_OPN pomija nieużywane SSG-EG/AM/PM. Referencja z przywróconymi
+  ścieżkami daje identyczne hashe dla suchego dźwięku i sceny z efektami.
+- Bufory 32 KiB w pool; cały krytyczny kod FX w dotychczasowym obszarze RAM,
+  bez powiększania granic i bez podnoszenia progu 85%.
+- 30 s ciągłego testu wszystkich źródeł z FX25/100/100 i live: CPU MAX 68%,
+  XRUNS 0, overload 0. Próba sustain zawierała pauzy, zachowuje passed=false.
+- Użytkownik potwierdził efekty i zachowanie osobnych wartości; poprosił o
+  zamianę ALGORITHM/PRESETS. Szczegóły: docs/releases/v0.3.0.md.
+
+
 ## 0.2.4 — 2026-10-26 — indywidualne poziomy
 
 - Po doprecyzowaniu użytkownika: SELECT wybiera instrument, ALGORITHM zmienia

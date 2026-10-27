@@ -10,7 +10,7 @@
 #define Y_DIM RGB(121,149,181)
 #define Y_AMBER RGB(255,176,64)
 static uint8_t yui_ready;
-static struct {uint32_t tempo,density,mutation,bar,playing,overload,step,psg,selected,level,drums;int32_t transpose;} yui_old;
+static struct {uint32_t tempo,density,mutation,bar,playing,overload,step,psg,selected,level,fxsource,fxkind,fxvalue;int32_t transpose;} yui_old;
 static void yui_header(void){
  cv_begin(240,44,Y_BG);
  /* Original faceted jewel + striped 16-bit badge, drawn natively. */
@@ -62,16 +62,18 @@ static void yui_voice(void){
  cv_begin(148,34,Y_CARD);cv_rect(0,0,148,1,Y_EDGE);
  str_cpy(b,"SEL ",sizeof b);str_cpy(b+4,names[yinstrument],sizeof b-4);
  cv_text(4,2,&FONT_XS,b,Y_DIM);
- if(enabled){str_cpy(b,"ALG ",sizeof b);fmt_int(b+4,(int32_t)value);str_cpy(b+str_len(b),"%",sizeof b-str_len(b));}
+ if(enabled){str_cpy(b,"PRE ",sizeof b);fmt_int(b+4,(int32_t)value);str_cpy(b+str_len(b),"%",sizeof b-str_len(b));}
  else str_cpy(b,"PSG OFF",sizeof b);
  cv_text(4,15,&FONT_S,b,enabled?Y_GREEN:Y_DIM);
  cv_rect(80,26,64,3,Y_EDGE);if(enabled)cv_rect(80,26,(int32_t)(value*64u/100u),3,Y_GREEN);
  cv_blit(8,190);
 }
-static void yui_drumbus(void){
- char b[16];cv_begin(72,34,Y_CARD);cv_rect(0,0,72,1,Y_EDGE);
- cv_text(4,2,&FONT_XS,"PRE DRUM",Y_DIM);fmt_int(b,(int32_t)ydrums_mix);str_cpy(b+str_len(b),"%",sizeof b-str_len(b));
- cv_text(4,15,&FONT_S,b,Y_BLUE);cv_rect(4,31,64,2,Y_EDGE);cv_rect(4,31,(int32_t)(ydrums_mix*64u/100u),2,Y_BLUE);cv_blit(160,190);
+static void yui_effect(void){
+ static const char*const names[]={"DECAY","COLOR","ECHO"};
+ char b[20];uint32_t kind=yfx_kind[yinstrument],value=yfx_values[yinstrument][kind];
+ cv_begin(72,34,Y_CARD);cv_rect(0,0,72,1,Y_EDGE);str_cpy(b,"ALG ",sizeof b);str_cpy(b+4,names[kind],sizeof b-4);
+ cv_text(4,2,&FONT_XS,b,Y_DIM);fmt_int(b,(int32_t)value);str_cpy(b+str_len(b),"%",sizeof b-str_len(b));
+ cv_text(4,15,&FONT_S,b,value?Y_AMBER:Y_DIM);cv_rect(4,31,64,2,Y_EDGE);cv_rect(4,31,(int32_t)(value*64u/100u),2,Y_AMBER);cv_blit(160,190);
 }
 static void yui_steps(uint32_t step){
  cv_begin(224,12,Y_BG);
@@ -94,5 +96,5 @@ static void ydisplay(void){
  if(yui_old.step!=step_key){yui_steps(step);yui_old.step=step_key;}
  if(yui_old.psg!=ypsg||yui_old.selected!=yinstrument||yui_old.level!=ylevels[yinstrument]){
   yui_voice();yui_old.psg=ypsg;yui_old.selected=yinstrument;yui_old.level=ylevels[yinstrument];}
- if(yui_old.drums!=ydrums_mix){yui_drumbus();yui_old.drums=ydrums_mix;}
+ if(yui_old.fxsource!=yinstrument||yui_old.fxkind!=yfx_kind[yinstrument]||yui_old.fxvalue!=yfx_values[yinstrument][yfx_kind[yinstrument]]){yui_effect();yui_old.fxsource=yinstrument;yui_old.fxkind=yfx_kind[yinstrument];yui_old.fxvalue=yfx_values[yinstrument][yfx_kind[yinstrument]];}
 }

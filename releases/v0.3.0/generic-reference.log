@@ -1,0 +1,66 @@
+ym_stream_test.c
+Generating Code...
+Compiling...
+ym_engine.cpp
+ymfm_opn.cpp
+ymfm_adpcm.cpp
+ymfm_ssg.cpp
+Generating Code...
+no allocations while rendering: PASS
+non-silent bounded audio: PASS
+no hard limiter hits: PASS
+seed=20261026 block=256 hash=7ce44fbe arena=2304 peak=5490513 bar=33 notes=775
+no allocations while rendering: PASS
+non-silent bounded audio: PASS
+no hard limiter hits: PASS
+seed=20261026 block=63 hash=7ce44fbe arena=2304 peak=5490513 bar=33 notes=775
+no allocations while rendering: PASS
+non-silent bounded audio: PASS
+no hard limiter hits: PASS
+seed=20261027 block=256 hash=77af744e arena=2304 peak=5502708 bar=33 notes=775
+block-size independent and deterministic: PASS
+seed changes composition: PASS
+unity mixer preserves accepted 0.2.2 audio exactly: PASS
+pause stops sequencer: PASS
+pause fades to silence: PASS
+tempo and transpose extremes keep running: PASS
+new seed without allocating: PASS
+live keyboard plays while sequencer paused: PASS
+paused live voice is audible: PASS
+two live voices: PASS
+three voices: newest keys take priority: PASS
+released voice restores held stolen key: PASS
+PSG off clears live indication: PASS
+PSG on restores held keys: PASS
+reseed preserves held live keys: PASS
+all live keys released: no stuck sound: PASS
+three PSG voices plus FM/DAC: no limiter hits: PASS
+full held keyboard and sequencer: no allocations: PASS
+FM and drums produce independent audible stems: PASS
+FM plus drum stems reproduce combined backing within quantization: PASS
+SELECT=0 PRESETS=0 PSG=off mutes backing: PASS
+SELECT 50 percent scales FM amplitude without changing drums: PASS
+muted FM and drums preserve independent PSG live voice: PASS
+each of twelve instruments is independently audible with the other eleven muted: PASS
+individual PSG live level zero mutes held notes: PASS
+individual level restores held PSG voice without retrigger: PASS
+all instruments with three effects: no output limiter hits: PASS
+all effects: no allocations during rendering: PASS
+all instruments with three effects: no output limiter hits: PASS
+all effects: no allocations during rendering: PASS
+three effects are deterministic across block sizes: PASS
+FX hash=f9fae4ef
+all instruments with three effects: no output limiter hits: PASS
+all effects: no allocations during rendering: PASS
+all instruments with three effects: no output limiter hits: PASS
+all effects: no allocations during rendering: PASS
+DECAY alone changes actual rendered audio: PASS
+all instruments with three effects: no output limiter hits: PASS
+all effects: no allocations during rendering: PASS
+COLOR alone changes actual rendered audio: PASS
+all instruments with three effects: no output limiter hits: PASS
+all effects: no allocations during rendering: PASS
+ECHO alone changes actual rendered audio: PASS
+all instruments with three effects: no output limiter hits: PASS
+all effects: no allocations during rendering: PASS
+PASS: 180+ seconds streamed, 4.823 s desktop CPU time (not a target benchmark).

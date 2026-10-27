@@ -2,7 +2,7 @@
 
 - Rozmawiaj z użytkownikiem po polsku. Pracujemy nad firmware'em M-VAVE FM-1 na lokalnym Windows.
 - Bazą do rozbudowy jest zaakceptowana na urządzeniu wersja `v0.1.4`. `VERSION` jest źródłem numeru wydania. Zobacz README, BUILDING, CHANGELOG i docs/ARCHITECTURE.md.
-- Bieżące rozwinięcie to 0.2.4 (indywidualne poziomy instrumentów); opis w docs/releases/v0.2.4.md.
+- Bieżące rozwinięcie to 0.3.1 (indywidualne poziomy i FX); opis w docs/releases/v0.3.1.md.
   Zachowaj 0.1.4 jako osobną zaakceptowaną bazę. Nie myl prób 0.2.x z jej dowodami.
 - PSG to ograniczony profil muzyczny Sega: 3 tony i stały biały szum clock/512.
   Nie jest to dowolny interfejs rejestrów/VGM. Optymalizacja jednego zbocza
@@ -20,9 +20,18 @@
   zbieraną przed wykluczeniem tekstu obiektów emulatora. Wywołuje je pętla
   główna przez istniejące FL_FAR, nie renderer. Budowanie sprawdza ich adresy.
   Granice obszarów RAM i startup kopiujący `.audio_hot` są niezmienione.
-- Od 0.2.4 SELECT wybiera jedną z 12 ścieżek, ALGORITHM zmienia jej poziom.
-  FM ma osobny gain każdego kanału przed sumą z DAC. PRESETS jest dodatkową
-  magistralą całej perkusji. Nie skaluj wspólnego wyjścia YM jako głośności FM.
+- Od 0.3.1 SELECT wybiera źródło, PRESETS jego poziom, FX wybiera DECAY/COLOR/ECHO,
+  ALGORITHM zmienia wartość efektu. 12x3 wartości współistnieją; przycisk FX
+  nie wyłącza poprzedniego efektu. Brak automatycznego zapisu Flash.
+- EMERALD_STATIC_OPN wymaga wyłączonych SSG-EG, operator AM i PM. Obecne patche
+  oraz FX tego pilnują. Dodanie tych trybów wymaga adaptacji lub wyłączenia
+  optymalizacji i porównania z EMERALD_GENERIC_OPN (tools/test-ym-generic-windows.cmd).
+- `.audio_hot.fx` jest zbierana wewnątrz istniejącej `.audio_hot`, objęta tą samą
+  kopią startup i ochroną PC; funkcje efektów nie mogą trafić do wykonywalnych
+  danych poza tym zakresem. Granice pamięci i blok debug/STATUS bez zmian.
+- Echo: osobne wysyłki, jeden powrót stereo ~186 ms, bufory/tagi 32 KiB w pool.
+  Testy fizyczne i offline są odrębne. Zachowaj niezaliczony warunek ciągłości
+  w interaktywnym raporcie sustain 0.3.0; nie zmieniaj go na zielony.
 - Tablica psg_divider ma sekcję `.ym_pitch` w XIP, odczytywaną przy instalacji
   okresu, poza pętlą próbek oscylatora. Okresy pozostają w RAM. Linker i test
   sprzętowy pilnują położenia i czasu; nie zmieniaj zakazu XIP w `.ram_text`.

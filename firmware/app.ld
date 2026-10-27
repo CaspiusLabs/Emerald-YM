@@ -34,7 +34,8 @@ SECTIONS
         _audio_start = .;
         *ym_ymfm_ymfm_opn.o(.text* .rodata*)
         *ym_ym_engine.o(.text* .rodata*)
-        . = ALIGN(4); _audio_end = .;
+        . = ALIGN(4); _fx_start = .; *(.audio_hot.fx) . = ALIGN(4); _fx_end = .;
+        _audio_end = .;
     } > RAMTEXT AT > XIP
     _audio_load = LOADADDR(.audio_hot);
     .data : { . = ALIGN(4); _data_start = .; *(.data*) *(.sdata*) . = ALIGN(4); _data_end = .; } > RAM AT > XIP
@@ -46,3 +47,6 @@ SECTIONS
     _guard1 = 0x01C7A000; _sstack_lo = 0x01C7A100; _sstack_top = 0x01C7C000;
     /DISCARD/ : { *(.comment) *(.note*) }
 }
+
+ASSERT(_audio_end <= 0x01C06000, "Audio/FX code overlaps reserved boot debug region")
+ASSERT(_data_start >= 0x01C08000, "Application data overlaps executable audio region")

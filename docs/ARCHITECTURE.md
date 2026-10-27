@@ -4,6 +4,7 @@
 |---|---|
 | firmware/src/ym/ym_engine.cpp | Strumieniowy sekwencer, 5 FM + DAC, konwersja próbkowania, stała arena inicjalizacji |
 | firmware/src/ym/ym_psg.h | Od 0.2.0: profil Sega PSG, trzy tony i stały biały szum, przydział głosów live |
+| firmware/src/ym/ym_fx.h | Od 0.3.0: DECAY/COLOR/ECHO, macierz 12×3, indywidualne wysyłki do wspólnego echa stereo |
 | firmware/src/ym/ymfm | Rdzeń ymfm i lokalne optymalizacje dla używanego profilu |
 | firmware/src/ym/ym_tables.h | Zatwierdzone tablice strojenia i oryginalne krótkie sample |
 | firmware/src/ym/main.c, ym_loop.c | Start, przerwania audio, watchdog, pomiar czasu, obsługa panelu i USB |
@@ -26,5 +27,13 @@ Wybrany profil zawsze wykorzystuje kanał 6 jako DAC. Optymalizacja EMERALD_FIXE
 Kod generujący dźwięk nie przydziela pamięci w czasie grania. Konstrukcja obiektów rdzenia odbywa się przed uruchomieniem IRQ, we własnej stałej arenie. W renderowaniu nie ma double ani libm. Kod i tablice audio są w RAM, osobno od funkcji flash-off, a wejścia z XIP używają far-call platformy.
 
 UI korzysta z istniejącego canvasu 240 × 144 jako bufora kafelków. Nie ma pełnego dodatkowego framebufferu. CV jest synchronizowany z DMA przed ponownym zapisaniem. Logo jest rysowane kodem. Zwykła zmiana parametru nie czyści całego LCD.
+
+Od 0.3.0 EMERALD_STATIC_OPN pomija nieużywane SSG-EG, operator AM i PM.
+Patche i efekty pozostawiają te tryby wyłączone; rozszerzenie wymaga adaptacji
+profilu i porównania z EMERALD_GENERIC_OPN. Sekcja .audio_hot.fx jest częścią
+istniejącej .audio_hot, kopiowanej do RAM i objętej ochroną PC. Granice regionów
+pamięci pozostają niezmienione. Echo używa 32 KiB puli (bufor stereo i tagi
+generacji), ma stałe opóźnienie około 186 ms i osobne wysyłki źródeł do jednego
+powrotu. Szczegóły i ograniczenia: docs/releases/v0.3.0.md.
 
 Odziedziczone katalogi app/dsp, host i web nadal zawierają kod poprzedniego instrumentu DUB-1. Pozostają dla zależności platformy i zachowania pochodzenia, ale nie opisują bieżącego generatora. Wybór aplikacji odbywa się przez EN_YM2612. Dawny skrypt jednorazowej migracji jest zachowany wyłącznie jako plik tekstowy w docs/history; nie uruchamiaj go do przygotowywania nowej wersji.

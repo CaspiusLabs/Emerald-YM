@@ -2393,6 +2393,9 @@ void ym2612::generate(output_data *output, uint32_t numsamples)
 
 		// sum individual channels to apply DAC discontinuity on each
 		output->clear();
+#if defined(EMERALD_FIXED_DAC)
+        emerald_echo_left=emerald_echo_right=0;
+#endif
 		output_data temp;
 
 		// first do FM-only channels; OPN2 is 9-bit with intermediate clipping
@@ -2404,6 +2407,7 @@ void ym2612::generate(output_data *output, uint32_t numsamples)
             int32_t mix = int32_t(emerald_fm_gain_q8[chan]);
             int32_t left = dac_discontinuity(temp.data[0]), right = dac_discontinuity(temp.data[1]);
             if (mix != 256) { left = (left * mix) >> 8; right = (right * mix) >> 8; }
+            if(emerald_echo_gain[chan]){emerald_echo_left+=(left*emerald_echo_gain[chan])>>8;emerald_echo_right+=(right*emerald_echo_gain[chan])>>8;}
             output->data[0] += left;
             output->data[1] += right;
 #else
@@ -2428,6 +2432,9 @@ void ym2612::generate(output_data *output, uint32_t numsamples)
 		// adjustment above
 		output->data[0] = (output->data[0] * 128) * 64 / (6 * 65);
 		output->data[1] = (output->data[1] * 128) * 64 / (6 * 65);
+#if defined(EMERALD_FIXED_DAC)
+        emerald_echo_left=emerald_echo_left*8192/(6*65);emerald_echo_right=emerald_echo_right*8192/(6*65);
+#endif
 	}
 }
 

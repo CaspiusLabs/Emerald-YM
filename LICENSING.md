@@ -1,6 +1,6 @@
 # Emerald YM and DUB-1 licensing
 
-Emerald YM is derived from DUB-1/Felucca and the combined firmware is distributed under GPL-3.0-only. The original platform attribution and terms below are retained. The Yamaha emulation code in firmware/src/ym/ymfm is ymfm by Aaron Giles (BSD-3-Clause), with local embedded-profile optimizations preserving that license; its full notice is in that directory. The original Emerald sequencer/engine, Sega PSG musical-profile implementation and freestanding adapter are MIT (LICENSE-emerald.txt). The release package contains the JieLi SDK's Apache-2.0 build inputs; see JieLi-SDK-LICENSE.txt. Fonts retain their accompanying licenses. Local compiler/Python dependencies are not distributed in Git/source exports.
+Emerald YM is derived from DUB-1/Felucca and the combined firmware is distributed under GPL-3.0-only. The original platform attribution and terms below are retained. The Yamaha emulation code in firmware/src/ym/ymfm is ymfm by Aaron Giles (BSD-3-Clause), with local embedded-profile optimizations preserving that license; its full notice is in that directory. The original Emerald sequencer/engine, Sega PSG musical-profile implementation, FX engine and freestanding adapter are MIT (LICENSE-emerald.txt). The release package contains the JieLi SDK's Apache-2.0 build inputs; see JieLi-SDK-LICENSE.txt. Fonts retain their accompanying licenses. Local compiler/Python dependencies are not distributed in Git/source exports.
 
 ## Original DUB-1 notice
 

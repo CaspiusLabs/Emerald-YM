@@ -1,0 +1,189 @@
+ym_stream_test.c
+Generating Code...
+Compiling...
+ym_engine.cpp
+ymfm_opn.cpp
+ymfm_adpcm.cpp
+ymfm_ssg.cpp
+Generating Code...
+open WAV: PASS
+no allocations while rendering: PASS
+non-silent bounded audio: PASS
+no hard limiter hits: PASS
+seed=20261026 block=256 hash=7ce44fbe arena=2304 peak=5490513 bar=33 notes=775
+no allocations while rendering: PASS
+non-silent bounded audio: PASS
+no hard limiter hits: PASS
+seed=20261026 block=63 hash=7ce44fbe arena=2304 peak=5490513 bar=33 notes=775
+no allocations while rendering: PASS
+non-silent bounded audio: PASS
+no hard limiter hits: PASS
+seed=20261027 block=256 hash=77af744e arena=2304 peak=5502708 bar=33 notes=775
+block-size independent and deterministic: PASS
+seed changes composition: PASS
+unity mixer preserves accepted 0.2.2 audio exactly: PASS
+pause stops sequencer: PASS
+pause fades to silence: PASS
+tempo and transpose extremes keep running: PASS
+new seed without allocating: PASS
+live keyboard plays while sequencer paused: PASS
+paused live voice is audible: PASS
+two live voices: PASS
+three voices: newest keys take priority: PASS
+released voice restores held stolen key: PASS
+PSG off clears live indication: PASS
+PSG on restores held keys: PASS
+reseed preserves held live keys: PASS
+all live keys released: no stuck sound: PASS
+three PSG voices plus FM/DAC: no limiter hits: PASS
+full held keyboard and sequencer: no allocations: PASS
+FM and drums produce independent audible stems: PASS
+FM plus drum stems reproduce combined backing within quantization: PASS
+SELECT=0 PRESETS=0 PSG=off mutes backing: PASS
+SELECT 50 percent scales FM amplitude without changing drums: PASS
+muted FM and drums preserve independent PSG live voice: PASS
+each of twelve instruments is independently audible with the other eleven muted: PASS
+individual PSG live level zero mutes held notes: PASS
+individual level restores held PSG voice without retrigger: PASS
+all instruments with three effects: no output limiter hits: PASS
+all effects: no allocations during rendering: PASS
+all instruments with three effects: no output limiter hits: PASS
+all effects: no allocations during rendering: PASS
+three effects are deterministic across block sizes: PASS
+FX hash=f9fae4ef
+all instruments with three effects: no output limiter hits: PASS
+all effects: no allocations during rendering: PASS
+all instruments with three effects: no output limiter hits: PASS
+all effects: no allocations during rendering: PASS
+DECAY alone changes actual rendered audio: PASS
+all instruments with three effects: no output limiter hits: PASS
+all effects: no allocations during rendering: PASS
+COLOR alone changes actual rendered audio: PASS
+all instruments with three effects: no output limiter hits: PASS
+all effects: no allocations during rendering: PASS
+ECHO alone changes actual rendered audio: PASS
+all instruments with three effects: no output limiter hits: PASS
+all effects: no allocations during rendering: PASS
+PASS: 180+ seconds streamed, 4.694 s desktop CPU time (not a target benchmark).
+ym_psg_test.cpp
+supported MIDI range guarantees at most one edge per sample: PASS
+fast edge integration matches independent reference across pitch range: PASS
+A4: hardware divider 254 gives about 440.4 Hz: PASS
+NTSC tone clock quantized to ten-bit divider: PASS
+white noise is audible and LFSR never locks at zero: PASS
+Sega taps 0/3: known 57337-step white-noise cycle: PASS
+percussion fader also mutes PSG noise: PASS
+ym_fx_test.cpp
+all effects off: echo is transparent: PASS
+three effect parameters coexist on one source: PASS
+other source retains independent neutral parameters: PASS
+editing echo retains decay and color: PASS
+echo send does not cross into other stereo channel: PASS
+stereo impulse returns after 4096 half-rate frames at bounded gain: PASS
+real echo tail decays after sends are disabled: PASS
+epoch reset discards a previously written impulse over a full delay cycle: PASS
+ota_test.c
+handshake answered                                   ok
+identity frame is FM-1_900                           ok
+  18 requests
+session commits                                      ok
+headers + loader + confirm, no head reads            ok
+staged body == the package's loader                  ok
+LOADER.BIN head CRC                                  ok
+record at 0xE4F00 == RAM record                      ok
+record CRC / type / magic / ota_addr                 ok
+nothing written outside 0xE0000..0xE4FFF             ok
+boot cleanup erases the area                         ok
+second boot: nothing to do                           ok
+host gone -> no commit, area clean                   ok
+no 'success' -> -13, no commit, area clean           ok
+ota test passed
+ldr_test.c
+ym_ui_test.c
+idle: zero repeated LCD writes: PASS
+one knob: exactly one atomic tile: PASS
+transport change: transport + steps only: PASS
+one step: small strip only: PASS
+SELECT updates instrument and its effect tile: PASS
+PSG switch updates selected voice tile: PASS
+ALGORITHM updates only selected instrument level: PASS
+FX button changes only effect tile: PASS
+PRESETS changes only selected effect tile: PASS
+USB diagnostics never trigger screen writes: PASS
+no visible clears while playing or updating: PASS
+full redraw only on explicit invalidation: PASS
+Renderer bounds and redraw checks passed.
+ym_led_test.c
+FX discoverable dim when dry: PASS
+FX bright when any parameter is active: PASS
+F3 live key: physical LED bright: PASS
+F4 sequencer key: physical LED dim: PASS
+live brightness wins over sequencer: PASS
+released notes clear without stale LED bits: PASS
+overload clears note indication: PASS
+overload keeps red PLAY indicator: PASS
+dim scanning brightness unchanged: PASS
+  rc 0, 1148 requests, 11 sector erases
+install completes                                        ok
+app area == the new package's flash.bin                  ok
+flash head [0, 0x4000) untouched                         ok
+finish asked (0xF0000000)                                ok
+update record cleared (RAM + flash)                      ok
+no write outside the allowed windows                     ok
+re-run with the same package erases nothing              ok
+foreign key / damaged app head refused, nothing erased   ok
+loader test passed
+
+{
+  "name": "emerald-ym-0.3.0.fwsc",
+  "identity": "FM-1_68000300",
+  "bytes": 609666,
+  "sha256": "51a765410ded9ac695dacfd1a04ce545f6e220fd02094a8a6a72787ef2e56669",
+  "application_bytes": 103168,
+  "ram_data_bss_bytes": 30320,
+  "ram_data_bss_available": 98304,
+  "pool_bytes": 101888,
+  "pool_available": 344064,
+  "sdk_reference_hashes_match": {
+    "uboot.boot": true,
+    "cfg_tool.bin": true,
+    "cfg/eq_cfg_hw.bin": true
+  },
+  "audio_code_tables_ram_bytes": 21604,
+  "ramtext_total_bytes": 24492,
+  "ramtext_available": 24576,
+  "host_stream_tests": "passed; 180+ seconds; deterministic across block sizes; seed variation; pause; parameter extremes; no audio-thread allocation; no limiter hits in test renders",
+  "ota_entry_simulation": "passed",
+  "loader_simulation_different_image": "passed",
+  "flashed": false,
+  "hardware_realtime_verified": false,
+  "ymfm_commit": "81aec25ccbb98f4873a255f7551ac4dadac59b4a",
+  "dub_base_commit": "e6fe7b8f8f3114019bb36b5b536ad458eacd2c2d",
+  "toolchain": "JieLi Windows 2.5.3; clang 4.0.1 pi32v2 r3"
+}
+pack7 / unpack7 round trip                                       ok
+response: header, address, data, checksum                        ok
+product_of / logical_image (synthetic)                           ok
+product_of: a 12-character identity                              ok
+install: running -> loader -> Felucca (11 reads)                 ok
+install: 0.9 (FM-1_909) -> 0.10 (FM-1_9001000), the longer identity verified after ok
+install: device already in update mode -> finishes the write     ok
+install: answer no -> nothing sent but the handshake             ok
+--info: identity of the connected FM-1                           ok
+--info: device in update mode                                    ok
+no FM-1 port -> exit 3, lists the MIDI inputs                    ok
+--port that matches nothing -> exit 3                            ok
+--port picks a port the default match skips                      ok
+unplugged in step 1 -> exit 4 'lost', nothing written            ok
+unplugged during the write -> exit 4 at once                     ok
+loader stops answering -> exit 4 after the idle time             ok
+read past the package -> exit 4                                  ok
+another identity after the restart -> exit 6                     ok
+another model -> exit 6, nothing sent                            ok
+no loader after step 1 -> exit 5                                 ok
+package without the loader marker -> exit 2, no MIDI             ok
+... installs with --force                                        ok
+not a package -> exit 2                                          ok
+missing file -> exit 2                                           ok
+logical image vs fm1pkg.js: skipped (needs node and build/amb.fwsc)
+install tests passed

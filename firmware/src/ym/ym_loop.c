@@ -9,6 +9,9 @@ static void yusb_service(void){
    uint32_t note=(packet>>16)&127u,velocity=(packet>>24)&127u;
    if(note>=53u&&note<=79u){uint32_t bit=1u<<(note-53u);
     if((status&0xf0u)==0x90u&&velocity)ymidi_keys|=bit;else ymidi_keys&=~bit;}
+  }else if((status&0xf0u)==0xb0u&&((packet>>16)&127u)>=20u&&((packet>>16)&127u)<=22u){
+   uint32_t source=status&15u,effect=((packet>>16)&127u)-20u;
+   if(source<12u){uint32_t value=(((packet>>24)&127u)*100u+63u)/127u;yfx_values[source][effect]=value;ym_effect(source,effect,value);}
   }else if((status&0xf0u)==0xb0u&&(((packet>>16)&127u)==120u||((packet>>16)&127u)==123u))ymidi_keys=0;
  }
  if(ota_frame_get(&p,&n)&&n==5u&&p[0]==0x7du&&p[1]==0x45u&&p[2]==0x4du&&p[3]==0x59u&&p[4]==1u){
@@ -56,13 +59,14 @@ static void fm1_main(void){
    if(pressed&(1u<<B_PLAY)){if(ym_overload<8){yplaying=!yplaying;ypost();}}
    if(pressed&(1u<<B_REC)){uint32_t f=irq_save();seed^=fm1_ms+0x9e3779b9u;ym_reseed(seed?seed:1);irq_restore(f);yrec_until=fm1_ms+180u;}
    if(pressed&(1u<<B_SEQ)){ymutation=ymutation?0:35;ypost();}
+   if(pressed&(1u<<B_FX))yfx_kind[yinstrument]=(yfx_kind[yinstrument]+1u)%3u;
    if(pressed&(1u<<B_ARP)){ypsg^=1u;ym_psg_enable(ypsg);}
    d=fm1_enc_take(panel.enc[EN_SELECT])*panel.dir[EN_SELECT];
    if(d){int32_t next=((int32_t)yinstrument+d)%12;if(next<0)next+=12;yinstrument=(uint32_t)next;}
-   d=fm1_enc_take(panel.enc[EN_ALGO])*panel.dir[EN_ALGO];
-   if(d){ylevels[yinstrument]=(uint32_t)clamp((int32_t)ylevels[yinstrument]+d*5,0,100);ym_instrument_level(yinstrument,ylevels[yinstrument]);}
    d=fm1_enc_take(panel.enc[EN_PRESET])*panel.dir[EN_PRESET];
-   if(d){ydrums_mix=(uint32_t)clamp((int32_t)ydrums_mix+d*5,0,100);ym_drum_level(ydrums_mix);}
+   if(d){ylevels[yinstrument]=(uint32_t)clamp((int32_t)ylevels[yinstrument]+d*5,0,100);ym_instrument_level(yinstrument,ylevels[yinstrument]);}
+   d=fm1_enc_take(panel.enc[EN_ALGO])*panel.dir[EN_ALGO];
+   if(d){uint32_t effect=yfx_kind[yinstrument];yfx_values[yinstrument][effect]=(uint32_t)clamp((int32_t)yfx_values[yinstrument][effect]+d*5,0,100);ym_effect(yinstrument,effect,yfx_values[yinstrument][effect]);}
    d=fm1_enc_take(panel.enc[EN_K1])*panel.dir[EN_K1];ytempo=(uint32_t)clamp((int32_t)ytempo+d,80,180);
    d=fm1_enc_take(panel.enc[EN_K2])*panel.dir[EN_K2];ydensity=(uint32_t)clamp((int32_t)ydensity+d*2,0,100);
    d=fm1_enc_take(panel.enc[EN_K3])*panel.dir[EN_K3];ymutation=(uint32_t)clamp((int32_t)ymutation+d*2,0,100);

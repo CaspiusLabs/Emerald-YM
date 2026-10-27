@@ -1,0 +1,12 @@
+{
+  "version": "0.3.0",
+  "installed_identity": "FM-1_68000300",
+  "physical_test_report": "hardware-effects-stress.json",
+  "physical_test_passed": true,
+  "max_cpu_pct": 68,
+  "max_block_us": 3975,
+  "xruns": 0,
+  "overload_blocks": 0,
+  "desktop_tests_passed": true,
+  "note": "User confirmed FX; interactive sustain report remains failed for continuity."
+}

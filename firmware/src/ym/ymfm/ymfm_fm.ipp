@@ -448,12 +448,14 @@ __attribute__((always_inline)) inline
 #endif
 void fm_operator<RegisterType>::clock(uint32_t env_counter, int32_t lfo_raw_pm)
 {
+#if !defined(EMERALD_STATIC_OPN)
 	// clock the SSG-EG state (OPN/OPNA)
 	if (m_regs.op_ssg_eg_enable(m_opoffs))
 		clock_ssg_eg_state();
 	else
 		m_ssg_inverted = false;
 
+#endif
 	// clock the envelope if on an envelope cycle; env_counter is a x.2 value
 	if (bitfield(env_counter, 0, 2) == 0)
 		clock_envelope(env_counter >> 2);
@@ -721,6 +723,9 @@ void fm_operator<RegisterType>::clock_envelope(uint32_t env_counter)
 	else
 	{
 		// non-SSG-EG cases just apply the increment
+#if defined(EMERALD_STATIC_OPN)
+        m_env_attenuation += increment;
+#else
 		if (!m_regs.op_ssg_eg_enable(m_opoffs))
 			m_env_attenuation += increment;
 
@@ -728,6 +733,7 @@ void fm_operator<RegisterType>::clock_envelope(uint32_t env_counter)
 		else if (m_env_attenuation < 0x200)
 			m_env_attenuation += 4 * increment;
 
+#endif
 		// clamp the final attenuation
 		if (m_env_attenuation >= 0x400)
 			m_env_attenuation = 0x3ff;
@@ -754,9 +760,11 @@ void fm_operator<RegisterType>::clock_phase(int32_t lfo_raw_pm)
 {
 	// read from the cache, or recalculate if PM active
 	uint32_t phase_step = m_cache.phase_step;
+#if !defined(EMERALD_STATIC_OPN)
 	if (phase_step == opdata_cache::PHASE_STEP_DYNAMIC)
 		phase_step = m_regs.compute_phase_step(m_choffs, m_opoffs, m_cache, lfo_raw_pm);
 
+#endif
 	// finally apply the step to the current phase value
 	m_phase += phase_step;
 }
@@ -772,6 +780,7 @@ uint32_t fm_operator<RegisterType>::envelope_attenuation(uint32_t am_offset) con
 {
 	uint32_t result = m_env_attenuation >> m_cache.eg_shift;
 
+#if !defined(EMERALD_STATIC_OPN)
 	// invert if necessary due to SSG-EG
 	if (RegisterType::EG_HAS_SSG && m_ssg_inverted)
 		result = (0x200 - result) & 0x3ff;
@@ -780,6 +789,7 @@ uint32_t fm_operator<RegisterType>::envelope_attenuation(uint32_t am_offset) con
 	if (m_regs.op_lfo_am_enable(m_opoffs))
 		result += am_offset;
 
+#endif
 	// add in total level and KSL from the cache
 	result += m_cache.total_level;
 

@@ -1,0 +1,12 @@
+{
+  "version": "0.3.1",
+  "installed_identity": "FM-1_68000301",
+  "physical_test_report": "hardware-neutral-stress.json",
+  "physical_test_passed": true,
+  "max_cpu_pct": 65,
+  "max_block_us": 3820,
+  "xruns": 0,
+  "overload_blocks": 0,
+  "desktop_tests_passed": true,
+  "note": "Neutral FX hardware run. All-FX stress evidence belongs to 0.3.0 with identical DSP. Physical encoder swap not yet confirmed by user."
+}

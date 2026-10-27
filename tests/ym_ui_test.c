@@ -20,7 +20,8 @@ static unsigned str_len(const char*s){return (unsigned)strlen(s);}
 static void str_cpy(char*d,const char*s,unsigned max){unsigned i=0;while(s[i]&&i+1<max){d[i]=s[i];i++;}d[i]=0;}
 static uint32_t ytempo=132,ydensity=100,ymutation=35,yplaying,ym_overload,audio_cpu_lifetime_peak=80,audio_xruns;
 static int32_t ytranspose;
-static uint32_t ypsg=1,yinstrument,ylevels[12]={100,100,100,100,100,100,100,100,100,100,100,100},ydrums_mix=100;
+static uint32_t ypsg=1,yinstrument,ylevels[12]={100,100,100,100,100,100,100,100,100,100,100,100};
+static uint32_t yfx_kind[12],yfx_values[12][3];
 static uint32_t current_bar=12,current_step=7;
 static uint32_t ym_bar(void){return current_bar;}
 static uint32_t ym_step(void){return current_step;}
@@ -34,10 +35,11 @@ int main(void){
  initial=blits;yplaying=1;ydisplay();check(blits==initial+2,"transport change: transport + steps only");
  initial=blits;current_step=8;ydisplay();check(blits==initial+1&&last_h==12,"one step: small strip only");
  image("build/host/ui-playing.ppm");ymutation=0;ytranspose=-7;ydisplay();image("build/host/ui-varied.ppm");
- initial=blits;yinstrument=9;ydisplay();check(blits==initial+1&&last_w==148,"SELECT selects an instrument: one tile only");
+ initial=blits;yinstrument=9;ydisplay();check(blits==initial+2,"SELECT updates instrument and its effect tile");
  initial=blits;ypsg=0;ydisplay();check(blits==initial+1&&last_h==34,"PSG switch updates selected voice tile");
- initial=blits;ylevels[yinstrument]=50;ydisplay();check(blits==initial+1&&last_w==148,"ALGORITHM updates only selected instrument level");
- initial=blits;ydrums_mix=0;ydisplay();check(blits==initial+1&&last_w==72,"PRESETS level: percussion bus tile only");
+ initial=blits;ylevels[yinstrument]=50;ydisplay();check(blits==initial+1&&last_w==148,"PRESETS updates only selected instrument level");
+ initial=blits;yfx_kind[yinstrument]=2;ydisplay();check(blits==initial+1&&last_w==72,"FX button changes only effect tile");
+ initial=blits;yfx_values[yinstrument][2]=65;ydisplay();check(blits==initial+1&&last_w==72,"ALGORITHM changes only selected effect tile");
  initial=blits;audio_cpu_lifetime_peak=95;audio_xruns=42;ydisplay();check(blits==initial,"USB diagnostics never trigger screen writes");
  ypsg=1;ydisplay();image("build/host/ui-mixer.ppm");
  ym_overload=8;yplaying=0;ydisplay();image("build/host/ui-overload.ppm");

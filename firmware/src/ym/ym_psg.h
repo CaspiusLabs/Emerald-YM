@@ -51,7 +51,11 @@ static void psg_pitch(int c,int n,int attenuation){
 static void live_update(){
  uint32_t keys=req_keys&0x07ffffffu,added=keys&~old_keys;
  if(keys==old_keys&&old_psg==req_psg)return;old_psg=req_psg;
- for(int k=0;k<27;k++)if(added&(1u<<k))key_age[k]=++key_clock;
+ for(int k=0;k<27;k++)if(added&(1u<<k)){key_age[k]=++key_clock;
+#ifdef EMERALD_FX
+ fx_keyon[k]=fx_clock;
+#endif
+ }
  old_keys=keys;live_mask=0;
  for(int c=0;c<3;c++){
   int best=-1;
@@ -73,8 +77,14 @@ static void psg_targets(){
 static inline float psg_sample(){
  int32_t clock_step=psg_clock_step;
  float mixed=0;
+#ifdef EMERALD_FX
+ fx_pg_send=0;++fx_clock;
+#endif
  for(int c=0;c<3;c++){
   PSGTone &t=psg_tone[c];
+#ifdef EMERALD_FX
+  if(fx_live_frames&&live_key[c]!=255&&(uint32_t)(fx_clock-fx_keyon[live_key[c]])>=fx_live_frames)t.target=0;
+#endif
   int32_t diff=t.target-t.level;
   if(diff)t.level+=diff>0?(diff+15)/16:(diff-15)/16;
   if(!t.level)continue;
@@ -86,7 +96,13 @@ static inline float psg_sample(){
    value*=1.0f+float(t.remaining)*(2.0f/3579545.0f);
    t.remaining+=(int32_t)t.period;t.high^=1;
   }
+#ifdef EMERALD_FX
+  int source=live_key[c]!=255?1:0;
+  if(fx_ring_depth[source])value*=1.0f-fx_ring_depth[source]+fx_ring_depth[source]*((fx_clock&32u)?-1.0f:1.0f);
+  value*=t.mix;mixed+=value;if(fx_pg_gain[source])fx_pg_send+=value*fx_pg_gain[source];
+#else
   mixed+=value*t.mix;
+#endif
  }
  if(psg_noise_hold)psg_noise_hold--;
  int32_t target=req_psg&&playing&&psg_noise_hold?64:0;
@@ -99,9 +115,16 @@ static inline float psg_sample(){
   if(remaining<=0){
    psg_lfsr=(uint16_t)((psg_lfsr>>1)|(((psg_lfsr^(psg_lfsr>>3))&1u)<<15));
    if(bit!=(psg_lfsr&1u))value*=1.0f+float(remaining)*(2.0f/3579545.0f);
+   #ifdef EMERALD_FX
+   remaining+=fx_noise_period;
+#else
    remaining+=512u*44100u;
+#endif
   }
-  psg_noise_remaining=(uint32_t)remaining;mixed+=value*drum_gain*psg_noise_mix;
+  psg_noise_remaining=(uint32_t)remaining;value=value*drum_gain*psg_noise_mix;mixed+=value;
+#ifdef EMERALD_FX
+  if(fx_pg_gain[2])fx_pg_send+=value*fx_pg_gain[2];
+#endif
  }
  return mixed;
 }

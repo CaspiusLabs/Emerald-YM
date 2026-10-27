@@ -15,6 +15,7 @@ uint32_t emerald_fm_gain_q8[5]={256,256,256,256,256};
 static volatile uint32_t req_voice_gain[12]={256,256,256,256,256,256,256,256,256,256,256,256};
 static volatile uint32_t req_drum_gain_q8=256;
 static uint32_t drum_gain_q8=256;
+#include "ym_fx.h"
 
 alignas(8) static uint8_t arena[12288];
 static uint32_t arena_used;
@@ -38,6 +39,7 @@ static uint32_t tempo=132,density=100,mutation=35,playing=1;
 static int32_t transpose;
 static volatile uint32_t req_tempo=132,req_density=100,req_mutation=35,req_play=1,req_seed;
 static volatile int32_t req_transpose;
+#define EMERALD_FX 1
 #include "ym_psg.h"
 static uint32_t random32(){state^=state<<13;state^=state>>17;state^=state<<5;return state;}
 static uint32_t pick(uint32_t n){return random32()%n;}
@@ -46,35 +48,36 @@ static void cw(int c,int r,int v){wr((c>=3?256:0)+r+c%3,v);}
 static int key(int c){return c%3+(c>=3?4:0);}
 static void off(int c){wr(0x28,key(c));hold[c]=0;fm_note[c]=-1;}
 struct Patch {uint8_t fb,mul[4],tl[4],ar[4],dr[4],sr[4],sl[4],rr[4];};
-static const Patch bass={5,{1,1,1,1},{29,7,37,12},{31,31,31,31},{17,13,19,14},{5,6,5,6},{5,5,5,5},{10,10,10,10}};
-static const Patch lead={3,{2,1,1,1},{34,9,42,15},{31,30,31,30},{13,9,16,10},{3,2,4,2},{5,3,6,3},{10,10,10,10}};
-static const Patch keys={4,{1,1,3,1},{32,19,43,25},{31,31,31,31},{19,15,22,17},{7,6,8,7},{8,7,8,7},{11,11,11,11}};
-static void patch(int c,const Patch&p,int pan){
- static const uint8_t slots[]={0,8,4,12};
+static const Patch bass PSG_PITCH_DATA={5,{1,1,1,1},{29,7,37,12},{31,31,31,31},{17,13,19,14},{5,6,5,6},{5,5,5,5},{10,10,10,10}};
+static const Patch lead PSG_PITCH_DATA={3,{2,1,1,1},{34,9,42,15},{31,30,31,30},{13,9,16,10},{3,2,4,2},{5,3,6,3},{10,10,10,10}};
+static const Patch keys PSG_PITCH_DATA={4,{1,1,3,1},{32,19,43,25},{31,31,31,31},{19,15,22,17},{7,6,8,7},{8,7,8,7},{11,11,11,11}};
+static FX_CODE void patch(int c,const Patch&p,int pan){
+ static const uint8_t slots[] PSG_PITCH_DATA={0,8,4,12};
  for(int i=0;i<4;i++){int s=slots[i];cw(c,0x30+s,p.mul[i]);cw(c,0x40+s,p.tl[i]);cw(c,0x50+s,p.ar[i]);cw(c,0x60+s,p.dr[i]);cw(c,0x70+s,p.sr[i]);cw(c,0x80+s,(p.sl[i]<<4)|p.rr[i]);cw(c,0x90+s,0);}
  cw(c,0xb0,(p.fb<<3)|4);cw(c,0xb4,pan);
 }
-static void note(int c,int n,uint32_t gate){
+static FX_CODE void note(int c,int n,uint32_t gate){
  n+=transpose;if(n<12)n=12;if(n>115)n=115;int f=ym_pitch[n];off(c);
- cw(c,0xa4,f>>8);cw(c,0xa0,f&255);wr(0x28,0xf0|key(c));hold[c]=gate;fm_note[c]=(int16_t)n;notes++;
+ cw(c,0xa4,f>>8);cw(c,0xa0,f&255);wr(0x28,0xf0|key(c));hold[c]=(gate*fx_gate[c])>>8;fm_note[c]=(int16_t)n;notes++;
 }
-struct Drum {const int8_t*p;uint32_t len,pos,level,velocity;};
+struct Drum {const int8_t*p;uint32_t len,pos,level,velocity,end;};
 static Drum drums[4];
-static void hit(int d,uint32_t level){drums[d].pos=0;drums[d].velocity=level;drums[d].level=(level*req_voice_gain[d+5]+128u)>>8;}
-static void make_motifs(){
+static FX_CODE void hit(int d,uint32_t level){drums[d].pos=0;drums[d].velocity=level;drums[d].level=(level*req_voice_gain[d+5]+128u)>>8;}
+static FX_CODE void make_motifs(){
  static const int8_t base[4][8]={{2,4,5,4,2,1,0,1},{1,2,4,3,2,1,2,4},{4,5,6,5,4,2,1,0},{3,2,1,0,1,2,4,3}};
  uint32_t rot=pick(4);for(int m=0;m<4;m++)for(int k=0;k<8;k++)motifs[m][k]=base[(m+rot)%4][k];
  for(int m=0;m<4;m++){int k=1+pick(6),n=motifs[m][k]+(pick(2)?1:-1);motifs[m][k]=n<0?0:n>6?6:n;}
 }
-static void restart(uint32_t seed){
- state=initial_seed=seed?seed:1;steps=step_phase=notes=0;psg_reset();
+static FX_CODE void restart(uint32_t seed){
+ state=initial_seed=seed?seed:1;steps=step_phase=notes=0;psg_reset();fx_reset_audio();
+ for(int c=0;c<5;c++)if(fx_values[c][0]||fx_values[c][1])fx_dirty|=1u<<c;
  chip->reset();wr(0x22,0);wr(0x27,0);wr(0x2a,128);wr(0x2b,128);last_dac=128;
  for(int c=0;c<5;c++)off(c);
  patch(0,bass,0xc0);patch(1,lead,0xc0);patch(2,keys,0x80);patch(3,keys,0xc0);patch(4,keys,0x40);cw(5,0xb4,0xc0);
- drums[0]={ym_kick,sizeof(ym_kick),sizeof(ym_kick),100,100};drums[1]={ym_snare,sizeof(ym_snare),sizeof(ym_snare),100,100};
- drums[2]={ym_hat,sizeof(ym_hat),sizeof(ym_hat),100,100};drums[3]={ym_open,sizeof(ym_open),sizeof(ym_open),100,100};make_motifs();
+ drums[0]={ym_kick,sizeof(ym_kick),sizeof(ym_kick),100,100,sizeof(ym_kick)};drums[1]={ym_snare,sizeof(ym_snare),sizeof(ym_snare),100,100,sizeof(ym_snare)};
+ drums[2]={ym_hat,sizeof(ym_hat),sizeof(ym_hat),100,100,sizeof(ym_hat)};drums[3]={ym_open,sizeof(ym_open),sizeof(ym_open),100,100,sizeof(ym_open)};make_motifs();
 }
-static void tick(){
+static FX_CODE void tick(){
  uint32_t b=steps/16,pos=steps%16,section=b%32;bool intro=section<4,bridge=section>=16&&section<24;
  static const int8_t roots[]={40,37,45,47,44,37,42,47},ci[]={1,1,2,3,1,4,6,7};
  static const int8_t chords[8][3]={{64,68,71},{64,68,71},{61,64,68},{63,66,69},{63,68,71},{64,68,71},{61,64,69},{63,66,69}};
@@ -102,11 +105,21 @@ static void tick(){
  if(req_psg){
   /* Stable up/down chord arp, one octave below the original short bleeps. */
   static const uint8_t arp[]={0,1,2,1,0,1,2,1};
-  if((pos&1u)==0u){psg_note=(uint8_t)(chords[idx][arp[pos/2]]+transpose);psg_gate=unit*7/4;}
-  if((pos&3u)==2u){psg_lfsr=0x8000;psg_noise_hold=2205;}
+  if((pos&1u)==0u){psg_note=(uint8_t)(chords[idx][arp[pos/2]]+transpose);psg_gate=((unit*7/4)*fx_gate[9])>>8;}
+  if((pos&3u)==2u){psg_lfsr=0x8000;psg_noise_hold=(2205u*fx_gate[11])>>8;}
  }
  psg_targets();
  steps++;
+}
+static FX_CODE void fx_apply_fm(uint32_t mask){
+ static const uint8_t fb[5] PSG_PITCH_DATA={5,3,4,4,4},tl1[5] PSG_PITCH_DATA={29,34,32,32,32},tl3[5] PSG_PITCH_DATA={37,42,43,43,43};
+ static const uint8_t sl[3][4] PSG_PITCH_DATA={{5,5,5,5},{5,3,6,3},{8,7,8,7}},slots[] PSG_PITCH_DATA={0,8,4,12};
+ for(int c=0;c<5;c++)if(mask&(1u<<c)){
+  uint32_t color=fx_values[c][1],decay=fx_values[c][0];int rr=c<2?10:11;
+  cw(c,0xb0,((fb[c]+(7-fb[c])*color/100)<<3)|4);
+  cw(c,0x40,tl1[c]*(100-color)/100);cw(c,0x44,tl3[c]*(100-color)/100);
+  for(int op=0;op<4;op++)cw(c,0x80+slots[op],(sl[c<2?c:2][op]<<4)|(rr+(15-rr)*decay/100));
+ }
 }
 static void native(){
  if(playing){
@@ -115,18 +128,23 @@ static void native(){
   if(steps==0)tick();step_phase+=tempo*4u*144u;if(step_phase>=7670454u*60u){step_phase-=7670454u*60u;tick();}
  }
  if(!(native_count++&3)){
-  int v=0;for(int d=0;d<4;d++)if(drums[d].pos<drums[d].len){v+=int(drums[d].p[drums[d].pos++])*int(drums[d].level)/100;}
+  int v=0;fx_drum_send=0;
+  for(int d=0;d<4;d++)if(drums[d].pos<drums[d].end){
+   int sample=drums[d].p[drums[d].pos++];if(fx_color_mask[d]!=255)sample=((sample+128)&fx_color_mask[d])-128;
+   int value=sample*int(drums[d].level)/100;v+=value;
+   if(fx_drum_echo[d])fx_drum_send+=(value*fx_drum_echo[d])>>8;
+  }
   if(!playing)v=0;if(v>124)v=124;if(v< -124)v= -124;
   v=v*(int32_t)drum_gain_q8/256;
   if(128+v!=last_dac){last_dac=128+v;wr(0x2a,last_dac);}
  }
- ymfm::ym2612::output_data o;chip->generate(&o);next_l=o.data[0];next_r=o.data[1];
+ ymfm::ym2612::output_data o;chip->generate(&o);next_l=o.data[0];next_r=o.data[1];fx_next_l=emerald_echo_left+((fx_drum_send*(int32_t)drum_gain_q8)>>8)*42;fx_next_r=emerald_echo_right+((fx_drum_send*(int32_t)drum_gain_q8)>>8)*42;
 }
 extern "C" void ym_init(uint32_t seed){
  // Cold initialization only, before the device enables its audio IRQ. Chip reset
  // intentionally leaves some free-running emulation counters unchanged; reconstruct
  // here so separate cold starts are sample-exact without changing upstream emulation.
- arena_used=0;auto*iface=new(interface_mem)ymfm::ymfm_interface;chip=new(chip_mem)ymfm::ym2612(*iface);
+ fx_init();arena_used=0;auto*iface=new(interface_mem)ymfm::ymfm_interface;chip=new(chip_mem)ymfm::ym2612(*iface);
  req_seed=req_keys=0;req_psg=1;req_psg_level=300;req_drum_gain_q8=drum_gain_q8=256;
  for(int k=0;k<12;k++)req_voice_gain[k]=256;
  for(int k=0;k<5;k++)emerald_fm_gain_q8[k]=256;drum_gain=1.0f;old_keys=live_mask=sequence_mask=key_clock=0;old_psg=1;
@@ -146,6 +164,9 @@ extern "C" YM_CONTROL_CODE void ym_mix_levels(uint32_t melody,uint32_t drums){
 extern "C" YM_CONTROL_CODE void ym_instrument_level(uint32_t instrument,uint32_t percent){
  if(instrument<12)req_voice_gain[instrument]=((percent>100?100:percent)*256u+50u)/100u;
 }
+extern "C" YM_CONTROL_CODE void ym_effect(uint32_t source,uint32_t effect,uint32_t value){
+ if(source<12&&effect<3){fx_requested[source][effect]=value>100?100:value;fx_dirty|=1u<<source;}
+}
 extern "C" YM_CONTROL_CODE void ym_drum_level(uint32_t percent){req_drum_gain_q8=((percent>100?100:percent)*256u+50u)/100u;}
 extern "C" YM_CONTROL_CODE uint32_t ym_live_active_keys(){return live_mask;}
 extern "C" YM_CONTROL_CODE uint32_t ym_sequence_keys(){return sequence_mask;}
@@ -158,20 +179,27 @@ extern "C" void ym_render(int32_t*out,uint32_t frames,uint32_t master){
  tempo=req_tempo;density=req_density;mutation=req_mutation;transpose=req_transpose;
  uint32_t newseed=req_seed;if(newseed){req_seed=0;restart(newseed);}
  if(playing&&!req_play){for(int c=0;c<5;c++)off(c);}playing=req_play;
+ uint32_t changed=fx_sync();if(changed&31u)fx_apply_fm(changed);
  for(int c=0;c<5;c++)emerald_fm_gain_q8[c]=req_voice_gain[c];
- for(int d=0;d<4;d++)drums[d].level=(drums[d].velocity*req_voice_gain[d+5]+128u)>>8;
+ for(int d=0;d<4;d++){drums[d].level=(drums[d].velocity*req_voice_gain[d+5]+128u)>>8;drums[d].end=(drums[d].len*fx_gate[d+5])>>8;}
  psg_arp_mix=float(req_voice_gain[9])*(1.0f/256.0f);psg_live_mix=float(req_voice_gain[10])*(1.0f/256.0f);psg_noise_mix=float(req_voice_gain[11])*(1.0f/256.0f);drum_gain_q8=req_drum_gain_q8;drum_gain=float(drum_gain_q8)*(1.0f/256.0f);
  live_update();psg_targets();
  float target=float(master)/4096.0f,psg_level=float(req_psg_level)*0.01f;
  for(uint32_t i=0;i<frames;i++){
-  resample_phase+=7670454u;while(resample_phase>=44100u*144u){prev_l=next_l;prev_r=next_r;native();resample_phase-=44100u*144u;}
+  resample_phase+=7670454u;while(resample_phase>=44100u*144u){prev_l=next_l;prev_r=next_r;fx_prev_l=fx_next_l;fx_prev_r=fx_next_r;native();resample_phase-=44100u*144u;}
   if(psg_gate==0&&psg_tone[2].target&&live_key[2]==255)psg_tone[2].target=0;
   float alpha=float(resample_phase)*(1.0f/6350400.0f);
   float l=float(prev_l)+float(next_l-prev_l)*alpha,r=float(prev_r)+float(next_r-prev_r)*alpha;
   dc_l+=(l-dc_l)*0.00256f;dc_r+=(r-dc_r)*0.00256f;gain+=(target-gain)*0.001f;
   sequence_gain+=((playing?1.0f:0.0f)-sequence_gain)*0.001f;
   float psg=psg_sample()*psg_level;
-  l=((l-dc_l)*sequence_gain*0.85f+psg)*gain*512.0f;r=((r-dc_r)*sequence_gain*0.85f+psg)*gain*512.0f;
+  l=(l-dc_l)*sequence_gain*0.85f+psg;r=(r-dc_r)*sequence_gain*0.85f+psg;
+  if(fx_echo_any||fx_tail){
+   float el=(float(fx_prev_l)+float(fx_next_l-fx_prev_l)*alpha)*sequence_gain*0.85f+fx_pg_send*psg_level;
+   float er=(float(fx_prev_r)+float(fx_next_r-fx_prev_r)*alpha)*sequence_gain*0.85f+fx_pg_send*psg_level;
+   fx_echo(el,er,&l,&r);
+  }
+  l=l*gain*512.0f;r=r*gain*512.0f;
   out[2*i]=int32_t(l>8300000.0f?8300000.0f:l< -8300000.0f?-8300000.0f:l);
   out[2*i+1]=int32_t(r>8300000.0f?8300000.0f:r< -8300000.0f?-8300000.0f:r);
  }
