@@ -69,4 +69,4 @@ The standalone project rebuild reproduced the preserved package byte for byte. N
 
 ## Remaining public-release checks
 
-Still not established: all parameter combinations, multi-hour reliability, physical interrupted-write recovery and the Hub browser Connect/Install route. The ordinary V15/Dinghy transitions are now physically verified for the pinned 0.4.3 package, not for every release. The repository is private and the tested 0.4.3 bytes still need a corresponding GitHub release/tag for the preferred Hub workflow. See docs/FIRMWARE-HUB.md.
+Still not established: all parameter combinations, multi-hour reliability, physical interrupted-write recovery and the Hub browser Connect/Install route. The ordinary V15/Dinghy transitions are now physically verified for the pinned 0.4.3 package, not for every release. The repository is public and the exact tested 0.4.3 bytes are attached to release v0.4.3, whose tag points to matching source commit b5848cd40b4d8dda4612cb9b8c3dc9687e29abc6. Publication does not change the recorded test scope; the owner requested no further hardware tests in this task. See docs/FIRMWARE-HUB.md.
