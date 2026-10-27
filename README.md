@@ -10,6 +10,14 @@ Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A
 
 The [0.4.3 beta release](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.3) contains the accepted, unchanged binary tested below. Tag `v0.4.3` points to its matching source commit `b5848cd40b4d8dda4612cb9b8c3dc9687e29abc6`. USB audio was physically tested in **0.5.0** with simultaneous live MIDI and diagnostics. Firmware **0.5.1** was physically tested for USB recording, MIDI and diagnostics; its Windows recording input still retained the old name. Source/tooling **0.5.2** adds a targeted Windows audio-device refresh helper, without a new firmware image. The public release download remains 0.4.3, which does not include USB audio.
 
+## Development screen (0.6.0)
+
+The new console-inspired main screen adds a vertical red MASTER slider beside the transport, K1-K4 cards and per-source mixer/effect controls. It follows the physical MASTER knob: 0 at the bottom, 10 at the top. This is a knob-position indicator, not a signal meter or a decibel scale. The existing master gain and USB recording level are unchanged; MASTER is still physical and is not saved.
+
+![Development 0.6.0 screen rendered by the actual UI test](docs/verification/master-ui-0.6.0/ui-preview.png)
+
+Desktop-tested only; no 0.6.0 installation or device timing test has been performed. [UI tests, memory and previews](docs/verification/master-ui-0.6.0/README.md). The validated public release download above remains 0.4.3; USB audio hardware evidence applies to the exact 0.5.0/0.5.1 packages, not this new UI image.
+
 ## What it does
 
 - Five YM2612 FM voices plus percussion through the emulated channel-six DAC, with the NTSC chip clock.

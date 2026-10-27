@@ -1,5 +1,12 @@
 # Emerald YM changelog
 
+## 0.6.0 — unreleased — 2026-10-27 — console-style MASTER slider
+
+- Reflow the 240x240 main screen around a left-hand volume rail, red slider handle, headphone symbol and narrower framed parameter/mixer cards, following the owner's reference. Preserve the native Emerald title, badge/version and step strip.
+- Show the existing filtered physical MASTER pot position on a 0-10 scale, with pixel-level visual hysteresis and a 22x108 changed-only tile. Do not change the squared gain law, DSP, USB audio/MIDI/status, master persistence or protective thresholds.
+- Split the static rail into tiles within the existing 240x144 canvas; no new framebuffer, renderer allocation or memory-region change.
+- Add actual-renderer tests for endpoints, complete ADC sweep, jitter/hysteresis, unaffected surrounding pixels and changed-only redraws; retain UI/LED/USB/DSP/settings/update regression checks. Desktop only; no installation or physical timing claim.
+
 ## 0.5.2 — unreleased — 2026-10-27 — Windows audio registration refresh
 
 - Diagnose the Windows name mismatch on exact 0.5.1: USB reports Emerald YM FM-1, but the Microsoft usbaudio MEDIA devnode retains FriendlyName Felucca. Preserve that failed name check alongside passed recording/MIDI/status evidence.

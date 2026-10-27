@@ -71,3 +71,9 @@ If there is no sound, check MASTER, PLAY, ARP for PSG, and the selected source l
 `OVERLOAD: AUDIO STOPPED` means the protective limit has latched after eight over-budget blocks. Restart to clear it. Do not raise/remove the 85% guard. Report the version, actions and USB status if possible; physical test results cover representative scenes, not every setting.
 
 The inherited update route and OCT− + OCT+ held for five seconds remain. There is no guaranteed automatic rollback. Recovery and the remaining physical update tests are described in [installation](INSTALLING.md) and [verification](VERIFICATION.md).
+
+## Development 0.6.0 main screen
+
+The left VOLUME rail follows the existing filtered position of the physical MASTER knob. Turn clockwise to move the red handle upward toward 10, counter-clockwise toward 0. This 0-10 scale shows control position, not dB, a VU meter or an additional gain stage. The display cannot be dragged: the FM-1 knob remains the control. MASTER still affects the speaker/headphone and USB-recorded master mix and is not stored by SAVE.
+
+Visual hysteresis suppresses small ADC fluctuations around a display-pixel boundary. It does not alter the audio gain law or knob filtering. Only the narrow slider tile redraws on movement; the static rail and other controls remain untouched. Transport, SAVE states, K1-K4, instrument level and selected effect controls keep their existing behavior. This layout is desktop-tested only; the device still runs the previously tested firmware until an explicitly authorized installation.

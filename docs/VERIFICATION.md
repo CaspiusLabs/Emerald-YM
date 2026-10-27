@@ -2,6 +2,10 @@
 
 Desktop tests, flash/update simulations, user feedback and physical FM-1 measurements are separate evidence. The reports in releases/ retain their original values; an offline report intentionally says flashed=false even when a separate hardware report records installation.
 
+## Development 0.6.0 UI — desktop only
+
+The reference-inspired screen and physical-MASTER indicator use the actual renderer, with endpoint/sweep, jitter/hysteresis, surrounding-pixel and changed-only tests. [Build, tests, memory and native previews](verification/master-ui-0.6.0/README.md). No physical installation or timing result is claimed for this UI version.
+
 ## Windows audio-name repair — unchanged firmware 0.5.1
 
 A targeted PnP refresh replaced the cached adapter name Felucca with Emerald YM FM-1; Windows now shows endpoint Emerald YM FM-1 (Emerald YM FM-1). A subsequent 15-second recording/live-MIDI/status check passed (XRUN0/overload0). [Audit and limits](verification/windows-audio-name-refresh/README.md). This source/tooling 0.5.2 change does not modify firmware.

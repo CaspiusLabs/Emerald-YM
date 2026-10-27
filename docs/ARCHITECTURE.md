@@ -36,3 +36,9 @@ Inherited app/dsp, host and web code belongs to DUB-1. EN_YM2612 selects the cur
 ## USB audio capture (development 0.5.0)
 
 EN_UAC=1 selects the existing UAC1 implementation in usb.c. Each rendered master block feeds uac_tap; the existing adaptive cubic resampler bridges device/host clock drift into a 2048-frame stereo ring. EP4 IN sends 44/45 frames per millisecond at nominal 44.1 kHz; MIDI keeps EP1 IN/OUT. UAC servicing may nest in audio rendering; MIDI polling remains outside it. Tap cost and nested ISR time contribute to measured render duration; hardware timing still needs verification. No linker layout, startup copy, flash-off code, allocation policy or 85% guard changes. Status v1 is unchanged and does not export UAC-specific counters.
+
+## Development 0.6.0 MASTER UI
+
+The main loop copies the existing smoothed MASTER ADC value to ymaster_adc before applying the unchanged squared master_q12 gain calculation. UI position is computed from that linear 0..1023 reading in 90 steps, with visual-only hysteresis. This does not add ADC reads or render-IRQ work and does not enter the persistent settings snapshot.
+
+The 40px left rail is drawn once as 40x136 and 40x32 static tiles. The moving track/handle uses one 22x108 tile only when the quantized position changes. Right-side transport and parameter/mixer tiles are reflowed within 240x240. Every tile fits the existing 240x144 canvas; no framebuffer or allocation is added. Initial invalidation alone may clear the full screen. Code/memory layout, startup copying, flash-off rules and the 85% guard are unchanged.
