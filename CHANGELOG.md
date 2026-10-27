@@ -1,5 +1,11 @@
 # Emerald YM changelog
 
+## 0.5.0 — unreleased — 2026-10-27 — USB audio capture
+
+- Enable the inherited UAC1 stereo 16-bit / 44.1 kHz USB capture of the master mix while preserving USB MIDI and status v1 diagnostics. Identity FM-1_68000500; no computer audio playback or multitrack endpoints.
+- Add Windows desktop UAC clock-drift and composite audio/MIDI descriptor checks to the Emerald test suite. Allow the new identity in the hardware diagnostic tool without running it or weakening persistent-FX protections.
+- Build and desktop regression checks pass within unchanged memory limits and the 85% guard. No device flashing, MIDI access, release publication or hardware performance claim; validated 0.4.3 is unchanged.
+
 ## 0.4.7 — unreleased — 2026-10-27 — author display name
 
 - Correct the author/creator display name to Caspius Labs in README and Firmware Hub submission details; preserve GitHub account names, repository identifiers and URLs.

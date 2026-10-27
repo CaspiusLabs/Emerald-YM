@@ -207,7 +207,7 @@ def build_loader():
 # ---- app
 
 def build_app():
-    flags = [*CFLAGS, *FPU, "-DEN_YM2612=1", "-DEN_UAC=0", "-DEN_TRS=0", "-DNDEBUG", "-DYMFM_FREESTANDING=1", "-Ifirmware/hal", "-Ifirmware/src", "-Ibuild/gen"]
+    flags = [*CFLAGS, *FPU, "-DEN_YM2612=1", "-DEN_UAC=1", "-DEN_TRS=0", "-DNDEBUG", "-DYMFM_FREESTANDING=1", "-Ifirmware/hal", "-Ifirmware/src", "-Ibuild/gen"]
     for flag in ("EN_CDC",):
         v = os.environ.get(flag)    # unset: the default in firmware/src/main.c
         if v in ("0", "1"):

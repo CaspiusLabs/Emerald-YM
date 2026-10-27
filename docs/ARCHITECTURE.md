@@ -32,3 +32,7 @@ Echo uses 32 KiB of the existing pool for a stereo int16 buffer and generation t
 UI uses the existing 240×144 canvas as tile workspace, not another full framebuffer. Finished tiles are sent only after state changes. The complete screen is 240×240. DMA synchronization protects canvas reuse. The Emerald mark is drawn in code.
 
 Inherited app/dsp, host and web code belongs to DUB-1. EN_YM2612 selects the current app; the inherited pages are not a supported Emerald emulator or installer. Archived migration scripts are historical artifacts, not setup instructions.
+
+## USB audio capture (development 0.5.0)
+
+EN_UAC=1 selects the existing UAC1 implementation in usb.c. Each rendered master block feeds uac_tap; the existing adaptive cubic resampler bridges device/host clock drift into a 2048-frame stereo ring. EP4 IN sends 44/45 frames per millisecond at nominal 44.1 kHz; MIDI keeps EP1 IN/OUT. UAC servicing may nest in audio rendering; MIDI polling remains outside it. Tap cost and nested ISR time contribute to measured render duration; hardware timing still needs verification. No linker layout, startup copy, flash-off code, allocation policy or 85% guard changes. Status v1 is unchanged and does not export UAC-specific counters.
