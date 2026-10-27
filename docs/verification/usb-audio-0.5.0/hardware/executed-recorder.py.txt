@@ -1,0 +1,48 @@
+from pathlib import Path
+import ctypes as C,time,json,subprocess,wave,array,math,sys
+from ctypes import wintypes as W
+ROOT=Path(__file__).resolve().parents[2];OUT=ROOT/'build/usb-audio-hardware-0.5.0';OUT.mkdir(exist_ok=True)
+class Caps(C.Structure):
+ _fields_=[('mid',W.WORD),('pid',W.WORD),('version',W.DWORD),('name',W.WCHAR*32),('formats',W.DWORD),('channels',W.WORD),('reserved',W.WORD)]
+class Fmt(C.Structure):
+ _pack_=1
+ _fields_=[('tag',W.WORD),('channels',W.WORD),('rate',W.DWORD),('bytespersec',W.DWORD),('align',W.WORD),('bits',W.WORD),('extra',W.WORD)]
+class Hdr(C.Structure):
+ _fields_=[('data',C.c_void_p),('length',W.DWORD),('recorded',W.DWORD),('user',C.c_size_t),('flags',W.DWORD),('loops',W.DWORD),('next',C.c_void_p),('reserved',C.c_size_t)]
+w=C.WinDLL('winmm');found=[]
+for i in range(w.waveInGetNumDevs()):
+ c=Caps();rc=w.waveInGetDevCapsW(C.c_size_t(i),C.byref(c),C.sizeof(c))
+ if rc==0 and c.name=='Line (Felucca)':found.append((i,c.name))
+assert len(found)==1,'No unique verified FM-1 audio input'
+def ck(rc):
+ if rc:raise RuntimeError('waveIn MMRESULT '+str(rc))
+h=C.c_void_p();fmt=Fmt(1,2,44100,176400,4,16,0)
+ck(w.waveInOpen(C.byref(h),found[0][0],C.byref(fmt),0,0,0))
+buf=C.create_string_buffer(176400*50);hdr=Hdr(C.cast(buf,C.c_void_p),len(buf),0,0,0,0,None,0)
+proc=None;log=None
+try:
+ ck(w.waveInPrepareHeader(h,C.byref(hdr),C.sizeof(hdr)));ck(w.waveInAddBuffer(h,C.byref(hdr),C.sizeof(hdr)))
+ ck(w.waveInStart(h));t0=time.monotonic()
+ print('Recording verified FM-1 input '+found[0][1],flush=True)
+ log=(OUT/'midi-status.log').open('w',encoding='utf-8')
+ proc=subprocess.Popen([str(ROOT/'.runtime/python/python.exe'),'-X','utf8',str(ROOT/'tools/ym_hardware_test.py'),'--seconds','30','--live-stress','--require-continuous','--output',str(OUT/'midi-status.json')],stdout=log,stderr=subprocess.STDOUT,cwd=ROOT)
+ while proc.poll() is None:
+  if time.monotonic()-t0>45:proc.terminate();raise RuntimeError('Diagnostic subprocess timeout')
+  time.sleep(.1)
+ time.sleep(1)
+finally:
+ w.waveInStop(h);w.waveInReset(h)
+ if proc and proc.poll() is None:proc.terminate();proc.wait()
+ if log:log.close()
+ data=buf.raw[:hdr.recorded];w.waveInUnprepareHeader(h,C.byref(hdr),C.sizeof(hdr));w.waveInClose(h)
+with wave.open(str(OUT/'usb-mix-live-midi.wav'),'wb') as f:f.setnchannels(2);f.setsampwidth(2);f.setframerate(44100);f.writeframes(data)
+a=array.array('h',data);frames=len(a)//2
+# Exclude initial enumeration/start and final MIDI stop; silence in music is not by itself proof of packet loss.
+body=a[44100*4*2:-44100*3*2];energy=sum(int(v)*int(v) for v in body)
+peak=max((abs(v) for v in body),default=0);longest=run=0;zeros=zr=0;last=None
+for i in range(0,len(body),2):
+ frame=(body[i],body[i+1]);run=run+1 if frame==last else 1;longest=max(longest,run);last=frame
+ zr=zr+1 if frame==(0,0) else 0;zeros=max(zeros,zr)
+report={'audio_input':found[0][1],'wavein_device_index':found[0][0],'format':'PCM16 stereo 44100 Hz','frames':frames,'duration_seconds':frames/44100,'diagnostic_exit_code':proc.returncode,'body_excludes_first_seconds':4,'body_excludes_last_seconds':3,'body_peak':peak,'body_rms':math.sqrt(energy/max(1,len(body))),'longest_identical_frame_run_ms':longest*1000/44100,'longest_zero_run_ms':zeros*1000/44100,'clipped_samples':sum(abs(v)>=32767 for v in body),'scope':'Host recording and status; firmware UAC packet counters not exposed. No proof of all packet glitches absent.'}
+(OUT/'capture-report.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8');print(json.dumps(report),flush=True)
+sys.exit(0 if proc.returncode==0 and peak>100 else 2)

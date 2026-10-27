@@ -1,0 +1,7 @@
+PASS refusal: none
+PASS refusal: ambiguous
+PASS refusal: unrelated
+PASS refusal: wrong-product
+PASS refusal: wrong-service
+PASS refusal: wrong-parent
+PASS valid WhatIf and all selection guards; no physical devices accessed.

@@ -1,0 +1,16 @@
+{
+  "audio_input": "Line (Felucca)",
+  "wavein_device_index": 0,
+  "format": "PCM16 stereo 44100 Hz",
+  "frames": 1425753,
+  "duration_seconds": 32.33,
+  "diagnostic_exit_code": 0,
+  "body_excludes_first_seconds": 4,
+  "body_excludes_last_seconds": 3,
+  "body_peak": 3959,
+  "body_rms": 365.24017885394187,
+  "longest_identical_frame_run_ms": 0.272108843537415,
+  "longest_zero_run_ms": 0.20408163265306123,
+  "clipped_samples": 0,
+  "scope": "Host recording and status; firmware UAC packet counters not exposed. No proof of all packet glitches absent."
+}

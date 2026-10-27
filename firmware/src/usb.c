@@ -142,13 +142,22 @@ static void midi_out_event(uint32_t pkt)            /* from the audio ISR */
 /* ------------------------------------------------------- descriptors --- */
 /* interfaces: 0 audio control, 1 MIDI streaming, 2 audio streaming (FELUCCA_UAC), then CDC's two.
  * bcdDevice: 3.00 MIDI, +0.01 CDC, +0.10 the audio input (hosts cache descriptors per version) */
+/* Name the audio function explicitly instead of relying on a cached adapter name.
+ * Reuse product string 2; loader and non-Emerald descriptors stay unchanged. */
+#if defined(EN_YM2612) && FELUCCA_UAC
+#define USB_AUDIO_NAME 2
+#define USB_UAC_REV 0x11
+#else
+#define USB_AUDIO_NAME 0
+#define USB_UAC_REV 0x10
+#endif
 #define CDC_IF (2 + FELUCCA_UAC)
 #define UAC_AS_IF 2u
 #define CFG_LEN (101 + 74 * FELUCCA_CDC + 74 * FELUCCA_UAC)
 #define USB_NIF (2 + FELUCCA_UAC + 2 * FELUCCA_CDC)
 #if FELUCCA_CDC
 static const uint8_t DEV_DESC[18] = {18, 1, 0x00, 0x02, 0xEF, 0x02, 0x01, 64, 0x09, 0x12, 0x01, 0x00,
-                                     0x01 + 0x10 * FELUCCA_UAC, 0x03, 1, 2, 0, 1};   /* misc/IAD */
+                                     0x01 + USB_UAC_REV * FELUCCA_UAC, 0x03, 1, 2, 0, 1};   /* misc/IAD */
 static const uint8_t CFG_DESC[] = {
     9, 2, CFG_LEN & 0xFF, CFG_LEN >> 8, USB_NIF, 1, 0, 0x80, 50,
     8, 0x0B, 0, 2 + FELUCCA_UAC, 1, 1, 0, 0,            /* IAD: audio + MIDI (IF 0-1, 0-2) */
@@ -157,16 +166,16 @@ static const uint8_t CFG_DESC[] = {
 #define FELUCCA_USB_PID 0x0001   /* the update loader is 0x0002 */
 #endif
 static const uint8_t DEV_DESC[18] = {18, 1, 0x10, 0x01, 0, 0, 0, 64, 0x09, 0x12, FELUCCA_USB_PID & 0xFF,
-                                     FELUCCA_USB_PID >> 8, 0x00 + 0x10 * FELUCCA_UAC, 0x03,
+                                     FELUCCA_USB_PID >> 8, 0x00 + USB_UAC_REV * FELUCCA_UAC, 0x03,
                                      1, 2, 0, 1};
 static const uint8_t CFG_DESC[] = {
     9, 2, CFG_LEN & 0xFF, CFG_LEN >> 8, USB_NIF, 1, 0, 0x80, 50,
 #endif
-    9, 4, 0, 0, 0, 1, 1, 0, 0,
+    9, 4, 0, 0, 0, 1, 1, 0, USB_AUDIO_NAME,
 #if FELUCCA_UAC
     10, 0x24, 1, 0x00, 0x01, 31, 0, 2, 1, UAC_AS_IF,    /* AC header 1.00: MIDI + audio streaming */
-    12, 0x24, 2, 1, 0x03, 0x06, 0, 2, 0x03, 0x00, 0, 0, /* input terminal 1: line, 2 ch (L R) */
-    9, 0x24, 3, 2, 0x01, 0x01, 0, 1, 0,                 /* output terminal 2: USB streaming, from 1 */
+    12, 0x24, 2, 1, 0x03, 0x06, 0, 2, 0x03, 0x00, 0, USB_AUDIO_NAME, /* input terminal 1: line, 2 ch (L R) */
+    9, 0x24, 3, 2, 0x01, 0x01, 0, 1, USB_AUDIO_NAME,    /* output terminal 2: USB streaming, from 1 */
 #else
     9, 0x24, 1, 0x00, 0x01, 9, 0, 1, 1,
 #endif
@@ -181,8 +190,8 @@ static const uint8_t CFG_DESC[] = {
     9, 5, 0x81, 2, 64, 0, 0, 0, 0,
     5, 0x25, 1, 1, 3,
 #if FELUCCA_UAC
-    9, 4, UAC_AS_IF, 0, 0, 1, 2, 0, 0,                  /* IF2 audio streaming, alt 0: no bandwidth */
-    9, 4, UAC_AS_IF, 1, 1, 1, 2, 0, 0,                  /* alt 1: the stream */
+    9, 4, UAC_AS_IF, 0, 0, 1, 2, 0, USB_AUDIO_NAME,                  /* IF2 audio streaming, alt 0: no bandwidth */
+    9, 4, UAC_AS_IF, 1, 1, 1, 2, 0, USB_AUDIO_NAME,                  /* alt 1: the stream */
     7, 0x24, 1, 2, 1, 0x01, 0x00,                       /* AS general: terminal 2, delay 1, PCM */
     11, 0x24, 2, 1, 2, 2, 16, 1, UAC_RATE & 0xFF, (UAC_RATE >> 8) & 0xFF, UAC_RATE >> 16,
                                                         /* type I: 2 ch, 16 bit, one rate */

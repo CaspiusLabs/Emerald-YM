@@ -1,6 +1,6 @@
 # Emerald YM 0.4.3 user manual
 
-Emerald YM makes original, continuously generated music with five YM2612 FM voices, DAC percussion and a Sega-style PSG. It starts paused. Turn MASTER down, press PLAY, then raise the level gradually. Audio comes from the FM-1 speaker/headphone output, not USB audio.
+Emerald YM makes original, continuously generated music with five YM2612 FM voices, DAC percussion and a Sega-style PSG. It starts paused. Turn MASTER down, press PLAY, then raise the level gradually. In validated 0.4.3, audio comes from the FM-1 speaker/headphone output, not USB audio. Development version 0.5.0 also enables USB recording of the stereo master mix at 16-bit / 44.1 kHz while retaining MIDI and status diagnostics. Exact 0.5.0 passed a short physical recording/MIDI/status test (CPU MAX72%, XRUNS0). Exact 0.5.1 also passed recording/MIDI/status but Windows still displayed Line (Felucca), despite the USB-reported name Emerald YM FM-1. See the [targeted Windows registration refresh](WINDOWS-AUDIO-NAME.md). In a recorder, select Emerald YM FM-1 as the recording input, stereo, 44.1 kHz; MASTER affects the captured mix. No computer-to-FM-1 audio or individual instrument tracks are provided.
 
 ## Playing and shaping the backing
 

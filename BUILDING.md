@@ -66,3 +66,7 @@ After committing, export an exact ref with:
 The ignored `dist/` receives a source archive, a local Git bundle and checksums. Runtime dependencies are excluded. For the current source, use its published release tag or commit instead. GitHub's source archives also refer to the release tag.
 
 Installation is a separate, explicit operation: see [docs/INSTALLING.md](docs/INSTALLING.md). Update simulations are not physical install/recovery tests. Historical physical evidence and remaining checks are in [docs/VERIFICATION.md](docs/VERIFICATION.md).
+
+## Windows audio registration helper tests
+
+Run `.\tests\windows_audio_refresh_test.ps1` in PowerShell 7 or Windows PowerShell 5.1. These tests mock PnP reads and use WhatIf to verify selection/refusal behavior; they do not touch physical devices or require Administrator rights. The actual refresh helper is an explicit maintenance operation, never part of building or ordinary tests. See [Windows audio naming](docs/WINDOWS-AUDIO-NAME.md).

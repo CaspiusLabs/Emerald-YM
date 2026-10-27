@@ -9,7 +9,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#ifdef _MSC_VER
+#include <intrin.h>
+#define RING_PUBLISH() _ReadWriteBarrier()
+#define M_PI 3.14159265358979323846
+#else
 #define RING_PUBLISH() __asm__ volatile("" ::: "memory")
+#endif
 #define FELUCCA_UAC 1
 static void fm1_delay_ms(uint32_t ms) { (void)ms; }
 #include "usb.c"
@@ -64,9 +70,61 @@ static int run(double rate_in)
            uac.fill_min > UA_MID / 2u && uac.fill_min < 2u * UA_MID;
 }
 
-int main(void)
+static int descriptors(void)
 {
-    int ok = run(44145.0) & run(44100.0) & run(44300.0);
+    unsigned i = 0, midi = 0, audio = 0, in = 0, out = 0, capture = 0, format = 0;
+    if (sizeof CFG_DESC != CFG_LEN || USB_NIF != 3) return 0;
+    if (USB_AUDIO_NAME != 2 || STR2[0] != sizeof STR2 || sizeof STR2 != 32 ||
+        DEV_DESC[12] != 0x11 || DEV_DESC[13] != 3) return 0;
+    { const char *name = "Emerald YM FM-1"; unsigned k;
+      for (k = 0; name[k]; k++)
+          if (STR2[2+2*k] != name[k] || STR2[3+2*k] != 0) return 0;
+    }
+    while (i < sizeof CFG_DESC) {
+        unsigned n = CFG_DESC[i], type;
+        if (n < 2 || i + n > sizeof CFG_DESC) return 0;
+        type = CFG_DESC[i + 1];
+        if (type == 4 && n == 9) {
+            if ((CFG_DESC[i+2] == 0 || CFG_DESC[i+2] == UAC_AS_IF) && CFG_DESC[i+8] != 2) return 0;
+            midi += CFG_DESC[i+5] == 1 && CFG_DESC[i+6] == 3;
+            audio += CFG_DESC[i+2] == UAC_AS_IF && CFG_DESC[i+3] == 1 && CFG_DESC[i+6] == 2;
+        }
+        if (type == 0x24 && n == 11 && CFG_DESC[i+2] == 2)
+            format += CFG_DESC[i+4] == 2 && CFG_DESC[i+5] == 2 && CFG_DESC[i+6] == 16 &&
+                      (CFG_DESC[i+8] | (CFG_DESC[i+9] << 8) | (CFG_DESC[i+10] << 16)) == 44100;
+        if (type == 5) {
+            capture += CFG_DESC[i+2] == 0x84 && CFG_DESC[i+3] == 5 && CFG_DESC[i+6] == 1;
+            in += CFG_DESC[i+2] == 0x81 && CFG_DESC[i+3] == 2;
+            out += CFG_DESC[i+2] == 1 && CFG_DESC[i+3] == 2;
+        }
+        i += n;
+    }
+    return midi == 1 && audio == 1 && in == 1 && out == 1 && capture == 1 && format == 1;
+}
+
+static int built_descriptors(const char *path)
+{
+    FILE *f = fopen(path, "rb");
+    unsigned char *data;
+    long size, i;
+    int found = 0;
+    if (!f) return 0;
+    fseek(f, 0, SEEK_END); size = ftell(f); rewind(f);
+    if (size <= 0) { fclose(f); return 0; }
+    data = malloc((size_t)size);
+    if (!data) { fclose(f); return 0; }
+    if (fread(data, 1, (size_t)size, f) == (size_t)size)
+        for (i = 0; i + (long)sizeof CFG_DESC <= size; i++)
+            if (!memcmp(data+i, CFG_DESC, sizeof CFG_DESC)) { found = 1; break; }
+    free(data); fclose(f);
+    printf("built composite MIDI/UAC descriptor: %s\n", found ? "PASS" : "FAIL");
+    return found;
+}
+
+int main(int argc, char **argv)
+{
+    int ok = descriptors() & run(44145.0) & run(44100.0) & run(44300.0);
+    if (argc > 1) ok &= built_descriptors(argv[1]);
     printf(ok ? "uac: ok\n" : "uac: FAILED\n");
     return !ok;
 }

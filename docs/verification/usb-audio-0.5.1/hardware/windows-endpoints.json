@@ -1,0 +1,20 @@
+[
+  {
+    "Status": "OK",
+    "Class": "AudioEndpoint",
+    "FriendlyName": "Line (Felucca)",
+    "InstanceId": "SWD\\MMDEVAPI\\{0.0.1.00000000}.{660B4ED0-69E6-41BF-97B4-F2F28909351C}"
+  },
+  {
+    "Status": "OK",
+    "Class": "USB",
+    "FriendlyName": "USB Composite Device",
+    "InstanceId": "USB\\VID_1209&PID_0001\\5&20D34A76&0&2"
+  },
+  {
+    "Status": "OK",
+    "Class": "MEDIA",
+    "FriendlyName": "Felucca",
+    "InstanceId": "USB\\VID_1209&PID_0001&MI_00\\6&3B48B169&0&0000"
+  }
+]

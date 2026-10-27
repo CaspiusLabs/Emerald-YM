@@ -1,0 +1,31 @@
+{
+  "firmware": "0.5.0",
+  "source_commit": "e216026b61aace77960fb2ebaf72566afa367e99",
+  "package_sha256": "622295cc5c9cccc440de5744ee972011d0bbeee783c24ea0b2bca95e92c5d1a6",
+  "identity": "FM-1_68000500",
+  "continuous_30s_live_midi_and_capture": true,
+  "cpu_average_of_status_samples": 46.93333333333333,
+  "cpu_max_pct": 72,
+  "max_block_us": 4200,
+  "xruns": 0,
+  "overload_blocks": 0,
+  "failed_boots": 0,
+  "capture": {
+    "audio_input": "Line (Felucca)",
+    "wavein_device_index": 0,
+    "format": "PCM16 stereo 44100 Hz",
+    "frames": 1425753,
+    "duration_seconds": 32.33,
+    "diagnostic_exit_code": 0,
+    "body_excludes_first_seconds": 4,
+    "body_excludes_last_seconds": 3,
+    "body_peak": 3959,
+    "body_rms": 365.24017885394187,
+    "longest_identical_frame_run_ms": 0.272108843537415,
+    "longest_zero_run_ms": 0.20408163265306123,
+    "clipped_samples": 0,
+    "scope": "Host recording and status; firmware UAC packet counters not exposed. No proof of all packet glitches absent."
+  },
+  "audio_sha256": "19d32ec62c434ba74856daae8c6cbf7a502bd072c7d8b1c4690ec6479b4aac07",
+  "hardware_uac_packet_counters_available": false
+}
