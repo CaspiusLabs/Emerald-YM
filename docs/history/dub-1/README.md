@@ -1,3 +1,5 @@
+> Historical DUB-1 documentation, retained for provenance. Not the current Emerald YM manual or build instructions. See the root README and BUILDING.md.
+
 # DUB-1 for the M-VAVE FM-1
 
 DUB-1 turns the M-VAVE FM-1 into a generative dub techno machine. It plays itself

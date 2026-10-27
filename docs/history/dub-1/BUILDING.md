@@ -1,3 +1,5 @@
+> Historical DUB-1 documentation, retained for provenance. Not the current Emerald YM manual or build instructions. See the root README and BUILDING.md.
+
 # Building AMB-1
 
 The build makes three files in `build/`:

@@ -1,39 +1,33 @@
-# Mapa projektu
+# Project architecture
 
-| Obszar | Rola |
+| Area | Purpose |
 |---|---|
-| firmware/src/ym/ym_engine.cpp | Strumieniowy sekwencer, 5 FM + DAC, konwersja próbkowania, stała arena inicjalizacji |
-| firmware/src/ym/ym_psg.h | Od 0.2.0: profil Sega PSG, trzy tony i stały biały szum, przydział głosów live |
-| firmware/src/ym/ym_fx.h | Od 0.3.0: DECAY/COLOR/ECHO, macierz 12×3, indywidualne wysyłki do wspólnego echa stereo |
-| firmware/src/ym/ymfm | Rdzeń ymfm i lokalne optymalizacje dla używanego profilu |
-| firmware/src/ym/ym_tables.h | Zatwierdzone tablice strojenia i oryginalne krótkie sample |
-| firmware/src/ym/main.c, ym_loop.c | Start, przerwania audio, watchdog, pomiar czasu, obsługa panelu i USB |
-| firmware/src/ym/ym_ui.c, ym_leds.c | Kafelki UI i podświetlenie |
-| firmware/hal | Obsługa procesora, wyświetlacza, panelu, DMA, flash i guardów |
-| firmware/app.ld | Rozmieszczenie XIP, .ram_text, .audio_hot, danych, puli i stosów |
-| firmware/loader, src/ota.c, src/usb.c | Zachowana platforma aktualizacji Felucca/DUB-1 |
-| firmware/src/ym/ym_engine.cpp: YM_CONTROL_CODE | Od 0.2.3 leaf-settery/gettery pętli głównej w XIP `.ym_control`; bez wywołań z renderera |
-| firmware/src/ym/ym_psg.h: PSG_PITCH_DATA | Od 0.2.4 tablica dzielników w XIP `.ym_pitch`, używana przy ustawianiu okresu; stan i pętla oscylatora w RAM |
-| tools/build.py, fm1pkg_make.py | Kompilacja, kontrola obrazu i składanie .fwsc |
-| tests/ym_stream_test.c, ym_ui_test.c | Aktywne testy nowego silnika i UI na komputerze |
-| releases/v0.1.4 | Niezmienny sprawdzony pakiet, suma kontrolna i dowody weryfikacji |
-| docs/history | Archiwalne opisy i migracja z bazy DUB-1 |
-| .runtime | Lokalne narzędzia, pomijane przez Git; nie są częścią firmware'u |
+| firmware/src/ym/ym_engine.cpp | Streaming sequencer, five FM + DAC, resampling, fixed initialization arena |
+| firmware/src/ym/ym_psg.h | Sega musical PSG profile, three tones/white noise, live voice allocation |
+| firmware/src/ym/ym_fx.h | DECAY/COLOR/ECHO, 12×3 matrix, per-source sends to shared stereo echo |
+| firmware/src/ym/ymfm | ymfm core and local restricted-profile optimizations |
+| firmware/src/ym/ym_tables.h | Tuning tables and original short drum samples |
+| firmware/src/ym/main.c, ym_loop.c | Startup, audio interrupt, watchdog, timing, panel and USB |
+| firmware/src/ym/ym_ui.c, ym_leds.c | Changed-tile UI and complete-row LED publication |
+| firmware/hal | CPU, display, panel, DMA, flash and guards |
+| firmware/app.ld | XIP, .ram_text, .audio_hot, data, pool and stacks |
+| firmware/loader, src/ota.c, src/usb.c | Retained Felucca/DUB-1 update platform |
+| tools/build.py, fm1pkg_make.py | Compile, check memory/image and package .fwsc |
+| tests/ym_stream_test.c, ym_fx_test.cpp, ym_ui_test.c | Current desktop audio/FX/UI tests |
+| releases/ | Preserved packages and separate offline/physical evidence |
+| docs/history/ | Historical designs, early experiments and inherited DUB-1 docs |
+| .runtime/ | Ignored, separately provisioned local tools |
 
-Układ YM2612 pracuje z zegarem 7 670 454 Hz. Rdzeń generuje przy zegar/144, a aplikacja konwertuje do 44,1 kHz i wypełnia 256 ramek stereo w przerwaniu audio. Czas takiego bloku to około 5,8 ms. Ochrona po ośmiu blokach przekraczających 85% wycisza silnik do restartu.
+The emulated YM2612 clock is 7,670,454 Hz. Native audio at clock/144 is converted to 44.1 kHz; a 256-frame stereo DMA block has about 5804 us. Eight blocks above the deliberate 85% limit after warm-up latch a stop until restart. Diagnostics cannot bypass it.
 
-Wybrany profil zawsze wykorzystuje kanał 6 jako DAC. Optymalizacja EMERALD_FIXED_DAC nie jest dowolnym odtwarzaczem wszystkich strumieni rejestrów YM2612; pięć torów FM i DAC są odtwarzane z zachowaniem porównanego wyniku. Rozszerzanie o szósty tor FM, odtwarzacz VGM lub inne tryby wymaga ponownego przemyślenia tej granicy.
+Channel six is permanently DAC. EMERALD_FIXED_DAC omits unused channel-six FM work while retaining DAC/shared clocks. This is not a general VGM/register stream player. Since 0.3.0, EMERALD_STATIC_OPN skips unused SSG-EG, operator AM and dynamic PM paths. Patches/FX keep these modes disabled. Adding them requires adapting/disabling the profile and comparing with EMERALD_GENERIC_OPN. Dry and FX reference hashes are recorded in docs/releases/v0.3.0.md.
 
-Kod generujący dźwięk nie przydziela pamięci w czasie grania. Konstrukcja obiektów rdzenia odbywa się przed uruchomieniem IRQ, we własnej stałej arenie. W renderowaniu nie ma double ani libm. Kod i tablice audio są w RAM, osobno od funkcji flash-off, a wejścia z XIP używają far-call platformy.
+The renderer allocates no memory. Core objects are created in a fixed arena before IRQ startup; no double/libm is used. Critical audio code/tables are in RAM. `.audio_hot.fx` is inside the original `.audio_hot`, covered by its startup copy and executable PC guard, without enlarging region limits or exposing stacks/data as code. Flash-off `.ram_text` remains independently checked for forbidden calls.
 
-UI korzysta z istniejącego canvasu 240 × 144 jako bufora kafelków. Nie ma pełnego dodatkowego framebufferu. CV jest synchronizowany z DMA przed ponownym zapisaniem. Logo jest rysowane kodem. Zwykła zmiana parametru nie czyści całego LCD.
+Main-loop leaf setters/getters live in XIP `.ym_control` and are reached through platform FL_FAR. They are not called by the renderer. Configuration/tuning tables in `.ym_pitch` are read at note/period setup, outside oscillator sample loops. Runtime periods and hot sample work stay in RAM.
 
-Od 0.3.0 EMERALD_STATIC_OPN pomija nieużywane SSG-EG, operator AM i PM.
-Patche i efekty pozostawiają te tryby wyłączone; rozszerzenie wymaga adaptacji
-profilu i porównania z EMERALD_GENERIC_OPN. Sekcja .audio_hot.fx jest częścią
-istniejącej .audio_hot, kopiowanej do RAM i objętej ochroną PC. Granice regionów
-pamięci pozostają niezmienione. Echo używa 32 KiB puli (bufor stereo i tagi
-generacji), ma stałe opóźnienie około 186 ms i osobne wysyłki źródeł do jednego
-powrotu. Szczegóły i ograniczenia: docs/releases/v0.3.0.md.
+Echo uses 32 KiB of the existing pool for a stereo int16 buffer and generation tags. It averages pairs of samples at 22.05 kHz, delays about 186 ms, uses feedback 5/16 and shared return gain. Each source has its own send, not its own delay line. Reset advances the generation rather than clearing a large buffer in the IRQ. Settings are volatile; no automatic project save is implemented.
 
-Odziedziczone katalogi app/dsp, host i web nadal zawierają kod poprzedniego instrumentu DUB-1. Pozostają dla zależności platformy i zachowania pochodzenia, ale nie opisują bieżącego generatora. Wybór aplikacji odbywa się przez EN_YM2612. Dawny skrypt jednorazowej migracji jest zachowany wyłącznie jako plik tekstowy w docs/history; nie uruchamiaj go do przygotowywania nowej wersji.
+UI uses the existing 240×144 canvas as tile workspace, not another full framebuffer. Finished tiles are sent only after state changes. The complete screen is 240×240. DMA synchronization protects canvas reuse. The Emerald mark is drawn in code.
+
+Inherited app/dsp, host and web code belongs to DUB-1. EN_YM2612 selects the current app; the inherited pages are not a supported Emerald emulator or installer. Archived migration scripts are historical artifacts, not setup instructions.

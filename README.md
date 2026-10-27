@@ -1,65 +1,73 @@
 # Emerald YM
 
-Generatywny instrument dla M-VAVE FM-1, inspirowany brzmieniem Mega Drive/Genesis. Emuluje YM2612: pięć głosów FM i perkusja przez DAC. Własna muzyka, UI i znak Emerald.
+Generative 16-bit music firmware for the **M-VAVE FM-1**, by **CaspiusLabs**. A real YM2612 emulator, a lightweight Sega-style PSG and an endless sequencer turn the FM-1 into a small chiptune instrument. Play along on its keyboard and shape each instrument independently.
 
-**Bieżąca wersja rozwojowa: 0.3.1 — indywidualne efekty DECAY / COLOR / ECHO.** Trzy tony PSG,
-szum Sega, generatywne arpeggio i do trzech nut granych na klawiaturze FM-1
-równocześnie z podkładem. ARP włącza/wyłącza PSG; PLAY zatrzymuje tylko podkład.
-Nuty podkładu w zakresie klawiatury świecą słabo, nuty live jasno.
-SELECT wybiera jedno z 12 źródeł (FM, poszczególne bębny, arp/live/szum PSG),
-PRESETS reguluje jego głośność. FX wybiera efekt do edycji, ALGORITHM jego
-wartość 0–100%. Wszystkie trzy efekty mogą działać razem, z osobnymi
-ustawieniami dla każdego instrumentu. CPU/XRUN są ukryte; ochrona pozostaje.
-Opis i zakres prób: [docs/releases/v0.3.1.md](docs/releases/v0.3.1.md).
+**Current development release: 0.3.1 (beta).** [Download](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.3.1) · [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
 
-**Baza do dalszej rozbudowy: v0.1.4**, zaakceptowana na urządzeniu. Tożsamość FM-1_68000104. Sprawdzony pakiet i dowody są w releases/v0.1.4. W próbach: CPU MAX 80%, XRUNS 0; użytkownik potwierdził dźwięk, ekran bez migotania, LED-y oraz wskaźniki pokręteł. Zakres i ograniczenia: [docs/VERIFICATION.md](docs/VERIFICATION.md).
+![Emerald YM 0.3.1 screen, rendered by the desktop UI test](releases/v0.3.1/ui-preview.png)
 
-## Szybki start na tym Windowsie
+*240 × 240 render of the firmware UI, not a photograph or a browser emulator.*
 
-Otwórz PowerShell w folderze projektu:
+## What it does
 
-    .\build-ym-windows.ps1
-    .\test-ym-windows.ps1
+- Five YM2612 FM voices plus percussion through the emulated channel-six DAC, with the NTSC chip clock.
+- Three Sega-style PSG tone voices and white noise. The keyboard plays up to three live PSG notes alongside the backing music.
+- Seeded melodies, bass, chords and changing arrangements; tempo, density, mutation and transpose controls.
+- Independent levels and DECAY, COLOR and ECHO settings for twelve sources. All three effects can run together.
+- A screen that redraws only changed tiles, active-note LEDs and a documented USB MIDI/status interface.
 
-Pierwsze polecenie wyłącznie buduje; drugie uruchamia testy komputerowe i symulacje. Żadne nie otwiera portu MIDI ani nie wgrywa firmware'u. Build z numerem zachowanego wydania porównywany jest bit po bicie z jego pakietem.
+This is original generative music inspired by the Mega Drive/Genesis sound palette. It contains no Sonic game music, extracted game samples or Sega logos. It is an independent project, not affiliated with Sega, Yamaha or M-VAVE.
 
-Lokalna .runtime zawiera gotowy Python, toolchain i minimalny SDK, niezależne od folderu dawnego czatu. Katalog jest pomijany w Git. Po sklonowaniu repo na inną maszynę trzeba uzupełnić te zależności; opis: [BUILDING.md](BUILDING.md).
+## Quick controls
 
-## Obsługa instrumentu
+Start with MASTER low, then press PLAY. The sequencer is paused after boot.
 
-- PLAY: granie / pauza.
-- REC: nowy seed.
-- SEQ: przełączenie mutacji 0 / 35.
-- K1: tempo, K2: gęstość, K3: mutacja, K4: transpozycja.
-- MASTER: głośność.
-- SELECT: wybór instrumentu; PRESETS: jego indywidualna głośność, 0–100%.
-- Poziomy pozostają ustawione po wybraniu innego instrumentu; domyślnie 100%.
-- FX: edytowany efekt DECAY / COLOR / ECHO. ALGORITHM: jego wartość 0–100%.
-- Zero efektu jest neutralne. Zmiana edytowanego efektu nie wyłącza pozostałych.
-- Od 0.2.0: klawiatura F3–G5 gra przez PSG (do trzech nut), również w pauzie.
-- ARP: PSG włączony/wyłączony. Przy trzech nutach live ustępuje arpeggio PSG;
-  pięć torów FM i perkusja DAC nadal grają. K4 transponuje również klawiaturę.
+| Control | Function in 0.3.1 |
+|---|---|
+| PLAY | Start/pause the backing sequencer; live keys still work in pause |
+| REC | Generate a new seed and sequence |
+| SEQ | Toggle mutation between 0 and 35 |
+| K1 / K2 / K3 / K4 | Tempo / melody density / mutation / transpose |
+| SELECT | Select one of twelve instruments |
+| PRESETS | Set the selected instrument's level, 0–100% |
+| FX | Select DECAY, COLOR or ECHO for editing |
+| ALGORITHM | Set the selected effect amount, 0–100% |
+| ARP | Enable/disable all PSG, including live keys |
+| Keyboard | Up to three live PSG notes, F3–G5 |
+| MASTER | Overall output level |
 
-Ekran 0.3.1 pokazuje parametry, takt, kroki, wybrany instrument, głośność i efekt. Liczniki CPU/XRUN są dostępne przez USB. Świecą używane przyciski i nuty. Opis zaakceptowanej bazy: [docs/releases/v0.1.4.md](docs/releases/v0.1.4.md).
+Effect amounts and levels remain independent when changing selections. Settings are held in RAM and reset on power-off; there is no project/preset save feature. With three live notes, the PSG arpeggio yields its voice; FM and DAC continue. See the [manual](docs/MANUAL.md) for details.
 
-## Rozbudowa i Git
+## Compatibility and data
 
-- Główna gałąź: main. Baza: oznaczony tag v0.1.4.
-- Twórz gałąź do konkretnej funkcji, np. git switch -c feature/song-structure.
-- Numer nowego wydania jest w VERSION. Zachowaj releases/v0.1.4 i tag bez podmiany.
-- Historia bazy DUB-1 jest zachowana. Stare tagi v1.x pochodzą z DUB-1; nie są numerami Emerald YM.
-- Pierwszy commit Emerald importuje stan 0.1.4, a kolejny porządkuje samodzielny projekt. Wcześniejsze eksperymenty opisano w CHANGELOG; nie sfabrykowano ich commitów.
-- Remote upstream służy do odczytu publicznej bazy DUB-1. Push do niego jest wyłączony. Nie utworzono ani nie opublikowano repozytorium na GitHub.
-- Eksport źródeł i pełnej historii lokalnej: .runtime\python\python.exe tools\export_ym.py. Wynik trafia do ignorowanego dist.
+Target: M-VAVE **FM-1**, not SMK-37 or other models. USB MIDI name: `Emerald YM FM-1`. Release identity: `FM-1_68000301`. The `.fwsc` includes the inherited Felucca update loader.
 
-[AGENTS.md](AGENTS.md) zawiera instrukcje dla kolejnych sesji Codex. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) pokazuje aktywny kod i jego ograniczenia, [CHANGELOG.md](CHANGELOG.md) historię, a [YM-USB-PROTOCOL.md](YM-USB-PROTOCOL.md) protokół diagnostyczny.
+Emerald YM does **not** import stock, DUB-1 or other firmware's presets, projects or samples. It does not provide a way to back them up or restore them. Back up with your existing firmware's tools before switching. Firmware installation writes flash; do not assume another firmware's data will survive switching or recovery. Normal Emerald knob/FX changes do not automatically save to flash.
 
-## Projekt w aplikacji Codex
+USB audio is disabled: listen on the FM-1 speaker or headphone output. This is a restricted musical chip profile, not a general VGM/register player or a full Genesis emulator. There is currently no Emerald browser player or editor; inherited DUB-1 web tools are historical code.
 
-Wybierz dodanie lokalnego projektu/folderu i wskaż ten katalog Emerald-YM. Repozytorium na dysku jest już przygotowane; zarejestrowanie go na pasku bocznym jest oddzielnym krokiem. Do budowania wystarczy wskazany folder; ten czat nie musi pozostać otwarty.
+## Release status
 
-## Pochodzenie i licencje
+0.3.1 passed desktop audio/UI/LED tests and update simulations. Its physical 30-second backing-plus-live test recorded CPU MAX **65%**, XRUNS **0**, overload blocks **0**, with neutral FX. The identical DSP in 0.3.0 passed a separate all-source FX test at **68%**. These are specific tests, not proof of every setting or long-session reliability.
 
-Baza DUB-1/Felucca, rdzeń ymfm Aarona Gilesa z lokalnymi optymalizacjami. Połączony firmware: GPL-3.0-only. Rdzeń: BSD-3-Clause. Własny silnik i adapter: MIT. SDK: Apache-2.0. Szczegóły i autorstwo: LICENSE, LICENSING.md oraz dołączone pliki licencji.
+The immutable, user-accepted **v0.1.4** remains the development baseline. Older interactive reports retain their original failed continuity results. [Verification](docs/VERIFICATION.md) separates desktop tests, simulations and physical evidence.
 
-Praca nad projektem nie wymaga wysyłania żadnych plików do zdalnego repozytorium. Test urządzenia i instalacja pozostają osobnymi, świadomie uruchamianymi działaniami.
+**Firmware Hub preparation:** metadata and a release package are provided, but listing readiness still requires the physical V15 → Emerald, another firmware → Emerald, and Emerald → another firmware checks. See the [submission checklist](docs/FIRMWARE-HUB.md). The repository remains private until the owner chooses to publish it.
+
+## Development
+
+The canonical repository is [CaspiusLabs/Emerald-YM](https://github.com/CaspiusLabs/Emerald-YM). Work in a local clone, commit changes and push to this repository. The original DUB-1 remote is reference-only.
+
+```powershell
+git clone https://github.com/CaspiusLabs/Emerald-YM.git
+cd Emerald-YM
+# Provision the ignored .runtime dependencies first; see BUILDING.md.
+.\build-ym-windows.ps1
+.\test-ym-windows.ps1
+```
+
+These commands do not open MIDI ports or flash hardware. `VERSION` determines the firmware version. Documentation-only changes do not change the installed binary. See [BUILDING.md](BUILDING.md), [architecture](docs/ARCHITECTURE.md), [CHANGELOG](CHANGELOG.md), [USB protocol](YM-USB-PROTOCOL.md) and [contributor handoff](AGENTS.md).
+
+## License and credits
+
+The combined firmware is **GPL-3.0-only**. It uses the DUB-1/AMB-1/Felucca platform lineage, Aaron Giles's **ymfm** (**BSD-3-Clause**) and original Emerald engine/PSG/FX code (**MIT**). JieLi package inputs and fonts retain their licenses. Full provenance and redistribution terms: [LICENSING.md](LICENSING.md), [LICENSE](LICENSE), [LICENSE-emerald.txt](LICENSE-emerald.txt).

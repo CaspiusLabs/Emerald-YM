@@ -1,106 +1,74 @@
-# Historia Emerald YM
+# Emerald YM changelog
 
-## 0.3.1 — 2026-10-26 — zamiana enkoderów
+## Repository preparation — 2026-10-27 (firmware remains 0.3.1)
 
-- Po akceptacji efektów przez użytkownika: PRESETS = głośność instrumentu,
-  ALGORITHM = wartość edytowanego FX. SELECT i przycisk FX bez zmian.
-- Nowe oznaczenia PRE / ALG na kafelkach. Silnik audio i MIDI bez zmian.
+- Adopt CaspiusLabs/Emerald-YM as the canonical GitHub repository; retain full upstream history and immutable v0.1.4.
+- English README, current user/install/build instructions, developer notes, release summaries and historical summaries.
+- Move the inherited DUB-1 manual into the historical docs; do not present legacy web tools as Emerald features.
+- Add fmhub.json, a 240×240 UI render link and an honest Firmware Hub readiness checklist. Repository remains private by owner request; no submission sent.
+- Preserve the installed/tested 0.3.1 binary unchanged. No device operations during this documentation task.
 
-## 0.3.0 — 2026-10-26 — trzy efekty jednocześnie
+## 0.3.1 — 2026-10-26 — encoder swap
 
-- Niezależne DECAY, COLOR i ECHO dla każdego z 12 instrumentów; FX wybiera
-  edytowany parametr, nie wyłącza pozostałych. Wszystko neutralnie 0%.
-- Stałe echo stereo ~186 ms: osobne wysyłki, wspólny powrót, bounded feedback.
-- FX LED, osobny kafelek efektu, standardowe MIDI CC20–22 na kanałach 1–12.
-- EMERALD_STATIC_OPN pomija nieużywane SSG-EG/AM/PM. Referencja z przywróconymi
-  ścieżkami daje identyczne hashe dla suchego dźwięku i sceny z efektami.
-- Bufory 32 KiB w pool; cały krytyczny kod FX w dotychczasowym obszarze RAM,
-  bez powiększania granic i bez podnoszenia progu 85%.
-- 30 s ciągłego testu wszystkich źródeł z FX25/100/100 i live: CPU MAX 68%,
-  XRUNS 0, overload 0. Próba sustain zawierała pauzy, zachowuje passed=false.
-- Użytkownik potwierdził efekty i zachowanie osobnych wartości; poprosił o
-  zamianę ALGORITHM/PRESETS. Szczegóły: docs/releases/v0.3.0.md.
+- After user FX acceptance: PRESETS controls individual volume, ALGORITHM the edited FX amount. SELECT and FX unchanged.
+- PRE / ALG tile labels updated. DSP/MIDI unchanged. Physical neutral-FX backing/live run:65%, XRUN 0, overload 0.
 
+## 0.3.0 — 2026-10-26 — three simultaneous effects
 
-## 0.2.4 — 2026-10-26 — indywidualne poziomy
+- Independent DECAY/COLOR/ECHO for 12 instruments, initially 0; FX chooses the edited parameter without disabling others.
+- Per-source sends to shared stereo echo (~186 ms), bounded feedback; FX LED/tile, standard CC20–22 on channels 1–12.
+- EMERALD_STATIC_OPN skips unused SSG-EG/AM/PM. Generic comparison matches dry/FX hashes.
+- 32 KiB pool buffers; critical FX code remains in the original guarded RAM range, without raising memory limits or the 85% threshold.
+- 30 s continuous all-source FX25/100/100 + live:68%, XRUN 0, overload 0. Sustain run contains pauses, retains passed=false.
+- User confirmed effects/independent values and requested the encoder swap in 0.3.1.
 
-- Po doprecyzowaniu użytkownika: SELECT wybiera instrument, ALGORITHM zmienia
-  tylko jego poziom. 12 źródeł: 5 FM, 4 próbki perkusji, PSG ARP, LIVE, NOISE.
-- Każde źródło 0–100% domyślnego balansu; PRESETS pozostaje magistralą perkusji.
-- Nowy kafelek pokazuje nazwę i poziom wybranego instrumentu. Wybór nie zmienia
-  zapisanych w RAM poziomów innych źródeł. CPU/XRUN nadal tylko przez USB.
-- Oddzielne testy słyszalności wszystkich 12 źródeł i wyciszania nut live.
-- Domyślny balans bitowo identyczny z zaakceptowaną 0.2.2. Tablica strojenia PSG
-  przeniesiona do kontrolnego XIP; renderer i okresy tonów nadal w RAM.
-- Szczegóły i zakres pomiarów: docs/releases/v0.2.4.md.
+## 0.2.4 — 2026-10-26 — individual levels
 
+- SELECT chooses one of 12 sources; ALGORITHM sets its independent 0–100% level. PRESETS still controls the percussion bus in this version.
+- New instrument tile, isolated-source/live-mute tests; default audio matches 0.2.2 hash 7ce44fbe.
+- PSG tuning table moves to setup-time XIP, hot oscillator state stays in RAM.
+- Physical 30 s continuous + live:85%, max 4985 us, XRUN 0, overload 0. Very little margin. User confirmed independent controls.
 
-## 0.2.3 — 2026-10-26 — mikser melodii i perkusji
+## 0.2.3 — 2026-10-26 — FM/PSG/drum mixer
 
-- Użytkownik zaakceptował poziom PSG i regulację ALGORITHM w 0.2.2.
-- SELECT: 0–100% pięciu melodycznych torów FM, łącznie z basem i akordami.
-- PRESETS: 0–100% perkusji DAC i szumu PSG. ALGORITHM pozostaje mikserem PSG.
-- Trzy pola z wartościami i paskami zamiast CPU/XRUN i dawnego wiersza podpowiedzi.
-  Diagnostyka USB, liczniki i próg ochronny 85% pozostają aktywne.
-- Głośność FM nakładana przed dodaniem DAC; przy poziomach 100% dźwięk jest
-  bitowo identyczny z 0.2.2. Testowane osobne ścieżki i wyciszanie.
-- Leaf-settery/gettery pętli głównej przeniesione do XIP `.ym_control`;
-  bez zmiany granic RAM. Linker i skrypt budowania kontrolują adresy.
-- Próba na urządzeniu: 30 s ciągłego grania z dwiema/trzema nutami live,
-  CPU MAX 84%, XRUNS 0, overload 0. Szczegóły: docs/releases/v0.2.3.md.
+- SELECT = melodic FM0–100%; PRESETS = DAC drums/PSG noise 0–100%; ALGORITHM retains PSG mix.
+- Three percentage/bar tiles replace CPU/XRUN and the hint. USB counters and 85% guard remain.
+- FM scaling before DAC preserves unity audio; main-loop leaf controls move to XIP .ym_control, without enlarging RAM regions.
+- Physical 30 s continuous + live:84%, XRUN 0, overload 0. User requested individual-source control next.
 
-## 0.2.2 — 2026-10-26 — wersja rozwojowa
+## 0.2.2 — 2026-10-26 — adjustable PSG mix
 
-- Po drugim odsłuchu: regulacja miksu PSG pokrętłem ALGORITHM, 0–400%,
-  startowo 300% (+9,54 dB względem 0.2.1). Obejmuje arp, live i szum.
-- Aktualny poziom widoczny w dolnym kafelku; bez powtarzanych transmisji LCD
-  przy braku zmian i bez automatycznego zapisu ustawień.
-- Test miksu z trzema głosami live przy 400% bez trafień w limiter.
-- Wzór arpeggio 0.2.1 zachowany. Szczegóły: docs/releases/v0.2.2.md.
+- ALGORITHM sets PSG 0–400%, default 300% (+9.54dB over 0.2.1); applies to arp/live/noise, not FM/DAC.
+- On-screen value, changed-tile updates and volatile settings. Desktop 400% /three-live-note test without limiter hits.
+- Physical 30 s at default 300% + live:84%, XRUN 0, overload 0. User accepted level and control.
 
-## 0.2.1 — 2026-10-26 — poprawa arpeggio
+## 0.2.1 — 2026-10-26 — musical arpeggio
 
-- Arpeggio PSG głośniejsze o 6 dB, oktawę niżej, dłuższe nuty i stały wzór
-  0–1–2–1 zgodny z akordem podkładu.
-- Użytkownik: lepiej muzycznie, lecz nadal za cicho. Podświetlenie klawiszy
-  potwierdzone wcześniej w 0.2.0.
-- Próba interaktywna ze stress MIDI zachowuje passed=false (PLAY/REC).
-  Osobny czysty podkład: 60 sekund ciągłego grania, passed=true, XRUNS 0,
-  overload 0; maksimum od bootu 84% obejmuje także wcześniejsze głosy live.
-- Skrypt testu zachowuje częściowy raport przy błędzie transportu i pozwala
-  wymagać ciągłego grania. Szczegóły: docs/releases/v0.2.1.md.
+- PSG arp +6 dB, one octave lower, longer gates, repeating chord tones 0–1–2–1.
+- Interactive stress run retains passed=false after PLAY/REC. Separate 60 s backing-only pass, XRUN 0/overload 0; lifetime 84% includes earlier live notes.
+- Test tool preserves partial transport-error reports and can require continuity. User found it more musical but still too quiet.
 
-## 0.2.0 — 2026-10-26 — PSG i klawiatura live
+## 0.2.0 — 2026-10-26 — PSG and live keys
 
-- Własny profil Sega PSG NTSC: trzy dziesięciobitowe dzielniki tonu,
-  tłumienie 2 dB, 16-bitowy LFSR i zegar 3579545 Hz. Stały biały szum clock/512.
-- Generatywne arpeggio PSG i szum perkusyjny bez odbierania torów FM.
-- Klawiatura FM-1 i USB MIDI F3–G5: do trzech głosów live, pierwszeństwo
-  nowych klawiszy i powrót do wcześniej trzymanych nut. Live działa w pauzie.
-- ARP przełącza PSG. Trzy głosy live zastępują tylko arpeggio PSG.
-- LED nut: sekwencer słabo, live jasno. Zachowane gotowe wiersze i kafelkowe UI.
-- Testy PSG, allocatora, reseed, zwalniania nut, LED, UI, OTA i loadera.
-- Mapa pamięci, próg 85%, bloki 256 i profil pięć FM + stały DAC bez zmian.
-- Końcowa próba interaktywna: CPU MAX 84%, XRUNS 0, 47 aktywnych odczytów
-  z 60. Osobny pomiar ciągły przerwany timeoutem statusu USB, niezaliczony.
-- Pierwszy prototyp przed optymalizacją dochodził do 85%; zachowano rozróżnienie
-  wyników. Szczegóły i uwagi odsłuchowe: docs/releases/v0.2.0.md.
+- Original Sega-style PSG: NTSC 3579545 Hz, three 10-bit tone dividers,2 dB attenuation,16-bit LFSR, white noise clock/512.
+- Generative arp/noise and up to three live F3–G5 notes from panel/USB, including pause. Latest-note priority/return. ARP toggles all PSG.
+- Dim backing/bright live LEDs. Five FM+DAC,256-frame blocks and 85% guard retained.
+- Final interactive run:84%, XRUN 0,47/60 samples playing. Separate continuous run ended in USB timeout, not passed. Prototype 85% is separate evidence.
 
-## 0.1.4 — 2026-10-26 — zaakceptowana baza
+## 0.1.4 — 2026-10-26 — accepted baseline
 
-- Prawdziwa emulacja YM2612, pięć głosów FM i perkusja przez DAC; generatywny sekwencer.
-- Optymalizacje RAM, pętli operatorów, pojedynczego kanału wyjściowego i powtarzanych zapisów DAC. Oryginalny zegar NTSC i próg 85% zachowane.
-- Ekran z odświeżaniem tylko zmienionych kafelków, czterema wskaźnikami parametrów, paskiem kroków, własnym znakiem Emerald i plakietką 16-BIT.
-- Podświetlenie PLAY/REC/SEQ i wskazanie ich stanu.
-- Diagnostyka USB oraz MIDI Start/Continue/Stop.
-- Użytkownik potwierdził dźwięk, ekran bez migotania, LED-y i pokrętła. W próbie interaktywnej: CPU MAX 80%, XRUNS 0, brak przeciążenia. Poprzedni pełny test ciągły 0.1.3: ponad minuta, również 80% / 0 XRUNS.
-- Przy porządkowaniu projektu dodano samodzielny lokalny runtime, powtarzalne budowanie, testy, dokumentację, zachowany pakiet i tag v0.1.4. Kod firmware'u nie został przez to zmieniony.
+- Real YM2612 emulation, five FM voices + DAC drums and generative sequencer.
+- RAM/operator/output-channel/repeated-DAC-write optimizations retain NTSC clock and 85% guard.
+- Changed-tile UI, four parameter cards, step strip, original Emerald mark/16-BIT badge, PLAY/REC/SEQ LEDs.
+- USB diagnostics and MIDI Start/Continue/Stop. User accepted sound, no flicker, LEDs and controls.
+- Interactive CPU 80%, XRUN 0, overload 0; raw continuity result remains false due to REC. Earlier 0.1.3 continuous test also 80% /XRUN 0.
+- Standalone runtime/build/tests/docs, preserved package and real tag added without changing the firmware.
 
-## Wcześniejsze eksperymenty — 2026-10-26
+## Earlier experiments — 2026-10-26
 
-- 0.1.0: pierwsze uruchomienie na FM-1; zgłoszone 92% / 0 XRUNS, zadziałanie ochrony.
-- 0.1.1: przeniesienie kodu i tablic do RAM; samo to nie wystarczyło według użytkownika.
-- 0.1.2: optymalizacja profilu pięciu FM + DAC i dodanie odczytu statusu; 87% / 0 XRUNS, nadal próg ochronny.
-- 0.1.3: wbudowanie często wywoływanych funkcji zegarowych; udany ciągły test i potwierdzony odsłuch.
+- 0.1.0: first hardware boot; reported 92% /XRUN 0, protective stop.
+- 0.1.1: code/tables moved to RAM; user reported that this alone did not solve overload.
+- 0.1.2: five-FM+DAC optimization and USB status;87% /XRUN 0, protective stop.
+- 0.1.3: inline hot clock functions; successful continuous test and listening confirmation.
 
-Te etapy powstały przed utworzeniem osobnego repozytorium Emerald YM i nie są przedstawiane jako osobne historyczne commity. Zachowano ich opisy i dostępne ślady w docs/history. Pierwszy rzeczywisty commit Emerald YM importuje kompletną, działającą wersję 0.1.4 na bazie oryginalnej historii DUB-1.
+These early stages predate the separate Emerald repository and are not fabricated as separate commits. Historical summaries and available traces remain in docs/history. The first actual Emerald commit imports the complete working 0.1.4 on the preserved DUB-1 history.

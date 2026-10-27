@@ -1,42 +1,25 @@
 # Emerald YM — developer handoff
 
-- Rozmawiaj z użytkownikiem po polsku. Pracujemy nad firmware'em M-VAVE FM-1 na lokalnym Windows.
-- Bazą do rozbudowy jest zaakceptowana na urządzeniu wersja `v0.1.4`. `VERSION` jest źródłem numeru wydania. Zobacz README, BUILDING, CHANGELOG i docs/ARCHITECTURE.md.
-- Bieżące rozwinięcie to 0.3.1 (indywidualne poziomy i FX); opis w docs/releases/v0.3.1.md.
-  Zachowaj 0.1.4 jako osobną zaakceptowaną bazę. Nie myl prób 0.2.x z jej dowodami.
-- PSG to ograniczony profil muzyczny Sega: 3 tony i stały biały szum clock/512.
-  Nie jest to dowolny interfejs rejestrów/VGM. Optymalizacja jednego zbocza
-  na próbkę zakłada dzielnik >=9 (cały obsługiwany zakres MIDI); test pilnuje
-  tej granicy. Live używa PSG, nie dodaje szóstego toru FM.
-- Kod aktywnej aplikacji: `firmware/src/ym/`; wybrany przez `EN_YM2612` w `firmware/src/main.c`. `firmware/src/app/` i `dsp/` zawierają również odziedziczony kod DUB-1 — nie zakładaj, że opisuje obecną aplikację.
-- Buduj: `powershell -ExecutionPolicy Bypass -File .\build-ym-windows.ps1`. Testuj: `powershell -ExecutionPolicy Bypass -File .\test-ym-windows.ps1`. W PowerShell 7 wystarczy wywołać pliki bezpośrednio. Te skrypty nie otwierają MIDI ani nie flashują urządzenia.
-- Lokalne zależności są w ignorowanym `.runtime/`: python, toolchain i minimalny sdk. Nie zależ od folderów wcześniejszego czatu. Narzędzia hostowe MSVC są wykrywane przez vswhere.
-- Nie podmieniaj `releases/v0.1.4/emerald-ym-0.1.4.fwsc` ani tagu v0.1.4. Nowe zachowanie = nowy numer w VERSION i osobne wydanie. Przy pracy organizacyjnej nie modyfikuj firmware'u na urządzeniu.
-- Wgrywanie lub test otwierający MIDI wykonuj w zakresie aktualnego polecenia użytkownika i wcześniejszej autoryzacji; nie uruchamiaj go automatycznie jako części budowania, eksportu lub zwykłych testów. Nie pytaj ponownie o czynności już autoryzowane w trwającym zadaniu.
-- USB zawiera też Roland UM-ONE. Testy urządzenia kieruj wyłącznie do zweryfikowanej pary Emerald YM FM-1. Protokół statusu jest w YM-USB-PROTOCOL.md. Nie wymyślaj komunikatów SysEx.
-- Audio: 44,1 kHz, bloki 256 ramek, około 5804 us budżetu. Próg ochronny 85% jest celowy; nie usuwaj ani nie podnoś go dla pozornego przejścia testów.
-- Krytyczny kod/tablice są w `.audio_hot`, kopiowane do RAM przed startem. Nie zmieniaj mapy pamięci, far-call i guardów bez kontroli linkera i czasu wykonania. Kod flash-off `.ram_text` nadal nie może wołać do XIP.
-- Od 0.2.3 główne leaf-settery/gettery mają sekcję `.ym_control` w XIP,
-  zbieraną przed wykluczeniem tekstu obiektów emulatora. Wywołuje je pętla
-  główna przez istniejące FL_FAR, nie renderer. Budowanie sprawdza ich adresy.
-  Granice obszarów RAM i startup kopiujący `.audio_hot` są niezmienione.
-- Od 0.3.1 SELECT wybiera źródło, PRESETS jego poziom, FX wybiera DECAY/COLOR/ECHO,
-  ALGORITHM zmienia wartość efektu. 12x3 wartości współistnieją; przycisk FX
-  nie wyłącza poprzedniego efektu. Brak automatycznego zapisu Flash.
-- EMERALD_STATIC_OPN wymaga wyłączonych SSG-EG, operator AM i PM. Obecne patche
-  oraz FX tego pilnują. Dodanie tych trybów wymaga adaptacji lub wyłączenia
-  optymalizacji i porównania z EMERALD_GENERIC_OPN (tools/test-ym-generic-windows.cmd).
-- `.audio_hot.fx` jest zbierana wewnątrz istniejącej `.audio_hot`, objęta tą samą
-  kopią startup i ochroną PC; funkcje efektów nie mogą trafić do wykonywalnych
-  danych poza tym zakresem. Granice pamięci i blok debug/STATUS bez zmian.
-- Echo: osobne wysyłki, jeden powrót stereo ~186 ms, bufory/tagi 32 KiB w pool.
-  Testy fizyczne i offline są odrębne. Zachowaj niezaliczony warunek ciągłości
-  w interaktywnym raporcie sustain 0.3.0; nie zmieniaj go na zielony.
-- Tablica psg_divider ma sekcję `.ym_pitch` w XIP, odczytywaną przy instalacji
-  okresu, poza pętlą próbek oscylatora. Okresy pozostają w RAM. Linker i test
-  sprzętowy pilnują położenia i czasu; nie zmieniaj zakazu XIP w `.ram_text`.
-- Profil emulatora ma 5 FM + stały DAC. `EMERALD_FIXED_DAC` pomija niesłyszalny szósty tor FM. Nie dodawaj dowolnych zapisów rejestrów/przełączania szóstego FM bez usunięcia lub dostosowania tej optymalizacji.
-- UI: gotowe kafelki poza ekranem, odświeżanie tylko po zmianie. Nie przywracaj okresowego lcd_fill całego ekranu. Tablice LED publikuj gotowymi wierszami.
-- W rendererze nie przydzielaj pamięci i nie dodawaj libm/double. Sprawdzaj no-soft-double, rozmiary, deterministyczność, testy UI/OTA i właściwy zakres zmiany; nie uruchamiaj starych testów scenariuszy DUB-1 jako dowodu działania nowego UI.
-- Zachowuj rozróżnienie: testy desktopowe, symulacja flash i testy fizycznego egzemplarza. Raport interaktywny 0.1.4 ma passed=false z powodu resetu taktu przez REC, przy CPU 80%, XRUNS 0 i potwierdzonym UI. Nie zmieniaj surowych dowodów na pozornie zielone.
-- `upstream` wskazuje publiczną bazę DUB-1; push jest lokalnie wyłączony. Publikacji na GitHub nie zlecono.
+- Speak Polish with the current owner; write repository documentation and instructions in English. Target: M-VAVE FM-1, local Windows development.
+- Canonical repository: https://github.com/CaspiusLabs/Emerald-YM. Work in this local clone, commit and push there. `origin` is Emerald; `upstream` is read-only DUB-1 with push disabled. Keep the repository private until the owner explicitly authorizes public visibility. Do not send a Firmware Hub submission without instructions.
+- The accepted hardware baseline is `v0.1.4`. Current development is 0.3.1 (individual levels/FX). `VERSION` is authoritative. Read README, BUILDING, CHANGELOG and docs/ARCHITECTURE.md.
+- Active code: `firmware/src/ym/`, selected by `EN_YM2612` in `firmware/src/main.c`. Inherited `firmware/src/app/` and `dsp/` are not the current application.
+- Build: `powershell -ExecutionPolicy Bypass -File .\build-ym-windows.ps1`. Test: `powershell -ExecutionPolicy Bypass -File .\test-ym-windows.ps1`. PowerShell 7 can invoke them directly. Neither opens MIDI nor flashes.
+- Ignored `.runtime/` contains Python, the toolchain and minimal SDK inputs. Do not depend on old chat folders. Host MSVC is found through vswhere. A fresh clone requires provisioning; see BUILDING.md.
+- Never replace `releases/v0.1.4/emerald-ym-0.1.4.fwsc` or tag v0.1.4. New behavior requires a new VERSION and separate release. Organizational/documentation work must not modify the hardware firmware.
+- Flashing and MIDI tests must stay within the current task and prior authorization. Do not run them automatically during building/export/ordinary tests, or ask again for actions already authorized in the ongoing task.
+- USB also contains Roland UM-ONE. Target only the verified Emerald YM FM-1 pair. Use YM-USB-PROTOCOL.md; never invent SysEx messages.
+- Audio: 44.1 kHz, 256-frame blocks, approximately 5804 us budget. The 85% protective threshold is deliberate: do not remove or raise it to make tests pass.
+- Critical code/tables live in `.audio_hot`, copied to RAM before start. Do not alter memory layout, far calls or guards without linker and timing verification. Flash-off `.ram_text` must still never call XIP.
+- Since 0.2.3, main-loop leaf setters/getters use XIP `.ym_control`, collected before emulator-object text exclusion. They are called through existing FL_FAR, not by the renderer. The build checks addresses. Memory-region limits and `.audio_hot` startup copying remain unchanged.
+- PSG is a restricted Sega musical profile: three tones and white noise (default clock/512; COLOR also selects /1024 and /2048). It is not a general register/VGM interface. The one-edge-per-sample optimization assumes divider >=9, guarded by tests. Live keys use PSG, never a sixth FM channel.
+- Since 0.3.1: SELECT chooses the source, PRESETS its level, FX the edited DECAY/COLOR/ECHO parameter, ALGORITHM its amount. The 12x3 values coexist. FX does not disable other effects. No automatic flash saves.
+- EMERALD_STATIC_OPN requires SSG-EG, operator AM and PM disabled. Current patches/FX maintain this. Adding those modes requires adapting/disabling it and comparing against EMERALD_GENERIC_OPN (`tools/test-ym-generic-windows.cmd`).
+- `.audio_hot.fx` is collected inside the original `.audio_hot`, covered by its startup copy and PC guard. FX code must not be placed in executable data outside that range. Memory limits and debug/STATUS reserve stay unchanged.
+- Echo has individual sends and one shared stereo return (~186 ms), with 32 KiB buffers/tags in pool. Preserve the failed continuity result in the interactive 0.3.0 sustain report.
+- `psg_divider` uses XIP `.ym_pitch`, read when installing a period, outside the oscillator sample loop. Active periods remain in RAM. Linker/hardware checks guard placement/timing; do not weaken the `.ram_text` XIP prohibition.
+- Emulator profile: five FM voices plus fixed DAC. EMERALD_FIXED_DAC skips the inaudible sixth FM path. Do not add arbitrary registers or switch channel six without adapting/removing the optimization.
+- UI: complete off-screen tiles, redraw only on change. Do not restore periodic whole-screen lcd_fill. Publish complete LED rows.
+- No renderer allocations, libm or double. Check no-soft-double, sizes, determinism, UI/OTA tests and scope. Inherited DUB-1 scenarios are not proof of the Emerald UI.
+- Keep desktop tests, simulated flash and physical hardware results separate. The 0.1.4 interactive report retains passed=false due to REC resetting the bar, with CPU80%, XRUN0 and user-confirmed UI. Do not edit raw evidence into a false pass.
+- Publication readiness: docs/FIRMWARE-HUB.md lists remaining physical update tests. Do not claim V15/other-firmware transitions, interrupted-write recovery, identity uniqueness or GitHub build attestation without evidence.

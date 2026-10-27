@@ -1,3 +1,5 @@
+> Historical DUB-1 documentation, retained for provenance. Not the current Emerald YM manual or build instructions. See the root README and BUILDING.md.
+
 # Running the firmware without the FM-1
 
 Three ways to hear and see the firmware on the computer. To check changes as we go, use the

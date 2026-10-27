@@ -1,45 +1,37 @@
-# Co jest sprawdzone
+# Verification scope and evidence
 
-## Rozwinięcie 0.2.4
+Desktop tests, flash/update simulations, user feedback and physical FM-1 measurements are separate evidence. The reports in releases/ retain their original values; an offline report intentionally says flashed=false even when a separate hardware report records installation.
 
-SELECT wybiera jedno z 12 źródeł, ALGORITHM zmienia tylko jego poziom.
-Test słyszalności wyklucza początkowy stan przejściowy: każde źródło jest
-słyszalne po wyciszeniu pozostałych jedenastu. Domyślny balans nadal jest
-bitowo identyczny z 0.2.2. Końcowy test fizyczny: 30 s ciągłego podkładu
-z dwiema/trzema nutami live, CPU MAX 85%, XRUNS 0, overload 0. Margines jest
-bardzo mały; nie jest to test wszystkich kombinacji regulatorów. Szczegóły
-i rozróżnienie prototypu/końcowego pakietu: docs/releases/v0.2.4.md.
+## Current 0.3.1 and FX 0.3.0
 
-## Rozwinięcie 0.2.3
+0.3.1 (FM-1_68000301) swaps the two encoders after the user confirmed FX in 0.3.0: PRESETS = individual level; ALGORITHM = edited effect amount. DSP is identical. Its 30-second continuous physical backing-plus-two/three-live-note test, neutral FX, passed: CPU MAX65%, longest block3820 us, XRUN0, overload0. The user has not yet separately confirmed the swapped physical controls; source/UI tests verify their mapping.
 
-SELECT/PRESETS regulują osobno FM i perkusję. Unity miks zachowuje bitowo
-brzmienie 0.2.2; dodatkowe testy potwierdzają osobne ścieżki i wyciszanie.
-CPU/XRUN są ukryte na ekranie, lecz liczniki i ochrona pozostają. Testy UI
-potwierdzają brak odświeżeń od zmian tych liczników i pojedyncze kafelki miksera.
-30 s ciągłego podkładu z dwiema/trzema nutami live: CPU MAX 84%, XRUNS 0,
-overload 0, passed=true. Szczegóły w docs/releases/v0.2.3.md.
+0.3.0: a separate continuous 30-second run with all twelve sources at DECAY25/COLOR100/ECHO100 and live notes passed: CPU MAX68%, longest block3975 us, XRUN0, overload0, failed boots0. A subsequent DECAY0/COLOR100/ECHO100 sustain run included PLAY pauses; its passed=false continuity result remains. Counters stayed at zero and the lifetime maximum reached3984 us. Do not describe that run as continuous.
 
-## Rozwinięcie 0.2.2
+Desktop tests cover independent sources/effects, deterministic blocks256/63, echo delay/stereo/feedback/tail/reset, no render allocation and signal bounds. Optimized and generic paths produce dry hash7ce44fbe and FX hashf9fae4ef. UI/LED tests, linker/no-soft-double checks and OTA/loader/installer simulations passed. The inherited JavaScript comparison was skipped, not passed. See the release notes and raw evidence under releases/v0.3.0 and releases/v0.3.1.
 
-Nowy profil PSG, głosy live i LED-y mają osobne testy desktopowe; opis w
-docs/releases/v0.2.2.md. Bieżący pakiet wgrano na zweryfikowany Emerald YM FM-1.
-30 s ciągłego sekwencera z dwiema/trzema nutami live: CPU MAX 84%, XRUNS 0,
-overload 0. Miks 400% bez limiter hits sprawdzono na komputerze, nie jako
-osobny test wszystkich ustawień urządzenia. RAMTEXT ma tylko 68 B zapasu.
-Nie przenosimy oceny akceptacji 0.1.4 automatycznie na 0.2.2.
+## Earlier development
 
-## Zaakceptowana baza 0.1.4
+| Version | Physical evidence | Important qualification |
+|---|---|---|
+| 0.2.4 | 30s backing + live, CPU85%, max4985us, XRUN0, overload0 | Very small margin; prototype report also85%/4980us, not evidence of a timing improvement |
+| 0.2.3 | 30s continuous + live, CPU84%, max4921us, XRUN0, overload0 | Individual FM/drum buses; user later requested per-instrument selection |
+| 0.2.2 | 30s continuous + live, CPU84%, max4918us, XRUN0, overload0 | Default PSG300%; 400% tested on desktop only; user accepted mix/control |
+| 0.2.1 | 60s backing-only continuous pass, XRUN0, overload0 | Lifetime84%/4901us includes an earlier interactive live run; interactive report remains failed |
+| 0.2.0 | About60.7s interactive, 47/60 window samples playing, CPU84%, max4910us, XRUN0 | Raw passed=true used an older pause-tolerant rule, not a continuous-minute pass; separate timeout run incomplete |
 
-Wersja 0.1.4 została wgrana na egzemplarz użytkownika, identyfikator FM-1_68000104. Użytkownik potwierdził muzykę, brak migotania, LED-y i wskaźniki pokręteł. Binarna baza ma SHA-256:
+## Accepted baseline 0.1.4
 
-```
+Installed identity FM-1_68000104. The user confirmed music, no flicker, LEDs and knob indicators. Preserved package SHA-256:
+
+```text
 5fcae705878056c52588b4af9a98902a556c26488926a98d0cbcd7e6e79bd52a
 ```
 
-`releases/v0.1.4/hardware-summary.json` zawiera wynik podsumowania. Surowy `hardware-interactive-trace.json` zachowuje `passed=false`: użytkownik testował PLAY i REC, więc takt wrócił do 1 i nie spełnił starego kryterium końcowego numeru taktu. W 62 próbkach, przez około 60,6 s, odtwarzanie było aktywne w 48 próbkach; CPU MAX 80%, XRUNS 0, brak przeciążenia. To próba interaktywna, a nie minuta nieprzerwanego grania. Pełny wcześniejszy ciągły test 0.1.3 z tym samym algorytmem jest w docs/history/hardware-0.1.3-continuous.json.
+The interactive trace contains62 samples across about60.6s, 48 playing, CPU MAX80%, XRUN0, overload0, failed boots0, longest block4653us. It retains passed=false: REC reset the bar to1, failing the old end-bar criterion. This is not a continuous-minute pass or an observed audio error. The earlier 0.1.3 algorithm passed over a minute continuously (80%,4665us, XRUN0); trace in docs/history/hardware-0.1.3-continuous.json.
 
-Kontrole komputerowe obejmują deterministyczność dźwięku przy różnych wielkościach bloków, warianty seedów, pauzę, skrajne parametry, stałe zużycie areny oraz granice sygnału. Test UI uruchamia rzeczywisty renderer z tymi samymi czcionkami przeciw pamięciowemu LCD: brak zbędnych transmisji, atomowe kafelki, brak okresowego czyszczenia i granice ekranu. Testy OTA i loadera symulują transport/flash; nie programują urządzenia.
+The standalone project rebuild reproduced the preserved package byte for byte. New runs go to ignored build/, not over old release evidence. Existing baseline logs must not be edited to manufacture success.
 
-Po skopiowaniu projektu do samodzielnego folderu powtórzono budowanie z lokalnej .runtime oraz testy. Nowy pakiet jest identyczny bit po bicie z zachowaną bazą. Wyniki nowych uruchomień zapisują się w ignorowanym build/, a nie nadpisują historycznych dowodów wydania.
+## Remaining public-release checks
 
-Nie potwierdzono wszystkich kombinacji parametrów, wielogodzinnego grania ani odporności na przerwanie programowania. Test symulowany nie zastępuje fizycznego pomiaru. Wydania roboczego nie uznawaj za poprawę tylko dlatego, że kompiluje się lub podniesiono próg ochronny.
+Not established: all parameter combinations, multi-hour reliability, physical interrupted-write recovery, installation from official V15 and another custom firmware, and leaving the release for another firmware. Emerald-to-Emerald updates and mock flash tests do not prove these paths. The Firmware Hub checklist is in docs/FIRMWARE-HUB.md. This documentation task does not flash or run new physical tests.

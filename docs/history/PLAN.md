@@ -1,3 +1,5 @@
+> Historical DUB-1 documentation, retained for provenance. Not the current Emerald YM manual or build instructions. See the root README and BUILDING.md.
+
 # DUB-1: plan and progress
 
 A fork of AMB-1 (generative ambient for the M-VAVE FM-1) turned toward dub techno: chord stabs into a
