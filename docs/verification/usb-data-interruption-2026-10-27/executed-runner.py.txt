@@ -1,0 +1,66 @@
+from pathlib import Path
+import sys,time,json,hashlib,datetime,re
+ROOT=Path(__file__).resolve().parents[2]
+sys.path.insert(0,str(ROOT/'tools'))
+import fm1_install as I
+OUT=ROOT/'build/usb-interruption-2026-10-27';OUT.mkdir(exist_ok=True)
+report={'scope':'Same-image USB data interruption, battery maintained; not changed-sector or power-loss proof','events':[],'passed':False}
+def event(k,**v):
+ e={'event':k,'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),**v};report['events'].append(e)
+ (OUT/'report.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
+ print(json.dumps(e),flush=True)
+def allowed(n):return bool(re.search(r'emerald|fm-?1|felucca',n,re.I)) and not re.search(r'roland|um[- ]?one|microsoft',n,re.I)
+class Backend(I.MidoBackend):
+ def input_names(self):return [n for n in super().input_names() if allowed(n)]
+ def output_names(self):return [n for n in super().output_names() if allowed(n)]
+ def open(self,i,o):
+  if len(self.input_names())!=1 or len(self.output_names())!=1 or not allowed(i) or not allowed(o):raise RuntimeError('Not a unique FM-1 pair')
+  event('open',input=i,output=o);return super().open(i,o)
+class CableRemoved(Exception):pass
+backend=Backend();up=I.Updater(backend)
+p=ROOT/'releases/v0.4.3/emerald-ym-0.4.3.fwsc'
+sha=hashlib.sha256(p.read_bytes()).hexdigest()
+assert sha=='6669787e1d7a3b56f37bd0494c992fbdba5cb59e5dc13d5f2380d7c4fbd64925'
+product,image=I.load_package(p,False);report['package_sha256']=sha
+last=-1;signalled=False;ota=None
+def progress(k,v=None):
+ global last,signalled
+ if k=='write':
+  bucket=int(v)//10
+  if bucket!=last:event('write',percent=v);last=bucket
+  if not signalled and v>=25 and v<100:
+   signalled=True;event('DISCONNECT_USB_NOW',percent=v,host_response_paused=True)
+   deadline=time.monotonic()+300
+   while time.monotonic()<deadline:
+    if not backend.input_names():
+     event('USB_ABSENT');raise CableRemoved()
+    time.sleep(.2)
+   raise RuntimeError('No cable removal observed within five minutes')
+ else:event(k,value=v)
+try:
+ dev=up.find()
+ if not dev:raise RuntimeError('No verified FM-1')
+ event('before',identity=dev.id.text,loader=dev.id.loader)
+ if dev.id.text!=product or dev.id.loader:
+  dev.link.close();raise RuntimeError('Unexpected initial firmware')
+ ota=up.check(dev,image,progress)
+ report['loader_identity']=ota.id.text;event('loader_ready',identity=ota.id.text)
+ try:up.write(ota,image,progress)
+ except CableRemoved:
+  ota.link.close();event('interrupted_link_closed')
+ else:raise RuntimeError('Transfer completed without observed cable removal')
+ # Let the disconnected read request exhaust its documented 3 x 5 second attempts.
+ event('waiting_for_reconnection')
+ deadline=time.monotonic()+300
+ while not backend.input_names() and time.monotonic()<deadline:time.sleep(.3)
+ if not backend.input_names():raise RuntimeError('No reconnection within five minutes')
+ event('USB_PRESENT');time.sleep(17)
+ resume=up.wait_for(lambda i:i.loader,40)
+ if not resume:raise RuntimeError('Update loader did not answer after reconnection')
+ event('resume_identity',identity=resume.id.text)
+ signalled=True
+ up.install(resume,image,product,progress)
+ report['passed']=True;event('PASS',identity=product)
+except Exception as e:
+ if ota:ota.link.close()
+ report['error']=str(e);event('FAIL',error=str(e));sys.exit(1)

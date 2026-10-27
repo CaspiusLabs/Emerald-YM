@@ -1,5 +1,18 @@
 # Emerald YM changelog
 
+## 0.4.6 — unreleased — 2026-10-27 — release downloads and public repository
+
+- Publish the unchanged, physically tested 0.4.3 package as a GitHub beta release, with tag v0.4.3 at its matching source commit b5848cd40b4d8dda4612cb9b8c3dc9687e29abc6. Keep all previous release bytes and tags unchanged.
+- Replace the README/install package links with direct release downloads and refresh publication guidance. Keep source/documentation versions separate from hardware version 0.4.3.
+- Verify downloaded firmware against the accepted SHA-256 and make the repository public with the owner's authorization. No Hub submission or additional hardware tests.
+- Continue on PR #5 at the owner's request; documentation only, no new firmware build or automatic merge.
+
+## 0.4.5 — unreleased — 2026-10-27 — USB data interruption evidence
+
+- Record the authorized battery-powered USB interruption at 25% of the loader transfer, reconnection and successful restart of installation of the exact accepted 0.4.3 package.
+- Verify a subsequent 20-second continuous playback run: CPU MAX 67%, XRUNS 0, overload 0.
+- Preserve raw reports and distinguish same-image data-link recovery from changed-sector write interruption, power loss and the Hub browser path. Documentation only; no new binary or changed release/tag.
+
 ## 0.4.4 — unreleased — 2026-10-27 — installation verification and documentation
 
 - Documentation/source version only; physical cross-firmware tests target the accepted, unchanged Emerald 0.4.3 package from merged main.
