@@ -1,5 +1,11 @@
 # Emerald YM changelog
 
+## 0.5.1 — unreleased — 2026-10-27 — USB audio name and physical evidence
+
+- Name the Emerald audio-control/streaming interfaces and terminals explicitly using product string Emerald YM FM-1; increase the Emerald UAC USB device revision from 3.10 to 3.11, without changing VID/PID or loader descriptors. Windows may retain a cached friendly name; physical display verification is pending.
+- Archive exact 0.5.0 recording/MIDI/status results and update README/manual: 30-second continuous test, average sampled CPU 46.93%, maximum 72%, XRUNS 0, overload 0. Keep the older image evidence distinct from unflashed 0.5.1.
+- Continue in PR #6 at the owner's request. No flash, public release or automatic merge for this follow-up.
+
 ## 0.5.0 — unreleased — 2026-10-27 — USB audio capture
 
 - Enable the inherited UAC1 stereo 16-bit / 44.1 kHz USB capture of the master mix while preserving USB MIDI and status v1 diagnostics. Identity FM-1_68000500; no computer audio playback or multitrack endpoints.

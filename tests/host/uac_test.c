@@ -74,11 +74,18 @@ static int descriptors(void)
 {
     unsigned i = 0, midi = 0, audio = 0, in = 0, out = 0, capture = 0, format = 0;
     if (sizeof CFG_DESC != CFG_LEN || USB_NIF != 3) return 0;
+    if (USB_AUDIO_NAME != 2 || STR2[0] != sizeof STR2 || sizeof STR2 != 32 ||
+        DEV_DESC[12] != 0x11 || DEV_DESC[13] != 3) return 0;
+    { const char *name = "Emerald YM FM-1"; unsigned k;
+      for (k = 0; name[k]; k++)
+          if (STR2[2+2*k] != name[k] || STR2[3+2*k] != 0) return 0;
+    }
     while (i < sizeof CFG_DESC) {
         unsigned n = CFG_DESC[i], type;
         if (n < 2 || i + n > sizeof CFG_DESC) return 0;
         type = CFG_DESC[i + 1];
         if (type == 4 && n == 9) {
+            if ((CFG_DESC[i+2] == 0 || CFG_DESC[i+2] == UAC_AS_IF) && CFG_DESC[i+8] != 2) return 0;
             midi += CFG_DESC[i+5] == 1 && CFG_DESC[i+6] == 3;
             audio += CFG_DESC[i+2] == UAC_AS_IF && CFG_DESC[i+3] == 1 && CFG_DESC[i+6] == 2;
         }

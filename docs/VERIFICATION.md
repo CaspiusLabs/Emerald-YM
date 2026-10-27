@@ -2,6 +2,10 @@
 
 Desktop tests, flash/update simulations, user feedback and physical FM-1 measurements are separate evidence. The reports in releases/ retain their original values; an offline report intentionally says flashed=false even when a separate hardware report records installation.
 
+## USB audio, MIDI and status — exact 0.5.0
+
+The 2026-10-27 physical run captured 32.33 s of stereo PCM16/44.1 kHz while continuous backing, live MIDI and diagnostics ran for 30 s. Average sampled CPU 46.93%, maximum 72%, XRUNS 0, overload 0. [Exact package, raw reports and limitations](verification/usb-audio-0.5.0/README.md). Subsequent 0.5.1 audio-name changes are desktop-tested only; the physical result is not inherited.
+
 ## USB data interruption on battery — accepted 0.4.3
 
 On 2026-10-27, the owner disconnected USB after the host paused responses at 25% of the loader transfer. The device remained powered by its battery. USB absence and reappearance were recorded; the loader answered after reconnection, installation restarted and returned to `FM-1_68000403`. A subsequent 20-second continuous playback test passed: CPU MAX 67%, max block 3923 us, XRUNS 0, overload 0, failed boots 0. [Raw evidence and method](verification/usb-data-interruption-2026-10-27/README.md).
