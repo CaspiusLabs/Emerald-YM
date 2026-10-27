@@ -2,13 +2,19 @@
 
 Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A real YM2612 emulator, a lightweight Sega-style PSG and an endless sequencer turn the FM-1 into a small chiptune instrument. Play along on its keyboard and shape each instrument independently.
 
-**Current firmware: 0.6.0 (beta), hardware-tested.** [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
+**Current firmware: 0.7.0 (beta), hardware-tested.** [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
 
-**Public release download: 0.6.0 (beta).** [Download 0.6.0 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.6.0/emerald-ym-0.6.0.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.6.0/SHA256SUMS) · [Release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.6.0)
+**Public release download: 0.7.0 (beta).** [Download 0.7.0 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.7.0/emerald-ym-0.7.0.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.7.0/SHA256SUMS) · [Release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.7.0)
 
-![Emerald YM 0.6.0 main screen with MASTER slider, rendered by the actual UI test](docs/verification/master-ui-0.6.0/ui-preview.png)
+![Emerald YM 0.7.0 USB ONLY screen with MASTER slider, rendered by the actual UI test](releases/v0.7.0/ui-preview.png)
 
 *240 × 240 capture from the actual firmware UI renderer, not a photograph of the device. The owner separately confirmed the screen and MASTER slider on a physical FM-1.*
+
+## USB ONLY on GLO (0.7.0)
+
+Press **GLO** to mute the FM-1 speaker **and headphone output**, while USB audio, MIDI, diagnostics and playback continue. GLO lights up and the display shows **USB ONLY** below the MASTER slider. Press GLO again to restore the physical outputs. MASTER continues controlling the USB-recorded level. This is a digital output mute, not a power-off of the speaker amplifier.
+
+Switching fades the physical output over about 5.8 ms; USB receives the unchanged mix before that fade. The mode is not saved: physical outputs are enabled after reboot. Release 0.7.0 contains the exact tested package, without rebuilding. A 30-second USB ONLY recording/live-MIDI/status test passed: average sampled audio CPU 47.77%, maximum 73%, longest block 4242 us, XRUNS 0, overload 0, failed boots 0. The owner confirmed speaker mute/restore, GLO illumination and the USB ONLY label. Captured audio: 32.34 s stereo PCM16/44.1 kHz, no clipping. [Raw hardware results](docs/verification/usb-only-0.7.0/hardware/summary.json). Documentation version 0.7.1 does not change firmware. [Validation scope](docs/verification/usb-only-0.7.0/README.md).
 
 ## Main screen and physical test (0.6.0)
 
@@ -54,6 +60,7 @@ Start with MASTER low, then press PLAY. The sequencer is paused after boot.
 | SELECT | Select one of twelve instruments |
 | PRESETS | Set the selected instrument's level, 0–100% |
 | FX | Select DECAY, COLOR or ECHO for editing |
+| GLO (development 0.7.0) | Toggle USB ONLY; lit when speaker/headphones are digitally muted |
 | ALGORITHM | Set the selected effect amount, 0–100% |
 | ARP | Enable/disable all PSG, including live keys |
 | Keyboard | Up to three live PSG notes, F3–G5 |
@@ -98,7 +105,7 @@ These results apply to the exact linked package, not earlier review builds with 
 
 Levels/FX and K1–K4 retention after full power-off were user-confirmed in the preceding 0.4.x checks. Desktop tests cover the renderer, storage migration, interrupted/corrupt simulated saves and UI/LED/update logic. [Verification](docs/VERIFICATION.md) separates those tests from physical measurements. The immutable accepted baseline **v0.1.4**, its tag and original evidence remain preserved.
 
-**Firmware Hub:** the repository and the exact tested 0.6.0 release are public. The older 0.4.3 transition evidence remains version-specific. Normal V15/Dinghy round trips and the limited USB data-interruption test are documented. The Hub browser route, interrupted changed-sector programming and power-loss recovery remain unverified; no further hardware tests are planned in this task. [Submission checklist](docs/FIRMWARE-HUB.md). No submission has been sent.
+**Firmware Hub:** the repository and the exact tested 0.7.0 release are public. The older 0.4.3 transition evidence remains version-specific. Normal V15/Dinghy round trips and the limited USB data-interruption test are documented. The Hub browser route, interrupted changed-sector programming and power-loss recovery remain unverified; no further hardware tests are planned in this task. [Submission checklist](docs/FIRMWARE-HUB.md). No submission has been sent.
 
 ## Development
 

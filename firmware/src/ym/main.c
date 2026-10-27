@@ -27,6 +27,8 @@ struct en_dbg {
 } en_dbg __attribute__((section(".noinit")));
 static uint8_t safe_mode;                           /* two failed boots: no audio, USB on (safe_main) */
 
+#include "ym_output.h"
+
 static void render_block(int32_t *o)                /* ALNK0: one half, measured */
 {
     uint32_t t0 = fm1_ticks(), us, budget = HALF_FRAMES * 1000000u / FS;
@@ -37,11 +39,7 @@ static void render_block(int32_t *o)                /* ALNK0: one half, measured
     {
         uint32_t k;
         for (k = 0; k < HALF_FRAMES; k += REND_FRAMES) {
-            if (ym_overload < 8u) ym_render(o + 2u * k, REND_FRAMES, master_q12);
-            else memset(o + 2u * k, 0, REND_FRAMES * 2u * sizeof(int32_t));
-#if FELUCCA_UAC
-            uac_tap(o + 2u * k, REND_FRAMES);       /* the USB audio input: the same master output */
-#endif
+            youtput_block(o + 2u * k, REND_FRAMES, master_q12, yusb_only);
         }
     }
     us = (fm1_ticks() - t0) / FM1_TICKS_PER_US;

@@ -1,5 +1,16 @@
 # Emerald YM changelog
 
+## 0.7.1 — 2026-10-28 — publication documentation
+
+- Publish exact tested 0.7.0 with matching source tag, update README/preview and archive physical evidence. No rebuild or new device image. Merge PR #8 at owner request.
+
+
+## 0.7.0 — unreleased — GLO USB ONLY
+
+- GLO toggles session-only digital muting of the speaker/headphone output while USB audio, MIDI, diagnostics, sequencer and live keys continue. Bright GLO and a USB ONLY footer indicate the mode; a second press restores normal output. MASTER still controls USB level.
+- Fork USB before the local 256-frame fade/mute, with unity bit-exact and protected overload silence retained. No codec reset, DMA stop, persistence/schema change, new allocation, memory-region change or raised 85% guard.
+- Add production routing, fade/stereo/buffer/protection tests plus real LED/UI checks. Separate branch/PR; previous public release 0.6.0 is unchanged.
+
 ## 0.6.2 — unreleased — 2026-10-27 — publish tested 0.6.0 release
 
 - Publish the exact tested 0.6.0 package as a public beta release without rebuilding; preserve its SHA-256 and matching source tag at c0530a6cd7d026554e21b957665edfd7fe7d51d9. Archive the unchanged package, checksum and native preview under releases/v0.6.0.

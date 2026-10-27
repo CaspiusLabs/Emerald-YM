@@ -55,6 +55,7 @@ static void fm1_main(void){
    uint32_t oldtempo=ytempo,olddensity=ydensity,oldmutation=ymutation;int32_t oldtranspose=ytranspose;
    last_frame=fm1_ms;en_dbg.ui_frames++;
    for(uint32_t i=0;i<NB;i++)if(raw_pressed&(1u<<panel.btn[i]))pressed|=1u<<i;
+   youtput_controls(pressed);
    if(pressed&(1u<<B_PLAY)){if(ym_overload<8){yplaying=!yplaying;ypost();}}
    if(pressed&(1u<<B_REC)){uint32_t f=irq_save();seed^=fm1_ms+0x9e3779b9u;ym_reseed(seed?seed:1);irq_restore(f);yrec_until=fm1_ms+180u;}
    if(pressed&(1u<<B_SEQ)){ymutation=ymutation?0:35;ypost();}

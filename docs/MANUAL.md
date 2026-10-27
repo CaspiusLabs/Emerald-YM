@@ -77,3 +77,9 @@ The inherited update route and OCT− + OCT+ held for five seconds remain. There
 The left VOLUME rail follows the existing filtered position of the physical MASTER knob. Turn clockwise to move the red handle upward toward 10, counter-clockwise toward 0. This 0-10 scale shows control position, not dB, a VU meter or an additional gain stage. The display cannot be dragged: the FM-1 knob remains the control. MASTER still affects the speaker/headphone and USB-recorded master mix and is not stored by SAVE.
 
 Visual hysteresis suppresses small ADC fluctuations around a display-pixel boundary. It does not alter the audio gain law or knob filtering. Only the narrow slider tile redraws on movement; the static rail and other controls remain untouched. Transport, SAVE states, K1-K4, instrument level and selected effect controls keep their existing behavior. Exact 0.6.0 passed a subsequent 30-second physical recording/live-MIDI/status run (maximum audio CPU 72%, XRUNS 0); the owner confirmed correct screen/slider behavior. See the [version-specific evidence](verification/master-ui-0.6.0/README.md). Documentation version 0.6.1 does not change that firmware.
+
+## Development 0.7.0: GLO / USB ONLY
+
+Press GLO once to mute physical speaker/headphone audio while keeping USB recording, live keys, backing and MIDI/status active. The GLO LED is bright and the bottom-left tile says USB ONLY. Press again to restore physical audio; GLO turns off and the headphone symbol returns. MASTER and its slider still control the level sent to USB.
+
+The local output fades over one 256-frame block (~5.8 ms) to reduce switching clicks. The USB mix is captured before this local fade/mute. The amplifier is not powered off, so this feature does not promise removal of analog hiss or power savings. USB ONLY is session-only, not stored by SAVE; reboot restores normal physical output. It does not mute only the built-in speaker while retaining headphones.

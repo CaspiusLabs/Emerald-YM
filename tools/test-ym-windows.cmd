@@ -5,6 +5,10 @@ if errorlevel 1 exit /b 1
 cd /d "%~dp0\.."
 if not exist build\host mkdir build\host
 set /p EYM_VERSION=<VERSION
+cl /nologo /O2 /MT /std:c11 tests\ym_output_test.c /Fobuild\host\ /Febuild\host\ym_output_test.exe
+if errorlevel 1 exit /b 1
+build\host\ym_output_test.exe
+if errorlevel 1 exit /b 1
 .runtime\python\python.exe tools\prepare-uac-desktop-test.py
 if errorlevel 1 exit /b 1
 cl /nologo /O2 /MT /std:c11 /Ibuild\host\uac tests\host\uac_test.c /Fobuild\host\ /Febuild\host\uac_test.exe

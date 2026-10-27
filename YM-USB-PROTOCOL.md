@@ -1,6 +1,6 @@
 # Emerald YM USB status protocol v1 (firmware 0.1.2 and later)
 
-This is the protocol implemented by `firmware/src/ym/ym_loop.c`, not a guessed command for stock M-VAVE or DUB-1. Compatible identities are `FM-1_68000102` (0.1.2), `FM-1_68000103` (0.1.3), `FM-1_68000104` (0.1.4), `FM-1_68000200` (0.2.0), `FM-1_68000201` (0.2.1), `FM-1_68000202` (0.2.2), `FM-1_68000203` (0.2.3), `FM-1_68000204` (0.2.4), `FM-1_68000300` (0.3.0), `FM-1_68000301` (0.3.1), `FM-1_68000400` (0.4.0), `FM-1_68000402` (0.4.2), `FM-1_68000403` (0.4.3), and `FM-1_68000500` (0.5.0) `FM-1_68000501` (0.5.1), and development `FM-1_68000600` (0.6.0). The UI update in 0.1.4 does not change the protocol. It never exposes flash erase/write, preset or firmware operations. The existing Felucca updater is separate and unchanged.
+This is the protocol implemented by `firmware/src/ym/ym_loop.c`, not a guessed command for stock M-VAVE or DUB-1. Compatible identities are `FM-1_68000102` (0.1.2), `FM-1_68000103` (0.1.3), `FM-1_68000104` (0.1.4), `FM-1_68000200` (0.2.0), `FM-1_68000201` (0.2.1), `FM-1_68000202` (0.2.2), `FM-1_68000203` (0.2.3), `FM-1_68000204` (0.2.4), `FM-1_68000300` (0.3.0), `FM-1_68000301` (0.3.1), `FM-1_68000400` (0.4.0), `FM-1_68000402` (0.4.2), `FM-1_68000403` (0.4.3), and `FM-1_68000500` (0.5.0) `FM-1_68000501` (0.5.1), `FM-1_68000600` (0.6.0), and development `FM-1_68000700` (0.7.0). The UI update in 0.1.4 does not change the protocol. It never exposes flash erase/write, preset or firmware operations. The existing Felucca updater is separate and unchanged.
 
 Send status query bytes: `F0 7D 45 4D 59 01 F7`. Manufacturer byte `7D` is the non-commercial/experimental namespace; `45 4D 59` is ASCII `EMY`.
 
@@ -57,3 +57,7 @@ UAC1 capture (stereo 16-bit / 44.1 kHz) uses isochronous EP4 IN; USB MIDI remain
 ## Development 0.6.0 MASTER display
 
 The new volume slider displays the existing filtered physical MASTER ADC position. It does not add a MIDI or SysEx control and does not change master gain, audio rendering, persistence or status v1. The hardware-test tool accepts the explicit new identity but has not been executed on a device for this version.
+
+## Development 0.7.0 USB ONLY
+
+GLO toggles session-only physical-output mute. USB capture stays before that mute; MIDI and status v1 are unchanged. There is no remote routing command or route-status field. Confirm GLO/physical silence with the owner; the read-only query cannot establish the switch position. The existing persistent-effects stress guard remains in place.
