@@ -8,7 +8,7 @@ Generative 16-bit music firmware for the **M-VAVE FM-1**, by **CaspiusLabs**. A 
 
 *240 × 240 render of the firmware UI, not a photograph or a browser emulator.*
 
-PRs #1–#3 are merged into main. The linked 0.4.3 package is the accepted, unchanged binary tested below. The latest GitHub Releases entry is still [0.4.0](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.0); 0.4.3 is currently distributed as a committed package, without a new release tag. Source/documentation version 0.4.4 records the installation tests and does not replace the firmware on the device.
+PRs #1–#3 are merged into main. The linked 0.4.3 package is the accepted, unchanged binary tested below. The latest GitHub Releases entry is still [0.4.0](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.0); 0.4.3 is currently distributed as a committed package, without a new release tag. Source/documentation version 0.4.5 records the installation and USB data-interruption tests and does not replace the firmware on the device.
 
 ## What it does
 
@@ -61,6 +61,8 @@ Physical tests on 2026-10-27 used the exact 0.4.3 package linked above, official
 | Dinghy 0.3 → Emerald 0.4.3 | Passed |
 
 All four used normal USB MIDI updating and returned the expected running identity, without a rescue shortcut or manual power cycle. The owner confirmed screens and audible keys in V15 and Dinghy. After each return, Emerald passed 20 seconds of continuous playback: **CPU MAX 67%, XRUNS 0, overload 0**. Emerald 0.4.3 was restored at the end. [Package hashes, raw reports and scope](docs/verification/install-roundtrips-2026-10-27/README.md).
+
+A subsequent [USB data-interruption test on battery](docs/verification/usb-data-interruption-2026-10-27/README.md) passed: disconnect at 25% of the loader transfer, reconnect, restart installation and return to 0.4.3. The following 20-second continuous playback test passed (CPU MAX 67%, XRUNS 0). This used the same image already installed; equal sectors may be skipped, so it does not prove interrupted changed-sector writing or power-loss recovery.
 
 These results apply to the exact linked package, not earlier review builds with the same 0.4.3 identity, release 0.4.0, arbitrary firmware versions or every device. They do not establish interrupted-write recovery or compatibility/preservation of other firmware's data.
 

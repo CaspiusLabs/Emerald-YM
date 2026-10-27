@@ -1,5 +1,11 @@
 # Emerald YM changelog
 
+## 0.4.5 — unreleased — 2026-10-27 — USB data interruption evidence
+
+- Record the authorized battery-powered USB interruption at 25% of the loader transfer, reconnection and successful restart of installation of the exact accepted 0.4.3 package.
+- Verify a subsequent 20-second continuous playback run: CPU MAX 67%, XRUNS 0, overload 0.
+- Preserve raw reports and distinguish same-image data-link recovery from changed-sector write interruption, power loss and the Hub browser path. Documentation only; no new binary or changed release/tag.
+
 ## 0.4.4 — unreleased — 2026-10-27 — installation verification and documentation
 
 - Documentation/source version only; physical cross-firmware tests target the accepted, unchanged Emerald 0.4.3 package from merged main.

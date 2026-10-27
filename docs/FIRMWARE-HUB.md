@@ -45,7 +45,8 @@ Physical evidence: [2026-10-27 round trips](verification/install-roundtrips-2026
 - [x] Install exact Emerald 0.4.3 package from **Dinghy 0.3**, not merely an earlier Emerald build.
 - [x] From running Emerald 0.4.3, install official V15 and Dinghy 0.3 through the ordinary updater; both booted with user-confirmed screen/key audio. Restore Emerald at the end.
 - [ ] Confirm the Hub recognizes the reported MIDI port and identity after Connect.
-- [ ] Review the KB's interrupted-update recovery check in a separately planned hardware task. It has not been done; do not substitute a simulation for it or interrupt updates casually.
+- [x] Limited first step: physical USB data interruption on battery at 25% of the loader transfer; reconnection and restart of the same-image installation passed. [Evidence and limitations](verification/usb-data-interruption-2026-10-27/README.md).
+- [ ] Complete the broader interrupted-write recovery check separately. The same-image test may skip equal sectors and does not establish recovery from interrupted changed-sector writing or power loss; the Hub browser route remains untested.
 - [ ] Confirm the creator display name and image, then send the repository/release links and test results to the Hub maintainer.
 
 Keep raw reports for each physical transition, including both identities and package hashes. Do not label missing tests as passed. Earlier audio tests alone did not establish these paths; the linked physical transitions now do for the pinned 0.4.3 package. From 0.4.0, settings writes reuse the FC000/FD000 project-sector pair; this is disclosed in README and the install guide.

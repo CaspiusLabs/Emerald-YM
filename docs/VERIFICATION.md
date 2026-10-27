@@ -2,6 +2,12 @@
 
 Desktop tests, flash/update simulations, user feedback and physical FM-1 measurements are separate evidence. The reports in releases/ retain their original values; an offline report intentionally says flashed=false even when a separate hardware report records installation.
 
+## USB data interruption on battery — accepted 0.4.3
+
+On 2026-10-27, the owner disconnected USB after the host paused responses at 25% of the loader transfer. The device remained powered by its battery. USB absence and reappearance were recorded; the loader answered after reconnection, installation restarted and returned to `FM-1_68000403`. A subsequent 20-second continuous playback test passed: CPU MAX 67%, max block 3923 us, XRUNS 0, overload 0, failed boots 0. [Raw evidence and method](verification/usb-data-interruption-2026-10-27/README.md).
+
+This used the exact same 0.4.3 package already installed, so equal-sector skipping means it does not prove interrupted changed-sector programming. No power-loss or Hub browser test was performed. Documentation/source version 0.4.5 adds evidence without a new firmware image.
+
 ## Physical installation round trips — accepted 0.4.3
 
 PRs #1–#3 were verified merged into main, commit b5848cd40b4d8dda4612cb9b8c3dc9687e29abc6. On 2026-10-27 the exact accepted 0.4.3 package (SHA-256 6669787e1d7a3b56f37bd0494c992fbdba5cb59e5dc13d5f2380d7c4fbd64925) passed Emerald → official V15 → Emerald → Dinghy 0.3 → Emerald through normal USB MIDI updates. All target identities matched. No manual power cycle, OCT shortcut or ROM rescue was required; Roland UM-ONE was never opened.
