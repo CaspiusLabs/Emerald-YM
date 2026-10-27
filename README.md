@@ -8,7 +8,7 @@ Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A
 
 *240 × 240 render of the firmware UI, not a photograph or a browser emulator.*
 
-The [0.4.3 beta release](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.3) contains the accepted, unchanged binary tested below. Tag `v0.4.3` points to its matching source commit `b5848cd40b4d8dda4612cb9b8c3dc9687e29abc6`. USB audio was physically tested in **0.5.0** with simultaneous live MIDI and diagnostics. Development **0.5.1** adds explicit audio naming as **Emerald YM FM-1**; that descriptor follow-up has not been flashed. The public release download remains 0.4.3, which does not include USB audio.
+The [0.4.3 beta release](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.3) contains the accepted, unchanged binary tested below. Tag `v0.4.3` points to its matching source commit `b5848cd40b4d8dda4612cb9b8c3dc9687e29abc6`. USB audio was physically tested in **0.5.0** with simultaneous live MIDI and diagnostics. Firmware **0.5.1** was physically tested for USB recording, MIDI and diagnostics; its Windows recording input still retained the old name. Source/tooling **0.5.2** adds a targeted Windows audio-device refresh helper, without a new firmware image. The public release download remains 0.4.3, which does not include USB audio.
 
 ## What it does
 
@@ -51,11 +51,13 @@ In validated 0.4.3, USB audio is disabled: listen on the FM-1 speaker or headpho
 
 ## USB audio (0.5.x development)
 
-Connect by USB and choose **Emerald YM FM-1** as a stereo recording input at **44.1 kHz / 16-bit** in your recording software. Windows may add a prefix such as `Line`. In the physically tested 0.5.0 build, this computer displayed the cached name `Line (Felucca)`; 0.5.1 explicitly names the audio function and terminals, with its Windows display still awaiting verification. Windows can preserve an old endpoint name; after upgrading, reconnect the cable and check the input again. Firmware descriptor changes do not guarantee replacement of an existing Windows friendly name.
+Connect by USB and choose **Emerald YM FM-1** as a stereo recording input at **44.1 kHz / 16-bit** in your recording software. Windows may add a prefix such as `Line`. In both physical 0.5.0 and 0.5.1 tests, this computer displayed `Line (Felucca)`. On 0.5.1, the USB bus-reported product and audio-interface name were already `Emerald YM FM-1`, but the Microsoft `usbaudio` devnode still stored `Felucca` as its friendly name. Firmware descriptors alone did not refresh that Windows registration. See the [Windows audio-name refresh procedure](docs/WINDOWS-AUDIO-NAME.md). The targeted refresh was physically verified on this computer: the MEDIA adapter became `Emerald YM FM-1`; the recording endpoint became `Emerald YM FM-1 (Emerald YM FM-1)` (Windows combines endpoint and adapter names). WinMM truncates that full label to 31 characters. No manual registry/endpoint rename or firmware reflash was used.
 
 The input carries the full master mix: FM, PSG, drums, live notes and effects. MASTER controls the captured level. USB does not automatically route audio to your computer speakers: enable input monitoring in a DAW/recorder to listen there, or listen directly through the FM-1. Computer-to-FM-1 audio and separate instrument tracks are not provided. USB MIDI and read-only status diagnostics remain available while recording.
 
 **Physical 0.5.0 test:** 30 seconds of continuous backing with alternating two/three MIDI-held notes and status polling, while capturing 32.33 seconds of stereo audio. Sampled CPU averaged **46.93%**, maximum **72%**, longest block **4200 us**; **XRUNS 0, overload 0, failed boots 0**. Signal analysis found no clipped samples or long repeated/silent stretches in the measured body. This is a short test, not proof of zero USB packet glitches or long-session reliability; separate UAC packet counters are not exposed by status v1. [Exact package, raw reports and scope](docs/verification/usb-audio-0.5.0/README.md).
+
+**Physical 0.5.1 follow-up:** recording with simultaneous MIDI/status also passed: sampled CPU average **46.93%**, maximum **72%**, longest block **4195 us**, XRUNS **0**, overload **0**. The Windows name check failed (`Line (Felucca)`) and is recorded separately from the successful audio test. [Raw evidence](docs/verification/usb-audio-0.5.1/hardware/summary.json).
 
 ## Verified installation paths
 

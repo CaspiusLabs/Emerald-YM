@@ -1,5 +1,12 @@
 # Emerald YM changelog
 
+## 0.5.2 — unreleased — 2026-10-27 — Windows audio registration refresh
+
+- Diagnose the Windows name mismatch on exact 0.5.1: USB reports Emerald YM FM-1, but the Microsoft usbaudio MEDIA devnode retains FriendlyName Felucca. Preserve that failed name check alongside passed recording/MIDI/status evidence.
+- Add a targeted, Administrator-only PnP audio-child refresh helper with WhatIf, exact identity/service/parent guards and an audit report. No registry label edits, driver-package deletion or firmware change.
+- Physically verify that the targeted refresh replaces the adapter name with Emerald YM FM-1; Windows now exposes Emerald YM FM-1 (Emerald YM FM-1). A post-refresh 15-second recording/live-MIDI/status check passed on unchanged 0.5.1 (XRUN0, overload0).
+- Document the repair procedure and archive 0.5.1 hardware results. Source/tooling version only; the installed 0.5.1 image and published 0.4.3 assets are unchanged. Continue in PR #6 at the owner's request.
+
 ## 0.5.1 — unreleased — 2026-10-27 — USB audio name and physical evidence
 
 - Name the Emerald audio-control/streaming interfaces and terminals explicitly using product string Emerald YM FM-1; increase the Emerald UAC USB device revision from 3.10 to 3.11, without changing VID/PID or loader descriptors. Windows may retain a cached friendly name; physical display verification is pending.

@@ -2,6 +2,10 @@
 
 Desktop tests, flash/update simulations, user feedback and physical FM-1 measurements are separate evidence. The reports in releases/ retain their original values; an offline report intentionally says flashed=false even when a separate hardware report records installation.
 
+## Windows audio-name repair — unchanged firmware 0.5.1
+
+A targeted PnP refresh replaced the cached adapter name Felucca with Emerald YM FM-1; Windows now shows endpoint Emerald YM FM-1 (Emerald YM FM-1). A subsequent 15-second recording/live-MIDI/status check passed (XRUN0/overload0). [Audit and limits](verification/windows-audio-name-refresh/README.md). This source/tooling 0.5.2 change does not modify firmware.
+
 ## USB audio, MIDI and status — exact 0.5.0
 
 The 2026-10-27 physical run captured 32.33 s of stereo PCM16/44.1 kHz while continuous backing, live MIDI and diagnostics ran for 30 s. Average sampled CPU 46.93%, maximum 72%, XRUNS 0, overload 0. [Exact package, raw reports and limitations](verification/usb-audio-0.5.0/README.md). Subsequent 0.5.1 audio-name changes are desktop-tested only; the physical result is not inherited.

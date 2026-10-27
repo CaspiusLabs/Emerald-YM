@@ -9,3 +9,7 @@ Application 107060 B; data/BSS 39120/98304 B; pool 101888/344064 B; RAMTEXT 2449
 Windows can retain an endpoint friendly name in its persistent property store. A descriptor revision and explicit audio names do not guarantee that an existing cached name is replaced. The Windows display name after installing 0.5.1 remains to be checked. No registry edits, device removal or driver changes were performed. [Microsoft endpoint naming documentation](https://learn.microsoft.com/en-us/windows-hardware/drivers/audio/friendly-names-for-audio-endpoint-devices).
 
 [Physical 0.5.0 results](../usb-audio-0.5.0/README.md) remain version-specific and are not relabelled as 0.5.1 measurements.
+
+## Subsequent authorized physical run
+
+Exact 0.5.1 (package hash in the report) was installed and tested: [raw hardware summary](hardware/summary.json), [status](hardware/midi-status.json), [capture analysis](hardware/capture-report.json), [Windows endpoints](hardware/windows-endpoints.json). Recording/live-MIDI/status passed for 30 seconds, average sampled CPU46.93%, maximum72%, max block4195us, XRUN0/overload0. The Windows-name test FAILED: endpoint Line (Felucca), MEDIA friendly name Felucca, bus-reported USB name Emerald YM FM-1. No registry or manual-name edits were made during that run. Earlier pre-flash text above records the initial desktop stage. Source/tooling 0.5.2 adds a separate host-side registration refresh; it is not a new firmware image.

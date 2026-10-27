@@ -1,0 +1,33 @@
+﻿{
+    "startedUtc":  "2026-10-27T21:56:10.9654190Z",
+    "instanceId":  "USB\\VID_1209\u0026PID_0001\u0026MI_00\\6\u00263B48B169\u00260\u00260000",
+    "parent":  "USB\\VID_1209\u0026PID_0001\\5\u002620d34a76\u00260\u00262",
+    "busReportedName":  "Emerald YM FM-1",
+    "oldFriendlyName":  "Felucca",
+    "service":  "usbaudio",
+    "driverInf":  "wdma_usb.inf",
+    "performed":  true,
+    "driverPackageRemoved":  false,
+    "registryEdited":  false,
+    "removeOutput":  [
+                         "Microsoft PnP Utility",
+                         "",
+                         "Removing device:          USB\\VID_1209\u0026PID_0001\u0026MI_00\\6\u00263b48b169\u00260\u00260000",
+                         "Device removed successfully.",
+                         ""
+                     ],
+    "removeExitCode":  0,
+    "scanOutput":  [
+                       "Microsoft PnP Utility",
+                       "",
+                       "Scanning for device hardware changes.",
+                       "Scan complete.",
+                       ""
+                   ],
+    "scanExitCode":  0,
+    "restartRequestedByWindows":  false,
+    "newFriendlyName":  "Emerald YM FM-1",
+    "deviceReturned":  true,
+    "adapterNameMatches":  true,
+    "finishedUtc":  "2026-10-27T21:56:14.0427850Z"
+}
