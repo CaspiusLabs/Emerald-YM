@@ -4,6 +4,7 @@
 |---|---|
 | firmware/src/ym/ym_engine.cpp | Streaming sequencer, five FM + DAC, resampling, fixed initialization arena |
 | firmware/src/ym/ym_psg.h | Sega musical PSG profile, three tones/white noise, live voice allocation |
+| firmware/src/ym/ym_settings.c | Main-loop settings codec, dirty/debounce policy and existing A/B project storage |
 | firmware/src/ym/ym_fx.h | DECAY/COLOR/ECHO, 12×3 matrix, per-source sends to shared stereo echo |
 | firmware/src/ym/ymfm | ymfm core and local restricted-profile optimizations |
 | firmware/src/ym/ym_tables.h | Tuning tables and original short drum samples |
@@ -26,7 +27,7 @@ The renderer allocates no memory. Core objects are created in a fixed arena befo
 
 Main-loop leaf setters/getters live in XIP `.ym_control` and are reached through platform FL_FAR. They are not called by the renderer. Configuration/tuning tables in `.ym_pitch` are read at note/period setup, outside oscillator sample loops. Runtime periods and hot sample work stay in RAM.
 
-Echo uses 32 KiB of the existing pool for a stereo int16 buffer and generation tags. It averages pairs of samples at 22.05 kHz, delays about 186 ms, uses feedback 5/16 and shared return gain. Each source has its own send, not its own delay line. Reset advances the generation rather than clearing a large buffer in the IRQ. Settings are volatile; no automatic project save is implemented.
+Echo uses 32 KiB of the existing pool for a stereo int16 buffer and generation tags. It averages pairs of samples at 22.05 kHz, delays about 186 ms, uses feedback 5/16 and shared return gain. Each source has its own send, not its own delay line. Reset advances the generation rather than clearing a large buffer in the IRQ. Since 0.4.0 only instrument levels/FX are persistent: a 56-byte EMS1/schema1 record, range checked, using existing OBJ_PROJ at FC000/FD000 with storage.c CRC/header-last commit and readback. No memory/flash map change. This reuses other firmware's project space; no compatibility/import is promised. Writes wait three seconds after the last edit and audio activity; SAVE pauses backing. Flash-off code and stopped-audio behavior are unchanged. There are no writes from the audio renderer.
 
 UI uses the existing 240×144 canvas as tile workspace, not another full framebuffer. Finished tiles are sent only after state changes. The complete screen is 240×240. DMA synchronization protects canvas reuse. The Emerald mark is drawn in code.
 

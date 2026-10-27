@@ -1,6 +1,6 @@
 # Emerald YM USB status protocol v1 (firmware 0.1.2 and later)
 
-This is the protocol implemented by `firmware/src/ym/ym_loop.c`, not a guessed command for stock M-VAVE or DUB-1. Compatible identities are `FM-1_68000102` (0.1.2), `FM-1_68000103` (0.1.3), `FM-1_68000104` (0.1.4), `FM-1_68000200` (0.2.0), `FM-1_68000201` (0.2.1), `FM-1_68000202` (0.2.2), `FM-1_68000203` (0.2.3), `FM-1_68000204` (0.2.4), `FM-1_68000300` (0.3.0), and `FM-1_68000301` (0.3.1). The UI update in 0.1.4 does not change the protocol. It never exposes flash erase/write, preset or firmware operations. The existing Felucca updater is separate and unchanged.
+This is the protocol implemented by `firmware/src/ym/ym_loop.c`, not a guessed command for stock M-VAVE or DUB-1. Compatible identities are `FM-1_68000102` (0.1.2), `FM-1_68000103` (0.1.3), `FM-1_68000104` (0.1.4), `FM-1_68000200` (0.2.0), `FM-1_68000201` (0.2.1), `FM-1_68000202` (0.2.2), `FM-1_68000203` (0.2.3), `FM-1_68000204` (0.2.4), `FM-1_68000300` (0.3.0), `FM-1_68000301` (0.3.1), and `FM-1_68000400` (0.4.0). The UI update in 0.1.4 does not change the protocol. It never exposes flash erase/write, preset or firmware operations. The existing Felucca updater is separate and unchanged.
 
 Send status query bytes: `F0 7D 45 4D 59 01 F7`. Manufacturer byte `7D` is the non-commercial/experimental namespace; `45 4D 59` is ASCII `EMY`.
 
@@ -41,3 +41,7 @@ FX button cycles the edited parameter DECAY/COLOR/ECHO of the selected source; i
 `--effects-stress` is restricted to identity FM-1_68000300, sets DECAY25/COLOR100/ECHO100 on all 12 sources, and restores zero in finally. Combined with `--live-stress`, it also exercises two/three held notes. The raw report records effect settings separately from audio counters.
 
 In 0.3.1 the physical rotary roles are swapped: PRESETS is the selected source level, ALGORITHM is the selected FX amount. FX button still selects DECAY/COLOR/ECHO. Audio processing and MIDI CC mappings are unchanged.
+
+## 0.4.0 persistent instrument settings
+
+Status v1 and its read-only query are unchanged. Local instrument levels and MIDI CC20–22 effect edits now mark settings dirty. The application saves them through the existing A/B project store only after three seconds without edits, backing playback or held live keys. SAVE pauses backing and requests a quiet save. This changes the persistence of CC edits: do not send test values unless their eventual storage is intended. The hardware-test tool rejects --effects-stress for 0.4.x because the current protocol has no settings snapshot/restore command. Note-only live stress does not change persistent levels/FX. No new SysEx, storage-control message or overload bypass has been added.

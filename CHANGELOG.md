@@ -1,5 +1,14 @@
 # Emerald YM changelog
 
+## 0.4.0 — 2026-10-27 — persistent mixer and startup screen
+
+- Save/restore all twelve instrument levels and 36 FX values in the existing A/B project sectors, with schema/range validation and CRC/header-last commit.
+- Debounced saving only when paused and live keys released for three seconds; SAVE pauses and requests a save. Visible pending/saving/saved/error states and SAVE LED; failed writes require an explicit retry or new edit.
+- Version from VERSION below the 16-BIT badge; original console-inspired boot silhouette, without an additional framebuffer or blocking the service loop.
+- New persistence tests use production storage with interrupted writes/corrupt records; audio DSP, RAMTEXT bounds and 85% protection unchanged.
+- Cross-firmware update/recovery and a physical power-cycle persistence check remain separate from desktop evidence.
+
+
 ## Repository preparation — 2026-10-27 (firmware remains 0.3.1)
 
 - Adopt CaspiusLabs/Emerald-YM as the canonical GitHub repository; retain full upstream history and immutable v0.1.4.

@@ -7,12 +7,12 @@ Prepared against the [submission requirements](https://thefirmwarehub.com/submit
 - Firmware: **Emerald YM**
 - Creator display name: **CaspiusLabs** (repository owner; confirm before sending)
 - Repository: https://github.com/CaspiusLabs/Emerald-YM
-- Release: https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.3.1
+- Release: https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.0
 - License of combined firmware: **GPL-3.0-only**; component notices in LICENSING.md
 - Device: **M-VAVE FM-1**
-- USB identity: **FM-1_68000301**; port name: **Emerald YM FM-1**
-- Package: **emerald-ym-0.3.1.fwsc**, includes Felucca update loader
-- Screenshot: https://github.com/CaspiusLabs/Emerald-YM/blob/main/releases/v0.3.1/ui-preview.png
+- USB identity: **FM-1_68000400**; port name: **Emerald YM FM-1**
+- Package: **emerald-ym-0.4.0.fwsc**, includes Felucca update loader
+- Screenshot: https://github.com/CaspiusLabs/Emerald-YM/blob/main/releases/v0.4.0/ui-preview.png
 - Screenshot provenance: 240 × 240 render from the actual desktop UI test, not a device photograph
 - Browser player/editor: none; do not link the inherited DUB-1 web tools as Emerald
 
@@ -43,6 +43,6 @@ The root `fmhub.json` provides the shorter card text and `groove` category. It i
 - [ ] Review the KB's interrupted-update recovery check in a separately planned hardware task. It has not been done; do not substitute a simulation for it or interrupt updates casually.
 - [ ] Confirm the creator display name and image, then send the repository/release links and test results to the Hub maintainer.
 
-Keep raw reports for each physical transition, including both identities and package hashes. Do not label missing tests as passed. The existing 30-second audio tests do not establish these cross-firmware installation paths.
+Keep raw reports for each physical transition, including both identities and package hashes. Do not label missing tests as passed. The existing 30-second audio tests do not establish these cross-firmware installation paths. From 0.4.0, settings writes reuse the FC000/FD000 project-sector pair; this is disclosed in README and the install guide.
 
 A GitHub-built, attested firmware release is optional. The current binary was built locally with the documented Windows toolchain; it has **no GitHub build attestation**. Do not add a workflow that merely signs a committed binary and call it built from source.

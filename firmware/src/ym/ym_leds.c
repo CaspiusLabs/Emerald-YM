@@ -20,6 +20,7 @@ static void yled_update(void){
  yled_add(ymutation==0?bright:dim,B_SEQ,0);
  yled_add(ypsg?bright:dim,B_ARP,0);
  yled_add((yfx_values[yinstrument][0]||yfx_values[yinstrument][1]||yfx_values[yinstrument][2])?bright:dim,B_FX,0);
+ yled_add(ys_state==YS_CLEAN?dim:bright,B_SAVE,0);
  if(ym_overload<8u){
   uint32_t live=ym_live_active_keys(),sequence=ym_sequence_keys();
   for(uint32_t k=0;k<27u;k++){

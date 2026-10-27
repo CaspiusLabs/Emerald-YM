@@ -1,0 +1,15 @@
+{
+  "version": "0.4.0",
+  "installed_identity": "FM-1_68000400",
+  "physical_audio_report": "hardware-live-stress.json",
+  "physical_audio_passed": true,
+  "max_cpu_pct": 65,
+  "max_block_us": 3827,
+  "xruns": 0,
+  "overload_blocks": 0,
+  "desktop_tests_passed": true,
+  "persistence_simulation_passed": true,
+  "physical_power_cycle_retention_confirmed": false,
+  "boot_screen_and_version_user_confirmed": false,
+  "note": "User power-cycle/UI check requested; physical retention not yet confirmed. Audio test used neutral FX and did not change persistent instrument settings."
+}

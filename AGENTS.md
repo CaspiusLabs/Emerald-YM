@@ -2,7 +2,7 @@
 
 - Speak Polish with the current owner; write repository documentation and instructions in English. Target: M-VAVE FM-1, local Windows development.
 - Canonical repository: https://github.com/CaspiusLabs/Emerald-YM. Work in this local clone, commit and push there. `origin` is Emerald; `upstream` is read-only DUB-1 with push disabled. Keep the repository private until the owner explicitly authorizes public visibility. Do not send a Firmware Hub submission without instructions.
-- The accepted hardware baseline is `v0.1.4`. Current development is 0.3.1 (individual levels/FX). `VERSION` is authoritative. Read README, BUILDING, CHANGELOG and docs/ARCHITECTURE.md.
+- The accepted hardware baseline is `v0.1.4`. Current development is 0.4.0 (individual levels/FX). `VERSION` is authoritative. Read README, BUILDING, CHANGELOG and docs/ARCHITECTURE.md.
 - Active code: `firmware/src/ym/`, selected by `EN_YM2612` in `firmware/src/main.c`. Inherited `firmware/src/app/` and `dsp/` are not the current application.
 - Build: `powershell -ExecutionPolicy Bypass -File .\build-ym-windows.ps1`. Test: `powershell -ExecutionPolicy Bypass -File .\test-ym-windows.ps1`. PowerShell 7 can invoke them directly. Neither opens MIDI nor flashes.
 - Ignored `.runtime/` contains Python, the toolchain and minimal SDK inputs. Do not depend on old chat folders. Host MSVC is found through vswhere. A fresh clone requires provisioning; see BUILDING.md.
@@ -13,7 +13,7 @@
 - Critical code/tables live in `.audio_hot`, copied to RAM before start. Do not alter memory layout, far calls or guards without linker and timing verification. Flash-off `.ram_text` must still never call XIP.
 - Since 0.2.3, main-loop leaf setters/getters use XIP `.ym_control`, collected before emulator-object text exclusion. They are called through existing FL_FAR, not by the renderer. The build checks addresses. Memory-region limits and `.audio_hot` startup copying remain unchanged.
 - PSG is a restricted Sega musical profile: three tones and white noise (default clock/512; COLOR also selects /1024 and /2048). It is not a general register/VGM interface. The one-edge-per-sample optimization assumes divider >=9, guarded by tests. Live keys use PSG, never a sixth FM channel.
-- Since 0.3.1: SELECT chooses the source, PRESETS its level, FX the edited DECAY/COLOR/ECHO parameter, ALGORITHM its amount. The 12x3 values coexist. FX does not disable other effects. No automatic flash saves.
+- Since 0.3.1: SELECT chooses the source, PRESETS its level, FX the edited DECAY/COLOR/ECHO parameter, ALGORITHM its amount. The 12x3 values coexist. FX does not disable other effects. Since 0.4.0, levels and effects use ym_settings.c with the existing OBJ_PROJ A/B sectors 0xFC000/0xFD000. Schema EMS1/v1, validated ranges, inherited header-last CRC commit. Save only after three seconds with no edits, playback or held keys. SAVE pauses backing; failures stay dirty without automatic retry. Do not auto-save in the renderer or while playing. Panel calibration/OTA regions are separate.
 - EMERALD_STATIC_OPN requires SSG-EG, operator AM and PM disabled. Current patches/FX maintain this. Adding those modes requires adapting/disabling it and comparing against EMERALD_GENERIC_OPN (`tools/test-ym-generic-windows.cmd`).
 - `.audio_hot.fx` is collected inside the original `.audio_hot`, covered by its startup copy and PC guard. FX code must not be placed in executable data outside that range. Memory limits and debug/STATUS reserve stay unchanged.
 - Echo has individual sends and one shared stereo return (~186 ms), with 32 KiB buffers/tags in pool. Preserve the failed continuity result in the interactive 0.3.0 sustain report.
@@ -23,3 +23,5 @@
 - No renderer allocations, libm or double. Check no-soft-double, sizes, determinism, UI/OTA tests and scope. Inherited DUB-1 scenarios are not proof of the Emerald UI.
 - Keep desktop tests, simulated flash and physical hardware results separate. The 0.1.4 interactive report retains passed=false due to REC resetting the bar, with CPU80%, XRUN0 and user-confirmed UI. Do not edit raw evidence into a false pass.
 - Publication readiness: docs/FIRMWARE-HUB.md lists remaining physical update tests. Do not claim V15/other-firmware transitions, interrupted-write recovery, identity uniqueness or GitHub build attestation without evidence.
+
+- Boot screen/version are native UI tiles, no extra framebuffer. EN_VERSION is generated from VERSION. The hardware test tool refuses --effects-stress on persistent 0.4.x because it cannot restore saved levels/FX remotely; do not bypass that protection.

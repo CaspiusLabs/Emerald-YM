@@ -2,11 +2,19 @@
 
 Desktop tests, flash/update simulations, user feedback and physical FM-1 measurements are separate evidence. The reports in releases/ retain their original values; an offline report intentionally says flashed=false even when a separate hardware report records installation.
 
-## Current 0.3.1 and FX 0.3.0
+## Current 0.4.0 — persistent settings and startup screen
 
-0.3.1 (FM-1_68000301) swaps the two encoders after the user confirmed FX in 0.3.0: PRESETS = individual level; ALGORITHM = edited effect amount. DSP is identical. Its 30-second continuous physical backing-plus-two/three-live-note test, neutral FX, passed: CPU MAX65%, longest block3820 us, XRUN0, overload0. The user has not yet separately confirmed the swapped physical controls; source/UI tests verify their mapping.
+Installed as FM-1_68000400. A 30-second continuous physical backing + two/three live-note test with neutral FX passed: CPU MAX 65%, longest block 3827 us, XRUN 0, overload 0, failed boots 0. It did not alter persistent levels/FX. DSP is unchanged from 0.3.1; the 85% guard remains.
 
-0.3.0: a separate continuous 30-second run with all twelve sources at DECAY25/COLOR100/ECHO100 and live notes passed: CPU MAX68%, longest block3975 us, XRUN0, overload0, failed boots0. A subsequent DECAY0/COLOR100/ECHO100 sustain run included PLAY pauses; its passed=false continuity result remains. Counters stayed at zero and the lifetime maximum reached3984 us. Do not describe that run as continuous.
+Desktop tests with production storage.c passed complete restoration of all twelve levels/36 FX values, interrupted payload/header saves, newest-copy CRC fallback, schema/range/length/foreign-record rejection, no repeated writes when clean, explicit failure retry, three-second inactivity/debounce, and timer wrap. Every simulated write stayed within FC000/FD000. These are simulated flash/reboot tests, **not** a physical power-cycle confirmation.
+
+The user has been asked to save a level/effect, wait for SAVED, power off completely, reboot and reselect the same source/effect, and confirm the boot/version display. That confirmation is pending. No V15/other-firmware transition or interrupted physical write was tested. Package, offline logs, desktop UI renders and physical audio evidence are separate in releases/v0.4.0.
+
+## Earlier 0.3.1 and FX 0.3.0
+
+0.3.1 (FM-1_68000301) swaps the two encoders after the user confirmed FX in 0.3.0: PRESETS = individual level; ALGORITHM = edited effect amount. DSP is identical. Its 30-second continuous physical backing-plus-two/three-live-note test, neutral FX, passed: CPU MAX 65%, longest block3820 us, XRUN 0, overload 0. The owner subsequently reported the version working before requesting persistent settings in 0.4.0; source/UI tests also verify the encoder mapping.
+
+0.3.0: a separate continuous 30-second run with all twelve sources at DECAY25/COLOR100/ECHO100 and live notes passed: CPU MAX 68%, longest block3975 us, XRUN 0, overload 0, failed boots 0. A subsequent DECAY0/COLOR100/ECHO100 sustain run included PLAY pauses; its passed=false continuity result remains. Counters stayed at zero and the lifetime maximum reached3984 us. Do not describe that run as continuous.
 
 Desktop tests cover independent sources/effects, deterministic blocks256/63, echo delay/stereo/feedback/tail/reset, no render allocation and signal bounds. Optimized and generic paths produce dry hash7ce44fbe and FX hashf9fae4ef. UI/LED tests, linker/no-soft-double checks and OTA/loader/installer simulations passed. The inherited JavaScript comparison was skipped, not passed. See the release notes and raw evidence under releases/v0.3.0 and releases/v0.3.1.
 
@@ -14,11 +22,11 @@ Desktop tests cover independent sources/effects, deterministic blocks256/63, ech
 
 | Version | Physical evidence | Important qualification |
 |---|---|---|
-| 0.2.4 | 30s backing + live, CPU85%, max4985us, XRUN0, overload0 | Very small margin; prototype report also85%/4980us, not evidence of a timing improvement |
-| 0.2.3 | 30s continuous + live, CPU84%, max4921us, XRUN0, overload0 | Individual FM/drum buses; user later requested per-instrument selection |
-| 0.2.2 | 30s continuous + live, CPU84%, max4918us, XRUN0, overload0 | Default PSG300%; 400% tested on desktop only; user accepted mix/control |
-| 0.2.1 | 60s backing-only continuous pass, XRUN0, overload0 | Lifetime84%/4901us includes an earlier interactive live run; interactive report remains failed |
-| 0.2.0 | About60.7s interactive, 47/60 window samples playing, CPU84%, max4910us, XRUN0 | Raw passed=true used an older pause-tolerant rule, not a continuous-minute pass; separate timeout run incomplete |
+| 0.2.4 | 30s backing + live, CPU85%, max4985us, XRUN 0, overload 0 | Very small margin; prototype report also85%/4980us, not evidence of a timing improvement |
+| 0.2.3 | 30s continuous + live, CPU84%, max4921us, XRUN 0, overload 0 | Individual FM/drum buses; user later requested per-instrument selection |
+| 0.2.2 | 30s continuous + live, CPU84%, max4918us, XRUN 0, overload 0 | Default PSG300%; 400% tested on desktop only; user accepted mix/control |
+| 0.2.1 | 60s backing-only continuous pass, XRUN 0, overload 0 | Lifetime84%/4901us includes an earlier interactive live run; interactive report remains failed |
+| 0.2.0 | About60.7s interactive, 47/60 window samples playing, CPU84%, max4910us, XRUN 0 | Raw passed=true used an older pause-tolerant rule, not a continuous-minute pass; separate timeout run incomplete |
 
 ## Accepted baseline 0.1.4
 
@@ -28,7 +36,7 @@ Installed identity FM-1_68000104. The user confirmed music, no flicker, LEDs and
 5fcae705878056c52588b4af9a98902a556c26488926a98d0cbcd7e6e79bd52a
 ```
 
-The interactive trace contains62 samples across about60.6s, 48 playing, CPU MAX80%, XRUN0, overload0, failed boots0, longest block4653us. It retains passed=false: REC reset the bar to1, failing the old end-bar criterion. This is not a continuous-minute pass or an observed audio error. The earlier 0.1.3 algorithm passed over a minute continuously (80%,4665us, XRUN0); trace in docs/history/hardware-0.1.3-continuous.json.
+The interactive trace contains62 samples across about60.6s, 48 playing, CPU MAX80%, XRUN 0, overload 0, failed boots 0, longest block4653us. It retains passed=false: REC reset the bar to1, failing the old end-bar criterion. This is not a continuous-minute pass or an observed audio error. The earlier 0.1.3 algorithm passed over a minute continuously (80%,4665us, XRUN 0); trace in docs/history/hardware-0.1.3-continuous.json.
 
 The standalone project rebuild reproduced the preserved package byte for byte. New runs go to ignored build/, not over old release evidence. Existing baseline logs must not be edited to manufacture success.
 

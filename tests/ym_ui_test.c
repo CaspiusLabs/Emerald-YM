@@ -25,11 +25,16 @@ static uint32_t yfx_kind[12],yfx_values[12][3];
 static uint32_t current_bar=12,current_step=7;
 static uint32_t ym_bar(void){return current_bar;}
 static uint32_t ym_step(void){return current_step;}
+static char test_version[16]="TEST";
+#define EN_VERSION test_version
+enum {YS_CLEAN,YS_DIRTY,YS_WRITING,YS_SAVED,YS_ERROR};
+static uint32_t ys_state;
 #include "../firmware/src/ym/ym_ui.c"
 static void check(int v,const char*s){printf("%s: %s\n",s,v?"PASS":"FAIL");if(!v)exit(2);}
 static void image(const char*path){FILE*f=fopen(path,"wb");if(!f)exit(5);fprintf(f,"P6\n240 240\n255\n");for(int i=0;i<240*240;i++){uint16_t c=screen[i];uint8_t p[3]={(uint8_t)(((c>>11)&31)*255/31),(uint8_t)(((c>>5)&63)*255/63),(uint8_t)((c&31)*255/31)};fwrite(p,1,3,f);}fclose(f);}
 int main(void){
- palette_set(0);ydisplay();lcd_sync();image("build/host/ui-paused.ppm");unsigned initial=blits,clears=fills;
+ FILE*vf=fopen("VERSION","r");if(!vf||fscanf(vf,"%15s",test_version)!=1)exit(6);fclose(vf);
+ palette_set(0);yui_boot();lcd_sync();image("build/host/ui-boot.ppm");ydisplay();lcd_sync();image("build/host/ui-paused.ppm");unsigned initial=blits,clears=fills;
  for(int i=0;i<100;i++)ydisplay();check(blits==initial&&fills==clears,"idle: zero repeated LCD writes");
  ytempo=145;ydisplay();check(blits==initial+1&&last_w==108&&last_h==52,"one knob: exactly one atomic tile");
  initial=blits;yplaying=1;ydisplay();check(blits==initial+2,"transport change: transport + steps only");
@@ -40,6 +45,8 @@ int main(void){
  initial=blits;ylevels[yinstrument]=50;ydisplay();check(blits==initial+1&&last_w==148,"PRESETS updates only selected instrument level");
  initial=blits;yfx_kind[yinstrument]=2;ydisplay();check(blits==initial+1&&last_w==72,"FX button changes only effect tile");
  initial=blits;yfx_values[yinstrument][2]=65;ydisplay();check(blits==initial+1&&last_w==72,"ALGORITHM changes only selected effect tile");
+ initial=blits;ys_state=YS_DIRTY;ydisplay();check(blits==initial+1&&last_h==24,"pending save updates only transport tile");
+ ys_state=YS_WRITING;ydisplay();image("build/host/ui-saving.ppm");ys_state=YS_SAVED;ydisplay();image("build/host/ui-saved.ppm");ys_state=YS_ERROR;ydisplay();image("build/host/ui-save-error.ppm");ys_state=YS_CLEAN;ydisplay();
  initial=blits;audio_cpu_lifetime_peak=95;audio_xruns=42;ydisplay();check(blits==initial,"USB diagnostics never trigger screen writes");
  ypsg=1;ydisplay();image("build/host/ui-mixer.ppm");
  ym_overload=8;yplaying=0;ydisplay();image("build/host/ui-overload.ppm");

@@ -1,4 +1,4 @@
-# Emerald YM 0.3.1 user manual
+# Emerald YM 0.4.0 user manual
 
 Emerald YM makes original, continuously generated music with five YM2612 FM voices, DAC percussion and a Sega-style PSG. It starts paused. Turn MASTER down, press PLAY, then raise the level gradually. Audio comes from the FM-1 speaker/headphone output, not USB audio.
 
@@ -8,12 +8,15 @@ Emerald YM makes original, continuously generated music with five YM2612 FM voic
 |---|---|
 | PLAY | Start/pause the backing, with a fade; resume the current sequence |
 | REC | Choose a new seed and restart the sequence |
+| SAVE | Pause backing and commit pending instrument settings once quiet |
 | SEQ | Toggle mutation 0 / 35; this does not freeze every random decision |
 | K1 | Tempo, 80–180 BPM |
 | K2 | Melody density, 0–100% |
 | K3 | Mutation, 0–100% |
 | K4 | Transpose, −12 to +12 semitones, including live keys |
 | MASTER | Overall output level |
+
+A short boot screen uses an original console silhouette with a circular cartridge deck, vents and a red power LED. The version comes from VERSION and appears below the 16-BIT badge. The boot screen does not delay USB/MIDI/panel servicing; a button, live note or playback dismisses it.
 
 The screen shows play state, bar/step position, four parameter cards and the selected instrument/effect. Only changed tiles are transmitted to the LCD. CPU/XRUN counters remain available over USB; they are not shown in normal operation.
 
@@ -37,13 +40,15 @@ The screen shows play state, bar/step position, four parameter cards and the sel
 | 11 | PSG LIVE (the live keyboard group, up to three voices) |
 | 12 | PSG NOISE |
 
-All sources start at 100% of the calibrated default balance. Each has three independent effect amounts, initially zero. Selecting another instrument or effect leaves previous values intact. All effects can run together. PRESETS is no longer a global drum-volume control.
+All sources start at 100% of the calibrated default balance. Each has three independent effect amounts, initially zero on the first boot without saved settings. Selecting another instrument or effect leaves previous values intact. All effects can run together. PRESETS is no longer a global drum-volume control.
 
 - **DECAY:** increasing the amount shortens notes. FM gates/releases become shorter; drum/noise segments and arp gates shorten. With live PSG, a nonzero amount limits held-note duration, from roughly one second down to 20 ms. At zero, a held live note sustains normally.
 - **COLOR:** source-specific timbre: FM modulation/feedback, drum bit reduction, PSG tone ring modulation, or one of three noise clock ranges. This is not a shared filter.
 - **ECHO:** each source sends into one shared stereo delay, about 186 ms with fixed feedback. It is not tempo synchronized. Existing echoes may briefly remain after muting the source. REC resets the delay history.
 
-The FX LED is dim when all effects for the selected instrument are zero, bright when any is active. `PRE` labels the instrument level; `ALG` labels the edited FX amount. All settings are volatile: power-off restores defaults. SAVE and inherited DUB-1 menu functions are not implemented for Emerald.
+The FX LED is dim when all effects for the selected instrument are zero, bright when any is active. `PRE` labels the instrument level; `ALG` labels the edited FX amount. Instrument levels and all 36 effect amounts are persistent. They load before audio starts. After an edit the transport tile shows **SAVE *** and SAVE lights brightly. Saving waits until there have been no edits, backing playback or held keys for three seconds. Thus no erase is attempted in the middle of music. Press SAVE to pause the backing and request saving; release live keys, then wait for **SAVED** before turning off. **SAVING** means do not remove power; **SAVE ERR** keeps changes in RAM and requires a new edit or SAVE to retry. There is no automatic erase/retry loop.
+
+The first boot without compatible settings uses 100% levels and zero effects without writing flash. Reverting an edit to the saved value cancels the pending save. Tempo, seed, transpose, PSG enable, selected instrument and FX cursor are not stored. REC does not erase saved levels/FX. Inherited DUB-1 menus and project saving are not implemented.
 
 ## Live keyboard and LEDs
 
@@ -59,7 +64,7 @@ For remote effects, MIDI channels 1–12 select the sources in the table. CC20 =
 
 ## Data, installation and troubleshooting
 
-Emerald does not load another firmware's projects, presets or samples. It has no user project save/restore feature. Back up before switching; see [installation](INSTALLING.md).
+Emerald does not load another firmware's projects, presets or samples. It saves its own instrument settings only, not complete songs/projects. Saving uses the existing 0xFC000/0xFD000 project-sector pair and may overwrite another firmware's project data there. Back up before switching; see [installation](INSTALLING.md).
 
 If there is no sound, check MASTER, PLAY, ARP for PSG, and the selected source levels. Three live notes can temporarily replace the PSG arp. FX values of zero are neutral.
 

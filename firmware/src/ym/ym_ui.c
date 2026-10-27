@@ -10,7 +10,34 @@
 #define Y_DIM RGB(121,149,181)
 #define Y_AMBER RGB(255,176,64)
 static uint8_t yui_ready;
-static struct {uint32_t tempo,density,mutation,bar,playing,overload,step,psg,selected,level,fxsource,fxkind,fxvalue;int32_t transpose;} yui_old;
+static struct {uint32_t tempo,density,mutation,bar,playing,overload,step,psg,selected,level,fxsource,fxkind,fxvalue,save;int32_t transpose;} yui_old;
+/* Original console silhouette: circular cartridge deck, vents and red power LED.
+ * Drawn in the existing tile canvas, no bitmap asset or extra framebuffer. */
+static void yui_ring(int cx,int cy,int r,uint16_t c){
+ int x=r,y=0,err=1-r;
+ while(x>=y){
+  cv_pset(cx+x,cy+y,c);cv_pset(cx+y,cy+x,c);cv_pset(cx-y,cy+x,c);cv_pset(cx-x,cy+y,c);
+  cv_pset(cx-x,cy-y,c);cv_pset(cx-y,cy-x,c);cv_pset(cx+y,cy-x,c);cv_pset(cx+x,cy-y,c);
+  y++;if(err<0)err+=2*y+1;else{x--;err+=2*(y-x)+1;}
+ }
+}
+static void yui_boot(void){
+ lcd_fill(0,0,240,240,Y_BG);cv_begin(224,128,Y_BG);
+ cv_rect(6,17,212,102,RGB(39,42,49));cv_rect(3,22,218,90,RGB(26,29,36));
+ cv_rect(9,24,206,82,RGB(17,20,28));
+ for(int r=39;r>=35;r--)yui_ring(91,63,r,r==37?RGB(162,147,102):Y_EDGE);
+ yui_ring(91,63,31,RGB(49,55,66));cv_rect(60,43,62,11,C_BLACK);
+ cv_rect(62,44,58,2,Y_DIM);cv_text(72,64,&FONT_XS,"16-BIT",Y_WHITE);
+ for(int k=0;k<10;k++)cv_rect(148,32+k*5,49,2,RGB(57,63,75));
+ cv_rect(18,93,5,5,RGB(255,55,66));cv_text(27,92,&FONT_XS,"POWER",Y_DIM);
+ cv_rect(63,109,34,6,C_BLACK);cv_rect(131,109,34,6,C_BLACK);
+ cv_blit(8,25);
+ cv_begin(224,66,Y_BG);
+ cv_text((224-text_w(&FONT_M,"EMERALD YM"))/2,0,&FONT_M,"EMERALD YM",Y_WHITE);
+ cv_text((224-text_w(&FONT_XS,"16-BIT SOUND SYSTEM"))/2,28,&FONT_XS,"16-BIT SOUND SYSTEM",Y_BLUE);
+ cv_text((224-text_w(&FONT_XS,EN_VERSION))/2,45,&FONT_XS,EN_VERSION,Y_DIM);cv_blit(8,164);
+ yui_ready=0;
+}
 static void yui_header(void){
  cv_begin(240,44,Y_BG);
  /* Original faceted jewel + striped 16-bit badge, drawn natively. */
@@ -26,6 +53,7 @@ static void yui_header(void){
  cv_rect(171,5,62,27,Y_EDGE);cv_rect(173,7,58,23,Y_CARD);
  cv_text(184,10,&FONT_XS,"16-BIT",Y_WHITE);
  for(int k=0;k<3;k++)cv_rect(178,24+k*2,48,1,k==1?Y_BLUE:Y_DIM);
+ cv_text(171+(62-text_w(&FONT_XS,EN_VERSION))/2,30,&FONT_XS,EN_VERSION,Y_DIM);
  cv_rect(8,42,224,1,Y_EDGE);cv_blit(0,0);
 }
 static void yui_transport(uint32_t bar){
@@ -34,8 +62,11 @@ static void yui_transport(uint32_t bar){
  if(yplaying){for(int x=0;x<9;x++)cv_rect(8+x,5+x/2,1,13-x,accent);}
  else {cv_rect(8,6,3,12,accent);cv_rect(14,6,3,12,accent);}
  cv_text(25,4,&FONT_S,ym_overload>=8?"OVERLOAD":yplaying?"PLAYING":"PAUSED",accent);
- cv_text(142,6,&FONT_XS,"BAR",Y_DIM);fmt_int(b,(int32_t)(bar%100000u));
- cv_text(166,4,&FONT_S,b,Y_WHITE);cv_blit(8,48);
+ if(ys_state!=YS_CLEAN){
+  static const char*const save[]={"","SAVE *","SAVING","SAVED","SAVE ERR"};
+  cv_text(139,6,&FONT_XS,save[ys_state],ys_state==YS_ERROR?Y_AMBER:ys_state==YS_SAVED?Y_GREEN:Y_DIM);
+ }else {cv_text(142,6,&FONT_XS,"BAR",Y_DIM);fmt_int(b,(int32_t)(bar%100000u));cv_text(166,4,&FONT_S,b,Y_WHITE);}
+ cv_blit(8,48);
 }
 static void yui_card(uint32_t index,int32_t value){
  static const char*const label[]={"K1 TEMPO","K2 DENSITY","K3 MUTATION","K4 TRANSPOSE"};
@@ -88,7 +119,7 @@ static void ydisplay(void){
   lcd_fill(0,0,240,240,Y_BG);yui_header();
   memset(&yui_old,255,sizeof yui_old);yui_old.transpose=1000;yui_ready=1;
  }
- if(yui_old.playing!=yplaying||yui_old.bar!=bar||yui_old.overload!=overloaded){yui_transport(bar);yui_old.playing=yplaying;yui_old.bar=bar;yui_old.overload=overloaded;}
+ if(yui_old.playing!=yplaying||yui_old.bar!=bar||yui_old.overload!=overloaded||yui_old.save!=ys_state){yui_transport(bar);yui_old.playing=yplaying;yui_old.bar=bar;yui_old.overload=overloaded;yui_old.save=ys_state;}
  if(yui_old.tempo!=ytempo){yui_card(0,(int32_t)ytempo);yui_old.tempo=ytempo;}
  if(yui_old.density!=ydensity){yui_card(1,(int32_t)ydensity);yui_old.density=ydensity;}
  if(yui_old.mutation!=ymutation){yui_card(2,(int32_t)ymutation);yui_old.mutation=ymutation;}
