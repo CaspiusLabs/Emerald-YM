@@ -2,9 +2,9 @@
 
 Desktop tests, flash/update simulations, user feedback and physical FM-1 measurements are separate evidence. The reports in releases/ retain their original values; an offline report intentionally says flashed=false even when a separate hardware report records installation.
 
-## Development 0.6.0 UI — desktop only
+## Hardware-tested development 0.6.0 UI
 
-The reference-inspired screen and physical-MASTER indicator use the actual renderer, with endpoint/sweep, jitter/hysteresis, surrounding-pixel and changed-only tests. [Build, tests, memory and native previews](verification/master-ui-0.6.0/README.md). No physical installation or timing result is claimed for this UI version.
+The reference-inspired screen and physical-MASTER indicator use the actual renderer, with endpoint/sweep, jitter/hysteresis, surrounding-pixel and changed-only tests. [Build, tests, memory and native previews](verification/master-ui-0.6.0/README.md). The subsequent exact-package physical run passed 30 seconds of USB recording with live MIDI/status: average sampled audio CPU 46.93%, maximum 72%, longest block 4196 us, XRUN 0 / overload 0 / failed boots 0. The owner confirmed correct screen/MASTER slider behavior in response to the movement/readability/flicker question. [Raw hardware evidence](verification/master-ui-0.6.0/README.md#physical-test--2026-10-27). Documentation version 0.6.1 records those results without changing the installed 0.6.0 image.
 
 ## Windows audio-name repair — unchanged firmware 0.5.1
 

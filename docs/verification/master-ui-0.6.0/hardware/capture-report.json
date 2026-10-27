@@ -1,0 +1,16 @@
+{
+  "audio_input": "Emerald YM FM-1 (Emerald YM FM-",
+  "wavein_device_index": 0,
+  "format": "PCM16 stereo 44100 Hz",
+  "frames": 1426194,
+  "duration_seconds": 32.34,
+  "diagnostic_exit_code": 0,
+  "body_excludes_first_seconds": 4,
+  "body_excludes_last_seconds": 3,
+  "body_peak": 13056,
+  "body_rms": 517.6356199517023,
+  "longest_identical_frame_run_ms": 0.36281179138321995,
+  "longest_zero_run_ms": 0.36281179138321995,
+  "clipped_samples": 0,
+  "scope": "Host recording and status; firmware UAC packet counters not exposed. No proof of all packet glitches absent."
+}

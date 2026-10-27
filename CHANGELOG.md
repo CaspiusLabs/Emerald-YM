@@ -1,5 +1,11 @@
 # Emerald YM changelog
 
+## 0.6.1 — unreleased — 2026-10-27 — 0.6.0 hardware verification documentation
+
+- Feature the actual 0.6.0 UI-renderer image at the top of README and describe the physical MASTER slider. Clearly separate hardware-tested development 0.6.0 from the unchanged public release download 0.4.3.
+- Archive raw 0.6.0 recording/MIDI/status reports and the owner's screen/slider confirmation: 30-second continuous test, average sampled audio CPU 46.93%, maximum 72%, max block 4196 us, XRUN 0 / overload 0 / failed boots 0.
+- Documentation only, retained in PR #7 at the owner's request. No rebuild, new firmware image, release/tag change, additional hardware test or automatic merge; installed firmware remains exact 0.6.0.
+
 ## 0.6.0 — unreleased — 2026-10-27 — console-style MASTER slider
 
 - Reflow the 240x240 main screen around a left-hand volume rail, red slider handle, headphone symbol and narrower framed parameter/mixer cards, following the owner's reference. Preserve the native Emerald title, badge/version and step strip.
