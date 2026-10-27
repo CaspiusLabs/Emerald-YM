@@ -22,3 +22,7 @@ Desktop tests cover the production storage codec and A/B flash implementation, r
 The binary was built locally with the documented Windows toolchain. No GitHub build attestation is claimed. Repository remains private by owner request; no Firmware Hub submission has been sent. Remaining listing checks are in docs/FIRMWARE-HUB.md.
 
 Combined firmware GPL-3.0-only, with component notices in LICENSING.md. Original music and graphics; independent of M-VAVE, Sega and Yamaha.
+
+## User confirmation — 2026-10-27
+
+The owner confirmed that the requested SAVE / SAVED / complete power-off / reboot test retained the selected instrument level and effect amount, and that the version label and startup screen work. [Dated confirmation](https://github.com/CaspiusLabs/Emerald-YM/blob/main/releases/v0.4.0/user-confirmation.json). This representative check does not establish every value, interrupted-write recovery or cross-firmware transitions. The firmware binary and v0.4.0 source tag remain unchanged; the original tagged report records the earlier pending state.

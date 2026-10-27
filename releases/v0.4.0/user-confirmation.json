@@ -1,0 +1,13 @@
+{
+  "version": "0.4.0",
+  "date": "2026-10-27",
+  "evidence_type": "user_confirmation",
+  "user_reply": "działa",
+  "confirmed": {
+    "instrument_level_retained_after_complete_power_cycle": true,
+    "selected_effect_amount_retained_after_complete_power_cycle": true,
+    "version_label_visible": true,
+    "boot_screen_visible": true
+  },
+  "scope": "User confirmed the requested SAVE / SAVED / complete power-off / reboot / reselect test. Not an exhaustive physical test of all twelve sources or all 36 effect values. No physical interrupted-write or cross-firmware update test was performed."
+}

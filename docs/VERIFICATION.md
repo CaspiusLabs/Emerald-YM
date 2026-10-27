@@ -8,7 +8,7 @@ Installed as FM-1_68000400. A 30-second continuous physical backing + two/three 
 
 Desktop tests with production storage.c passed complete restoration of all twelve levels/36 FX values, interrupted payload/header saves, newest-copy CRC fallback, schema/range/length/foreign-record rejection, no repeated writes when clean, explicit failure retry, three-second inactivity/debounce, and timer wrap. Every simulated write stayed within FC000/FD000. These are simulated flash/reboot tests, **not** a physical power-cycle confirmation.
 
-The user has been asked to save a level/effect, wait for SAVED, power off completely, reboot and reselect the same source/effect, and confirm the boot/version display. That confirmation is pending. No V15/other-firmware transition or interrupted physical write was tested. Package, offline logs, desktop UI renders and physical audio evidence are separate in releases/v0.4.0.
+On 2026-10-27 the user replied “działa” (works) to the requested SAVE / SAVED / complete power-off / reboot / reselect check, confirming retained level/effect values, the version label and startup screen. This is a representative physical user check, not an exhaustive physical retention test of all 48 values. The dated evidence is releases/v0.4.0/user-confirmation.json. The original verification-summary.json and release tag retain the pending state recorded at release creation. No V15/other-firmware transition or interrupted physical write was tested. Package, offline logs, desktop UI renders and physical audio evidence are separate in releases/v0.4.0.
 
 ## Earlier 0.3.1 and FX 0.3.0
 

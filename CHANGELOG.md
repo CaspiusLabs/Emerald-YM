@@ -6,7 +6,7 @@
 - Debounced saving only when paused and live keys released for three seconds; SAVE pauses and requests a save. Visible pending/saving/saved/error states and SAVE LED; failed writes require an explicit retry or new edit.
 - Version from VERSION below the 16-BIT badge; original console-inspired boot silhouette, without an additional framebuffer or blocking the service loop.
 - New persistence tests use production storage with interrupted writes/corrupt records; audio DSP, RAMTEXT bounds and 85% protection unchanged.
-- Cross-firmware update/recovery and a physical power-cycle persistence check remain separate from desktop evidence.
+- User confirmed the representative physical power-cycle retention test, version label and boot screen on 2026-10-27; recorded separately from desktop evidence. Cross-firmware update/recovery remains unverified.
 
 
 ## Repository preparation — 2026-10-27 (firmware remains 0.3.1)
