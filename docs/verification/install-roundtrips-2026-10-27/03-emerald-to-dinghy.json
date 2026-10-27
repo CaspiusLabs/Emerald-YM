@@ -1,0 +1,134 @@
+{
+  "test": "03-emerald-to-dinghy",
+  "started_utc": "2026-10-27T17:24:05.052110+00:00",
+  "package": {
+    "name": "dinghy-0.3.fwsc",
+    "source_url": "https://github.com/zvenson/dinghy/releases/download/v0.3/dinghy-0.3.fwsc",
+    "bytes": 610110,
+    "sha256": "4e907044a7bda340317fc910d33a0e006eb4d587e08d8980de74d7edcca3ca8e",
+    "identity": "FM-1_993",
+    "felucca_loader_marker": true,
+    "sha256_matches_reference": true
+  },
+  "expected_before": "FM-1_68000403",
+  "events": [
+    {
+      "event": "start",
+      "value": "FM-1_68000403",
+      "at_utc": "2026-10-27T17:24:05.520089+00:00"
+    },
+    {
+      "event": "check",
+      "value": 1,
+      "at_utc": "2026-10-27T17:24:07.540740+00:00"
+    },
+    {
+      "event": "loader",
+      "value": null,
+      "at_utc": "2026-10-27T17:24:08.209081+00:00"
+    },
+    {
+      "event": "write",
+      "value": 0,
+      "at_utc": "2026-10-27T17:24:11.632197+00:00"
+    },
+    {
+      "event": "write",
+      "value": 10,
+      "at_utc": "2026-10-27T17:24:16.400933+00:00"
+    },
+    {
+      "event": "write",
+      "value": 20,
+      "at_utc": "2026-10-27T17:24:19.400322+00:00"
+    },
+    {
+      "event": "write",
+      "value": 30,
+      "at_utc": "2026-10-27T17:24:21.738513+00:00"
+    },
+    {
+      "event": "write",
+      "value": 40,
+      "at_utc": "2026-10-27T17:24:24.028339+00:00"
+    },
+    {
+      "event": "write",
+      "value": 50,
+      "at_utc": "2026-10-27T17:24:26.319094+00:00"
+    },
+    {
+      "event": "write",
+      "value": 60,
+      "at_utc": "2026-10-27T17:24:28.613789+00:00"
+    },
+    {
+      "event": "write",
+      "value": 70,
+      "at_utc": "2026-10-27T17:24:30.913344+00:00"
+    },
+    {
+      "event": "write",
+      "value": 80,
+      "at_utc": "2026-10-27T17:24:33.198808+00:00"
+    },
+    {
+      "event": "write",
+      "value": 90,
+      "at_utc": "2026-10-27T17:24:35.484189+00:00"
+    },
+    {
+      "event": "write",
+      "value": 100,
+      "at_utc": "2026-10-27T17:24:37.513178+00:00"
+    },
+    {
+      "event": "reboot",
+      "value": null,
+      "at_utc": "2026-10-27T17:24:37.514184+00:00"
+    },
+    {
+      "event": "done",
+      "value": "FM-1_993",
+      "at_utc": "2026-10-27T17:24:40.949298+00:00"
+    }
+  ],
+  "passed": true,
+  "official_stock_path": false,
+  "ordinary_update_route": true,
+  "device_power_cycle_requested": false,
+  "bootloader_shortcut_used": false,
+  "before": {
+    "identity": "FM-1_68000403",
+    "port": "Emerald YM FM-1 1",
+    "loader": false
+  },
+  "check_requests": 18,
+  "write_percent": 100,
+  "after": {
+    "identity": "FM-1_993",
+    "model": "FM-1",
+    "version_number": 993,
+    "port": "Felucca 1"
+  },
+  "identity_exact_match": true,
+  "official_v15_numeric_identity_match": false,
+  "finished_utc": "2026-10-27T17:24:40.950309+00:00",
+  "opened_ports": [
+    {
+      "input": "Emerald YM FM-1 1",
+      "output": "Emerald YM FM-1 2",
+      "at_utc": "2026-10-27T17:24:05.136923+00:00"
+    },
+    {
+      "input": "Felucca Update 1",
+      "output": "Felucca Update 2",
+      "at_utc": "2026-10-27T17:24:11.252365+00:00"
+    },
+    {
+      "input": "Felucca 1",
+      "output": "Felucca 2",
+      "at_utc": "2026-10-27T17:24:40.566847+00:00"
+    }
+  ]
+}

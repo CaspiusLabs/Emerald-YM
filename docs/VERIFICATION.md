@@ -2,15 +2,23 @@
 
 Desktop tests, flash/update simulations, user feedback and physical FM-1 measurements are separate evidence. The reports in releases/ retain their original values; an offline report intentionally says flashed=false even when a separate hardware report records installation.
 
-## Proposed 0.4.3 — uppercase header follow-up
+## Physical installation round trips — accepted 0.4.3
+
+PRs #1–#3 were verified merged into main, commit b5848cd40b4d8dda4612cb9b8c3dc9687e29abc6. On 2026-10-27 the exact accepted 0.4.3 package (SHA-256 6669787e1d7a3b56f37bd0494c992fbdba5cb59e5dc13d5f2380d7c4fbd64925) passed Emerald → official V15 → Emerald → Dinghy 0.3 → Emerald through normal USB MIDI updates. All target identities matched. No manual power cycle, OCT shortcut or ROM rescue was required; Roland UM-ONE was never opened.
+
+The owner confirmed V15 and Dinghy screens and audible keys. Each Emerald return passed 20 seconds of continuous playback/status monitoring: CPU MAX 67%, XRUNS 0, overload 0, failed boots 0; longest blocks 3929 us after V15 and 3922 us after Dinghy. Firmware 0.4.3 is restored. [Manifest, raw reports, runner and scope](verification/install-roundtrips-2026-10-27/README.md).
+
+Source/documentation version 0.4.4 records this work without building/flashing a new firmware binary. Earlier same-version review packages and old release 0.4.0 do not inherit these exact-package results. Interrupted-write recovery, browser Hub Connect, arbitrary firmware/data compatibility and long-session behavior remain separate checks.
+
+## Accepted 0.4.3 — uppercase header follow-up
 
 The user confirmed K1–K4 retention and prior mixer/FX settings on 0.4.2, but requested the earlier large font in uppercase and a second badge stripe. The 0.4.3 renderer preview has been inspected: EMERALD YM fits beside the 48×21 badge, with two stripes and a version gap. Build and full desktop tests passed. Storage/audio DSP are unchanged. Prior 0.4.2 hardware measurements are referenced as prior evidence, not relabeled as 0.4.3 results.
 
-## Proposed 0.4.2 — header and K1–K4 persistence
+## Earlier 0.4.2 — header and K1–K4 persistence
 
 Desktop build, streaming/FX/settings/UI/LED tests and update/loader/installer simulations passed. Settings tests restore all four knobs and the complete mixer, reject invalid tempo/density/mutation/transpose, exercise valid extrema including signed transpose, migrate schema 1 without a boot-time write and commit the migrated snapshot on the next edit. The actual UI renderer confirms the full title fits before the smaller badge; its preview is in releases/v0.4.2/ui-preview.png.
 
-The DSP and guarded RAM regions are unchanged. This is a PR candidate based on workflow PR #1, not an automatic merge or published release. New physical audio results and power-cycle feedback must be recorded independently; prior 0.4.0 confirmation does not prove K1–K4 retention in 0.4.2.
+The DSP and guarded RAM regions are unchanged. This was a PR candidate at the time of the original evidence; PRs #1–#3 have since been merged by the owner. New physical audio results and power-cycle feedback must be recorded independently; prior 0.4.0 confirmation does not prove K1–K4 retention in 0.4.2.
 
 
 Physical FM-1_68000402: 30 seconds continuous backing with alternating two/three live notes, passed=true; CPU MAX 67%, longest block 3945 us, XRUN 0, overload 0, failed boots 0. The test preserved loaded settings and sent no effect CCs, so it is not labeled a neutral-FX test. The user subsequently confirmed K1–K4 retention and preservation of previous mixer/FX settings after the requested complete power-cycle test. They requested a larger uppercase title and second badge stripe as a follow-up (0.4.3). The original summary preserves the pending state at the first candidate commit; dated feedback is in releases/v0.4.2/user-confirmation.json.
@@ -55,4 +63,4 @@ The standalone project rebuild reproduced the preserved package byte for byte. N
 
 ## Remaining public-release checks
 
-Not established: all parameter combinations, multi-hour reliability, physical interrupted-write recovery, installation from official V15 and another custom firmware, and leaving the release for another firmware. Emerald-to-Emerald updates and mock flash tests do not prove these paths. The Firmware Hub checklist is in docs/FIRMWARE-HUB.md. This documentation task does not flash or run new physical tests.
+Still not established: all parameter combinations, multi-hour reliability, physical interrupted-write recovery and the Hub browser Connect/Install route. The ordinary V15/Dinghy transitions are now physically verified for the pinned 0.4.3 package, not for every release. The repository is private and the tested 0.4.3 bytes still need a corresponding GitHub release/tag for the preferred Hub workflow. See docs/FIRMWARE-HUB.md.

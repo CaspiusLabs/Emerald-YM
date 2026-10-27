@@ -1,4 +1,4 @@
-# Emerald YM 0.4.3 user manual (PR candidate)
+# Emerald YM 0.4.3 user manual
 
 Emerald YM makes original, continuously generated music with five YM2612 FM voices, DAC percussion and a Sega-style PSG. It starts paused. Turn MASTER down, press PLAY, then raise the level gradually. Audio comes from the FM-1 speaker/headphone output, not USB audio.
 

@@ -1,0 +1,29 @@
+[
+  {
+    "name": "official-v15.fwsc",
+    "source_url": "https://raw.githubusercontent.com/m-vave/fm1_open/4c7496daac04a95ff10d1afdcc8f9ead2dbabc41/sdk/firmware/FM-1_015.fwsc",
+    "bytes": 699956,
+    "sha256": "db1642b2b6fa5c2cccb11ffd13878068bb28601678d3644049f99dc40e7edb8a",
+    "identity": "FM-1_015",
+    "felucca_loader_marker": false,
+    "sha256_matches_reference": true
+  },
+  {
+    "name": "dinghy-0.3.fwsc",
+    "source_url": "https://github.com/zvenson/dinghy/releases/download/v0.3/dinghy-0.3.fwsc",
+    "bytes": 610110,
+    "sha256": "4e907044a7bda340317fc910d33a0e006eb4d587e08d8980de74d7edcca3ca8e",
+    "identity": "FM-1_993",
+    "felucca_loader_marker": true,
+    "sha256_matches_reference": true
+  },
+  {
+    "name": "emerald-ym-0.4.3.fwsc",
+    "source_path": "releases\\v0.4.3\\emerald-ym-0.4.3.fwsc",
+    "bytes": 609666,
+    "sha256": "6669787e1d7a3b56f37bd0494c992fbdba5cb59e5dc13d5f2380d7c4fbd64925",
+    "identity": "FM-1_68000403",
+    "felucca_loader_marker": true,
+    "source_commit": "b5848cd40b4d8dda4612cb9b8c3dc9687e29abc6"
+  }
+]

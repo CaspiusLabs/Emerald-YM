@@ -1,0 +1,75 @@
+"""Run one explicitly authorized FM-1 cross-firmware transition; no other MIDI devices.
+Uses the repository's documented M-UPGRADE implementation. Official V15 is
+accepted only at its exact known hash, following web/amb_installer.html's stock path.
+"""
+from pathlib import Path
+import argparse,sys,time,json,re,hashlib,datetime
+ROOT=Path(__file__).resolve().parents[2]
+sys.path.insert(0,str(ROOT/'tools'))
+import fm1_install as I
+import fm1_rescue as R
+AUDIT=ROOT/'build/install-roundtrips-2026-10-27'
+MATCH=re.compile(r'fm-?1|felucca|dinghy|sinco|^usb[- ]midi(?: \d+)?$',re.I)
+DENY=re.compile(r'um[- ]?one|roland|microsoft',re.I)
+def stamp():return datetime.datetime.now(datetime.timezone.utc).isoformat()
+def allowed(n):return bool(MATCH.search(n)) and not DENY.search(n)
+class Backend(I.MidoBackend):
+ def input_names(self):return [n for n in super().input_names() if allowed(n)]
+ def output_names(self):return [n for n in super().output_names() if allowed(n)]
+ def open(self,i,o):
+  if not allowed(i) or not allowed(o):raise RuntimeError('Refusing unrelated MIDI port')
+  if len(self.input_names())!=1 or len(self.output_names())!=1:raise RuntimeError('FM-1 MIDI pair is not unique')
+  opened.append({'input':i,'output':o,'at_utc':stamp()})
+  return super().open(i,o)
+class Updater(I.Updater):
+ def candidates(self,only_port):return self.backend.input_names()
+ def verify(self,product,step):
+  step('reboot');time.sleep(I.DELAY['reboot'])
+  back=self.wait_for(lambda i:not i.loader,I.DELAY['wait_reboot'])
+  if not back:raise I.InstallError('noreturn','FM-1 did not return after write')
+  record['after']={'identity':back.id.text,'model':back.id.model,'version_number':back.id.version,'port':back.name}
+  back.link.close()
+  exact=back.id.text==product
+  stock_equivalent=official and back.id.model=='FM-1' and back.id.version==15
+  record['identity_exact_match']=exact;record['official_v15_numeric_identity_match']=stock_equivalent
+  if not exact and not stock_equivalent:raise I.InstallError('mismatch','Unexpected identity after update: '+back.id.text)
+  step('done',back.id.text);return back.id.text
+ap=argparse.ArgumentParser();ap.add_argument('--name',required=True);ap.add_argument('--from-identity',required=True);ap.add_argument('--package',required=True);a=ap.parse_args()
+p=ROOT/a.package;raw=p.read_bytes();sha=hashlib.sha256(raw).hexdigest();product=I.product_of(raw)
+manifest=json.loads((AUDIT/'package-manifest.json').read_text())
+entry=next((m for m in manifest if m['sha256']==sha and m['identity']==product),None)
+if entry is None:raise SystemExit('Package is not in the verified audit manifest')
+official=product=='FM-1_015' and sha==R.STOCK_SHA256
+if official:image=I.logical_image(raw) # exact manufacturer recovery image with its own loader
+else:
+ parsed,image=I.load_package(p,False);assert parsed==product
+backend=Backend();opened=[];record={'test':a.name,'started_utc':stamp(),'package':entry,'expected_before':a.from_identity,'events':[],'passed':False,'official_stock_path':official,'ordinary_update_route':True,'device_power_cycle_requested':False,'bootloader_shortcut_used':False}
+last_check=-100;last_percent=-1
+report=AUDIT/(a.name+'.json')
+def save():report.write_text(json.dumps(record,indent=2)+'\n',encoding='utf-8')
+def event(k,v=None):
+ global last_check,last_percent
+ if k=='check':
+  record['check_requests']=v
+  if v<last_check+100:return
+  last_check=v
+ if k=='write':
+  record['write_percent']=v
+  if v//10==last_percent and v!=100:return
+  last_percent=v//10
+ e={'event':k,'value':v,'at_utc':stamp()};record['events'].append(e);print(json.dumps(e),flush=True);save()
+try:
+ up=Updater(backend)
+ dev=up.find()
+ if not dev:raise RuntimeError('No unique verified FM-1 pair answered the identity handshake')
+ record['before']={'identity':dev.id.text,'port':dev.name,'loader':dev.id.loader};save()
+ if dev.id.text!=a.from_identity or dev.id.loader:
+  dev.link.close();raise RuntimeError('Wrong source identity/mode; no update sent')
+ up.install(dev,image,product,event)
+ record['passed']=True
+except Exception as e:
+ record['error_type']=type(e).__name__;record['error']=str(e);record['error_code']=getattr(e,'code',None)
+finally:
+ record['finished_utc']=stamp();record['opened_ports']=opened;save()
+print('RESULT '+json.dumps({'test':a.name,'passed':record['passed'],'before':record.get('before'),'after':record.get('after'),'error':record.get('error')}),flush=True)
+sys.exit(0 if record['passed'] else 1)

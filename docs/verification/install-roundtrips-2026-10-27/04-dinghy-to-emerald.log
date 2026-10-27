@@ -1,0 +1,17 @@
+{"event": "start", "value": "FM-1_993", "at_utc": "2026-10-27T17:26:10.316649+00:00"}
+{"event": "check", "value": 1, "at_utc": "2026-10-27T17:26:12.335316+00:00"}
+{"event": "loader", "value": null, "at_utc": "2026-10-27T17:26:12.993987+00:00"}
+{"event": "write", "value": 0, "at_utc": "2026-10-27T17:26:16.427332+00:00"}
+{"event": "write", "value": 10, "at_utc": "2026-10-27T17:26:20.575406+00:00"}
+{"event": "write", "value": 20, "at_utc": "2026-10-27T17:26:23.551769+00:00"}
+{"event": "write", "value": 30, "at_utc": "2026-10-27T17:26:25.874037+00:00"}
+{"event": "write", "value": 40, "at_utc": "2026-10-27T17:26:28.143116+00:00"}
+{"event": "write", "value": 50, "at_utc": "2026-10-27T17:26:30.413456+00:00"}
+{"event": "write", "value": 60, "at_utc": "2026-10-27T17:26:32.688971+00:00"}
+{"event": "write", "value": 70, "at_utc": "2026-10-27T17:26:34.948012+00:00"}
+{"event": "write", "value": 80, "at_utc": "2026-10-27T17:26:37.212306+00:00"}
+{"event": "write", "value": 90, "at_utc": "2026-10-27T17:26:39.477848+00:00"}
+{"event": "write", "value": 100, "at_utc": "2026-10-27T17:26:41.504382+00:00"}
+{"event": "reboot", "value": null, "at_utc": "2026-10-27T17:26:41.505380+00:00"}
+{"event": "done", "value": "FM-1_68000403", "at_utc": "2026-10-27T17:26:44.937830+00:00"}
+RESULT {"test": "04-dinghy-to-emerald", "passed": true, "before": {"identity": "FM-1_993", "port": "Felucca 1", "loader": false}, "after": {"identity": "FM-1_68000403", "model": "FM-1", "version_number": 68000403, "port": "Emerald YM FM-1 1"}, "error": null}

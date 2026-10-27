@@ -1,0 +1,134 @@
+{
+  "test": "04-dinghy-to-emerald",
+  "started_utc": "2026-10-27T17:26:09.834534+00:00",
+  "package": {
+    "name": "emerald-ym-0.4.3.fwsc",
+    "source_path": "releases\\v0.4.3\\emerald-ym-0.4.3.fwsc",
+    "bytes": 609666,
+    "sha256": "6669787e1d7a3b56f37bd0494c992fbdba5cb59e5dc13d5f2380d7c4fbd64925",
+    "identity": "FM-1_68000403",
+    "felucca_loader_marker": true,
+    "source_commit": "b5848cd40b4d8dda4612cb9b8c3dc9687e29abc6"
+  },
+  "expected_before": "FM-1_993",
+  "events": [
+    {
+      "event": "start",
+      "value": "FM-1_993",
+      "at_utc": "2026-10-27T17:26:10.316649+00:00"
+    },
+    {
+      "event": "check",
+      "value": 1,
+      "at_utc": "2026-10-27T17:26:12.335316+00:00"
+    },
+    {
+      "event": "loader",
+      "value": null,
+      "at_utc": "2026-10-27T17:26:12.993987+00:00"
+    },
+    {
+      "event": "write",
+      "value": 0,
+      "at_utc": "2026-10-27T17:26:16.427332+00:00"
+    },
+    {
+      "event": "write",
+      "value": 10,
+      "at_utc": "2026-10-27T17:26:20.575406+00:00"
+    },
+    {
+      "event": "write",
+      "value": 20,
+      "at_utc": "2026-10-27T17:26:23.551769+00:00"
+    },
+    {
+      "event": "write",
+      "value": 30,
+      "at_utc": "2026-10-27T17:26:25.874037+00:00"
+    },
+    {
+      "event": "write",
+      "value": 40,
+      "at_utc": "2026-10-27T17:26:28.143116+00:00"
+    },
+    {
+      "event": "write",
+      "value": 50,
+      "at_utc": "2026-10-27T17:26:30.413456+00:00"
+    },
+    {
+      "event": "write",
+      "value": 60,
+      "at_utc": "2026-10-27T17:26:32.688971+00:00"
+    },
+    {
+      "event": "write",
+      "value": 70,
+      "at_utc": "2026-10-27T17:26:34.948012+00:00"
+    },
+    {
+      "event": "write",
+      "value": 80,
+      "at_utc": "2026-10-27T17:26:37.212306+00:00"
+    },
+    {
+      "event": "write",
+      "value": 90,
+      "at_utc": "2026-10-27T17:26:39.477848+00:00"
+    },
+    {
+      "event": "write",
+      "value": 100,
+      "at_utc": "2026-10-27T17:26:41.504382+00:00"
+    },
+    {
+      "event": "reboot",
+      "value": null,
+      "at_utc": "2026-10-27T17:26:41.505380+00:00"
+    },
+    {
+      "event": "done",
+      "value": "FM-1_68000403",
+      "at_utc": "2026-10-27T17:26:44.937830+00:00"
+    }
+  ],
+  "passed": true,
+  "official_stock_path": false,
+  "ordinary_update_route": true,
+  "device_power_cycle_requested": false,
+  "bootloader_shortcut_used": false,
+  "before": {
+    "identity": "FM-1_993",
+    "port": "Felucca 1",
+    "loader": false
+  },
+  "check_requests": 17,
+  "write_percent": 100,
+  "after": {
+    "identity": "FM-1_68000403",
+    "model": "FM-1",
+    "version_number": 68000403,
+    "port": "Emerald YM FM-1 1"
+  },
+  "identity_exact_match": true,
+  "official_v15_numeric_identity_match": false,
+  "finished_utc": "2026-10-27T17:26:44.937830+00:00",
+  "opened_ports": [
+    {
+      "input": "Felucca 1",
+      "output": "Felucca 2",
+      "at_utc": "2026-10-27T17:26:09.933892+00:00"
+    },
+    {
+      "input": "Felucca Update 1",
+      "output": "Felucca Update 2",
+      "at_utc": "2026-10-27T17:26:16.047269+00:00"
+    },
+    {
+      "input": "Emerald YM FM-1 1",
+      "output": "Emerald YM FM-1 2",
+      "at_utc": "2026-10-27T17:26:44.553863+00:00"
+    }
+  ]
+}
