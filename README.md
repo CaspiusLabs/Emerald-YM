@@ -10,6 +10,12 @@ Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A
 
 *240 × 240 capture from the actual firmware UI renderer, not a photograph of the device. The owner separately confirmed the screen and MASTER slider on a physical FM-1.*
 
+## Development 0.7.0: USB ONLY on GLO
+
+Press **GLO** to mute the FM-1 speaker **and headphone output**, while USB audio, MIDI, diagnostics and playback continue. GLO lights up and the display shows **USB ONLY** below the MASTER slider. Press GLO again to restore the physical outputs. MASTER continues controlling the USB-recorded level. This is a digital output mute, not a power-off of the speaker amplifier.
+
+Switching fades the physical output over about 5.8 ms; USB receives the unchanged mix before that fade. The mode is not saved: physical outputs are enabled after reboot. Development 0.7.0 is a separate candidate; the public download above remains 0.6.0. [Validation scope](docs/verification/usb-only-0.7.0/README.md).
+
 ## Main screen and physical test (0.6.0)
 
 The console-inspired main screen adds a vertical red MASTER slider beside the transport, K1-K4 cards and per-source mixer/effect controls. It follows the physical MASTER knob: 0 at the bottom, 10 at the top. This is a knob-position indicator, not a signal meter or a decibel scale. MASTER controls the speaker/headphone and USB-recorded mix and is not saved. The owner confirmed correct slider movement, readability and no flicker during the physical check.
@@ -54,6 +60,7 @@ Start with MASTER low, then press PLAY. The sequencer is paused after boot.
 | SELECT | Select one of twelve instruments |
 | PRESETS | Set the selected instrument's level, 0–100% |
 | FX | Select DECAY, COLOR or ECHO for editing |
+| GLO (development 0.7.0) | Toggle USB ONLY; lit when speaker/headphones are digitally muted |
 | ALGORITHM | Set the selected effect amount, 0–100% |
 | ARP | Enable/disable all PSG, including live keys |
 | Keyboard | Up to three live PSG notes, F3–G5 |

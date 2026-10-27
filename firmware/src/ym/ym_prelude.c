@@ -23,6 +23,7 @@
 #define ym_sequence_keys(...) FL_FAR(ym_sequence_keys)(__VA_ARGS__)
 static volatile uint32_t audio_cpu_pct,audio_xruns,audio_cpu_peak,audio_cpu_lifetime_peak;
 static volatile uint32_t ym_overload;
+static volatile uint32_t yusb_only; /* GLO: volatile session state, not persisted */
 static uint32_t ymaster_adc=512; /* filtered physical position, UI only; never persisted */
 static uint32_t master_q12=256; /* start quietly, master pot updates after boot */
 static uint32_t ytempo=132,ydensity=100,ymutation=35,yplaying=0;

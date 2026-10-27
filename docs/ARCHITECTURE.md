@@ -42,3 +42,9 @@ EN_UAC=1 selects the existing UAC1 implementation in usb.c. Each rendered master
 The main loop copies the existing smoothed MASTER ADC value to ymaster_adc before applying the unchanged squared master_q12 gain calculation. UI position is computed from that linear 0..1023 reading in 90 steps, with visual-only hysteresis. This does not add ADC reads or render-IRQ work and does not enter the persistent settings snapshot.
 
 The 40px left rail is drawn once as 40x136 and 40x32 static tiles. The moving track/handle uses one 22x108 tile only when the quantized position changes. Right-side transport and parameter/mixer tiles are reflowed within 240x240. Every tile fits the existing 240x144 canvas; no framebuffer or allocation is added. Initial invalidation alone may clear the full screen. Code/memory layout, startup copying, flash-off rules and the 85% guard are unchanged.
+
+## Development 0.7.0 output routing
+
+ym_output.h owns the output fork: generate the existing master mix (or protected silence), feed uac_tap, then fade/zero only the physical I2S/DMA buffer. A 0..256 integer local gain ramps one step per stereo frame; unity bypasses scaling bit-for-bit and a settled mute uses memset. No allocation, codec reset, stopped DMA, 64-bit sample multiply or gain-stage change before USB. The route helper remains inside render_block timing, including the existing 85% guard.
+
+GLO changes a 32-bit volatile session flag on button edges; it does not dirty persistent settings. Complete LED-row publication adds bright GLO only while muted. A separate changed-only 40x32 tile replaces the headphone symbol with USB ONLY; MASTER and other UI tiles retain their behavior. Status v1 is unchanged and does not report USB ONLY state; physical confirmation is separate evidence.

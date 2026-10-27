@@ -11,7 +11,7 @@
 #define Y_AMBER RGB(255,176,64)
 #define Y_RED RGB(255,35,40)
 static uint8_t yui_ready;
-static struct {uint32_t tempo,density,mutation,bar,playing,overload,step,psg,selected,level,fxsource,fxkind,fxvalue,save,master;int32_t transpose;} yui_old;
+static struct {uint32_t tempo,density,mutation,bar,playing,overload,step,psg,selected,level,fxsource,fxkind,fxvalue,save,master,usb_only;int32_t transpose;} yui_old;
 /* Original console silhouette: circular cartridge deck, vents and red power LED.
  * Drawn in the existing tile canvas, no bitmap asset or extra framebuffer. */
 static void yui_ring(int cx,int cy,int r,uint16_t c){
@@ -81,13 +81,19 @@ static void yui_volume_base(void){
  for(int k=0;k<=10;k++)cv_rect(24,30+k*9,2,1,Y_DIM);
  cv_text(26,24,&FONT_XS,"10",Y_DIM);cv_text(26,69,&FONT_XS,"5",Y_DIM);cv_text(26,114,&FONT_XS,"0",Y_DIM);
  cv_blit(8,48);
+}
+static void yui_output_mode(void){
  cv_begin(40,32,Y_CARD);cv_rect(0,0,1,32,Y_EDGE);cv_rect(39,0,1,32,Y_EDGE);
  cv_rect(0,31,40,1,Y_EDGE);cv_rect(1,30,38,1,Y_BLUE);
+ if(yusb_only){
+  cv_text(11,3,&FONT_XS,"USB",Y_AMBER);cv_text(8,16,&FONT_XS,"ONLY",Y_AMBER);
+ }else{
  /* Native headphone symbol, no bitmap or copied logo. */
  cv_line(12,17,12,10,Y_WHITE);cv_line(12,10,16,5,Y_WHITE);
  cv_line(16,5,23,5,Y_WHITE);cv_line(23,5,27,10,Y_WHITE);cv_line(27,10,27,17,Y_WHITE);
  cv_rect(11,16,5,10,Y_DIM);cv_rect(12,16,2,10,Y_WHITE);
- cv_rect(24,16,5,10,Y_DIM);cv_rect(25,16,2,10,Y_WHITE);cv_blit(8,184);
+ cv_rect(24,16,5,10,Y_DIM);cv_rect(25,16,2,10,Y_WHITE);}
+ cv_blit(8,184);
 }
 static void yui_volume(uint32_t position){
  int y=2+(int)(90u-position);
@@ -165,6 +171,7 @@ static void ydisplay(void){
  if(yui_old.playing!=yplaying||yui_old.bar!=bar||yui_old.overload!=overloaded||yui_old.save!=ys_state){yui_transport(bar);yui_old.playing=yplaying;yui_old.bar=bar;yui_old.overload=overloaded;yui_old.save=ys_state;}
  {uint32_t position=yui_master_position(ymaster_adc,yui_old.master);
   if(yui_old.master!=position){yui_volume(position);yui_old.master=position;}}
+ if(yui_old.usb_only!=yusb_only){yui_output_mode();yui_old.usb_only=yusb_only;}
  if(yui_old.tempo!=ytempo){yui_card(0,(int32_t)ytempo);yui_old.tempo=ytempo;}
  if(yui_old.density!=ydensity){yui_card(1,(int32_t)ydensity);yui_old.density=ydensity;}
  if(yui_old.mutation!=ymutation){yui_card(2,(int32_t)ymutation);yui_old.mutation=ymutation;}

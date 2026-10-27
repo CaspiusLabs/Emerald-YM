@@ -18,7 +18,7 @@ static void lcd_blit(uint32_t x,uint32_t y,uint32_t w,uint32_t h,const uint16_t*
 static void fmt_int(char*b,int32_t v){sprintf(b,"%d",v);}
 static unsigned str_len(const char*s){return (unsigned)strlen(s);}
 static void str_cpy(char*d,const char*s,unsigned max){unsigned i=0;while(s[i]&&i+1<max){d[i]=s[i];i++;}d[i]=0;}
-static uint32_t ymaster_adc=512;
+static uint32_t yusb_only,ymaster_adc=512;
 static uint32_t ytempo=132,ydensity=100,ymutation=35,yplaying,ym_overload,audio_cpu_lifetime_peak=80,audio_xruns;
 static int32_t ytranspose;
 static uint32_t ypsg=1,yinstrument,ylevels[12]={100,100,100,100,100,100,100,100,100,100,100,100};
@@ -60,6 +60,8 @@ int main(void){
  initial=blits;yplaying=1;ydisplay();check(blits==initial+2,"transport change: transport + steps only");
  initial=blits;current_step=8;ydisplay();check(blits==initial+1&&last_h==12,"one step: small strip only");
  image("build/host/ui-playing.ppm");ymutation=0;ytranspose=-7;ydisplay();image("build/host/ui-varied.ppm");
+ initial=blits;yusb_only=1;ydisplay();check(blits==initial+1&&last_x==8&&last_y==184&&last_w==40&&last_h==32,"GLO redraws only the USB ONLY mode tile");image("build/host/ui-usb-only.ppm");
+ initial=blits;ydisplay();check(blits==initial,"stable USB ONLY mode never redraws");yusb_only=0;ydisplay();
  initial=blits;yinstrument=9;ydisplay();check(blits==initial+2,"SELECT updates instrument and its effect tile");
  initial=blits;ypsg=0;ydisplay();check(blits==initial+1&&last_h==38,"PSG switch updates selected voice tile");
  initial=blits;ylevels[yinstrument]=50;ydisplay();check(blits==initial+1&&last_w==116,"PRESETS updates only selected instrument level");
