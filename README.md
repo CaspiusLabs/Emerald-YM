@@ -8,7 +8,7 @@ Generative 16-bit music firmware for the **M-VAVE FM-1**, by **CaspiusLabs**. A 
 
 *240 × 240 render of the firmware UI, not a photograph or a browser emulator.*
 
-**Proposed 0.4.2:** clearer Emerald YM header and saved K1–K4 values (tempo, density, mutation, transpose). Package and test evidence are in `releases/v0.4.2/` on the feature branch; the PR remains separate from the published 0.4.0 release.
+**Proposed 0.4.3:** larger uppercase EMERALD YM header with a two-stripe badge, plus the saved K1–K4 values introduced and user-confirmed in 0.4.2. Candidate package/evidence: `releases/v0.4.3/`; earlier persistence evidence: `releases/v0.4.2/`. The PRs remain separate from the published 0.4.0 release.
 
 ## What it does
 

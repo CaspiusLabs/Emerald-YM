@@ -47,12 +47,12 @@ static void yui_header(void){
   cv_line(22,35-i*4,22-r,20,c);cv_line(22-r,20,22,5+i*4,c);
  }
  cv_line(7,20,37,20,Y_GREEN);cv_line(22,5,22,35,Y_GREEN);
- cv_text(45,4,&FONT_S,"Emerald YM",RGB(14,68,122));
- cv_text(44,3,&FONT_S,"Emerald YM",Y_WHITE);
+ cv_text(41,2,&FONT_M,"EMERALD YM",RGB(14,68,122));
+ cv_text(40,1,&FONT_M,"EMERALD YM",Y_WHITE);
  cv_text(45,28,&FONT_XS,"YM + PSG / LIVE",Y_BLUE);
  cv_rect(185,4,48,20,Y_EDGE);cv_rect(187,6,44,16,Y_CARD);
  cv_text(191,6,&FONT_XS,"16-BIT",Y_WHITE);
- cv_rect(191,20,36,1,Y_BLUE);
+ cv_rect(191,19,36,1,Y_BLUE);cv_rect(191,21,36,1,Y_DIM);
  cv_text(185+(48-text_w(&FONT_XS,EN_VERSION))/2,30,&FONT_XS,EN_VERSION,Y_DIM);
  cv_rect(8,42,224,1,Y_EDGE);cv_blit(0,0);
 }

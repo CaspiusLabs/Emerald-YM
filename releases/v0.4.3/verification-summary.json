@@ -1,0 +1,12 @@
+{
+  "version": "0.4.3",
+  "desktop_tests_passed": true,
+  "UI_preview_inspected": true,
+  "changes_from_0_4_2": "UI title size/case and badge stripe only; storage schema and audio DSP unchanged.",
+  "physical_audio_measurement_for_this_binary": false,
+  "prior_physical_audio_report": "../v0.4.2/hardware-live-stress.json",
+  "prior_power_cycle_confirmation": "../v0.4.2/user-confirmation.json",
+  "note": "Prior physical results are not relabeled as new 0.4.3 measurements. No new public release/tag or main merge.",
+  "installed_identity": "FM-1_68000403",
+  "installation_verified": true
+}
