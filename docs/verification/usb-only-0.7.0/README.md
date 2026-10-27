@@ -9,3 +9,7 @@ Image108032 B (+240 vs0.6.0); data+BSS39120/98304 B, pool101888/344064 B, RAMTEX
 ![USB ONLY footer from actual native UI renderer](ui-usb-only.png)
 
 This desktop report is not a physical speaker/headphone or real-time proof. The owner authorized installation and testing as a subsequent stage; physical results will be recorded independently. Status v1 cannot report GLO state or confirm sound from the physical output. Previous0.6.0 hardware evidence is not relabelled as0.7.0.
+
+## Subsequent physical test
+
+The owner confirmed GLO speaker mute/restore, LED and footer, and left USB ONLY enabled before recording. [Raw summary](hardware/summary.json), [status](hardware/midi-status.json), [owner observation](hardware/owner-feedback.json). Continuous 30-second live-MIDI/status with 32.34-second USB recording passed: average sampled CPU47.77%, maximum73%, XRUN0/overload0. Headphones were not separately physically checked. Documentation0.7.1 publishes the unchanged tested0.7.0 file, without rebuilding.

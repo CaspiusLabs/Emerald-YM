@@ -1,5 +1,10 @@
 # Emerald YM changelog
 
+## 0.7.1 — 2026-10-28 — publication documentation
+
+- Publish exact tested 0.7.0 with matching source tag, update README/preview and archive physical evidence. No rebuild or new device image. Merge PR #8 at owner request.
+
+
 ## 0.7.0 — unreleased — GLO USB ONLY
 
 - GLO toggles session-only digital muting of the speaker/headphone output while USB audio, MIDI, diagnostics, sequencer and live keys continue. Bright GLO and a USB ONLY footer indicate the mode; a second press restores normal output. MASTER still controls USB level.

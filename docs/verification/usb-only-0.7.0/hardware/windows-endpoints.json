@@ -1,0 +1,20 @@
+[
+  {
+    "Status": "OK",
+    "Class": "USB",
+    "FriendlyName": "USB Composite Device",
+    "InstanceId": "USB\\VID_1209&PID_0001\\5&20D34A76&0&2"
+  },
+  {
+    "Status": "OK",
+    "Class": "AudioEndpoint",
+    "FriendlyName": "Emerald YM FM-1 (Emerald YM FM-1)",
+    "InstanceId": "SWD\\MMDEVAPI\\{0.0.1.00000000}.{40101053-33A9-4843-9B9F-04F7B4C8495A}"
+  },
+  {
+    "Status": "OK",
+    "Class": "MEDIA",
+    "FriendlyName": "Emerald YM FM-1",
+    "InstanceId": "USB\\VID_1209&PID_0001&MI_00\\6&3B48B169&0&0000"
+  }
+]
