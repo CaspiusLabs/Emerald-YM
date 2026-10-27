@@ -52,8 +52,8 @@ static void yui_header(void){
  cv_text(45,28,&FONT_XS,"YM + PSG / LIVE",Y_BLUE);
  cv_rect(185,4,48,20,Y_EDGE);cv_rect(187,6,44,16,Y_CARD);
  cv_text(191,6,&FONT_XS,"16-BIT",Y_WHITE);
- cv_rect(191,19,36,1,Y_BLUE);cv_rect(191,21,36,1,Y_DIM);
- cv_text(185+(48-text_w(&FONT_XS,EN_VERSION))/2,30,&FONT_XS,EN_VERSION,Y_DIM);
+ cv_rect(191,19,36,1,Y_BLUE);cv_rect(191,21,36,1,Y_BLUE);
+ cv_text(185+(48-text_w(&FONT_XS,EN_VERSION))/2,28,&FONT_XS,EN_VERSION,Y_DIM);
  cv_rect(8,42,224,1,Y_EDGE);cv_blit(0,0);
 }
 static void yui_transport(uint32_t bar){

@@ -2,7 +2,7 @@
   "name": "emerald-ym-0.4.3.fwsc",
   "identity": "FM-1_68000403",
   "bytes": 609666,
-  "sha256": "ee9600d77b0e7e12e49ea0aa8b155d435df614c5d7a2a12758163f85b9597c1e",
+  "sha256": "c4a9c4c47a93ff090c018e53c8e6453c9a6967f551264438c034ce0175fc0d9f",
   "application_bytes": 105360,
   "ram_data_bss_bytes": 30416,
   "ram_data_bss_available": 98304,
@@ -23,5 +23,6 @@
   "hardware_realtime_verified": false,
   "ymfm_commit": "81aec25ccbb98f4873a255f7551ac4dadac59b4a",
   "dub_base_commit": "e6fe7b8f8f3114019bb36b5b536ad458eacd2c2d",
-  "toolchain": "JieLi Windows 2.5.3; clang 4.0.1 pi32v2 r3"
+  "toolchain": "JieLi Windows 2.5.3; clang 4.0.1 pi32v2 r3",
+  "matches_preserved_release_bit_for_bit": true
 }

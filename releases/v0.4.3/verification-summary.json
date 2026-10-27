@@ -6,7 +6,10 @@
   "physical_audio_measurement_for_this_binary": false,
   "prior_physical_audio_report": "../v0.4.2/hardware-live-stress.json",
   "prior_power_cycle_confirmation": "../v0.4.2/user-confirmation.json",
-  "note": "Prior physical results are not relabeled as new 0.4.3 measurements. No new public release/tag or main merge.",
+  "note": "Owner explicitly requested same-version PR #3 update: align version baseline/font and match stripe colors. This revised candidate has desktop verification only and was not flashed; previous install/audio evidence is separate. No release tags or main merge.",
   "installed_identity": "FM-1_68000403",
-  "installation_verified": true
+  "installation_verified": false,
+  "current_candidate_sha256": "c4a9c4c47a93ff090c018e53c8e6453c9a6967f551264438c034ce0175fc0d9f",
+  "previous_candidate_installed_sha256": "ee9600d77b0e7e12e49ea0aa8b155d435df614c5d7a2a12758163f85b9597c1e",
+  "previous_candidate_installation_log": "ota-previous-candidate.log"
 }

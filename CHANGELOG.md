@@ -2,6 +2,7 @@
 
 ## 0.4.3 — unreleased — 2026-10-27 — uppercase title and badge detail
 
+- PR #3 review adjustment, explicitly retaining 0.4.3 at the owner's request: align the version at y=28 with YM + PSG / LIVE using the same FONT_XS; both badge stripes use Y_BLUE.
 - Follow-up to user review of 0.4.2: restore the larger title font and uppercase EMERALD YM, fitting it beside the compact 16-BIT badge. Add a second badge stripe while retaining the version gap.
 - Record the user confirmation that 0.4.2 restores K1–K4 and retains previous mixer/FX settings after complete power-off. Settings schema and audio DSP are unchanged.
 - Separate branch/PR, based on the pending 0.4.2 PR; no automatic merge or published tag replacement.
