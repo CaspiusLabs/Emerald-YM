@@ -1,5 +1,11 @@
 # Emerald YM changelog
 
+## 0.6.2 — unreleased — 2026-10-27 — publish tested 0.6.0 release
+
+- Publish the exact tested 0.6.0 package as a public beta release without rebuilding; preserve its SHA-256 and matching source tag at c0530a6cd7d026554e21b957665edfd7fe7d51d9. Archive the unchanged package, checksum and native preview under releases/v0.6.0.
+- Point README and installation downloads to v0.6.0; keep version-specific test limits and earlier releases/tags unchanged. Documentation/packaging only; installed firmware remains 0.6.0.
+- Continue in PR #7 and merge to main at the owner's explicit request after download verification. No new hardware test or Hub submission.
+
 ## 0.6.1 — unreleased — 2026-10-27 — 0.6.0 hardware verification documentation
 
 - Feature the actual 0.6.0 UI-renderer image at the top of README and describe the physical MASTER slider. Clearly separate hardware-tested development 0.6.0 from the unchanged public release download 0.4.3.

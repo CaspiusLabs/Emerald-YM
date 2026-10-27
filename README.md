@@ -2,9 +2,9 @@
 
 Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A real YM2612 emulator, a lightweight Sega-style PSG and an endless sequencer turn the FM-1 into a small chiptune instrument. Play along on its keyboard and shape each instrument independently.
 
-**Hardware-tested development firmware: 0.6.0 (beta).** [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
+**Current firmware: 0.6.0 (beta), hardware-tested.** [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
 
-**Public release download: 0.4.3 (beta).** [Download 0.4.3 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.4.3/emerald-ym-0.4.3.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.4.3/SHA256SUMS) · [Release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.3)
+**Public release download: 0.6.0 (beta).** [Download 0.6.0 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.6.0/emerald-ym-0.6.0.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.6.0/SHA256SUMS) · [Release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.6.0)
 
 ![Emerald YM 0.6.0 main screen with MASTER slider, rendered by the actual UI test](docs/verification/master-ui-0.6.0/ui-preview.png)
 
@@ -28,7 +28,7 @@ On 2026-10-27, the exact 0.6.0 package passed **30 seconds of continuous backing
 
 The recording input retained **Emerald YM FM-1 (Emerald YM FM-1)** in Windows. [Exact package, raw hardware reports and owner feedback](docs/verification/master-ui-0.6.0/README.md#physical-test--2026-10-27) · [Desktop tests, memory and native previews](docs/verification/master-ui-0.6.0/README.md).
 
-This short run does not establish long-session reliability or prove absence of individual USB packet glitches. Source/documentation version **0.6.1** records the 0.6.0 results without changing its firmware or image. There is no public 0.6.0 release asset yet; the public 0.4.3 download above remains unchanged and does not include USB audio or this screen. The V15/Dinghy installation round trips below apply to exact 0.4.3, not 0.6.0.
+This short run does not establish long-session reliability or prove absence of individual USB packet glitches. The public [0.6.0 release](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.6.0) contains this exact tested file, published without rebuilding. Tag `v0.6.0` points to matching firmware source commit `c0530a6cd7d026554e21b957665edfd7fe7d51d9`. Source/documentation version **0.6.2** adds publication links without changing the firmware. Older releases remain available unchanged. The V15/Dinghy installation round trips below apply to exact 0.4.3, not 0.6.0.
 
 ## What it does
 
@@ -63,7 +63,7 @@ Effect amounts and levels remain independent when changing selections. All twelv
 
 ## Compatibility and data
 
-Target: M-VAVE **FM-1**, not SMK-37 or other models. USB MIDI name: `Emerald YM FM-1`. Tested development 0.6.0 identity: `FM-1_68000600`; public release 0.4.3 identity: `FM-1_68000403`. The `.fwsc` includes the inherited Felucca update loader.
+Target: M-VAVE **FM-1**, not SMK-37 or other models. USB MIDI name: `Emerald YM FM-1`. Release 0.6.0 identity: `FM-1_68000600`; older release 0.4.3 identity: `FM-1_68000403`. The `.fwsc` includes the inherited Felucca update loader.
 
 Emerald YM does **not** import stock, DUB-1 or other firmware's presets, projects or samples. It does not provide a way to back them up or restore them. Back up with your existing firmware's tools before switching. Firmware installation writes flash; do not assume another firmware's data will survive switching or recovery. From 0.4.0, instrument levels/FX are stored in the existing project-sector pair at `0xFC000` / `0xFD000`. Saving may replace another firmware's data there; panel calibration and the update-loader area are separate.
 
@@ -98,7 +98,7 @@ These results apply to the exact linked package, not earlier review builds with 
 
 Levels/FX and K1–K4 retention after full power-off were user-confirmed in the preceding 0.4.x checks. Desktop tests cover the renderer, storage migration, interrupted/corrupt simulated saves and UI/LED/update logic. [Verification](docs/VERIFICATION.md) separates those tests from physical measurements. The immutable accepted baseline **v0.1.4**, its tag and original evidence remain preserved.
 
-**Firmware Hub:** the repository and the exact tested 0.4.3 release are public. Normal V15/Dinghy round trips and the limited USB data-interruption test are documented. The Hub browser route, interrupted changed-sector programming and power-loss recovery remain unverified; no further hardware tests are planned in this task. [Submission checklist](docs/FIRMWARE-HUB.md). No submission has been sent.
+**Firmware Hub:** the repository and the exact tested 0.6.0 release are public. The older 0.4.3 transition evidence remains version-specific. Normal V15/Dinghy round trips and the limited USB data-interruption test are documented. The Hub browser route, interrupted changed-sector programming and power-loss recovery remain unverified; no further hardware tests are planned in this task. [Submission checklist](docs/FIRMWARE-HUB.md). No submission has been sent.
 
 ## Development
 
