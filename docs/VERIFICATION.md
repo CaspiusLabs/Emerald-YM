@@ -2,6 +2,10 @@
 
 Desktop tests, flash/update simulations, user feedback and physical FM-1 measurements are separate evidence. The reports in releases/ retain their original values; an offline report intentionally says flashed=false even when a separate hardware report records installation.
 
+## Hardware-tested development 0.6.0 UI
+
+The reference-inspired screen and physical-MASTER indicator use the actual renderer, with endpoint/sweep, jitter/hysteresis, surrounding-pixel and changed-only tests. [Build, tests, memory and native previews](verification/master-ui-0.6.0/README.md). The subsequent exact-package physical run passed 30 seconds of USB recording with live MIDI/status: average sampled audio CPU 46.93%, maximum 72%, longest block 4196 us, XRUN 0 / overload 0 / failed boots 0. The owner confirmed correct screen/MASTER slider behavior in response to the movement/readability/flicker question. [Raw hardware evidence](verification/master-ui-0.6.0/README.md#physical-test--2026-10-27). Documentation version 0.6.1 records those results without changing the installed 0.6.0 image.
+
 ## Windows audio-name repair — unchanged firmware 0.5.1
 
 A targeted PnP refresh replaced the cached adapter name Felucca with Emerald YM FM-1; Windows now shows endpoint Emerald YM FM-1 (Emerald YM FM-1). A subsequent 15-second recording/live-MIDI/status check passed (XRUN0/overload0). [Audit and limits](verification/windows-audio-name-refresh/README.md). This source/tooling 0.5.2 change does not modify firmware.

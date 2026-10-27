@@ -2,13 +2,33 @@
 
 Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A real YM2612 emulator, a lightweight Sega-style PSG and an endless sequencer turn the FM-1 into a small chiptune instrument. Play along on its keyboard and shape each instrument independently.
 
-**Current validated firmware: 0.4.3 (beta).** [Download firmware (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.4.3/emerald-ym-0.4.3.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.4.3/SHA256SUMS) · [Release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.3) · [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
+**Current firmware: 0.6.0 (beta), hardware-tested.** [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
 
-![Emerald YM 0.4.3 screen, rendered by the desktop UI test](releases/v0.4.3/ui-preview.png)
+**Public release download: 0.6.0 (beta).** [Download 0.6.0 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.6.0/emerald-ym-0.6.0.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.6.0/SHA256SUMS) · [Release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.6.0)
 
-*240 × 240 render of the firmware UI, not a photograph or a browser emulator.*
+![Emerald YM 0.6.0 main screen with MASTER slider, rendered by the actual UI test](docs/verification/master-ui-0.6.0/ui-preview.png)
 
-The [0.4.3 beta release](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.3) contains the accepted, unchanged binary tested below. Tag `v0.4.3` points to its matching source commit `b5848cd40b4d8dda4612cb9b8c3dc9687e29abc6`. USB audio was physically tested in **0.5.0** with simultaneous live MIDI and diagnostics. Firmware **0.5.1** was physically tested for USB recording, MIDI and diagnostics; its Windows recording input still retained the old name. Source/tooling **0.5.2** adds a targeted Windows audio-device refresh helper, without a new firmware image. The public release download remains 0.4.3, which does not include USB audio.
+*240 × 240 capture from the actual firmware UI renderer, not a photograph of the device. The owner separately confirmed the screen and MASTER slider on a physical FM-1.*
+
+## Main screen and physical test (0.6.0)
+
+The console-inspired main screen adds a vertical red MASTER slider beside the transport, K1-K4 cards and per-source mixer/effect controls. It follows the physical MASTER knob: 0 at the bottom, 10 at the top. This is a knob-position indicator, not a signal meter or a decibel scale. MASTER controls the speaker/headphone and USB-recorded mix and is not saved. The owner confirmed correct slider movement, readability and no flicker during the physical check.
+
+On 2026-10-27, the exact 0.6.0 package passed **30 seconds of continuous backing with live MIDI notes and USB diagnostics while recording USB audio**:
+
+| Check | Result |
+|---|---|
+| Recorded audio | 32.34 s, stereo PCM16 / 44.1 kHz |
+| Average sampled audio CPU | 46.93% (about 47%) |
+| Maximum audio CPU | 72% |
+| Longest audio block | 4196 us |
+| XRUNS / overload / failed boots | 0 / 0 / 0 |
+| Recording clipping | 0 clipped samples in the analyzed body |
+| Screen and MASTER movement | Owner-confirmed working correctly |
+
+The recording input retained **Emerald YM FM-1 (Emerald YM FM-1)** in Windows. [Exact package, raw hardware reports and owner feedback](docs/verification/master-ui-0.6.0/README.md#physical-test--2026-10-27) · [Desktop tests, memory and native previews](docs/verification/master-ui-0.6.0/README.md).
+
+This short run does not establish long-session reliability or prove absence of individual USB packet glitches. The public [0.6.0 release](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.6.0) contains this exact tested file, published without rebuilding. Tag `v0.6.0` points to matching firmware source commit `c0530a6cd7d026554e21b957665edfd7fe7d51d9`. Source/documentation version **0.6.2** adds publication links without changing the firmware. Older releases remain available unchanged. The V15/Dinghy installation round trips below apply to exact 0.4.3, not 0.6.0.
 
 ## What it does
 
@@ -24,7 +44,7 @@ This is original generative music inspired by the Mega Drive/Genesis sound palet
 
 Start with MASTER low, then press PLAY. The sequencer is paused after boot.
 
-| Control | Function in 0.4.3 |
+| Control | Function in 0.6.0 |
 |---|---|
 | PLAY | Start/pause the backing sequencer; live keys still work in pause |
 | REC | Generate a new seed and sequence |
@@ -37,19 +57,19 @@ Start with MASTER low, then press PLAY. The sequencer is paused after boot.
 | ALGORITHM | Set the selected effect amount, 0–100% |
 | ARP | Enable/disable all PSG, including live keys |
 | Keyboard | Up to three live PSG notes, F3–G5 |
-| MASTER | Overall output level |
+| MASTER | Overall output level; the on-screen red slider follows the physical knob |
 
 Effect amounts and levels remain independent when changing selections. All twelve levels and 36 effect amounts are restored after power-off. Changes are saved after three seconds without edits, playback or held live keys. Press SAVE to pause and wait for **SAVED** before switching off. Tempo, density, mutation and transpose also restore after reboot. Seed, master, PSG enable and selection/cursor are not saved. With three live notes, the PSG arpeggio yields its voice; FM and DAC continue. See the [manual](docs/MANUAL.md) for details.
 
 ## Compatibility and data
 
-Target: M-VAVE **FM-1**, not SMK-37 or other models. USB MIDI name: `Emerald YM FM-1`. Package identity: `FM-1_68000403`. The `.fwsc` includes the inherited Felucca update loader.
+Target: M-VAVE **FM-1**, not SMK-37 or other models. USB MIDI name: `Emerald YM FM-1`. Release 0.6.0 identity: `FM-1_68000600`; older release 0.4.3 identity: `FM-1_68000403`. The `.fwsc` includes the inherited Felucca update loader.
 
 Emerald YM does **not** import stock, DUB-1 or other firmware's presets, projects or samples. It does not provide a way to back them up or restore them. Back up with your existing firmware's tools before switching. Firmware installation writes flash; do not assume another firmware's data will survive switching or recovery. From 0.4.0, instrument levels/FX are stored in the existing project-sector pair at `0xFC000` / `0xFD000`. Saving may replace another firmware's data there; panel calibration and the update-loader area are separate.
 
-In validated 0.4.3, USB audio is disabled: listen on the FM-1 speaker or headphone output. The 0.5.0 development build enables stereo 16-bit / 44.1 kHz USB capture of the master mix alongside USB MIDI and status diagnostics. It does not receive computer audio or expose separate instrument tracks. See [USB audio validation](docs/verification/usb-audio-0.5.0/README.md) for desktop and physical results, with version-specific limits. This is a restricted musical chip profile, not a general VGM/register player or a full Genesis emulator. There is currently no Emerald browser player or editor; inherited DUB-1 web tools are historical code.
+In validated 0.4.3, USB audio is disabled: listen on the FM-1 speaker or headphone output. Firmware 0.5.0 and later, including the tested 0.6.0 build, enable stereo 16-bit / 44.1 kHz USB capture of the master mix alongside USB MIDI and status diagnostics. It does not receive computer audio or expose separate instrument tracks. See [USB audio validation](docs/verification/usb-audio-0.5.0/README.md) for desktop and physical results, with version-specific limits. This is a restricted musical chip profile, not a general VGM/register player or a full Genesis emulator. There is currently no Emerald browser player or editor; inherited DUB-1 web tools are historical code.
 
-## USB audio (0.5.x development)
+## USB audio (0.5.0 and later)
 
 Connect by USB and choose **Emerald YM FM-1** as a stereo recording input at **44.1 kHz / 16-bit** in your recording software. Windows may add a prefix such as `Line`. In both physical 0.5.0 and 0.5.1 tests, this computer displayed `Line (Felucca)`. On 0.5.1, the USB bus-reported product and audio-interface name were already `Emerald YM FM-1`, but the Microsoft `usbaudio` devnode still stored `Felucca` as its friendly name. Firmware descriptors alone did not refresh that Windows registration. See the [Windows audio-name refresh procedure](docs/WINDOWS-AUDIO-NAME.md). The targeted refresh was physically verified on this computer: the MEDIA adapter became `Emerald YM FM-1`; the recording endpoint became `Emerald YM FM-1 (Emerald YM FM-1)` (Windows combines endpoint and adapter names). WinMM truncates that full label to 31 characters. No manual registry/endpoint rename or firmware reflash was used.
 
@@ -78,7 +98,7 @@ These results apply to the exact linked package, not earlier review builds with 
 
 Levels/FX and K1–K4 retention after full power-off were user-confirmed in the preceding 0.4.x checks. Desktop tests cover the renderer, storage migration, interrupted/corrupt simulated saves and UI/LED/update logic. [Verification](docs/VERIFICATION.md) separates those tests from physical measurements. The immutable accepted baseline **v0.1.4**, its tag and original evidence remain preserved.
 
-**Firmware Hub:** the repository and the exact tested 0.4.3 release are public. Normal V15/Dinghy round trips and the limited USB data-interruption test are documented. The Hub browser route, interrupted changed-sector programming and power-loss recovery remain unverified; no further hardware tests are planned in this task. [Submission checklist](docs/FIRMWARE-HUB.md). No submission has been sent.
+**Firmware Hub:** the repository and the exact tested 0.6.0 release are public. The older 0.4.3 transition evidence remains version-specific. Normal V15/Dinghy round trips and the limited USB data-interruption test are documented. The Hub browser route, interrupted changed-sector programming and power-loss recovery remain unverified; no further hardware tests are planned in this task. [Submission checklist](docs/FIRMWARE-HUB.md). No submission has been sent.
 
 ## Development
 

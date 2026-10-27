@@ -40,7 +40,7 @@ static void fm1_main(void){
  for(;;){
   fm1_wdt_feed();usb_retry(fm1_ms);
   if(fm1_ms>30000u&&bootguard.pending){bootguard.pending=0;bootguard.failed=0;}
-  {int32_t a=fm1_adc_read(FM1_ADC_MASTER);if(a>=0){uint32_t k;knob+=(a*16-knob)/8;k=(uint32_t)(knob/16);master_q12=(k*k)>>8;}}
+  {int32_t a=fm1_adc_read(FM1_ADC_MASTER);if(a>=0){uint32_t k;knob+=(a*16-knob)/8;k=(uint32_t)(knob/16);ymaster_adc=k;master_q12=(k*k)>>8;}}
   {static uint32_t held;uint32_t both=(1u<<panel.btn[B_OCTDN])|(1u<<panel.btn[B_OCTUP]);
    if((fm1_in.buttons&both)!=both)held=fm1_ms;else if(fm1_ms-held>5000u)enter_uboot("UBOOT");}
   yusb_service();ota_service();

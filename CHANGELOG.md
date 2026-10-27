@@ -1,5 +1,24 @@
 # Emerald YM changelog
 
+## 0.6.2 — unreleased — 2026-10-27 — publish tested 0.6.0 release
+
+- Publish the exact tested 0.6.0 package as a public beta release without rebuilding; preserve its SHA-256 and matching source tag at c0530a6cd7d026554e21b957665edfd7fe7d51d9. Archive the unchanged package, checksum and native preview under releases/v0.6.0.
+- Point README and installation downloads to v0.6.0; keep version-specific test limits and earlier releases/tags unchanged. Documentation/packaging only; installed firmware remains 0.6.0.
+- Continue in PR #7 and merge to main at the owner's explicit request after download verification. No new hardware test or Hub submission.
+
+## 0.6.1 — unreleased — 2026-10-27 — 0.6.0 hardware verification documentation
+
+- Feature the actual 0.6.0 UI-renderer image at the top of README and describe the physical MASTER slider. Clearly separate hardware-tested development 0.6.0 from the unchanged public release download 0.4.3.
+- Archive raw 0.6.0 recording/MIDI/status reports and the owner's screen/slider confirmation: 30-second continuous test, average sampled audio CPU 46.93%, maximum 72%, max block 4196 us, XRUN 0 / overload 0 / failed boots 0.
+- Documentation only, retained in PR #7 at the owner's request. No rebuild, new firmware image, release/tag change, additional hardware test or automatic merge; installed firmware remains exact 0.6.0.
+
+## 0.6.0 — unreleased — 2026-10-27 — console-style MASTER slider
+
+- Reflow the 240x240 main screen around a left-hand volume rail, red slider handle, headphone symbol and narrower framed parameter/mixer cards, following the owner's reference. Preserve the native Emerald title, badge/version and step strip.
+- Show the existing filtered physical MASTER pot position on a 0-10 scale, with pixel-level visual hysteresis and a 22x108 changed-only tile. Do not change the squared gain law, DSP, USB audio/MIDI/status, master persistence or protective thresholds.
+- Split the static rail into tiles within the existing 240x144 canvas; no new framebuffer, renderer allocation or memory-region change.
+- Add actual-renderer tests for endpoints, complete ADC sweep, jitter/hysteresis, unaffected surrounding pixels and changed-only redraws; retain UI/LED/USB/DSP/settings/update regression checks. Desktop only; no installation or physical timing claim.
+
 ## 0.5.2 — unreleased — 2026-10-27 — Windows audio registration refresh
 
 - Diagnose the Windows name mismatch on exact 0.5.1: USB reports Emerald YM FM-1, but the Microsoft usbaudio MEDIA devnode retains FriendlyName Felucca. Preserve that failed name check alongside passed recording/MIDI/status evidence.
