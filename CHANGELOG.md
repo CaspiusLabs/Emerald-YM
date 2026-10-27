@@ -1,5 +1,12 @@
 # Emerald YM changelog
 
+## 0.8.0 — unreleased — isolated Bluetooth audio prototype
+
+- Add an opt-in, non-installable PCM/SBC prototype under prototypes/bluetooth-audio. Bounded same-core queues convert the 24-bit master mix to stereo PCM16 and preserve complete encoded frames; an adapter compiles against the real pinned AC79 SDK virtual-input audio encoder API.
+- Add reproducible pi32v2 compilation, SDK partial/strict link probes, section-memory reports and desktop queue tests. No substitute SDK declarations, fake runtime, relaxed memory/85% limits or ignored-symbol executable.
+- Full A2DP firmware does not link yet. SDK task/board/profile integration, codec negotiation, stack wakeups and final placement/timing remain open. Archive the failures as evidence; do not present partial-link sizes as a final footprint or hardware result.
+- Keep production firmware sources, build selection, published binaries/tags and the installed 0.7.0 unchanged. No device access, flash, radio test or new release. Separate draft PR for the prototype.
+
 ## 0.7.1 — 2026-10-28 — publication documentation
 
 - Publish exact tested 0.7.0 with matching source tag, update README/preview and archive physical evidence. No rebuild or new device image. Merge PR #8 at owner request.
