@@ -4,7 +4,7 @@ Desktop tests, flash/update simulations, user feedback and physical FM-1 measure
 
 ## Proposed 0.4.3 — uppercase header follow-up
 
-The user confirmed K1–K4 retention and prior mixer/FX settings on 0.4.2, but requested the earlier large font in uppercase and a second badge stripe. The 0.4.3 renderer preview has been inspected: EMERALD YM fits beside the 48×20 badge, with two stripes and a version gap. Build and full desktop tests passed. Storage/audio DSP are unchanged. Prior 0.4.2 hardware measurements are referenced as prior evidence, not relabeled as 0.4.3 results.
+The user confirmed K1–K4 retention and prior mixer/FX settings on 0.4.2, but requested the earlier large font in uppercase and a second badge stripe. The 0.4.3 renderer preview has been inspected: EMERALD YM fits beside the 48×21 badge, with two stripes and a version gap. Build and full desktop tests passed. Storage/audio DSP are unchanged. Prior 0.4.2 hardware measurements are referenced as prior evidence, not relabeled as 0.4.3 results.
 
 ## Proposed 0.4.2 — header and K1–K4 persistence
 

@@ -1,0 +1,39 @@
+  rc 0, 1148 requests, 11 sector erases
+install completes                                        ok
+app area == the new package's flash.bin                  ok
+flash head [0, 0x4000) untouched                         ok
+finish asked (0xF0000000)                                ok
+update record cleared (RAM + flash)                      ok
+no write outside the allowed windows                     ok
+re-run with the same package erases nothing              ok
+foreign key / damaged app head refused, nothing erased   ok
+loader test passed
+
+{
+  "name": "emerald-ym-0.4.3.fwsc",
+  "identity": "FM-1_68000403",
+  "bytes": 609666,
+  "sha256": "6669787e1d7a3b56f37bd0494c992fbdba5cb59e5dc13d5f2380d7c4fbd64925",
+  "application_bytes": 105360,
+  "ram_data_bss_bytes": 30416,
+  "ram_data_bss_available": 98304,
+  "pool_bytes": 101888,
+  "pool_available": 344064,
+  "sdk_reference_hashes_match": {
+    "uboot.boot": true,
+    "cfg_tool.bin": true,
+    "cfg/eq_cfg_hw.bin": true
+  },
+  "audio_code_tables_ram_bytes": 21604,
+  "ramtext_total_bytes": 24492,
+  "ramtext_available": 24576,
+  "host_stream_tests": "passed; 180+ seconds; deterministic across block sizes; seed variation; pause; parameter extremes; no audio-thread allocation; no limiter hits in test renders",
+  "ota_entry_simulation": "passed",
+  "loader_simulation_different_image": "passed",
+  "flashed": false,
+  "hardware_realtime_verified": false,
+  "ymfm_commit": "81aec25ccbb98f4873a255f7551ac4dadac59b4a",
+  "dub_base_commit": "e6fe7b8f8f3114019bb36b5b536ad458eacd2c2d",
+  "toolchain": "JieLi Windows 2.5.3; clang 4.0.1 pi32v2 r3",
+  "matches_preserved_release_bit_for_bit": true
+}

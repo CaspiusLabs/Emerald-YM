@@ -1,0 +1,28 @@
+ym_ui_test.c
+large uppercase header fits before the smaller badge: PASS
+idle: zero repeated LCD writes: PASS
+one knob: exactly one atomic tile: PASS
+transport change: transport + steps only: PASS
+one step: small strip only: PASS
+SELECT updates instrument and its effect tile: PASS
+PSG switch updates selected voice tile: PASS
+PRESETS updates only selected instrument level: PASS
+FX button changes only effect tile: PASS
+ALGORITHM changes only selected effect tile: PASS
+pending save updates only transport tile: PASS
+USB diagnostics never trigger screen writes: PASS
+no visible clears while playing or updating: PASS
+full redraw only on explicit invalidation: PASS
+Renderer bounds and redraw checks passed.
+ym_led_test.c
+SAVE discoverable when clean: PASS
+SAVE bright with unsaved settings: PASS
+FX discoverable dim when dry: PASS
+FX bright when any parameter is active: PASS
+F3 live key: physical LED bright: PASS
+F4 sequencer key: physical LED dim: PASS
+live brightness wins over sequencer: PASS
+released notes clear without stale LED bits: PASS
+overload clears note indication: PASS
+overload keeps red PLAY indicator: PASS
+dim scanning brightness unchanged: PASS

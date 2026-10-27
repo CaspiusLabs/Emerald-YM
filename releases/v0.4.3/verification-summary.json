@@ -6,10 +6,18 @@
   "physical_audio_measurement_for_this_binary": false,
   "prior_physical_audio_report": "../v0.4.2/hardware-live-stress.json",
   "prior_power_cycle_confirmation": "../v0.4.2/user-confirmation.json",
-  "note": "Owner explicitly requested same-version PR #3 update: align version baseline/font and match stripe colors. This revised candidate has desktop verification only and was not flashed; previous install/audio evidence is separate. No release tags or main merge.",
+  "note": "Owner requested one-pixel badge extension within PR #3, same version 0.4.3. Targeted checks passed; no new audio timing or power-cycle claim.",
   "installed_identity": "FM-1_68000403",
-  "installation_verified": false,
-  "current_candidate_sha256": "c4a9c4c47a93ff090c018e53c8e6453c9a6967f551264438c034ce0175fc0d9f",
-  "previous_candidate_installed_sha256": "ee9600d77b0e7e12e49ea0aa8b155d435df614c5d7a2a12758163f85b9597c1e",
-  "previous_candidate_installation_log": "ota-previous-candidate.log"
+  "installation_verified": true,
+  "current_candidate_sha256": "6669787e1d7a3b56f37bd0494c992fbdba5cb59e5dc13d5f2380d7c4fbd64925",
+  "previous_candidate_installed_sha256": "c4a9c4c47a93ff090c018e53c8e6453c9a6967f551264438c034ce0175fc0d9f",
+  "previous_candidate_installation_log": "ota-aligned-review.log",
+  "latest_revision_checks": [
+    "Windows build with linker/no-soft-double checks",
+    "real UI/LED tests",
+    "pixel verification of row below stripe and equal stripe colors",
+    "package/update-loader simulations"
+  ],
+  "full_desktop_suite_reference": "desktop-tests.log (prior revision; audio/settings unchanged)",
+  "current_installation_log": "ota-badge-review.log"
 }
