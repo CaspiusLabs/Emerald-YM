@@ -2,7 +2,10 @@
 
 - Speak Polish with the current owner; write repository documentation and instructions in English. Target: M-VAVE FM-1, local Windows development.
 - Canonical repository: https://github.com/CaspiusLabs/Emerald-YM. Work in this local clone, commit and push there. `origin` is Emerald; `upstream` is read-only DUB-1 with push disabled. Keep the repository private until the owner explicitly authorizes public visibility. Do not send a Firmware Hub submission without instructions.
-- The accepted hardware baseline is `v0.1.4`. Current development is 0.4.0 (individual levels/FX). `VERSION` is authoritative. Read README, BUILDING, CHANGELOG and docs/ARCHITECTURE.md.
+- For every subsequent change, including documentation and organizational changes, increment `VERSION` and record the change in CHANGELOG.md. Use a new patch version by default; use a minor/major increment when appropriate. Never reuse a published version for changed source.
+- Work on a separate branch for each change/PR. Push that branch to `origin` and open a GitHub pull request targeting `main`, describing the change and the checks performed. Do not push changes directly to `main`, merge the PR immediately, or enable auto-merge. Leave the PR for review and merge only when the owner explicitly requests it.
+- Documentation-only changes still increment `VERSION`, but do not require rebuilding or modifying the firmware installed on the device. Keep published release binaries and tags unchanged.
+- The accepted hardware baseline is `v0.1.4`. Current source version is 0.4.1 (workflow documentation); the installed/tested firmware remains 0.4.0 (individual levels/FX and persistent settings). `VERSION` is authoritative. Read README, BUILDING, CHANGELOG and docs/ARCHITECTURE.md.
 - Active code: `firmware/src/ym/`, selected by `EN_YM2612` in `firmware/src/main.c`. Inherited `firmware/src/app/` and `dsp/` are not the current application.
 - Build: `powershell -ExecutionPolicy Bypass -File .\build-ym-windows.ps1`. Test: `powershell -ExecutionPolicy Bypass -File .\test-ym-windows.ps1`. PowerShell 7 can invoke them directly. Neither opens MIDI nor flashes.
 - Ignored `.runtime/` contains Python, the toolchain and minimal SDK inputs. Do not depend on old chat folders. Host MSVC is found through vswhere. A fresh clone requires provisioning; see BUILDING.md.
