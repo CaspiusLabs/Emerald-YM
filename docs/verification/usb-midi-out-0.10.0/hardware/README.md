@@ -23,6 +23,10 @@ The main session captured USB MIDI performance packets and stereo PCM16/44.1 kHz
 
 The short-test checks in [summary.json](summary.json) all passed. The first main recording captured single physical keys rather than a simultaneous chord. A separate held-key transition test then established polyphony and Note Off cleanup; the original first-session result was not rewritten. The test ended stopped in MIDI IN, with host test notes released. No instrument-level, effect or performance-setting edits were sent.
 
+## Publication check
+
+The owner-authorized beta release was published afterward. All three public browser-download URLs (firmware, SHA256SUMS and ui-preview.png) were downloaded anonymously and compared byte for byte with the preserved local assets. The tag was verified at the exact firmware source commit. See [publication.json](publication.json). PR #11 remains open; no merge was requested.
+
 ## Raw evidence
 
 - [Summary](summary.json) and [owner observations](owner-feedback.json).
