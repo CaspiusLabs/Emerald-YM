@@ -14,6 +14,8 @@ static uint32_t now;
 #include "../firmware/src/ym/ym_clock.h"
 static struct ym_clock yclock={0,0,0,0,0,132,0,0,0,0};
 static uint32_t yplaying,ym_overload,ymidi_keys,ymidi_port_keys[2],fm1_ms;
+static uint32_t ymidi_out,ymidi_revision,ymidi_discard;
+enum {B_EDIT=4};
 static uint32_t yfx_values[12][3],effect_calls,dirty_calls,reseed_calls;
 static uint32_t irq_save(void){return 0;}
 static void irq_restore(uint32_t f){(void)f;}
@@ -31,6 +33,7 @@ static uint32_t ym_bar(void){return 1;}
 static struct {uint32_t halves,max_us;} en_dbg;
 static struct {uint32_t failed;} bootguard;
 #include "../firmware/src/ym/ym_midi.c"
+#include "../firmware/src/ym/ym_midi_mode.h"
 static void usb(uint32_t s,uint32_t a,uint32_t b){assert(midi_input_put((s<<8)|(a<<16)|(b<<24)|(s>=0xf8?15:s>>4)));}
 static void trs(uint32_t b){um_byte(b);}
 int main(void){
@@ -66,6 +69,13 @@ int main(void){
  trs(0x90);trs(60);trs(100);yusb_service();assert(ymidi_keys==(1u<<7));
  mi_r=mi_w=0xfffffffeu;usb(0x80,60,0);usb(0x90,61,100);usb(0x80,61,0);yusb_service();
  assert(mi_r==mi_w&&ymidi_keys==(1u<<7)); /* the independent TRS note stays held */
+ usb(0x90,64,100);ymidi_controls(1u<<B_EDIT);assert(ymidi_out&&!ymidi_keys);yusb_service();assert(!ymidi_keys);
+ uint32_t edits=dirty_calls;
+ trs(0x90);trs(60);trs(100);usb(0x90,64,100);usb(0xb0,20,127);yusb_service();assert(!ymidi_keys&&dirty_calls==edits);
+ usb(0xfa,0,0);yusb_service();assert(yclock.mode&&yplaying); /* Clock remains available in OUT. */
+ usb(0x90,64,100);ymidi_controls(1u<<B_EDIT);yusb_service();assert(!ymidi_out&&!ymidi_keys); /* no stale held key */
+ usb(0x90,64,100);yusb_service();assert(ymidi_keys==(1u<<11));
+ assert(ymidi_revision==2&&dirty_calls==edits);
  puts("PASS: production timestamps, USB/TRS isolation, running status, CC, USB transport/clock, timeout, overflow and overload guard; TRS SysEx ignored");
  return 0;
 }

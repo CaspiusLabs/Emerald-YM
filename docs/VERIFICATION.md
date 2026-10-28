@@ -4,7 +4,7 @@ Desktop tests, flash/update simulations, user feedback and physical FM-1 measure
 
 ## Hardware-tested development 0.6.0 UI
 
-For the newer, **desktop-only** 0.9.0 USB MIDI Clock/TRS candidate, see [its separate build/test/memory report](verification/usb-clock-trs-0.9.0/README.md). It has not been installed or hardware-timed. Older physical results do not transfer to that candidate.
+For the newer **desktop-only 0.10.0 USB MIDI OUT** candidate, see [its separate build/test/memory report](verification/usb-midi-out-0.10.0/README.md). It has not been installed or hardware-timed. The [0.9.0 report](verification/usb-clock-trs-0.9.0/README.md) preserves that version's original desktop stage; later owner-authorized 0.9.0 physical Clock/input tests do not validate 0.10.0 output. Older physical results do not transfer to this candidate.
 
 The reference-inspired screen and physical-MASTER indicator use the actual renderer, with endpoint/sweep, jitter/hysteresis, surrounding-pixel and changed-only tests. [Build, tests, memory and native previews](verification/master-ui-0.6.0/README.md). The subsequent exact-package physical run passed 30 seconds of USB recording with live MIDI/status: average sampled audio CPU 46.93%, maximum 72%, longest block 4196 us, XRUN 0 / overload 0 / failed boots 0. The owner confirmed correct screen/MASTER slider behavior in response to the movement/readability/flicker question. [Raw hardware evidence](verification/master-ui-0.6.0/README.md#physical-test--2026-10-27). Documentation version 0.6.1 records those results without changing the installed 0.6.0 image.
 

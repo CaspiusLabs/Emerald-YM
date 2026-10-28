@@ -6,7 +6,7 @@ Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A
 
 **Public release download: 0.7.0 (beta).** [Download 0.7.0 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.7.0/emerald-ym-0.7.0.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.7.0/SHA256SUMS) · [Release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.7.0)
 
-**Development candidate 0.9.0:** USB MIDI Clock synchronization and TRS MIDI IN are implemented and desktop-tested, **not installed or hardware-validated**. USB Start/Continue selects external clock; K1 returns to internal tempo. [Controls and scope](docs/MANUAL.md#usb-midi-clock-and-trs-input--development-090) · [Build, memory and test evidence](docs/verification/usb-clock-trs-0.9.0/README.md). The public download and installed 0.7.0 remain unchanged; this branch does not include the separate Bluetooth prototype.
+**Development candidate 0.10.0:** EDIT selects MIDI note input or **USB MIDI OUT** for the physical keyboard and generative sequencer; bright EDIT indicates OUT. USB Clock/transport, status and audio remain available. **0.10.0 is desktop-tested only, not flashed.** The minijack remains MIDI IN; it cannot be switched to OUT through the documented hardware interface. For physical output, route USB MIDI through a computer/USB host and an external MIDI interface. [Controls and channel map](docs/MANUAL.md#edit--usb-midi-out--development-0100) · [Build, memory and test evidence](docs/verification/usb-midi-out-0.10.0/README.md). This branch builds on unmerged PR #10 and excludes the separate Bluetooth prototype. Installed 0.9.0 and the public 0.7.0 download are unchanged by this task; the older 0.9.0 report records its original desktop stage.
 
 ![Emerald YM 0.7.0 USB ONLY screen with MASTER slider, rendered by the actual UI test](releases/v0.7.0/ui-preview.png)
 
@@ -65,6 +65,7 @@ Start with MASTER low, then press PLAY. The sequencer is paused after boot.
 | GLO (development 0.7.0) | Toggle USB ONLY; lit when speaker/headphones are digitally muted |
 | ALGORITHM | Set the selected effect amount, 0–100% |
 | ARP | Enable/disable all PSG, including live keys |
+| EDIT (development 0.10.0) | Dim: USB/TRS note input; bright: physical keyboard + sequencer note output over USB |
 | Keyboard | Up to three live PSG notes, F3–G5 |
 | MASTER | Overall output level; the on-screen red slider follows the physical knob |
 

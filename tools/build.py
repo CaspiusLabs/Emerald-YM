@@ -300,9 +300,14 @@ def check(img, syms, dis, rt):
         errors.append("application data overlaps audio execution region")
     if not (APP_XIP <= sym("_ZL11psg_divider") < APP_XIP + APP_SLOT):
         errors.append("control-rate PSG pitch lookup is not in XIP")
+    for name in ("_ZZL11make_motifsvE4base", "_ZZL4tickvE5roots", "_ZZL4tickvE2ci",
+                 "_ZZL4tickvE6chords", "_ZZL4tickvE5scale", "_ZZL4tickvE2bp",
+                 "_ZZL4tickvE2ra", "_ZZL4tickvE2rb", "_ZZL4tickvE3arp"):
+        if not (APP_XIP <= sym(name) < APP_XIP + APP_SLOT):
+            errors.append(f"sequence-selection constant {name} is not in XIP")
     # Main-loop leaf setters/getters are explicitly outside the tiny audio RAM.
     # The audio renderer must never call this section while Flash is unavailable.
-    for name in ("ym_control", "ym_external_clock", "ym_reseed", "ym_live_keys", "ym_psg_enable", "ym_psg_level",
+    for name in ("ym_control", "ym_external_clock", "ym_midi_snapshot", "ym_reseed", "ym_live_keys", "ym_psg_enable", "ym_psg_level",
                  "ym_effect", "ym_mix_levels", "ym_instrument_level", "ym_drum_level", "ym_bar", "ym_seed", "ym_step", "ym_live_active_keys", "ym_sequence_keys"):
         if not (APP_XIP <= sym(name) < APP_XIP + APP_SLOT):
             errors.append(f"main-loop control {name} is not in XIP")

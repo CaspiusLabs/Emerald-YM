@@ -1,5 +1,13 @@
 # Emerald YM changelog
 
+## 0.10.0 — unreleased — EDIT / USB MIDI note output
+
+- EDIT switches between note input (dim) and USB note output (bright); the header shows USB MIDI OUT. The mode resets to input at boot and is not saved. USB Clock/transport, diagnostics and USB audio remain available in both modes; note/FX input is ignored in OUT, with no MIDI Thru or feedback echo.
+- Export physical keyboard notes on channel 1 and separate FM, PSG and percussion sequencer parts on channels 2–8 and 10. Local synthesis continues. Retry Note Off under USB queue pressure; clean up mode/transpose/seed/Stop/overload transitions and recover after USB suspend/reset.
+- Read a block-end engine snapshot in XIP within the measured audio budget; small trigger counters preserve retriggers and sub-block drums. Move only sequence-selection constants to the existing XIP pitch section, outside sample loops. No memory-map, flash-off, startup-copy or protective-threshold change.
+- The FM-1 minijack remains MIDI IN: the official SDK documents DIN input and USB/BLE output, with no supported jack-output mode. Physical DIN/TRS output requires a USB host/PC routing Emerald to a MIDI interface such as UM-ONE. No UART TX pin/register changes.
+- Separate branch/PR based on unmerged PR #10. Compile/desktop tests only for 0.10.0; no device access, flash, release, tag or merge. Exact installed 0.9.0 and released 0.7.0 stay unchanged.
+
 ## 0.9.0 — unreleased — USB MIDI Clock and TRS MIDI IN
 
 - Follow USB Timing Clock at 24 PPQ: six pulses per sequencer step. USB Start resets the arrangement with the current seed and waits for Clock; Continue preserves position; Stop pauses. A 500 ms clock gap or MIDI input loss stops external playback until explicitly resumed. Turning K1 returns to saved/manual internal tempo.

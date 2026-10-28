@@ -1,4 +1,10 @@
 #include "ym_midi.c"
+static void ymidi_quiesce(void){
+ ymidi_out=0;ymidi_revision++;
+ /* Bounded opportunity for the audio owner to enqueue Offs and USB to drain.
+  * An unplugged/non-reading host still needs its own panic on disconnect. */
+ fm1_delay_ms(20);
+}
 static void fm1_main(void){
  uint32_t last_frame=0,seed=20261026,boot_until;int32_t knob=512*16;
  {uint32_t f=irq_save();flash_ok=FL_FAR(fl_jedec_ram)()==0x856014u;irq_restore(f);if(flash_ok)ota_boot_cleanup();}
@@ -18,12 +24,13 @@ static void fm1_main(void){
   if(fm1_ms>30000u&&bootguard.pending){bootguard.pending=0;bootguard.failed=0;}
   {int32_t a=fm1_adc_read(FM1_ADC_MASTER);if(a>=0){uint32_t k;knob+=(a*16-knob)/8;k=(uint32_t)(knob/16);ymaster_adc=k;master_q12=(k*k)>>8;}}
   {static uint32_t held;uint32_t both=(1u<<panel.btn[B_OCTDN])|(1u<<panel.btn[B_OCTUP]);
-   if((fm1_in.buttons&both)!=both)held=fm1_ms;else if(fm1_ms-held>5000u)enter_uboot("UBOOT");}
+   if((fm1_in.buttons&both)!=both)held=fm1_ms;else if(fm1_ms-held>5000u){ymidi_quiesce();enter_uboot("UBOOT");}}
   yusb_service();ota_service();
+  ymidi_physical=fm1_in.notes;
   {static uint32_t previous=0xffffffffu;uint32_t held=ym_overload>=8u?0:fm1_in.notes|ymidi_keys;
    if(held!=previous){ym_live_keys(held);previous=held;}}
-  if(usb.ota_req){usb.ota_req=0;yplaying=0;ypost();if(flash_ok)ota_session();ydisplay_invalidate();ydisplay();}
-  if(usb.uboot_req)enter_uboot("UBOOT (USB)");
+  if(usb.ota_req){usb.ota_req=0;yplaying=0;ypost();ymidi_quiesce();if(flash_ok)ota_session();ydisplay_invalidate();ydisplay();}
+  if(usb.uboot_req){ymidi_quiesce();enter_uboot("UBOOT (USB)");}
   /* A sustained high load stops the renderer itself: preserve USB/panel responsiveness. */
   if(ym_overload>=8&&yplaying){yplaying=0;ypost();}
   if(fm1_ms-last_frame>=20u){
@@ -32,6 +39,7 @@ static void fm1_main(void){
    last_frame=fm1_ms;en_dbg.ui_frames++;
    for(uint32_t i=0;i<NB;i++)if(raw_pressed&(1u<<panel.btn[i]))pressed|=1u<<i;
    youtput_controls(pressed);
+   ymidi_controls(pressed);
    if(pressed&(1u<<B_PLAY)){if(ym_overload<8){yplaying=!yplaying;if(yplaying&&yclock.mode)yc_arm(&yclock,fm1_ticks());ypost();}}
    if(pressed&(1u<<B_REC)){uint32_t f=irq_save();seed^=fm1_ms+0x9e3779b9u;ym_reseed(seed?seed:1);yclock.events=yclock.phase=0;irq_restore(f);ypost();yrec_until=fm1_ms+180u;}
    if(pressed&(1u<<B_SEQ)){ymutation=ymutation?0:35;ypost();}
