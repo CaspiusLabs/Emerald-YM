@@ -15,6 +15,8 @@ static void lcd_blit(uint32_t x,uint32_t y,uint32_t w,uint32_t h,const uint16_t*
  for(uint32_t j=0;j<h;j++)for(uint32_t i=0;i<w;i++){uint16_t v=p[j*w+i];screen[(j+y)*240+i+x]=(uint16_t)((v>>8)|(v<<8));}
 }
 #include "../firmware/src/gfx.c"
+#include "../firmware/src/ym/ym_clock.h"
+static struct ym_clock yclock={0,0,0,0,0,132,0,0,0,0};
 static void fmt_int(char*b,int32_t v){sprintf(b,"%d",v);}
 static unsigned str_len(const char*s){return (unsigned)strlen(s);}
 static void str_cpy(char*d,const char*s,unsigned max){unsigned i=0;while(s[i]&&i+1<max){d[i]=s[i];i++;}d[i]=0;}
@@ -71,6 +73,12 @@ int main(void){
  ys_state=YS_WRITING;ydisplay();image("build/host/ui-saving.ppm");ys_state=YS_SAVED;ydisplay();image("build/host/ui-saved.ppm");ys_state=YS_ERROR;ydisplay();image("build/host/ui-save-error.ppm");ys_state=YS_CLEAN;ydisplay();
  initial=blits;audio_cpu_lifetime_peak=95;audio_xruns=42;ydisplay();check(blits==initial,"USB diagnostics never trigger screen writes");
  ypsg=1;ydisplay();image("build/host/ui-mixer.ppm");
+ initial=blits;yclock.mode=yclock.running=1;yclock.bpm=120;ydisplay();
+ check(blits==initial+1&&last_w==86&&last_h==44,"USB clock updates only the tempo tile");image("build/host/ui-usb-clock.ppm");
+ initial=blits;for(int i=0;i<100;i++)ydisplay();check(blits==initial,"stable external clock never redraws");
+ yclock.bpm=30;ydisplay();yclock.bpm=300;ydisplay();
+ initial=blits;yclock.lost=1;yclock.running=0;ydisplay();check(blits==initial+1,"clock loss redraws its label without a whole-screen clear");
+ image("build/host/ui-usb-clock-lost.ppm");yc_internal(&yclock);ydisplay();
  ym_overload=8;yplaying=0;ydisplay();image("build/host/ui-overload.ppm");
  check(fills==clears,"no visible clears while playing or updating");
  ydisplay_invalidate();ydisplay();check(fills==clears+1,"full redraw only on explicit invalidation");

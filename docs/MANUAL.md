@@ -58,9 +58,25 @@ Keys F3–G5 play PSG tones, up to three at once, including when the backing is 
 
 ## USB MIDI
 
-The port is `Emerald YM FM-1`. Standard Start/Continue resumes playback; Stop pauses. Notes 53–79 on any MIDI channel join the physical keyboard mask. Velocity is a gate, not volume scaling. CC120/123 releases USB-held notes. Incoming MIDI Clock is unused.
+The port is `Emerald YM FM-1`. In released 0.7.0, standard Start/Continue resumes playback; Stop pauses, and MIDI Clock is unused. Notes 53–79 on any MIDI channel join the physical keyboard mask. Velocity is a gate, not volume scaling. CC120/123 releases USB-held notes. Development 0.9.0 adds the clock/TRS behavior below.
 
 For remote effects, MIDI channels 1–12 select the sources in the table. CC20 = DECAY, CC21 = COLOR, CC22 = ECHO, mapped from 0–127 to 0–100%. Details and status-query bytes are in [YM-USB-PROTOCOL.md](../YM-USB-PROTOCOL.md). Do not send this private query to other firmware or unrelated devices.
+
+## USB MIDI Clock and TRS input — development 0.9.0
+
+**Desktop-tested candidate only; not installed or physically verified.** In a DAW, choose `Emerald YM FM-1` as a MIDI destination and enable sending MIDI Clock and transport. Start from the beginning of the arrangement:
+
+- **USB Start (FA):** reset to the beginning using the current seed, select external clock and wait for F8. The first Clock plays step 1, then each six pulses advances one sixteenth note (24 clocks per quarter note).
+- **USB Continue (FB):** select external clock and resume the retained step/pulse position. **USB Stop (FC):** pause and retain that position. Live keys and release/echo tails remain available.
+- **Clock alone (F8):** update the tempo estimate, but do not start playback or take over internal mode without Start/Continue. The display/gate-length estimate supports 30–300 BPM and settles over a quarter note; sequencer timing counts pulses directly, so integer BPM rounding does not accumulate timing drift.
+- **Clock missing for more than 500 ms:** stop the externally clocked backing and show **USB LOST**. Returning Clock alone does not restart it; use Start, Continue or physical PLAY. Input queue loss also clears USB/TRS held notes and stops external playback, rather than continuing with a missing pulse.
+- **Turn K1:** return to internal tempo (80–180 BPM). USB clock mode and incoming tempo are session-only: they do not overwrite the saved K1 value or dirty the settings. The tempo tile shows **K1 USB CLK**, **USB WAIT** or **USB LOST** as appropriate.
+
+Clocked step changes are applied at audio-block boundaries (256 frames, about 5.8 ms), with at most one pending step consumed per block. USB/main-loop scheduling adds latency/jitter; this is not sample-accurate synchronization, and physical accuracy has not been measured. Song Position Pointer/DAW seeking, outgoing Clock, and TRS Clock/transport are not implemented. Start resets Emerald to its first bar regardless of a DAW cursor elsewhere; Continue does not seek to that cursor.
+
+TRS **MIDI IN** on the minijack is enabled at 31,250 baud. Connect a controller's MIDI OUT using an FM-1-compatible TRS-MIDI adapter/cable. It accepts the same live-note range and effect CC mapping as USB. Both inputs may be used together: a USB Note Off does not cancel a still-held TRS note, and CC120/123 clears only the originating port's held mask. Channels share the live key mask within each port. Physical keyboard keys remain independent. TRS SysEx is ignored and cannot enter the updater; TRS real-time messages cannot take over the USB clock.
+
+USB audio, USB ONLY on GLO and diagnostic status v1 are retained. Status v1 does not report external clock mode/BPM. The existing hardware-test helper's identity allowlist intentionally does not yet accept 0.9.0: its Start-only playback test supplies no clock. Physical verification needs an explicitly authorized clock-aware test and TRS controller; desktop tests are not that evidence. [Verification report](verification/usb-clock-trs-0.9.0/README.md).
 
 ## Data, installation and troubleshooting
 

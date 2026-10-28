@@ -1,5 +1,13 @@
 # Emerald YM changelog
 
+## 0.9.0 — unreleased — USB MIDI Clock and TRS MIDI IN
+
+- Follow USB Timing Clock at 24 PPQ: six pulses per sequencer step. USB Start resets the arrangement with the current seed and waits for Clock; Continue preserves position; Stop pauses. A 500 ms clock gap or MIDI input loss stops external playback until explicitly resumed. Turning K1 returns to saved/manual internal tempo.
+- Enable the inherited PH8/UART1 TRS MIDI IN path. Keep USB/TRS held-note masks separate and reserve clock/transport ownership for USB; TRS supports live notes and existing FX CCs, with no SysEx/update entry.
+- Timestamp input at ISR queue publication, estimate 30–300 BPM over a quarter note for display/gates and consume external steps at audio-block boundaries with bounded catch-up. Move the existing gate-duration division to control rate; internal reference audio stays bit-exact.
+- Add real dispatcher/UART parser/queue/renderer/clock tests, wrap/jitter/loss/transport/overflow coverage and changed-tile external-clock UI checks. Compile/package/memory, generic emulator and full desktop/simulated-update suites pass. RAMTEXT is 24,560/24,576 B; no guard or region expansion.
+- No FM-1 access or flash; installed/released 0.7.0 stays unchanged. Separate branch/PR from the unmerged Bluetooth prototype. This candidate has no physical clock/TRS/CPU validation and no public release/tag.
+
 ## 0.7.1 — 2026-10-28 — publication documentation
 
 - Publish exact tested 0.7.0 with matching source tag, update README/preview and archive physical evidence. No rebuild or new device image. Merge PR #8 at owner request.

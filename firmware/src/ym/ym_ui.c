@@ -11,7 +11,7 @@
 #define Y_AMBER RGB(255,176,64)
 #define Y_RED RGB(255,35,40)
 static uint8_t yui_ready;
-static struct {uint32_t tempo,density,mutation,bar,playing,overload,step,psg,selected,level,fxsource,fxkind,fxvalue,save,master,usb_only;int32_t transpose;} yui_old;
+static struct {uint32_t tempo,clock,density,mutation,bar,playing,overload,step,psg,selected,level,fxsource,fxkind,fxvalue,save,master,usb_only;int32_t transpose;} yui_old;
 /* Original console silhouette: circular cartridge deck, vents and red power LED.
  * Drawn in the existing tile canvas, no bitmap asset or extra framebuffer. */
 static void yui_ring(int cx,int cy,int r,uint16_t c){
@@ -121,7 +121,7 @@ static void yui_card(uint32_t index,int32_t value){
  static const char*const label[]={"K1 TEMPO","K2 DENSITY","K3 MUTATION","K4 TRANSPOSE"};
  char b[16];uint16_t accent=index==0||index==3?Y_BLUE:Y_GREEN;
  cv_begin(86,44,Y_CARD);yui_frame(86,44);
- cv_text(5,2,&FONT_XS,label[index],Y_DIM);
+ cv_text(5,2,&FONT_XS,index==0&&yclock.mode?(yclock.lost?"USB LOST":yclock.running?"K1 USB CLK":"USB WAIT"):label[index],Y_DIM);
  if(index==3&&value>0){b[0]='+';fmt_int(b+1,value);}else fmt_int(b,value);
  cv_text(5,14,&FONT_M,b,Y_WHITE);
  cv_text(62,24,&FONT_XS,index==0?"BPM":index==3?"ST":"%",accent);
@@ -131,7 +131,7 @@ static void yui_card(uint32_t index,int32_t value){
   cv_rect(value<0?x:43,39,value<0?43-x:x-43,3,accent);
   cv_rect(42,38,1,5,Y_DIM);cv_rect(x-1,38,2,5,Y_WHITE);
  }else{
-  uint32_t fill=index==0?(uint32_t)(value-80)*76u/100u:(uint32_t)value*76u/100u;
+  uint32_t fill=index==0?(yclock.mode?(uint32_t)(value<30?0:value-30)*76u/270u:(uint32_t)(value-80)*76u/100u):(uint32_t)value*76u/100u;
   if(fill>76u)fill=76u;cv_rect(5,39,(int32_t)fill,3,accent);
  }
  cv_blit(index&1u?146u:52u,index>=2u?128u:78u);
@@ -172,7 +172,8 @@ static void ydisplay(void){
  {uint32_t position=yui_master_position(ymaster_adc,yui_old.master);
   if(yui_old.master!=position){yui_volume(position);yui_old.master=position;}}
  if(yui_old.usb_only!=yusb_only){yui_output_mode();yui_old.usb_only=yusb_only;}
- if(yui_old.tempo!=ytempo){yui_card(0,(int32_t)ytempo);yui_old.tempo=ytempo;}
+ {uint32_t tempo=yclock.mode?yclock.bpm:ytempo,clock=yclock.mode?(yclock.lost?3u:yclock.running?1u:2u):0u;
+ if(yui_old.tempo!=tempo||yui_old.clock!=clock){yui_card(0,(int32_t)tempo);yui_old.tempo=tempo;yui_old.clock=clock;}}
  if(yui_old.density!=ydensity){yui_card(1,(int32_t)ydensity);yui_old.density=ydensity;}
  if(yui_old.mutation!=ymutation){yui_card(2,(int32_t)ymutation);yui_old.mutation=ymutation;}
  if(yui_old.transpose!=ytranspose){yui_card(3,ytranspose);yui_old.transpose=ytranspose;}

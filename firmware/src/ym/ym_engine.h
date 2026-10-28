@@ -7,6 +7,9 @@ extern "C" {
 void ym_init(uint32_t seed);
 void ym_render(int32_t *out,uint32_t frames,uint32_t gain_q12);
 void ym_control(uint32_t tempo,uint32_t density,uint32_t mutation,int32_t transpose,uint32_t playing);
+/* Main-loop publication: cumulative six-clock boundaries, consumed once/block.
+ * Start must also reseed; external mode never advances from its BPM estimate. */
+void ym_external_clock(uint32_t enabled,uint32_t events,uint32_t bpm);
 /* Held FM-1 key bitmap F3..G5; audio thread owns voice allocation. */
 void ym_live_keys(uint32_t keys);
 void ym_psg_enable(uint32_t enabled);
