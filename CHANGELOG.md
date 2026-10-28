@@ -1,12 +1,18 @@
 # Emerald YM changelog
 
-## 0.10.0 — unreleased — EDIT / USB MIDI note output
+## 0.10.1 — 2026-10-29 — 0.10.0 publication and hardware evidence
+
+- Publish exact tested 0.10.0 without rebuilding: tag v0.10.0 at e906fbc5eb3c91e45c95101c46bd0d674eef533d; package SHA-256 195cd2d1a504d5936e79cde227d64d2d8d1bd407945e8156dac795f682d59401. Archive raw physical reports separately from desktop evidence.
+- Update English README/manual with MIDI IN/OUT, EDIT, channel map, USB Clock, 60-second combined MIDI OUT/audio/status results and the native 0.10.0 screen render. Link the release download and checksums.
+- Owner-requested follow-up in existing PR #11. Documentation-only version; no firmware-source change, rebuild, additional device access or PR merge.
+
+## 0.10.0 — 2026-10-29 — EDIT / USB MIDI note output
 
 - EDIT switches between note input (dim) and USB note output (bright); the header shows USB MIDI OUT. The mode resets to input at boot and is not saved. USB Clock/transport, diagnostics and USB audio remain available in both modes; note/FX input is ignored in OUT, with no MIDI Thru or feedback echo.
 - Export physical keyboard notes on channel 1 and separate FM, PSG and percussion sequencer parts on channels 2–8 and 10. Local synthesis continues. Retry Note Off under USB queue pressure; clean up mode/transpose/seed/Stop/overload transitions and recover after USB suspend/reset.
 - Read a block-end engine snapshot in XIP within the measured audio budget; small trigger counters preserve retriggers and sub-block drums. Move only sequence-selection constants to the existing XIP pitch section, outside sample loops. No memory-map, flash-off, startup-copy or protective-threshold change.
 - The FM-1 minijack remains MIDI IN: the official SDK documents DIN input and USB/BLE output, with no supported jack-output mode. Physical DIN/TRS output requires a USB host/PC routing Emerald to a MIDI interface such as UM-ONE. No UART TX pin/register changes.
-- Separate branch/PR based on unmerged PR #10. Compile/desktop tests only for 0.10.0; no device access, flash, release, tag or merge. Exact installed 0.9.0 and released 0.7.0 stay unchanged.
+- Initial implementation used a separate branch/PR based on unmerged PR #10 and compile/desktop tests only. Subsequent owner-authorized exact-0.10.0 installation and USB MIDI/audio/EDIT tests passed; see the 0.10.1 publication/evidence entry above. No automatic PR merge.
 
 ## 0.9.0 — unreleased — USB MIDI Clock and TRS MIDI IN
 

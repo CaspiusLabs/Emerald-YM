@@ -102,9 +102,9 @@ Press GLO once to mute physical speaker/headphone audio while keeping USB record
 
 The local output fades over one 256-frame block (~5.8 ms) to reduce switching clicks. The USB mix is captured before this local fade/mute. The amplifier is not powered off, so this feature does not promise removal of analog hiss or power savings. USB ONLY is session-only, not stored by SAVE; reboot restores normal physical output. It does not mute only the built-in speaker while retaining headphones.
 
-## EDIT / USB MIDI OUT — development 0.10.0
+## EDIT / USB MIDI OUT — 0.10.0
 
-This candidate is compiled and desktop-tested only. It has not been installed on FM-1.
+Exact 0.10.0 has passed physical USB note input/output, held-key EDIT switching, USB Clock and simultaneous USB-audio/status testing. See the [hardware report](verification/usb-midi-out-0.10.0/hardware/README.md).
 
 - **EDIT dim (boot default): MIDI IN.** USB and minijack notes/effect CCs play/edit Emerald as before.
 - **EDIT bright: USB MIDI OUT.** The header changes to USB MIDI OUT. Physical keyboard and sequencer notes are sent to the computer; incoming USB/TRS notes and effect CCs are ignored. This prevents a DAW echo loop. Local synthesis and physical-key LEDs continue; no MIDI Thru is provided.
@@ -131,4 +131,4 @@ The FM-1 minijack remains **MIDI IN**. The [official SDK](https://github.com/m-v
 
 For external hardware output: connect FM-1 and UM-ONE to the computer by USB, route the DAW's **Emerald YM FM-1 MIDI input** to **UM-ONE MIDI output**, then connect Roland's **CONNECT TO MIDI IN** lead to the destination instrument's MIDI IN. The FM-1 minijack is not used in this output route. A standalone alternative needs a compatible USB MIDI host, not a passive adapter.
 
-See [verification and memory limits](verification/usb-midi-out-0.10.0/README.md). No hardware timing, physical note output or combined USB-audio/OUT validation is claimed for 0.10.0.
+See [verification and memory limits](verification/usb-midi-out-0.10.0/README.md). The short hardware test measured the combined USB-audio/OUT load; long-session behavior, physical destination-synth rendering and separate UAC packet counters remain unverified.

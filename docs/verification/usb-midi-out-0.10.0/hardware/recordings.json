@@ -1,0 +1,20 @@
+{
+  "input-before.wav": {
+    "bytes": 2718368,
+    "sha256_complete_wav": "256694c9022fdfd3e672933d88bbffb9352512752e8eec874b7479e5a387ffa1",
+    "local_directory": "build/usb-midi-out-hardware-0.10.0",
+    "committed": false
+  },
+  "input.wav": {
+    "bytes": 2718368,
+    "sha256_complete_wav": "f5690ff7bb06af0931995ba0b5e2846b5efa455fc1239d0c0a3ee05f7bb60f51",
+    "local_directory": "build/usb-midi-out-hardware-0.10.0",
+    "committed": false
+  },
+  "output.wav": {
+    "bytes": 14360768,
+    "sha256_complete_wav": "bd18143aafc991e7f9776902ea1709f1491ca79bc6c010c6cf39c25a9a3b9efc",
+    "local_directory": "build/usb-midi-out-hardware-0.10.0",
+    "committed": false
+  }
+}

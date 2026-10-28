@@ -1,4 +1,8 @@
-# EDIT / USB MIDI OUT — 0.10.0 desktop verification
+# EDIT / USB MIDI OUT — 0.10.0 verification
+
+Exact 0.10.0 was subsequently installed and physically tested. Read the [physical report](hardware/README.md) separately from the original desktop-stage evidence below. The [v0.10.0 release](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.10.0) preserves that exact package and source commit; documentation 0.10.1 does not rebuild it.
+
+## Original desktop stage
 
 This task only compiled and ran desktop tests. No MIDI port was opened, no device was probed/flashed, and no physical output or target timing was measured. Installed exact 0.9.0 and the public 0.7.0 release are unchanged. This branch builds on unmerged PR #10, independently of Bluetooth PR #9; its PR targets main and must account for that dependency. No release/tag/merge is performed.
 
