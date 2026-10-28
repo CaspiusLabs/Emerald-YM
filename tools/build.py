@@ -207,7 +207,7 @@ def build_loader():
 # ---- app
 
 def build_app():
-    flags = [*CFLAGS, *FPU, "-DEN_YM2612=1", "-DEN_UAC=1", "-DEN_TRS=0", "-DNDEBUG", "-DYMFM_FREESTANDING=1", "-Ifirmware/hal", "-Ifirmware/src", "-Ibuild/gen"]
+    flags = [*CFLAGS, *FPU, "-DEN_YM2612=1", "-DEN_UAC=1", "-DEN_TRS=1", "-DNDEBUG", "-DYMFM_FREESTANDING=1", "-Ifirmware/hal", "-Ifirmware/src", "-Ibuild/gen"]
     for flag in ("EN_CDC",):
         v = os.environ.get(flag)    # unset: the default in firmware/src/main.c
         if v in ("0", "1"):
@@ -302,7 +302,7 @@ def check(img, syms, dis, rt):
         errors.append("control-rate PSG pitch lookup is not in XIP")
     # Main-loop leaf setters/getters are explicitly outside the tiny audio RAM.
     # The audio renderer must never call this section while Flash is unavailable.
-    for name in ("ym_control", "ym_reseed", "ym_live_keys", "ym_psg_enable", "ym_psg_level",
+    for name in ("ym_control", "ym_external_clock", "ym_reseed", "ym_live_keys", "ym_psg_enable", "ym_psg_level",
                  "ym_effect", "ym_mix_levels", "ym_instrument_level", "ym_drum_level", "ym_bar", "ym_seed", "ym_step", "ym_live_active_keys", "ym_sequence_keys"):
         if not (APP_XIP <= sym(name) < APP_XIP + APP_SLOT):
             errors.append(f"main-loop control {name} is not in XIP")

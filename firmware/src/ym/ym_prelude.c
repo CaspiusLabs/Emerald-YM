@@ -1,11 +1,14 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Small application on the unchanged DUB-1/Felucca hardware and update platform. */
 #include "ym_engine.h"
+#include "ym_clock.h"
+static struct ym_clock yclock={0,0,0,0,0,132,0,0,0,0};
 #ifndef EN_VERSION
 #define EN_VERSION "DEV"
 #endif
 /* Crossing XIP -> low RAM requires the platform's indirect far-call helper. */
 #define ym_control(...) FL_FAR(ym_control)(__VA_ARGS__)
+#define ym_external_clock(...) FL_FAR(ym_external_clock)(__VA_ARGS__)
 #define ym_render(...) FL_FAR(ym_render)(__VA_ARGS__)
 #define ym_init(...) FL_FAR(ym_init)(__VA_ARGS__)
 #define ym_bar(...) FL_FAR(ym_bar)(__VA_ARGS__)
@@ -28,7 +31,7 @@ static uint32_t ymaster_adc=512; /* filtered physical position, UI only; never p
 static uint32_t master_q12=256; /* start quietly, master pot updates after boot */
 static uint32_t ytempo=132,ydensity=100,ymutation=35,yplaying=0;
 static int32_t ytranspose;
-static uint32_t ypsg=1,ymidi_keys;
+static uint32_t ypsg=1,ymidi_keys,ymidi_port_keys[2];
 static uint32_t yinstrument,ylevels[12]={100,100,100,100,100,100,100,100,100,100,100,100};
 static uint32_t yfx_kind[12],yfx_values[12][3];
 int plat_store_load(uint32_t obj,void*dst,uint32_t max){return flash_ok?st_load(obj,dst,max):-1;}
@@ -36,6 +39,6 @@ int plat_store_save(uint32_t obj,const void*src,uint32_t len){return flash_ok?st
 #include "app/panel.c"
 #include "ym_settings.c"
 /* Called with the IRQ briefly masked; heavy work happens in the audio ISR. */
-static void ypost(void){uint32_t f=irq_save();ym_control(ytempo,ydensity,ymutation,ytranspose,yplaying);irq_restore(f);}
+static void ypost(void){uint32_t f=irq_save();if(yclock.mode)yclock.running=yplaying;ym_control(ytempo,ydensity,ymutation,ytranspose,yplaying);ym_external_clock(yclock.mode,yclock.events,yclock.bpm);irq_restore(f);}
 #include "ym_ui.c"
 #include "ym_leds.c"

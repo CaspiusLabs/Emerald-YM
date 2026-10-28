@@ -39,6 +39,8 @@ static uint32_t tempo=132,density=100,mutation=35,playing=1;
 static int32_t transpose;
 static volatile uint32_t req_tempo=132,req_density=100,req_mutation=35,req_play=1,req_seed;
 static volatile int32_t req_transpose;
+static volatile uint32_t req_clock_mode,req_clock_events,req_unit=(7670454u/144u)*15u/132u;
+static uint32_t clock_applied;
 #define EMERALD_FX 1
 #include "ym_psg.h"
 static uint32_t random32(){state^=state<<13;state^=state>>17;state^=state<<5;return state;}
@@ -69,7 +71,7 @@ static FX_CODE void make_motifs(){
  for(int m=0;m<4;m++){int k=1+pick(6),n=motifs[m][k]+(pick(2)?1:-1);motifs[m][k]=n<0?0:n>6?6:n;}
 }
 static FX_CODE void restart(uint32_t seed){
- state=initial_seed=seed?seed:1;steps=step_phase=notes=0;psg_reset();fx_reset_audio();
+ state=initial_seed=seed?seed:1;steps=step_phase=notes=clock_applied=0;psg_reset();fx_reset_audio();
  for(int c=0;c<5;c++)if(fx_values[c][0]||fx_values[c][1])fx_dirty|=1u<<c;
  chip->reset();wr(0x22,0);wr(0x27,0);wr(0x2a,128);wr(0x2b,128);last_dac=128;
  for(int c=0;c<5;c++)off(c);
@@ -82,7 +84,7 @@ static FX_CODE void tick(){
  static const int8_t roots[]={40,37,45,47,44,37,42,47},ci[]={1,1,2,3,1,4,6,7};
  static const int8_t chords[8][3]={{64,68,71},{64,68,71},{61,64,68},{63,66,69},{63,68,71},{64,68,71},{61,64,69},{63,66,69}};
  static const int8_t scale[]={64,66,68,69,71,73,75};
- uint32_t idx=bridge?ci[b%8]:b%8,unit=(7670454u/144u)*15u/tempo;
+ uint32_t idx=bridge?ci[b%8]:b%8,unit=req_unit;
  if(pos==0&&b&&b%8==0&&pick(100)<mutation){int m=pick(4),k=1+pick(6),n=motifs[m][k]+(pick(2)?1:-1);motifs[m][k]=n<0?0:n>6?6:n;}
  static const uint8_t bp[]={0,3,4,7,10,12,14,15};
  for(int k=0;k<8;k++)if(pos==bp[k]&&!(intro&&k==7)&&!(bridge&&k==3)){
@@ -125,7 +127,7 @@ static void native(){
  if(playing){
   if(psg_gate&&!--psg_gate)psg_note=255;
   for(int c=0;c<5;c++)if(hold[c]&&!--hold[c])off(c);
-  if(steps==0)tick();step_phase+=tempo*4u*144u;if(step_phase>=7670454u*60u){step_phase-=7670454u*60u;tick();}
+  if(tempo){if(steps==0)tick();step_phase+=tempo*4u*144u;if(step_phase>=7670454u*60u){step_phase-=7670454u*60u;tick();}}
  }
  if(!(native_count++&3)){
   int v=0;fx_drum_send=0;
@@ -150,9 +152,15 @@ extern "C" void ym_init(uint32_t seed){
  for(int k=0;k<5;k++)emerald_fm_gain_q8[k]=256;drum_gain=1.0f;old_keys=live_mask=sequence_mask=key_clock=0;old_psg=1;
  for(int k=0;k<27;k++)key_age[k]=0;sequence_gain=0;
  playing=req_play=1;tempo=req_tempo=132;density=req_density=100;mutation=req_mutation=35;transpose=req_transpose=0;
+ req_clock_mode=req_clock_events=0;req_unit=(7670454u/144u)*15u/132u;
  resample_phase=native_count=0;prev_l=prev_r=next_l=next_r=0;dc_l=dc_r=gain=0;restart(seed);
 }
-extern "C" YM_CONTROL_CODE void ym_control(uint32_t t,uint32_t d,uint32_t m,int32_t tr,uint32_t p){req_tempo=t<80?80:t>180?180:t;req_density=d>100?100:d;req_mutation=m>100?100:m;req_transpose=tr< -12?-12:tr>12?12:tr;req_play=p!=0;}
+extern "C" YM_CONTROL_CODE void ym_control(uint32_t t,uint32_t d,uint32_t m,int32_t tr,uint32_t p){req_tempo=t<80?80:t>180?180:t;if(!req_clock_mode)req_unit=(7670454u/144u)*15u/req_tempo;req_density=d>100?100:d;req_mutation=m>100?100:m;req_transpose=tr< -12?-12:tr>12?12:tr;req_play=p!=0;}
+extern "C" YM_CONTROL_CODE void ym_external_clock(uint32_t enabled,uint32_t events,uint32_t bpm){
+ req_clock_mode=enabled!=0;req_clock_events=events;
+ if(enabled)req_tempo=bpm<30?30:bpm>300?300:bpm;
+ req_unit=(7670454u/144u)*15u/req_tempo;
+}
 extern "C" YM_CONTROL_CODE void ym_reseed(uint32_t s){req_seed=s?s:1;}
 extern "C" YM_CONTROL_CODE void ym_live_keys(uint32_t keys){req_keys=keys&0x07ffffffu;}
 extern "C" YM_CONTROL_CODE void ym_psg_enable(uint32_t enabled){req_psg=enabled!=0;}
@@ -176,13 +184,15 @@ extern "C" YM_CONTROL_CODE uint32_t ym_seed(){return initial_seed;}
 extern "C" uint32_t ym_arena_bytes(){return arena_used;}
 extern "C" uint32_t ym_note_count(){return notes;}
 extern "C" void ym_render(int32_t*out,uint32_t frames,uint32_t master){
- tempo=req_tempo;density=req_density;mutation=req_mutation;transpose=req_transpose;
+ tempo=req_clock_mode?0:req_tempo;density=req_density;mutation=req_mutation;transpose=req_transpose;
  uint32_t newseed=req_seed;if(newseed){req_seed=0;restart(newseed);}
  if(playing&&!req_play){for(int c=0;c<5;c++)off(c);}playing=req_play;
  uint32_t changed=fx_sync();if(changed&31u)fx_apply_fm(changed);
  for(int c=0;c<5;c++)emerald_fm_gain_q8[c]=req_voice_gain[c];
  for(int d=0;d<4;d++){drums[d].level=(drums[d].velocity*req_voice_gain[d+5]+128u)>>8;drums[d].end=(drums[d].len*fx_gate[d+5])>>8;}
  psg_arp_mix=float(req_voice_gain[9])*(1.0f/256.0f);psg_live_mix=float(req_voice_gain[10])*(1.0f/256.0f);psg_noise_mix=float(req_voice_gain[11])*(1.0f/256.0f);drum_gain_q8=req_drum_gain_q8;drum_gain=float(drum_gain_q8)*(1.0f/256.0f);
+ if(tempo)clock_applied=0;
+ else if(playing&&clock_applied!=req_clock_events){clock_applied++;tick();}
  live_update();psg_targets();
  float target=float(master)/4096.0f,psg_level=float(req_psg_level)*0.01f;
  for(uint32_t i=0;i<frames;i++){

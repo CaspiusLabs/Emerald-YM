@@ -9,6 +9,7 @@
 | firmware/src/ym/ymfm | ymfm core and local restricted-profile optimizations |
 | firmware/src/ym/ym_tables.h | Tuning tables and original short drum samples |
 | firmware/src/ym/main.c, ym_loop.c | Startup, audio interrupt, watchdog, timing, panel and USB |
+| firmware/src/ym/ym_clock.h, ym_midi.c, src/midi_input.h | USB clock follower, per-port live input, timestamped shared ISR queue |
 | firmware/src/ym/ym_ui.c, ym_leds.c | Changed-tile UI and complete-row LED publication |
 | firmware/hal | CPU, display, panel, DMA, flash and guards |
 | firmware/app.ld | XIP, .ram_text, .audio_hot, data, pool and stacks |
@@ -48,3 +49,11 @@ The 40px left rail is drawn once as 40x136 and 40x32 static tiles. The moving tr
 ym_output.h owns the output fork: generate the existing master mix (or protected silence), feed uac_tap, then fade/zero only the physical I2S/DMA buffer. A 0..256 integer local gain ramps one step per stereo frame; unity bypasses scaling bit-for-bit and a settled mute uses memset. No allocation, codec reset, stopped DMA, 64-bit sample multiply or gain-stage change before USB. The route helper remains inside render_block timing, including the existing 85% guard.
 
 GLO changes a 32-bit volatile session flag on button edges; it does not dirty persistent settings. Complete LED-row publication adds bright GLO only while muted. A separate changed-only 40x32 tile replaces the headphone symbol with USB ONLY; MASTER and other UI tiles retain their behavior. Status v1 is unchanged and does not report USB ONLY state; physical confirmation is separate evidence.
+
+## Development 0.9.0 MIDI scheduling
+
+USB and UART1 producers share the existing TIMER5 context outside the renderer. The bounded input queue publishes a TIMER4 arrival timestamp alongside each complete packet, before advancing the write index. Emerald normalizes USB's source to 0 and tags TRS as 1 internally; these tags never alter the outgoing USB descriptor or wire protocol. MIDI masks are separate per input and combined with the physical keyboard. FIFO/DMA loss clears MIDI-held masks and stops the external follower rather than silently losing timing pulses.
+
+The main-loop clock follower consumes USB real-time messages, counts 24 pulses/quarter and publishes one sequencer boundary per six pulses. A 24-interval timestamp window estimates integer BPM only for gate duration and UI; it does not drive external sequencing. On Start the seed is preserved but the renderer resets the arrangement; Continue preserves phase. Missing Clock for more than 500 ms pauses until explicit resume, without automatic internal fallback. Clock metadata is not persisted. TRS real-time/SysEx does not control the follower/updater.
+
+The renderer's existing tempo accumulator is bypassed in external mode and consumes at most one queued boundary per block after FX synchronization, preserving bounded render work. The old native-sample gate unit division is now computed in XIP control code and read at tick time, leaving internal-mode reference PCM bit-exact. Audio code still fits in the original RAMTEXT with 16 B spare, and the new setter uses existing FL_FAR and linker address checks. USB Clock timing accuracy/USB+TRS load are not physically measured; no allocation, libm/double, region expansion, flash-off XIP call or higher overload threshold was introduced.
