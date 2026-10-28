@@ -2,15 +2,53 @@
 
 Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A real YM2612 emulator, a lightweight Sega-style PSG and an endless sequencer turn the FM-1 into a small chiptune instrument. Play along on its keyboard and shape each instrument independently.
 
-**Current firmware: 0.7.0 (beta), hardware-tested.** [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
+**Current firmware: 0.10.0 (beta), hardware-tested.** [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
 
-**Public release download: 0.7.0 (beta).** [Download 0.7.0 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.7.0/emerald-ym-0.7.0.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.7.0/SHA256SUMS) · [Release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.7.0)
+**Public release download: 0.10.0 (beta).** [Download 0.10.0 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.10.0/emerald-ym-0.10.0.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.10.0/SHA256SUMS) · [Release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.10.0)
 
-**Development candidate 0.9.0:** USB MIDI Clock synchronization and TRS MIDI IN are implemented and desktop-tested, **not installed or hardware-validated**. USB Start/Continue selects external clock; K1 returns to internal tempo. [Controls and scope](docs/MANUAL.md#usb-midi-clock-and-trs-input--development-090) · [Build, memory and test evidence](docs/verification/usb-clock-trs-0.9.0/README.md). The public download and installed 0.7.0 remain unchanged; this branch does not include the separate Bluetooth prototype.
+![Emerald YM 0.10.0 in USB MIDI OUT mode, captured from the native firmware UI renderer](releases/v0.10.0/ui-preview.png)
 
-![Emerald YM 0.7.0 USB ONLY screen with MASTER slider, rendered by the actual UI test](releases/v0.7.0/ui-preview.png)
+*240 × 240 native UI render, not a photograph of the device. The owner separately confirmed EDIT illumination, the USB MIDI OUT header and smooth playback on the physical FM-1.*
 
-*240 × 240 capture from the actual firmware UI renderer, not a photograph of the device. The owner separately confirmed the screen and MASTER slider on a physical FM-1.*
+## MIDI IN / OUT and EDIT (0.10.0)
+
+Press **EDIT** to switch note direction:
+
+- **EDIT dim — MIDI IN:** receive live notes and effect CCs over USB or the minijack. Notes 53–79 on any channel play the live PSG; USB and TRS have separate held-note masks. The minijack requires a compatible TRS MIDI adapter (the original Launchpad Pro MK3 Type A adapter was used in the earlier 0.9.0 input test).
+- **EDIT bright — USB MIDI OUT:** send the physical keyboard and generative sequencer to a computer. The header shows **USB MIDI OUT**. Local synthesis continues; incoming USB/TRS notes and effect CCs are ignored to avoid MIDI feedback. In your DAW, select **Emerald YM FM-1** as the MIDI input.
+
+USB Clock/Start/Continue/Stop, read-only status diagnostics and stereo USB audio stay available in both modes. USB Start/Continue selects external clock at 24 PPQ; K1 returns to internal tempo. EDIT mode resets to IN after reboot and is not saved. OUT sends notes, not Clock or transport, and does not provide MIDI Thru.
+
+| MIDI output channel | Part |
+|---|---|
+| 1 | Physical keyboard, including chords |
+| 2 / 3 | FM bass / lead |
+| 4–6 | Three FM chord voices |
+| 7 / 8 | PSG arpeggio / noise |
+| 10 | Kick 36, snare 38, closed hat 42, open hat 46 |
+
+The **minijack remains MIDI IN in both modes**; EDIT does not switch its electrical direction. For physical MIDI OUT, route FM-1's USB MIDI through a computer or compatible USB host to an external interface such as Roland UM-ONE. No Bluetooth output is included. [Detailed controls, routing and timing limits](docs/MANUAL.md#edit--usb-midi-out--0100).
+
+## Physical 0.10.0 tests
+
+The exact release package passed a **60-second 180 BPM USB Clock run with simultaneous MIDI OUT reception, USB audio recording and status diagnostics**, plus separate live-key/EDIT/input tests:
+
+| Check | Result |
+|---|---|
+| Keyboard and sequencer MIDI OUT | 2,047 Note Ons captured across all nine assigned channels in the main session |
+| Keyboard chords / EDIT | Up to four simultaneous keys captured separately; switching EDIT to IN released held outgoing notes |
+| USB note input before/after EDIT | Three notes and a chord recorded successfully in IN; no performance echo |
+| Incoming USB notes in OUT | Ignored; no audio response or echo during the paused negative control |
+| STOP | All captured outgoing notes released |
+| Average sampled audio CPU | **45.98%** during the 60-second sequence |
+| Maximum audio CPU / longest block | **72% / 4,212 us** |
+| XRUNS / overload / failed boots | **0 / 0 / 0** |
+| Simultaneous USB audio | 81.41 s stereo PCM16 / 44.1 kHz, including the 60-second backing; no clipping in the analyzed body |
+| User observation | Smooth backing and correct EDIT LED/header changes |
+
+This is a short physical test, not long-session, destination-synth or USB packet-counter validation. The minijack input was physically checked on earlier exact 0.9.0; it was not retested in this USB-focused 0.10.0 session. [Exact package, raw reports and scope](docs/verification/usb-midi-out-0.10.0/hardware/README.md) · [Desktop tests and memory](docs/verification/usb-midi-out-0.10.0/README.md).
+
+Release **v0.10.0** contains the exact tested 609,677-byte package, published without rebuilding, SHA-256 `195cd2d1a504d5936e79cde227d64d2d8d1bd407945e8156dac795f682d59401`. The tag points to matching firmware source commit `e906fbc5eb3c91e45c95101c46bd0d674eef533d`. Documentation version **0.10.1** adds this publication/evidence update in PR #11; it does not identify a new firmware image. Older release packages and tags remain unchanged.
 
 ## USB ONLY on GLO (0.7.0)
 
@@ -52,7 +90,7 @@ This is original generative music inspired by the Mega Drive/Genesis sound palet
 
 Start with MASTER low, then press PLAY. The sequencer is paused after boot.
 
-| Control | Function in 0.6.0 |
+| Control | Function in 0.10.0 |
 |---|---|
 | PLAY | Start/pause the backing sequencer; live keys still work in pause |
 | REC | Generate a new seed and sequence |
@@ -62,9 +100,10 @@ Start with MASTER low, then press PLAY. The sequencer is paused after boot.
 | SELECT | Select one of twelve instruments |
 | PRESETS | Set the selected instrument's level, 0–100% |
 | FX | Select DECAY, COLOR or ECHO for editing |
-| GLO (development 0.7.0) | Toggle USB ONLY; lit when speaker/headphones are digitally muted |
+| GLO | Toggle USB ONLY; lit when speaker/headphones are digitally muted |
 | ALGORITHM | Set the selected effect amount, 0–100% |
 | ARP | Enable/disable all PSG, including live keys |
+| EDIT | Dim: USB/TRS note input; bright: physical keyboard + sequencer note output over USB |
 | Keyboard | Up to three live PSG notes, F3–G5 |
 | MASTER | Overall output level; the on-screen red slider follows the physical knob |
 
@@ -72,7 +111,7 @@ Effect amounts and levels remain independent when changing selections. All twelv
 
 ## Compatibility and data
 
-Target: M-VAVE **FM-1**, not SMK-37 or other models. USB MIDI name: `Emerald YM FM-1`. Release 0.6.0 identity: `FM-1_68000600`; older release 0.4.3 identity: `FM-1_68000403`. The `.fwsc` includes the inherited Felucca update loader.
+Target: M-VAVE **FM-1**, not SMK-37 or other models. USB MIDI name: `Emerald YM FM-1`. Release 0.10.0 identity: `FM-1_68001000`; older release 0.4.3 identity: `FM-1_68000403`. The `.fwsc` includes the inherited Felucca update loader.
 
 Emerald YM does **not** import stock, DUB-1 or other firmware's presets, projects or samples. It does not provide a way to back them up or restore them. Back up with your existing firmware's tools before switching. Firmware installation writes flash; do not assume another firmware's data will survive switching or recovery. From 0.4.0, instrument levels/FX are stored in the existing project-sector pair at `0xFC000` / `0xFD000`. Saving may replace another firmware's data there; panel calibration and the update-loader area are separate.
 
@@ -107,7 +146,7 @@ These results apply to the exact linked package, not earlier review builds with 
 
 Levels/FX and K1–K4 retention after full power-off were user-confirmed in the preceding 0.4.x checks. Desktop tests cover the renderer, storage migration, interrupted/corrupt simulated saves and UI/LED/update logic. [Verification](docs/VERIFICATION.md) separates those tests from physical measurements. The immutable accepted baseline **v0.1.4**, its tag and original evidence remain preserved.
 
-**Firmware Hub:** the repository and the exact tested 0.7.0 release are public. The older 0.4.3 transition evidence remains version-specific. Normal V15/Dinghy round trips and the limited USB data-interruption test are documented. The Hub browser route, interrupted changed-sector programming and power-loss recovery remain unverified; no further hardware tests are planned in this task. [Submission checklist](docs/FIRMWARE-HUB.md). No submission has been sent.
+**Firmware Hub:** the repository and the exact tested 0.10.0 release are public. The older 0.4.3 transition evidence remains version-specific. Normal V15/Dinghy round trips and the limited USB data-interruption test are documented. The Hub browser route, interrupted changed-sector programming and power-loss recovery remain unverified; no further hardware tests are planned in this task. [Submission checklist](docs/FIRMWARE-HUB.md). No submission has been sent.
 
 ## Development
 

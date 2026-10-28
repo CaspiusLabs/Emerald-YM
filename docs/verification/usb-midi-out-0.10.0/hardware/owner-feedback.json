@@ -1,0 +1,10 @@
+{
+  "installed_identity": "FM-1_68001000",
+  "package_sha256": "195cd2d1a504d5936e79cde227d64d2d8d1bd407945e8156dac795f682d59401",
+  "pr": 11,
+  "source_commit": "e906fbc5eb3c91e45c95101c46bd0d674eef533d",
+  "edit_out": "Owner confirmed bright EDIT and USB MIDI OUT label",
+  "live_and_audio": "Owner confirmed playing notes/chord and smooth backing",
+  "edit_back_in": "Owner confirmed EDIT dimmed and USB MIDI OUT disappeared while holding three keys",
+  "settings_modified": false
+}

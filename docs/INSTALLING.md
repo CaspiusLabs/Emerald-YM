@@ -1,6 +1,6 @@
 # Installing and leaving Emerald YM
 
-Target: M-VAVE FM-1 only. Current package: `emerald-ym-0.6.0.fwsc`, identity `FM-1_68000600`, USB MIDI name `Emerald YM FM-1`. This is beta firmware. Read the [test scope](VERIFICATION.md) before installing.
+Target: M-VAVE FM-1 only. Current package: `emerald-ym-0.10.0.fwsc`, identity `FM-1_68001000`, USB MIDI name `Emerald YM FM-1`. This is beta firmware. Read the [test scope](VERIFICATION.md) before installing.
 
 ## Back up first
 
@@ -8,18 +8,18 @@ Emerald does not import stock or other custom firmware's presets, projects or sa
 
 ## Get and check the package
 
-Download [emerald-ym-0.6.0.fwsc](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.6.0/emerald-ym-0.6.0.fwsc) and [SHA256SUMS](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.6.0/SHA256SUMS) from the public [0.6.0 beta release](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.6.0). Choose the `.fwsc` asset, not a source archive. This is the exact physically tested file, with no rebuild; tag `v0.6.0` points to matching source commit `c0530a6cd7d026554e21b957665edfd7fe7d51d9`. Documentation/source version 0.6.2 does not identify a new firmware image. The 0.6.0 recording/MIDI/status and screen tests are separate from the older 0.4.3 V15/Dinghy round trips. No Hub browser installation is claimed.
+Download [emerald-ym-0.10.0.fwsc](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.10.0/emerald-ym-0.10.0.fwsc) and [SHA256SUMS](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.10.0/SHA256SUMS) from the public [0.10.0 beta release](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.10.0). Choose the `.fwsc` asset, not a source archive. This is the exact physically tested file, published without rebuilding; tag `v0.10.0` points to matching source commit `e906fbc5eb3c91e45c95101c46bd0d674eef533d`. Documentation version 0.10.1 does not identify a new firmware image. The [0.10.0 USB MIDI/audio/EDIT test](verification/usb-midi-out-0.10.0/hardware/README.md) is separate from older 0.4.3 V15/Dinghy round trips; those recovery/transition results do not transfer to 0.10.0. No Hub browser installation is claimed.
 
 Expected SHA-256:
 
 ```text
-ea7a5bff5fcf2671debad1ee32f13b50843d6f51d7fe879f14798097a56fbe89
+195cd2d1a504d5936e79cde227d64d2d8d1bd407945e8156dac795f682d59401
 ```
 
 On PowerShell:
 
 ```powershell
-Get-FileHash .\emerald-ym-0.6.0.fwsc -Algorithm SHA256
+Get-FileHash .\emerald-ym-0.10.0.fwsc -Algorithm SHA256
 ```
 
 The package includes the inherited Felucca update loader. Do not substitute a raw application `.bin` for it.
@@ -37,10 +37,10 @@ Connect the FM-1 with a USB data cable. Verify its exact MIDI port; exclude unre
 
 ```powershell
 python tools/fm1_install.py --info --port "YOUR VERIFIED FM-1 PORT"
-python tools/fm1_install.py .\emerald-ym-0.6.0.fwsc --port "YOUR VERIFIED FM-1 PORT"
+python tools/fm1_install.py .\emerald-ym-0.10.0.fwsc --port "YOUR VERIFIED FM-1 PORT"
 ```
 
-The installer asks before writing. Keep power and USB connected until it reports completion. Do not use `--force` to skip the loader check. After reboot, verify `FM-1_68000600`, turn MASTER low and press PLAY.
+The installer asks before writing. Keep power and USB connected until it reports completion. Do not use `--force` to skip the loader check. After reboot, verify `FM-1_68001000`, turn MASTER low and press PLAY.
 
 ## Leaving Emerald and recovery
 

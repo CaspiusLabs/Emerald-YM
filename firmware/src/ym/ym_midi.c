@@ -4,12 +4,13 @@ static void yusb_service(void){
  static uint32_t seen_lost;
  if(seen_lost!=midi_in_lost){
   uint32_t f=irq_save();seen_lost=midi_in_lost;mi_r=mi_w;irq_restore(f);
-  ymidi_port_keys[0]=ymidi_port_keys[1]=ymidi_keys=0;yc_fail(&yclock);
+  ymidi_port_keys[0]=ymidi_port_keys[1]=ymidi_keys=ymidi_discard=0;yc_fail(&yclock);
   if(yclock.mode){yplaying=0;post=1;}
  }
  if(yc_expire(&yclock,fm1_ticks(),FM1_TICKS_PER_US)){yplaying=0;post=1;}
  for(uint32_t read=0;read<MQ&&mi_r!=mi_w;read++){
-  uint32_t packet=midi_in_q[mi_r%MQ],at=midi_in_at[mi_r%MQ],status=(packet>>8)&255u,port=(packet>>4)&15u;
+  uint32_t packet=midi_in_q[mi_r%MQ],at=midi_in_at[mi_r%MQ],status=(packet>>8)&255u,port=(packet>>4)&15u,discard=ymidi_discard!=0;
+  if(discard)ymidi_discard--;
   RING_PUBLISH();mi_r++;
   if(port>1u)continue;
   if(!port&&(status==0xf8u||status==0xfau||status==0xfbu||status==0xfcu)){
@@ -17,6 +18,7 @@ static void yusb_service(void){
    uint32_t action=yc_usb(&yclock,status,at,FM1_TICKS_PER_US);
    if(action){yplaying=yclock.running;post=1;if(action==2u)ym_reseed(ym_seed());}
   }
+  else if(ymidi_out||discard)continue;
   else if((status&0xf0u)==0x90u||(status&0xf0u)==0x80u){
    uint32_t note=(packet>>16)&127u,velocity=(packet>>24)&127u;
    if(note>=53u&&note<=79u){uint32_t bit=1u<<(note-53u);

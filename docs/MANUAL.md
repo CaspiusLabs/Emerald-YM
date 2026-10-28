@@ -64,7 +64,9 @@ For remote effects, MIDI channels 1–12 select the sources in the table. CC20 =
 
 ## USB MIDI Clock and TRS input — development 0.9.0
 
-**Desktop-tested candidate only; not installed or physically verified.** In a DAW, choose `Emerald YM FM-1` as a MIDI destination and enable sending MIDI Clock and transport. Start from the beginning of the arrangement:
+This section records the original 0.9.0 desktop candidate. Later owner-authorized physical tests established USB Clock and note reception through USB and UM-ONE/TRS on installed 0.9.0. Those observations do not validate the new 0.10.0 output implementation; its scope is documented below.
+
+In a DAW, choose `Emerald YM FM-1` as a MIDI destination and enable sending MIDI Clock and transport. Start from the beginning of the arrangement:
 
 - **USB Start (FA):** reset to the beginning using the current seed, select external clock and wait for F8. The first Clock plays step 1, then each six pulses advances one sixteenth note (24 clocks per quarter note).
 - **USB Continue (FB):** select external clock and resume the retained step/pulse position. **USB Stop (FC):** pause and retain that position. Live keys and release/echo tails remain available.
@@ -76,7 +78,7 @@ Clocked step changes are applied at audio-block boundaries (256 frames, about 5.
 
 TRS **MIDI IN** on the minijack is enabled at 31,250 baud. Connect a controller's MIDI OUT using an FM-1-compatible TRS-MIDI adapter/cable. It accepts the same live-note range and effect CC mapping as USB. Both inputs may be used together: a USB Note Off does not cancel a still-held TRS note, and CC120/123 clears only the originating port's held mask. Channels share the live key mask within each port. Physical keyboard keys remain independent. TRS SysEx is ignored and cannot enter the updater; TRS real-time messages cannot take over the USB clock.
 
-USB audio, USB ONLY on GLO and diagnostic status v1 are retained. Status v1 does not report external clock mode/BPM. The existing hardware-test helper's identity allowlist intentionally does not yet accept 0.9.0: its Start-only playback test supplies no clock. Physical verification needs an explicitly authorized clock-aware test and TRS controller; desktop tests are not that evidence. [Verification report](verification/usb-clock-trs-0.9.0/README.md).
+USB audio, USB ONLY on GLO and diagnostic status v1 are retained. Status v1 does not report external clock mode/BPM. The existing hardware-test helper's identity allowlist intentionally does not accept 0.9.0: its Start-only playback test supplies no clock. Physical verification needs an explicitly authorized clock-aware test and TRS controller; desktop tests are not that evidence. [Original desktop verification report](verification/usb-clock-trs-0.9.0/README.md).
 
 ## Data, installation and troubleshooting
 
@@ -99,3 +101,34 @@ Visual hysteresis suppresses small ADC fluctuations around a display-pixel bound
 Press GLO once to mute physical speaker/headphone audio while keeping USB recording, live keys, backing and MIDI/status active. The GLO LED is bright and the bottom-left tile says USB ONLY. Press again to restore physical audio; GLO turns off and the headphone symbol returns. MASTER and its slider still control the level sent to USB.
 
 The local output fades over one 256-frame block (~5.8 ms) to reduce switching clicks. The USB mix is captured before this local fade/mute. The amplifier is not powered off, so this feature does not promise removal of analog hiss or power savings. USB ONLY is session-only, not stored by SAVE; reboot restores normal physical output. It does not mute only the built-in speaker while retaining headphones.
+
+## EDIT / USB MIDI OUT — 0.10.0
+
+Exact 0.10.0 has passed physical USB note input/output, held-key EDIT switching, USB Clock and simultaneous USB-audio/status testing. See the [hardware report](verification/usb-midi-out-0.10.0/hardware/README.md).
+
+- **EDIT dim (boot default): MIDI IN.** USB and minijack notes/effect CCs play/edit Emerald as before.
+- **EDIT bright: USB MIDI OUT.** The header changes to USB MIDI OUT. Physical keyboard and sequencer notes are sent to the computer; incoming USB/TRS notes and effect CCs are ignored. This prevents a DAW echo loop. Local synthesis and physical-key LEDs continue; no MIDI Thru is provided.
+- USB Clock, Start/Continue/Stop, status v1 and USB audio remain available in both modes. OUT does not generate MIDI Clock, transport, Program Change or effect CC messages.
+- The mode is session-only; SAVE does not store it. GLO / USB ONLY remains independent.
+
+| MIDI channel (1-based) | Part |
+|---|---|
+| 1 | Physical keyboard, including chords |
+| 2 | FM bass |
+| 3 | FM lead |
+| 4–6 | Three FM chord voices |
+| 7 | PSG arpeggio when its local voice is available |
+| 8 | PSG noise, note 76 |
+| 10 | Kick 36, snare 38, closed hat 42, open hat 46 |
+
+Use a multitimbral instrument or separate DAW tracks to assign sounds to these channels. Output velocity is fixed at 90; Emerald's mixer levels and audio effects remain local. K4 transposes the keyboard and melodic sequence. Physical key output is not limited by the local three-PSG-voice allocator or ARP switch. Output is observed at 256-frame block boundaries (~5.8 ms), not sample-accurate MIDI. Short drums are emitted as a pulse even when their local sample finishes inside a block. Rapid events during prolonged host backpressure can be coalesced; Note Off cleanup has priority over new notes.
+
+Stopping the backing releases sequencer notes while held physical keys continue. Changing EDIT, transposition, seed or overload state releases obsolete notes. A reset/suspend recovery sends CC123 on channels 1–8 and 10 before rebuilding current notes. Use dedicated destination channels: these cleanup messages affect other notes sharing those channels. A disconnected/non-reading computer cannot receive Note Off; use its panic if it retains voices after disconnect. Update entry disables OUT and provides a bounded 20 ms drain opportunity, not an acknowledgement from the receiving instrument.
+
+### Physical MIDI output through UM-ONE
+
+The FM-1 minijack remains **MIDI IN**. The [official SDK](https://github.com/m-vave/fm1_open) documents DIN input with USB/BLE output, not a supported DIN/TRS output mode. EDIT does not change electrical direction or UART pins.
+
+For external hardware output: connect FM-1 and UM-ONE to the computer by USB, route the DAW's **Emerald YM FM-1 MIDI input** to **UM-ONE MIDI output**, then connect Roland's **CONNECT TO MIDI IN** lead to the destination instrument's MIDI IN. The FM-1 minijack is not used in this output route. A standalone alternative needs a compatible USB MIDI host, not a passive adapter.
+
+See [verification and memory limits](verification/usb-midi-out-0.10.0/README.md). The short hardware test measured the combined USB-audio/OUT load; long-session behavior, physical destination-synth rendering and separate UAC packet counters remain unverified.

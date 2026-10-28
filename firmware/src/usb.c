@@ -130,14 +130,17 @@ static volatile uint32_t so_w, so_r;
 static uint32_t midi_out_q[MQ];
 static volatile uint32_t mo_w, mo_r;
 
-static void midi_out_event(uint32_t pkt)            /* from the audio ISR */
+static int midi_out_try(uint32_t pkt)               /* single audio-owner producer */
 {
-    if (usb.config && mo_w - mo_r < MQ) {
+    if (usb.config && !usb.suspended && mo_w - mo_r < MQ) {
         midi_out_q[mo_w % MQ] = pkt;
         RING_PUBLISH();
         mo_w++;
+        return 1;
     }
+    return 0;
 }
+static void midi_out_event(uint32_t pkt) { (void)midi_out_try(pkt); }
 
 /* ------------------------------------------------------- descriptors --- */
 /* interfaces: 0 audio control, 1 MIDI streaming, 2 audio streaming (FELUCCA_UAC), then CDC's two.
