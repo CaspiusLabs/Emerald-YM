@@ -6,7 +6,7 @@ Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A
 
 **Public release download: 0.7.0 (beta).** [Download 0.7.0 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.7.0/emerald-ym-0.7.0.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.7.0/SHA256SUMS) · [Release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.7.0)
 
-**Experimental development 0.8.0:** [isolated Bluetooth headphone audio prototype and build/memory findings](prototypes/bluetooth-audio/README.md). The PCM/SBC adapter compiles, but the complete A2DP firmware does not link yet. No Bluetooth installation package is available. The production application and tested/released 0.7.0 above are unchanged.
+**Experimental development 0.8.1:** [isolated Bluetooth headphone audio prototype](prototypes/bluetooth-audio/README.md). A reduced SDK reference build now passes strict linking; [memory and FM-1 integration limits](prototypes/bluetooth-audio/source-only/README.md) still prevent treating it as installable firmware. No Bluetooth installation package is available. The production application and tested/released 0.7.0 above are unchanged.
 
 ![Emerald YM 0.7.0 USB ONLY screen with MASTER slider, rendered by the actual UI test](releases/v0.7.0/ui-preview.png)
 

@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[2]
 PIN = "d179b4484759423312073f5fbb232501aa491047"
 
 
-def sections(path):
+def sections(path, include_addresses=False):
     data = path.read_bytes()
     if data[:6] != b"\x7fELF\x01\x01":
         raise RuntimeError("Expected ELF32 little endian")
@@ -27,6 +27,7 @@ def sections(path):
     name_header = headers[names_idx]
     names = data[name_header[4]:name_header[4] + name_header[5]]
     return [dict(name=names[h[0]:].split(b"\0")[0].decode(),
+                 **({"address": h[3]} if include_addresses else {}),
                  bytes=h[5], writable=bool(h[2] & 1),
                  executable=bool(h[2] & 4), nobits=h[1] == 8)
             for h in headers if h[2] & 2]

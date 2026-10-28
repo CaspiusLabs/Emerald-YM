@@ -1,6 +1,6 @@
-# Bluetooth headphone audio prototype — development 0.8.0
+# Bluetooth headphone audio prototype — development 0.8.1
 
-**Status: target-compiled components, incomplete A2DP integration. Not installable.** No FM-1 access, flashing, pairing, microphone recording or radio transmission was performed. Installed/released Emerald YM remains exact **0.7.0**. VERSION 0.8.0 identifies this development work, not a new tested hardware image.
+**Status: reference SDK strict link passes; FM-1 integration is incomplete. Not installable.** No FM-1 access, flashing, pairing, microphone recording or radio transmission was performed. Installed/released Emerald YM remains exact **0.7.0**. VERSION 0.8.1 identifies this development work, not a new tested hardware image. The [source-only follow-up](source-only/README.md) records the reduced configuration, final reference-link memory and remaining porting work. The original 0.8.0 reports below remain unchanged historical evidence.
 
 This directory is excluded from the production firmware and its build. Do not run the normal firmware packaging command expecting Bluetooth: it does not include this prototype. No .fwsc, release or tag is produced here.
 

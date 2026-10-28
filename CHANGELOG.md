@@ -1,5 +1,12 @@
 # Emerald YM changelog
 
+## 0.8.1 — unreleased — source-only SDK link audit (PR #9)
+
+- Add a classic A2DP source/SBC configuration through the SDK's private-profile mechanism. Disable sink, BLE, AAC, AVRCP, HFP/AG, SPP, HID, PAN, dual-source, private app helpers, RF test modes, eSCO master support and SDK OTA modes.
+- Compile the pinned SDK configuration, runtime, event/configuration services, shared RF and compiler libraries with LTO, per-function/data sections and the manufacturer's large-program call mode. Use real SDK registration tables and verify the source codec range selects only the SBC descriptor; retain actual SBC/virtual-input roots.
+- Add two offline audits: a default run requiring actual FM-1 RF calibration, and an explicit reference-board RF run that can complete strict SDK linking. Record final section placement, retained roots, undefined symbols, soft-double dependencies and comparison with the unchanged 0.7.0 baseline. This is not a combined Emerald/SDK link or a bootable FM-1 image.
+- Preserve the 0.8.0 failed-link evidence, document remaining memory/negotiation/platform work and continue the same draft PR #9 at owner request. No production source, release, package, tag, guard or installed firmware change; no device access.
+
 ## 0.8.0 — unreleased — isolated Bluetooth audio prototype
 
 - Add an opt-in, non-installable PCM/SBC prototype under prototypes/bluetooth-audio. Bounded same-core queues convert the 24-bit master mix to stereo PCM16 and preserve complete encoded frames; an adapter compiles against the real pinned AC79 SDK virtual-input audio encoder API.
