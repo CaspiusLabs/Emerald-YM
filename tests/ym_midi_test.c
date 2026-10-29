@@ -14,7 +14,7 @@ static uint32_t now;
 #include "../firmware/src/ym/ym_clock.h"
 static struct ym_clock yclock={0,0,0,0,0,132,0,0,0,0};
 static uint32_t yplaying,ym_overload,ymidi_keys,ymidi_port_keys[2],fm1_ms;
-static uint32_t ymidi_out,ymidi_revision,ymidi_discard;
+static uint32_t ymidi_out,ymidi_revision,ymidi_discard,ymidi_clock_fault;
 enum {B_EDIT=4};
 static uint32_t yfx_values[12][3],effect_calls,dirty_calls,reseed_calls;
 static uint32_t irq_save(void){return 0;}
@@ -72,10 +72,16 @@ int main(void){
  usb(0x90,64,100);ymidi_controls(1u<<B_EDIT);assert(ymidi_out&&!ymidi_keys);yusb_service();assert(!ymidi_keys);
  uint32_t edits=dirty_calls;
  trs(0x90);trs(60);trs(100);usb(0x90,64,100);usb(0xb0,20,127);yusb_service();assert(!ymidi_keys&&dirty_calls==edits);
- usb(0xfa,0,0);yusb_service();assert(yclock.mode&&yplaying); /* Clock remains available in OUT. */
+ uint32_t master_reseeds=reseed_calls;
+ usb(0xfa,0,0);usb(0xf8,0,0);usb(0xfb,0,0);usb(0xfc,0,0);yusb_service();
+ assert(!yclock.mode&&yplaying&&reseed_calls==master_reseeds); /* Never follow our own echo. */
+ ymidi_play();assert(!yplaying);ymidi_play();assert(yplaying&&reseed_calls==master_reseeds+1&&!yclock.mode);
  usb(0x90,64,100);ymidi_controls(1u<<B_EDIT);yusb_service();assert(!ymidi_out&&!ymidi_keys); /* no stale held key */
  usb(0x90,64,100);yusb_service();assert(ymidi_keys==(1u<<11));
  assert(ymidi_revision==2&&dirty_calls==edits);
+ usb(0xfa,0,0);yusb_service();assert(yclock.mode&&yplaying); /* Follower retained in IN. */
+ usb(0xfc,0,0);yusb_service();assert(!yplaying);
+ ymidi_play();assert(yplaying&&yclock.running);ymidi_play();assert(!yplaying&&!yclock.running);
  puts("PASS: production timestamps, USB/TRS isolation, running status, CC, USB transport/clock, timeout, overflow and overload guard; TRS SysEx ignored");
  return 0;
 }

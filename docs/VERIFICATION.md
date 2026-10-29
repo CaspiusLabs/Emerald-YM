@@ -2,6 +2,8 @@
 
 Desktop tests, flash/update simulations, user feedback and physical FM-1 measurements are separate evidence. The reports in releases/ retain their original values; an offline report intentionally says flashed=false even when a separate hardware report records installation.
 
+Development **0.11.0 USB MIDI master Clock/Start/Stop is desktop-only**. See its [build/test/memory report](verification/usb-midi-sync-0.11.0/README.md). It has not been installed, target-timed or checked against external hardware. Exact installed/released 0.10.0 and its physical results below remain unchanged.
+
 ## Hardware-tested development 0.6.0 UI
 
 For current **hardware-tested 0.10.0**, see the [separate physical USB MIDI/audio/EDIT report](verification/usb-midi-out-0.10.0/hardware/README.md): 60 s at 180 BPM, sampled CPU 45.98%, maximum 72%, XRUN/overload/failed boots 0, with MIDI OUT capture and USB audio/status. The [desktop report](verification/usb-midi-out-0.10.0/README.md) retains its original pre-flash scope. Published bytes and source tag remain exact 0.10.0; documentation 0.10.1 is not a new hardware image. The [0.9.0 desktop report](verification/usb-clock-trs-0.9.0/README.md) also remains historical; its later physical TRS-input observations do not prove minijack tests on 0.10.0.

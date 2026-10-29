@@ -1,5 +1,13 @@
 # Emerald YM changelog
 
+## 0.11.0 — unreleased — USB MIDI master Clock and Start/Stop
+
+- In EDIT OUT, PLAY resets the current-seed arrangement and sends USB Start (FA), Timing Clock (F8) at 24 PPQ and notes. The next PLAY sends Stop (FC). No Continue, idle Clock or Song Position Pointer output. K1 changes master tempo without resetting pulse phase.
+- Derive outgoing pulse count from the actual native sequencer step/phase in the existing XIP snapshot. No independent timer, sample-loop callback, allocation, libm/double, memory-map or protective-threshold change. Emission is quantized to 256-frame audio blocks; physical jitter and receiver behavior are unmeasured.
+- OUT ignores incoming USB Clock/Start/Continue/Stop to prevent feedback and clears external follower mode. EDIT OUT during playback restarts the arrangement; EDIT IN sends outgoing Stop/Note Off while keeping local playback. IN retains the existing clock follower.
+- Stop on pause, output disable, reset, overload and update entry. A missed/still-queued Clock or full output queue stops synchronization without catch-up bursts, clears uncertain queued performance data and repairs notes. USB MIDI WAIT requests an explicit PLAY restart after a stall/disconnect.
+- Add production-queue/actual-engine master tests, 60-second renders at 80/132/180 BPM, ordering, tempo changes, phase/cursor wrap, same-seed restarts, Stop retry, stall/reconnect and IN/OUT ownership/UI tests. Separate branch/PR from merged main. Compile/desktop tests only: no device access, flash, release/tag or merge; installed/released exact 0.10.0 is preserved.
+
 ## 0.10.1 — 2026-10-29 — 0.10.0 publication and hardware evidence
 
 - Publish exact tested 0.10.0 without rebuilding: tag v0.10.0 at e906fbc5eb3c91e45c95101c46bd0d674eef533d; package SHA-256 195cd2d1a504d5936e79cde227d64d2d8d1bd407945e8156dac795f682d59401. Archive raw physical reports separately from desktop evidence.

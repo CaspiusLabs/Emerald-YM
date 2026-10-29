@@ -32,6 +32,16 @@ static uint8_t safe_mode;                           /* two failed boots: no audi
 #include "ym_midi_out.h"
 #undef YMO_SEND
 static struct ym_midi_output ymidi_output;
+#define YMS_SEND(packet) midi_out_try(packet)
+#define YMS_TICKET() mo_w
+#define YMS_PENDING(ticket) ((int32_t)(mo_r-(ticket))<0)
+#define YMS_DROP() (mo_r=mo_w)
+#include "ym_midi_sync.h"
+#undef YMS_SEND
+#undef YMS_TICKET
+#undef YMS_PENDING
+#undef YMS_DROP
+static struct ym_midi_sync ymidi_sync;
 static void ymidi_output_block(void){
  struct ym_midi_state v;
  uint32_t enabled=ymidi_out&&ym_overload<8u&&!usb.ota_req&&!usb.uboot_req;
@@ -40,6 +50,11 @@ static void ymidi_output_block(void){
  /* Snapshot reader and publisher execute in XIP outside ym_render, but inside
   * render_block's measured budget. No observer in the native sample loop. */
  ym_midi_snapshot(&v);
+ if(!yms_update(&ymidi_sync,&v,enabled,ready,usb.resets,ymidi_revision)){
+  v.playing=0;for(uint32_t s=0;s<12u;s++)v.note[s]=-1;
+ }
+ if(ymidi_sync.recover)ymidi_output.panic=9u;
+ if(ymidi_sync.blocked)ymidi_clock_fault=1;
  ymo_update(&ymidi_output,&v,enabled,ready,
             usb.resets,ymidi_revision,enabled?ymidi_physical:0,v.transpose);
 }

@@ -14,6 +14,7 @@ static void yusb_service(void){
   RING_PUBLISH();mi_r++;
   if(port>1u)continue;
   if(!port&&(status==0xf8u||status==0xfau||status==0xfbu||status==0xfcu)){
+   if(ymidi_out||discard)continue; /* master must never follow its own DAW echo */
    if((status==0xfau||status==0xfbu)&&ym_overload>=8u)continue;
    uint32_t action=yc_usb(&yclock,status,at,FM1_TICKS_PER_US);
    if(action){yplaying=yclock.running;post=1;if(action==2u)ym_reseed(ym_seed());}

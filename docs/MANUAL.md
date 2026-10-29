@@ -102,6 +102,22 @@ Press GLO once to mute physical speaker/headphone audio while keeping USB record
 
 The local output fades over one 256-frame block (~5.8 ms) to reduce switching clicks. The USB mix is captured before this local fade/mute. The amplifier is not powered off, so this feature does not promise removal of analog hiss or power savings. USB ONLY is session-only, not stored by SAVE; reboot restores normal physical output. It does not mute only the built-in speaker while retaining headphones.
 
+## USB MIDI master clock — development 0.11.0
+
+**Computer-tested candidate only; not installed or hardware-timed.** The published 0.10.0 behavior below remains unchanged. Version 0.11.0 adds clock/transport output over the existing USB MIDI port; the minijack remains input and external hardware still needs a compatible USB host or computer/interface route.
+
+- **EDIT OUT:** FM-1 is master, using K1's internal tempo (80–180 BPM). Incoming USB Timing Clock, Start, Continue and Stop are ignored to prevent a DAW echo loop. Enable external MIDI clock on the receiving instrument. Local audio and USB capture continue.
+- **PLAY in OUT:** restart the arrangement with the current seed, send Start (`FA`), then Timing Clock (`F8`) at **24 pulses per quarter / six per sequencer step**, before the block's sequencer notes. The next PLAY pauses and sends Stop (`FC`) plus obsolete Note Offs. Another PLAY starts from the beginning again, rather than resuming with Continue.
+- **K1:** change master tempo without resetting the current pulse phase. Clock is sent only while the backing runs, not while paused. No outgoing Continue or Song Position Pointer is added.
+- **EDIT to OUT while playing:** switch from external following to internal tempo and restart both local arrangement and outgoing transport. **EDIT to IN:** send Stop/release outgoing notes, retain local playback, and accept subsequent fresh USB clock/transport as before. Pre-switch queued performance/real-time input is discarded. Ownership is not saved.
+- **REC while playing OUT:** generate/restart the arrangement and send Stop followed by a new Start. A backing stop or output disable also ends outgoing transport; overload protection and update-entry behavior remain active.
+
+Clock count derives from actual native sequencer phase, with no separate free-running timer. USB packet generation still runs at completed **256-frame block boundaries (~5.8 ms)**. This is not a submillisecond timestamped clock; target USB scheduling, receiver jitter, concurrent USB-audio CPU load and external hardware synchronization need a later authorized physical test.
+
+If USB cannot drain a Clock before the next is due, a pulse is missed, or the queue fills, the master stops instead of sending catch-up bursts. The backing pauses and the header shows **USB MIDI WAIT**; Note Off/CC123 cleanup is attempted. Restore the USB/host connection and press PLAY explicitly to restart from the beginning. Reconnection does not automatically resume transport. A disconnected/non-reading receiver cannot be guaranteed to receive Stop/Note Off; use its own stop/panic if needed. USB SysEx/status keeps priority and no timing threshold is relaxed.
+
+The keyboard still sends on channel 1 while paused or after a backing stop; existing sequence channel assignments and independent GLO/USB ONLY behavior remain unchanged. [Desktop build, tests and memory](verification/usb-midi-sync-0.11.0/README.md).
+
 ## EDIT / USB MIDI OUT — 0.10.0
 
 Exact 0.10.0 has passed physical USB note input/output, held-key EDIT switching, USB Clock and simultaneous USB-audio/status testing. See the [hardware report](verification/usb-midi-out-0.10.0/hardware/README.md).

@@ -12,7 +12,7 @@ void ym_control(uint32_t tempo,uint32_t density,uint32_t mutation,int32_t transp
 void ym_external_clock(uint32_t enabled,uint32_t events,uint32_t bpm);
 /* Audio-owner snapshot after a block, not callable concurrently with rendering.
  * Serial numbers preserve retriggers, including drums shorter than one block. */
-struct ym_midi_state { uint32_t epoch,playing,serial[12]; int32_t note[12],transpose; };
+struct ym_midi_state { uint32_t epoch,playing,serial[12]; int32_t note[12],transpose; uint32_t clocks; };
 void ym_midi_snapshot(struct ym_midi_state *out);
 /* Held FM-1 key bitmap F3..G5; audio thread owns voice allocation. */
 void ym_live_keys(uint32_t keys);
