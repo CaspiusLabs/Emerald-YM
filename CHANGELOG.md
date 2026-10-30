@@ -1,5 +1,9 @@
 # Emerald YM changelog
 
+## 1.0.6 — unreleased — vertical boot spectrogram
+
+- Replace the console's right-hand vent sweep with a vertically scrolling colored spectrogram, retaining the left red volume fader and progress strip.
+- Procedural frequency/time cells stay inside the existing 50x48 tile. Decorative boot graphics only: no audio analysis, FFT, history buffer, delay or DSP/USB changes. Separate branch/PR based on unmerged 1.0.5; native build/UI/LED/package checks pass. No device access, flash, release/tag or merge.
 ## 1.0.5 — unreleased — animated boot volume fader
 
 - Add the characteristic red volume slider to the console's left front panel on the boot screen. It travels up and back down with the existing animation frames, in one complete 24x54 tile.

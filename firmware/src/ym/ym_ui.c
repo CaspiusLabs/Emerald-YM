@@ -15,9 +15,17 @@ static struct {uint32_t tempo,clock,density,mutation,bar,playing,overload,step,p
 static uint32_t yboot_frame=0xffffffffu;
 static void yui_boot_tick(uint32_t elapsed){
  uint32_t frame=elapsed/90u;if(frame>12u)frame=12u;if(frame==yboot_frame)return;yboot_frame=frame;
- /* Power-on sweep across the original console vents; complete tiny tiles. */
- cv_begin(50,48,RGB(17,20,28));
- for(uint32_t k=0;k<10;k++)cv_rect(0,k*5u,49,2,k==frame%10u?Y_BLUE:RGB(57,63,75));
+ /* Decorative vertical spectrogram: frequency bins across, time rows rise.
+  * Generate history from frame/row, without FFT, audio reads or history RAM. */
+ cv_begin(50,48,Y_BG);
+ {static const uint16_t color[]={RGB(5,9,20),RGB(5,28,50),RGB(0,58,82),RGB(0,101,120),Y_BLUE,Y_GREEN,Y_AMBER,Y_WHITE};
+  for(uint32_t row=0;row<11u;row++)for(uint32_t bin=0;bin<12u;bin++){
+   uint32_t t=frame+32u+row,ridge=(t*3u)%23u,x=bin*2u,d=x>ridge?x-ridge:ridge-x;
+   uint32_t energy=d<6u?7u-d:((bin+t)%7u==0u?2u:1u);
+   cv_rect(1+(int)bin*4,2+(int)row*4,3,3,color[energy]);
+  }
+ }
+ cv_rect(0,0,50,1,Y_EDGE);cv_rect(0,47,50,1,Y_EDGE);cv_rect(0,0,1,48,Y_EDGE);cv_rect(49,0,1,48,Y_EDGE);
  cv_blit(156,57);
  /* Miniature red volume fader on the console's left front panel. The boot
   * gesture is decorative; it neither reads nor changes the MASTER gain. */
@@ -47,7 +55,6 @@ static void yui_boot(void){
  for(int r=39;r>=35;r--)yui_ring(91,63,r,r==37?RGB(162,147,102):Y_EDGE);
  yui_ring(91,63,31,RGB(49,55,66));cv_rect(60,43,62,11,C_BLACK);
  cv_rect(62,44,58,2,Y_DIM);cv_text(72,64,&FONT_XS,"16-BIT",Y_WHITE);
- for(int k=0;k<10;k++)cv_rect(148,32+k*5,49,2,RGB(57,63,75));
  cv_rect(18,93,5,5,RGB(255,55,66));cv_text(27,92,&FONT_XS,"POWER",Y_DIM);
  cv_rect(63,109,34,6,C_BLACK);cv_rect(131,109,34,6,C_BLACK);
  cv_blit(8,25);
