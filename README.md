@@ -2,7 +2,7 @@
 
 Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A real YM2612 emulator, a lightweight Sega-style PSG and an endless sequencer turn the FM-1 into a small chiptune instrument. Play along on its keyboard and shape each instrument independently.
 
-**Development 0.11.1 — desktop-tested, not installed:** fixes a race that could silently discard read-only status requests between the diagnostic and updater handlers. It retains the 0.11.0 USB clock master: PLAY in OUT sends Start and 24 PPQ Clock, and the next PLAY sends Stop. EDIT IN retains USB clock following. Exact **0.11.0 is installed** and passed functional Clock/transport/audio checks, but its first diagnostic recording timed out; that failure remains recorded. Public release **0.10.0 is unchanged**. [Fix, compilation and regression evidence](docs/verification/usb-midi-sync-0.11.1/README.md) · [0.11.0 physical results and limits](docs/verification/usb-midi-sync-0.11.0/hardware/README.md) · [Behavior and timing limits](docs/MANUAL.md#usb-midi-master-clock--development-0110).
+**Development 0.11.2 — not installed:** GLO stays dim when physical audio is enabled and bright in USB ONLY, making its available function visible in both states. This candidate retains the USB MIDI master and diagnostic repair from PR #12. Installed firmware is exact **0.11.1**; public release **0.10.0 is unchanged**. [GLO change and desktop checks](docs/verification/glo-led-0.11.2/README.md) · [Diagnostic repair](docs/verification/usb-midi-sync-0.11.1/README.md) · [Master clock behavior and timing limits](docs/MANUAL.md#usb-midi-master-clock--development-0110).
 
 **Current firmware: 0.10.0 (beta), hardware-tested.** [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
 
@@ -55,6 +55,8 @@ Release **v0.10.0** contains the exact tested 609,677-byte package, published wi
 ## USB ONLY on GLO (0.7.0)
 
 Press **GLO** to mute the FM-1 speaker **and headphone output**, while USB audio, MIDI, diagnostics and playback continue. GLO lights up and the display shows **USB ONLY** below the MASTER slider. Press GLO again to restore the physical outputs. MASTER continues controlling the USB-recorded level. This is a digital output mute, not a power-off of the speaker amplifier.
+
+In development **0.11.2**, GLO is dim with physical audio enabled and bright in USB ONLY. Earlier releases turn its LED off when physical audio is enabled.
 
 Switching fades the physical output over about 5.8 ms; USB receives the unchanged mix before that fade. The mode is not saved: physical outputs are enabled after reboot. Release 0.7.0 contains the exact tested package, without rebuilding. A 30-second USB ONLY recording/live-MIDI/status test passed: average sampled audio CPU 47.77%, maximum 73%, longest block 4242 us, XRUNS 0, overload 0, failed boots 0. The owner confirmed speaker mute/restore, GLO illumination and the USB ONLY label. Captured audio: 32.34 s stereo PCM16/44.1 kHz, no clipping. [Raw hardware results](docs/verification/usb-only-0.7.0/hardware/summary.json). Documentation version 0.7.1 does not change firmware. [Validation scope](docs/verification/usb-only-0.7.0/README.md).
 

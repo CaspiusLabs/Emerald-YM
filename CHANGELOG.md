@@ -1,5 +1,10 @@
 # Emerald YM changelog
 
+## 0.11.2 — unreleased — discoverable GLO illumination
+
+- Keep GLO dim while physical audio is enabled and bright in USB ONLY, matching the existing discoverable-control convention. Output routing and session-only behavior remain unchanged.
+- Record the owner's rule in AGENTS.md: every available assigned panel function has visible button illumination, dim when inactive and bright when active or acknowledging an action, with meaningful transport/error colors preserved.
+- Separate branch/PR based on unmerged PR #12 (0.11.1). Native build/package and existing UI/LED regression checks pass; no device access or flash. Installed exact 0.11.1 and public release 0.10.0 remain unchanged.
 ## 0.11.1 — unreleased — diagnostic SysEx mailbox race
 
 - Route the shared SysEx mailbox through one main-loop dispatcher. A status request arriving after the old diagnostic check could previously be consumed and discarded by the following OTA handshake service. Late arrivals now wait for the next iteration; non-status frames still use the unchanged OTA decoder. No wire-protocol, audio-renderer, USB queue, memory-region or protection changes.
