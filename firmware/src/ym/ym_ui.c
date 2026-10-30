@@ -50,7 +50,7 @@ static void yui_header(void){
  cv_line(7,20,37,20,Y_GREEN);cv_line(22,5,22,35,Y_GREEN);
  cv_text(41,2,&FONT_M,"EMERALD YM",RGB(14,68,122));
  cv_text(40,1,&FONT_M,"EMERALD YM",Y_WHITE);
- cv_text(45,28,&FONT_XS,ymidi_out?"USB MIDI OUT":"YM + PSG / LIVE",ymidi_out?Y_AMBER:Y_BLUE);
+ cv_text(45,28,&FONT_XS,ymidi_out?(ymidi_clock_fault?"USB MIDI WAIT":"USB MIDI OUT"):"YM + PSG / LIVE",ymidi_out?Y_AMBER:Y_BLUE);
  cv_rect(185,4,48,21,Y_EDGE);cv_rect(187,6,44,17,Y_CARD);
  cv_text(191,6,&FONT_XS,"16-BIT",Y_WHITE);
  cv_rect(191,19,36,1,Y_BLUE);cv_rect(191,21,36,1,Y_BLUE);
@@ -168,7 +168,8 @@ static void ydisplay(void){
   lcd_fill(0,0,240,240,Y_BG);yui_header();yui_volume_base();
   memset(&yui_old,255,sizeof yui_old);yui_old.transpose=1000;yui_ready=1;
  }
- if(yui_old.midi!=ymidi_out){if(yui_old.midi!=0xffffffffu)yui_header();yui_old.midi=ymidi_out;}
+ {uint32_t midi=ymidi_out?(1u|(ymidi_clock_fault<<1)):0u;
+ if(yui_old.midi!=midi){if(yui_old.midi!=0xffffffffu)yui_header();yui_old.midi=midi;}}
  if(yui_old.playing!=yplaying||yui_old.bar!=bar||yui_old.overload!=overloaded||yui_old.save!=ys_state){yui_transport(bar);yui_old.playing=yplaying;yui_old.bar=bar;yui_old.overload=overloaded;yui_old.save=ys_state;}
  {uint32_t position=yui_master_position(ymaster_adc,yui_old.master);
   if(yui_old.master!=position){yui_volume(position);yui_old.master=position;}}

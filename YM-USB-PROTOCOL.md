@@ -1,5 +1,13 @@
 # Emerald YM USB status protocol v1 (firmware 0.1.2 and later)
 
+## Development 0.11.0 master transport
+
+Development 0.11.1 uses identity `FM-1_68001101` and fixes main-loop shared-SysEx dispatch without changing any query/reply bytes or transport semantics. [Repair and desktop evidence](docs/verification/usb-midi-sync-0.11.1/README.md). Exact 0.11.0 is installed; 0.11.1 is not.
+
+Status v1 query/reply bytes remain unchanged; candidate identity is `FM-1_68001100`. In EDIT OUT, FM-1 owns clock/transport and ignores incoming USB F8/FA/FB/FC to prevent feedback. PLAY resets the arrangement and sends FA, then F8 at 24 PPQ; pause/output disable sends FC. No idle Clock, FB or Song Position Pointer output. In EDIT IN, existing USB clock following remains available; pre-switch queued real-time/performance packets are discarded.
+
+Outgoing realtime uses USB cable 0 / CIN 0xF with the status byte in packet byte 1. Count derives from native sequencer phase and is observed at block boundaries, with Start/Clock queued before same-block notes. A pending previous Clock, missed pulse or full queue stops the master without catch-up bursts, repairs uncertain notes and requests explicit PLAY restart. MIDI WAIT is local UI state; status v1 has no outgoing clock/fault field. See the [manual and unmeasured physical timing limits](docs/MANUAL.md#usb-midi-master-clock--development-0110). Later version-specific descriptions below retain their historical behavior.
+
 This is the protocol implemented by `firmware/src/ym/ym_midi.c` (previously in `ym_loop.c`), not a guessed command for stock M-VAVE or DUB-1. Compatible identities are `FM-1_68000102` (0.1.2), `FM-1_68000103` (0.1.3), `FM-1_68000104` (0.1.4), `FM-1_68000200` (0.2.0), `FM-1_68000201` (0.2.1), `FM-1_68000202` (0.2.2), `FM-1_68000203` (0.2.3), `FM-1_68000204` (0.2.4), `FM-1_68000300` (0.3.0), `FM-1_68000301` (0.3.1), `FM-1_68000400` (0.4.0), `FM-1_68000402` (0.4.2), `FM-1_68000403` (0.4.3), and `FM-1_68000500` (0.5.0) `FM-1_68000501` (0.5.1), `FM-1_68000600` (0.6.0), `FM-1_68000700` (0.7.0), and development `FM-1_68000900` (0.9.0). The UI update in 0.1.4 does not change the protocol. It never exposes flash erase/write, preset or firmware operations. The existing Felucca updater is separate and unchanged.
 
 Send status query bytes: `F0 7D 45 4D 59 01 F7`. Manufacturer byte `7D` is the non-commercial/experimental namespace; `45 4D 59` is ASCII `EMY`.

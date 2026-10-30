@@ -20,7 +20,7 @@ static struct ym_clock yclock={0,0,0,0,0,132,0,0,0,0};
 static void fmt_int(char*b,int32_t v){sprintf(b,"%d",v);}
 static unsigned str_len(const char*s){return (unsigned)strlen(s);}
 static void str_cpy(char*d,const char*s,unsigned max){unsigned i=0;while(s[i]&&i+1<max){d[i]=s[i];i++;}d[i]=0;}
-static uint32_t yusb_only,ymaster_adc=512,ymidi_out;
+static uint32_t yusb_only,ymaster_adc=512,ymidi_out,ymidi_clock_fault;
 static uint32_t ytempo=132,ydensity=100,ymutation=35,yplaying,ym_overload,audio_cpu_lifetime_peak=80,audio_xruns;
 static int32_t ytranspose;
 static uint32_t ypsg=1,yinstrument,ylevels[12]={100,100,100,100,100,100,100,100,100,100,100,100};
@@ -41,7 +41,9 @@ int main(void){
  palette_set(0);yui_boot();lcd_sync();image("build/host/ui-boot.ppm");ydisplay();lcd_sync();image("build/host/ui-paused.ppm");unsigned initial=blits,clears=fills;
  for(int i=0;i<100;i++)ydisplay();check(blits==initial&&fills==clears,"idle: zero repeated LCD writes");
  ymidi_out=1;ydisplay();check(blits==initial+1&&last_w==240&&last_h==44,"EDIT updates only the complete header tile");image("build/host/ui-midi-out.ppm");
- initial=blits;ydisplay();check(blits==initial,"stable MIDI OUT has no repeated LCD writes");ymidi_out=0;ydisplay();
+ initial=blits;ydisplay();check(blits==initial,"stable MIDI OUT has no repeated LCD writes");
+ ymidi_clock_fault=1;ydisplay();check(blits==initial+1&&last_h==44,"clock backpressure changes only the MIDI header");image("build/host/ui-midi-wait.ppm");
+ initial=blits;ydisplay();check(blits==initial,"stable MIDI WAIT has no repeated LCD writes");ymidi_clock_fault=0;ymidi_out=0;ydisplay();
 
  {static uint16_t before[240*240];memcpy(before,screen,sizeof screen);
   initial=blits;ymaster_adc=1023;ydisplay();

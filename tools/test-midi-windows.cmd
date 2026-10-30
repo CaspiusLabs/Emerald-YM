@@ -17,4 +17,8 @@ if errorlevel 1 exit /b 1
 cl /nologo /O2 /MT /GR- /std:c++14 /fp:strict /DYMFM_FREESTANDING=1 /Ibuild\host\midi tests\ym_midi_out_test.cpp firmware\src\ym\ym_engine.cpp firmware\src\ym\ymfm\ymfm_opn.cpp firmware\src\ym\ymfm\ymfm_adpcm.cpp firmware\src\ym\ymfm\ymfm_ssg.cpp /Fobuild\host\ /Febuild\host\ym_midi_out_test.exe
 if errorlevel 1 exit /b 1
 build\host\ym_midi_out_test.exe
+if errorlevel 1 exit /b 1
+cl /nologo /O2 /MT /GR- /std:c++14 /fp:strict /DYMFM_FREESTANDING=1 /Ibuild\host\midi tests\ym_midi_sync_test.cpp firmware\src\ym\ym_engine.cpp firmware\src\ym\ymfm\ymfm_opn.cpp firmware\src\ym\ymfm\ymfm_adpcm.cpp firmware\src\ym\ymfm\ymfm_ssg.cpp /Fobuild\host\ /Febuild\host\ym_midi_sync_test.exe
+if errorlevel 1 exit /b 1
+build\host\ym_midi_sync_test.exe
 exit /b %errorlevel%

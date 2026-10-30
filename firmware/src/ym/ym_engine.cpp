@@ -182,6 +182,9 @@ extern "C" YM_CONTROL_CODE uint32_t ym_sequence_keys(){return sequence_mask;}
 extern "C" YM_CONTROL_CODE void ym_midi_snapshot(struct ym_midi_state*out){
  static const int32_t percussion[4] PSG_PITCH_DATA={36,38,42,46};
  out->epoch=midi_epoch;out->playing=playing;out->transpose=transpose;
+ /* Same native phase as tick(): 24 PPQ = six pulses per sixteenth.
+  * 6*phase < 2^32. XIP observer only; no new sample-loop work or timer. */
+ out->clocks=steps?(steps-1u)*6u+1u+(step_phase*6u)/(7670454u*60u):0u;
  for(int s=0;s<12;s++){out->serial[s]=midi_serial[s];out->note[s]=-1;}
  if(!playing)return;
  for(int c=0;c<5;c++)if(hold[c])out->note[c]=fm_note[c];

@@ -2,6 +2,8 @@
 
 Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A real YM2612 emulator, a lightweight Sega-style PSG and an endless sequencer turn the FM-1 into a small chiptune instrument. Play along on its keyboard and shape each instrument independently.
 
+**Development 0.11.1 — desktop-tested, not installed:** fixes a race that could silently discard read-only status requests between the diagnostic and updater handlers. It retains the 0.11.0 USB clock master: PLAY in OUT sends Start and 24 PPQ Clock, and the next PLAY sends Stop. EDIT IN retains USB clock following. Exact **0.11.0 is installed** and passed functional Clock/transport/audio checks, but its first diagnostic recording timed out; that failure remains recorded. Public release **0.10.0 is unchanged**. [Fix, compilation and regression evidence](docs/verification/usb-midi-sync-0.11.1/README.md) · [0.11.0 physical results and limits](docs/verification/usb-midi-sync-0.11.0/hardware/README.md) · [Behavior and timing limits](docs/MANUAL.md#usb-midi-master-clock--development-0110).
+
 **Current firmware: 0.10.0 (beta), hardware-tested.** [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
 
 **Public release download: 0.10.0 (beta).** [Download 0.10.0 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.10.0/emerald-ym-0.10.0.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.10.0/SHA256SUMS) · [Release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.10.0)
