@@ -19,6 +19,14 @@ static void yui_boot_tick(uint32_t elapsed){
  cv_begin(50,48,RGB(17,20,28));
  for(uint32_t k=0;k<10;k++)cv_rect(0,k*5u,49,2,k==frame%10u?Y_BLUE:RGB(57,63,75));
  cv_blit(156,57);
+ /* Miniature red volume fader on the console's left front panel. The boot
+  * gesture is decorative; it neither reads nor changes the MASTER gain. */
+ {int y=41-(int)(frame<=6u?frame:12u-frame)*4;
+  cv_begin(24,54,RGB(17,20,28));cv_text(3,0,&FONT_XS,"VOL",Y_DIM);
+  cv_rect(7,14,10,39,Y_EDGE);cv_rect(8,15,8,37,Y_BG);
+  for(int k=0;k<6;k++)cv_rect(10,17+k*6,4,1,Y_DIM);
+  cv_rect(3,y,18,8,Y_EDGE);cv_rect(4,y+1,16,6,Y_CARD);
+  cv_rect(4,y+3,16,2,Y_RED);cv_blit(22,58);}
  cv_begin(224,5,Y_BG);cv_rect(0,1,224,2,Y_EDGE);cv_rect(0,1,(int32_t)((frame+1u)*224u/13u),2,Y_BLUE);cv_blit(8,154);
 }
 /* Original console silhouette: circular cartridge deck, vents and red power LED.

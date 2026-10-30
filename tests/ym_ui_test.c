@@ -43,6 +43,8 @@ int main(void){
  palette_set(0);yui_boot();lcd_sync();image("build/host/ui-boot.ppm");
  {unsigned before=blits,clear=fills;yui_boot_tick(0);check(blits==before,"boot animation skips an unchanged frame");
   for(uint32_t i=0;i<13u;i++){char path[80];yui_boot_tick(i*90u);sprintf(path,"build/host/ui-boot-%02u.ppm",i);image(path);}
+  check(screen[102*240+26]==Y_RED,"boot volume fader returns to its lower position");
+  yui_boot_tick(540);check(screen[78*240+26]==Y_RED&&screen[102*240+26]!=Y_RED,"boot volume fader moves upward and clears its previous marker");
   check(fills==clear,"boot animation uses bounded tiles without whole-screen clears");}
  ydisplay();lcd_sync();image("build/host/ui-paused.ppm");unsigned initial=blits,clears=fills;
  for(int i=0;i<100;i++)ydisplay();check(blits==initial&&fills==clears,"idle: zero repeated LCD writes");
