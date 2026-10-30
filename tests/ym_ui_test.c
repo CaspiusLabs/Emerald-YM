@@ -66,17 +66,28 @@ int main(void){
  initial=blits;yplaying=1;ydisplay();check(blits==initial+2,"transport change: transport + steps only");
  initial=blits;current_step=8;ydisplay();check(blits==initial+1&&last_h==12,"one step: small strip only");
  image("build/host/ui-playing.ppm");ymutation=0;ytranspose=-7;ydisplay();image("build/host/ui-varied.ppm");
- initial=blits;yusb_only=1;ydisplay();check(blits==initial+1&&last_x==8&&last_y==184&&last_w==40&&last_h==32,"GLO redraws only the USB ONLY mode tile");image("build/host/ui-usb-only.ppm");
+ initial=blits;yusb_only=1;ydisplay();check(blits==initial+1&&last_x==8&&last_y==184&&last_w==40&&last_h==38,"GLO redraws only the USB ONLY mode tile");image("build/host/ui-usb-only.ppm");
  initial=blits;ydisplay();check(blits==initial,"stable USB ONLY mode never redraws");yusb_only=0;ydisplay();
  initial=blits;yinstrument=9;ydisplay();check(blits==initial+2,"SELECT updates instrument and its effect tile");
- initial=blits;ypsg=0;ydisplay();check(blits==initial+1&&last_h==38,"PSG switch updates selected voice tile");
- initial=blits;ylevels[yinstrument]=50;ydisplay();check(blits==initial+1&&last_w==116,"PRESETS updates only selected instrument level");
- initial=blits;yfx_kind[yinstrument]=2;ydisplay();check(blits==initial+1&&last_w==60,"FX button changes only effect tile");
- initial=blits;yfx_values[yinstrument][2]=65;ydisplay();check(blits==initial+1&&last_w==60,"ALGORITHM changes only selected effect tile");
+ initial=blits;ypsg=0;ydisplay();check(blits==initial+1&&last_h==44,"PSG switch updates selected voice tile");
+ initial=blits;ylevels[yinstrument]=50;ydisplay();check(blits==initial+1&&last_w==86&&last_x==54&&last_y==178,"PRESETS updates only the aligned instrument tile");
+ initial=blits;yfx_kind[yinstrument]=2;ydisplay();check(blits==initial+1&&last_w==86&&last_x==146&&last_y==178,"FX button changes only the aligned effect tile");
+ initial=blits;yfx_values[yinstrument][2]=65;ydisplay();check(blits==initial+1&&last_w==86,"ALGORITHM changes only selected effect tile");
  initial=blits;ys_state=YS_DIRTY;ydisplay();check(blits==initial+1&&last_h==24,"pending save updates only transport tile");
  ys_state=YS_WRITING;ydisplay();image("build/host/ui-saving.ppm");ys_state=YS_SAVED;ydisplay();image("build/host/ui-saved.ppm");ys_state=YS_ERROR;ydisplay();image("build/host/ui-save-error.ppm");ys_state=YS_CLEAN;ydisplay();
  initial=blits;audio_cpu_lifetime_peak=95;audio_xruns=42;ydisplay();check(blits==initial,"USB diagnostics never trigger screen writes");
  ypsg=1;ydisplay();image("build/host/ui-mixer.ppm");
+ {int gutters=1;
+  for(int y=48;y<222;y++)for(int x=48;x<54;x++)if(screen[y*240+x]!=Y_BG)gutters=0;
+  for(int y=78;y<222;y++)for(int x=140;x<146;x++)if(screen[y*240+x]!=Y_BG)gutters=0;
+  for(int row=0;row<3;row++)for(int y=72+row*50;y<78+row*50;y++)
+   for(int x=54;x<232;x++)if(screen[y*240+x]!=Y_BG)gutters=0;
+  check(gutters,"all panel gutters are six clear pixels horizontally and vertically");
+  check(screen[178*240+54]==Y_EDGE&&screen[178*240+139]==Y_EDGE&&screen[178*240+146]==Y_EDGE&&screen[178*240+231]==Y_EDGE,
+   "bottom panels share the upper columns and 86-pixel widths");
+  check(screen[217*240+59]==Y_GREEN&&screen[217*240+96]==Y_GREEN&&screen[217*240+97]==Y_EDGE,
+   "instrument 50-percent level uses the full-width bar below both text lines");
+ }
  initial=blits;yclock.mode=yclock.running=1;yclock.bpm=120;ydisplay();
  check(blits==initial+1&&last_w==86&&last_h==44,"USB clock updates only the tempo tile");image("build/host/ui-usb-clock.ppm");
  initial=blits;for(int i=0;i<100;i++)ydisplay();check(blits==initial,"stable external clock never redraws");

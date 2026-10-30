@@ -2,24 +2,42 @@
 
 Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A real YM2612 emulator, a lightweight Sega-style PSG and an endless sequencer turn the FM-1 into a small chiptune instrument. Play along on its keyboard and shape each instrument independently.
 
-**Development 0.11.2 — not installed:** GLO stays dim when physical audio is enabled and bright in USB ONLY, making its available function visible in both states. This candidate retains the USB MIDI master and diagnostic repair from PR #12. Installed firmware is exact **0.11.1**; public release **0.10.0 is unchanged**. [GLO change and desktop checks](docs/verification/glo-led-0.11.2/README.md) · [Diagnostic repair](docs/verification/usb-midi-sync-0.11.1/README.md) · [Master clock behavior and timing limits](docs/MANUAL.md#usb-midi-master-clock--development-0110).
+**Current stable firmware: 0.11.3, hardware-tested.** Equal panel spacing, matching lower cards and level bars below their text; GLO stays dim when available and bright in USB ONLY. PLAY can drive external USB MIDI Clock and Start/Stop. The diagnostic request-loss race is fixed. [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
 
-**Current firmware: 0.10.0 (beta), hardware-tested.** [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
+**Download:** [Emerald YM 0.11.3 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.11.3/emerald-ym-0.11.3.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.11.3/SHA256SUMS) · [Stable release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.11.3)
 
-**Public release download: 0.10.0 (beta).** [Download 0.10.0 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.10.0/emerald-ym-0.10.0.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.10.0/SHA256SUMS) · [Release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.10.0)
+This is the exact tested 609,677-byte package, published without rebuilding: SHA-256 `a71dae83f0a83f035a60094eee4253be6d32f3d4ac44f50d74bcdda597c95591`. Tag `v0.11.3` points to firmware source `b7c6d0f860eb294f2376476e37f6a20f54ab572b`. Documentation VERSION 0.11.4 records publication and does not identify another firmware image.
 
-![Emerald YM 0.10.0 in USB MIDI OUT mode, captured from the native firmware UI renderer](releases/v0.10.0/ui-preview.png)
+![Emerald YM 0.11.3 main screen, captured from the native firmware UI renderer](releases/v0.11.3/ui-preview.png)
 
-*240 × 240 native UI render, not a photograph of the device. The owner separately confirmed EDIT illumination, the USB MIDI OUT header and smooth playback on the physical FM-1.*
+*240 × 240 native UI render, not a photograph. All panel gutters are six pixels; both lower cards match the 86 × 44 cards above. Instrument and effect bars sit below their text. The owner separately confirmed the physical layout and GLO dim/bright behavior.*
 
-## MIDI IN / OUT and EDIT (0.10.0)
+## Physical 0.11.3 tests
+
+The exact stable package passed **3 min 32 s of backing with outgoing MIDI Clock, USB audio recording in USB ONLY and read-only diagnostics**:
+
+| Check | Result |
+|---|---|
+| Diagnostic requests / valid replies | **547 / 547, no timeouts** |
+| Status response latency | Average 3.06 ms, maximum 6.01 ms |
+| Average sampled audio CPU | **45.73%** during music |
+| Maximum audio CPU / longest block | **72% / 4,189 us** |
+| XRUN / overload / failed boots | **0 / 0 / 0** |
+| MIDI master | Physical PLAY sent Start/Clock and Stop; 11,364 Clock pulses captured, average 134.063 BPM |
+| Stop | No idle Clock or remaining captured notes |
+| USB audio in USB ONLY | 273.67 s stereo PCM16/44.1 kHz captured; 180 s analyzed, signal present with no clipped samples |
+| Physical UI / GLO | Owner confirmed aligned panels, below-text instrument bar, dim normal GLO, bright USB ONLY and physical mute |
+
+These are finite physical results, not proof against every future timeout or validation of external-synth synchronization, electrical jitter or USB packet counters. No new minijack or cross-firmware recovery tests are claimed. The earlier 0.11.0 diagnostic timeout remains recorded as a failure. [Exact package, raw reports and scope](docs/verification/panel-grid-0.11.3/hardware/README.md) · [Separate desktop tests and memory](docs/verification/panel-grid-0.11.3/README.md).
+
+## MIDI IN / OUT and EDIT (0.11.3)
 
 Press **EDIT** to switch note direction:
 
 - **EDIT dim — MIDI IN:** receive live notes and effect CCs over USB or the minijack. Notes 53–79 on any channel play the live PSG; USB and TRS have separate held-note masks. The minijack requires a compatible TRS MIDI adapter (the original Launchpad Pro MK3 Type A adapter was used in the earlier 0.9.0 input test).
 - **EDIT bright — USB MIDI OUT:** send the physical keyboard and generative sequencer to a computer. The header shows **USB MIDI OUT**. Local synthesis continues; incoming USB/TRS notes and effect CCs are ignored to avoid MIDI feedback. In your DAW, select **Emerald YM FM-1** as the MIDI input.
 
-USB Clock/Start/Continue/Stop, read-only status diagnostics and stereo USB audio stay available in both modes. USB Start/Continue selects external clock at 24 PPQ; K1 returns to internal tempo. EDIT mode resets to IN after reboot and is not saved. OUT sends notes, not Clock or transport, and does not provide MIDI Thru.
+In **IN**, USB Start/Continue selects external clock following at 24 PPQ; K1 returns to internal tempo. In **OUT**, FM-1 owns internal tempo: PLAY restarts the current-seed arrangement and sends Start plus 24 PPQ Clock before notes; the next PLAY sends Stop. Incoming USB Clock/transport is ignored in OUT to prevent feedback. No idle Clock, outgoing Continue or MIDI Thru. EDIT resets to IN after reboot and is not saved. Read-only diagnostics and stereo USB audio remain available in both modes. Clock emission is block-quantized (~5.8 ms). [Master clock details](docs/MANUAL.md#usb-midi-master-clock--development-0110).
 
 | MIDI output channel | Part |
 |---|---|
@@ -31,7 +49,7 @@ USB Clock/Start/Continue/Stop, read-only status diagnostics and stereo USB audio
 
 The **minijack remains MIDI IN in both modes**; EDIT does not switch its electrical direction. For physical MIDI OUT, route FM-1's USB MIDI through a computer or compatible USB host to an external interface such as Roland UM-ONE. No Bluetooth output is included. [Detailed controls, routing and timing limits](docs/MANUAL.md#edit--usb-midi-out--0100).
 
-## Physical 0.10.0 tests
+## Historical physical 0.10.0 tests
 
 The exact release package passed a **60-second 180 BPM USB Clock run with simultaneous MIDI OUT reception, USB audio recording and status diagnostics**, plus separate live-key/EDIT/input tests:
 
@@ -52,11 +70,11 @@ This is a short physical test, not long-session, destination-synth or USB packet
 
 Release **v0.10.0** contains the exact tested 609,677-byte package, published without rebuilding, SHA-256 `195cd2d1a504d5936e79cde227d64d2d8d1bd407945e8156dac795f682d59401`. The tag points to matching firmware source commit `e906fbc5eb3c91e45c95101c46bd0d674eef533d`. Documentation version **0.10.1** adds this publication/evidence update in PR #11; it does not identify a new firmware image. Older release packages and tags remain unchanged.
 
-## USB ONLY on GLO (0.7.0)
+## USB ONLY on GLO
 
-Press **GLO** to mute the FM-1 speaker **and headphone output**, while USB audio, MIDI, diagnostics and playback continue. GLO lights up and the display shows **USB ONLY** below the MASTER slider. Press GLO again to restore the physical outputs. MASTER continues controlling the USB-recorded level. This is a digital output mute, not a power-off of the speaker amplifier.
+Press **GLO** to mute the FM-1 speaker **and headphone output**, while USB audio, MIDI, diagnostics and playback continue. GLO changes from **dim to bright**, and the display shows **USB ONLY** below the MASTER slider. Press GLO again to restore the physical outputs and dim illumination. MASTER continues controlling the USB-recorded level. This is a digital output mute, not a power-off of the speaker amplifier.
 
-In development **0.11.2**, GLO is dim with physical audio enabled and bright in USB ONLY. Earlier releases turn its LED off when physical audio is enabled.
+All buttons with available assigned functions are visibly illuminated: dim when inactive, bright when active or acknowledging an action, with transport/error colors retained. This rule applies to GLO in stable 0.11.3; older releases turned its LED off with physical audio enabled.
 
 Switching fades the physical output over about 5.8 ms; USB receives the unchanged mix before that fade. The mode is not saved: physical outputs are enabled after reboot. Release 0.7.0 contains the exact tested package, without rebuilding. A 30-second USB ONLY recording/live-MIDI/status test passed: average sampled audio CPU 47.77%, maximum 73%, longest block 4242 us, XRUNS 0, overload 0, failed boots 0. The owner confirmed speaker mute/restore, GLO illumination and the USB ONLY label. Captured audio: 32.34 s stereo PCM16/44.1 kHz, no clipping. [Raw hardware results](docs/verification/usb-only-0.7.0/hardware/summary.json). Documentation version 0.7.1 does not change firmware. [Validation scope](docs/verification/usb-only-0.7.0/README.md).
 
@@ -94,9 +112,9 @@ This is original generative music inspired by the Mega Drive/Genesis sound palet
 
 Start with MASTER low, then press PLAY. The sequencer is paused after boot.
 
-| Control | Function in 0.10.0 |
+| Control | Function in 0.11.3 |
 |---|---|
-| PLAY | Start/pause the backing sequencer; live keys still work in pause |
+| PLAY | IN: start/pause backing. OUT: restart with MIDI Start/Clock, or pause with Stop; live keys still work in pause |
 | REC | Generate a new seed and sequence |
 | SAVE | Pause the backing and save instrument levels/effects and K1–K4 after notes have settled |
 | SEQ | Toggle mutation between 0 and 35 |
@@ -104,7 +122,7 @@ Start with MASTER low, then press PLAY. The sequencer is paused after boot.
 | SELECT | Select one of twelve instruments |
 | PRESETS | Set the selected instrument's level, 0–100% |
 | FX | Select DECAY, COLOR or ECHO for editing |
-| GLO | Toggle USB ONLY; lit when speaker/headphones are digitally muted |
+| GLO | Toggle USB ONLY; dim with physical audio enabled, bright when muted |
 | ALGORITHM | Set the selected effect amount, 0–100% |
 | ARP | Enable/disable all PSG, including live keys |
 | EDIT | Dim: USB/TRS note input; bright: physical keyboard + sequencer note output over USB |
@@ -115,7 +133,7 @@ Effect amounts and levels remain independent when changing selections. All twelv
 
 ## Compatibility and data
 
-Target: M-VAVE **FM-1**, not SMK-37 or other models. USB MIDI name: `Emerald YM FM-1`. Release 0.10.0 identity: `FM-1_68001000`; older release 0.4.3 identity: `FM-1_68000403`. The `.fwsc` includes the inherited Felucca update loader.
+Target: M-VAVE **FM-1**, not SMK-37 or other models. USB MIDI name: `Emerald YM FM-1`. Stable 0.11.3 identity: `FM-1_68001103`; older release 0.4.3 identity: `FM-1_68000403`. The `.fwsc` includes the inherited Felucca update loader.
 
 Emerald YM does **not** import stock, DUB-1 or other firmware's presets, projects or samples. It does not provide a way to back them up or restore them. Back up with your existing firmware's tools before switching. Firmware installation writes flash; do not assume another firmware's data will survive switching or recovery. From 0.4.0, instrument levels/FX are stored in the existing project-sector pair at `0xFC000` / `0xFD000`. Saving may replace another firmware's data there; panel calibration and the update-loader area are separate.
 
@@ -133,7 +151,7 @@ The input carries the full master mix: FM, PSG, drums, live notes and effects. M
 
 ## Verified installation paths
 
-Physical tests on 2026-10-27 used the exact 0.4.3 package linked above, official M-VAVE V15 and Dinghy 0.3:
+Physical tests on 2026-10-27 used the [exact historical 0.4.3 package](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.3), official M-VAVE V15 and Dinghy 0.3:
 
 | Transition | Result |
 |---|---|
