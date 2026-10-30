@@ -1,5 +1,9 @@
 # Emerald YM changelog
 
+## 1.0.8 — unreleased — larger boot spectrum and matching cyan
+
+- Expand the boot spectrum right/down from 50x48 to 66x72, with sixteen columns and a lower edge aligned with POWER. Preserve the left fader and central deck.
+- Use exact Y_BLUE (RGB 50/197/255), shared with 16-BIT SOUND SYSTEM, for the blue bar segments; keep purple/pink upper segments. Decorative UI only, no DSP or USB changes. Build/UI/LED/package checks only; no device access/flash/release/merge. Separate PR based on 1.0.7.
 ## 1.0.7 — unreleased — reference-style boot spectrum bars
 
 - Correct the right boot animation to match the owner's image: twelve vertical segmented spectrum bars, rising from a shared baseline with a blue/cyan-to-purple/pink gradient and changing heights.
