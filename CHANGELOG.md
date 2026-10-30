@@ -1,5 +1,9 @@
 # Emerald YM changelog
 
+## 1.0.7 — unreleased — reference-style boot spectrum bars
+
+- Correct the right boot animation to match the owner's image: twelve vertical segmented spectrum bars, rising from a shared baseline with a blue/cyan-to-purple/pink gradient and changing heights.
+- Replace the earlier scrolling heatmap. Keep the same 50x48 tile, left volume fader and decorative/no-audio-analysis behavior. Native build/UI/LED/package checks only; no device access, flash, release/tag or merge. Separate PR based on unmerged 1.0.6.
 ## 1.0.6 — unreleased — vertical boot spectrogram
 
 - Replace the console's right-hand vent sweep with a vertically scrolling colored spectrogram, retaining the left red volume fader and progress strip.
