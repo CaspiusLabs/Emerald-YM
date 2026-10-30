@@ -1,5 +1,10 @@
 # Emerald YM changelog
 
+## 1.0.4 — 2026-10-31 — stable numbering candidate from PR #19
+
+- At the owner's explicit request, renumber the current PR #19 code (including the final enlarged boot spectrum/fader and song mode) from unpublished 1.0.8 to 1.0.4. Rebuild and physically retest the new bytes before stable publication.
+- Earlier 1.0.4 desktop-candidate and exact 1.0.8 hardware reports remain historical and separate; they do not identify this newly built package. Existing published releases/tags are unchanged.
+
 ## 1.0.8 — unreleased — larger boot spectrum and matching cyan
 
 - Expand the boot spectrum right/down from 50x48 to 66x72, with sixteen columns and a lower edge aligned with POWER. Preserve the left fader and central deck.

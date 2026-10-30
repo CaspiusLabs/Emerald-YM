@@ -2,7 +2,7 @@
 
 Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A real YM2612 emulator, a lightweight Sega-style PSG and an endless sequencer turn the FM-1 into a small chiptune instrument. Play along on its keyboard and shape each instrument independently.
 
-**Candidate 1.0.8 — not installed or published.** Retains the 88-bar song, HOME song/endless switch and animated red volume fader. The boot spectrum is larger, extending right/down to POWER, and its blue segments match 16-BIT SOUND SYSTEM. [Updated boot preview and checks](docs/verification/boot-spectrum-size-1.0.8/README.md) · [Song controls and full desktop evidence](docs/verification/song-form-1.0.4/README.md). Public/installed stable firmware below remains exact 0.11.3 until separate hardware validation/publication is authorized.
+**Stable-numbering candidate 1.0.4:** at the owner's explicit request, the current PR #19 features are rebuilt from unpublished 1.0.8 under version 1.0.4 and will be physically retested before publication. The earlier 1.0.4 and 1.0.8 reports remain version/hash-specific. Features include the 88-bar song, HOME song/endless switch, animated red fader and enlarged cyan/pink boot spectrum. Public stable 0.11.3 remains unchanged pending validation/publication.
 
 **Current stable firmware: 0.11.3, hardware-tested.** Equal panel spacing, matching lower cards and level bars below their text; GLO stays dim when available and bright in USB ONLY. PLAY can drive external USB MIDI Clock and Start/Stop. The diagnostic request-loss race is fixed. [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
 
