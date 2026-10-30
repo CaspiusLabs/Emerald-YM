@@ -1,5 +1,7 @@
 # Emerald YM 0.11.3 user manual
 
+**Candidate 1.0.4:** adds default song mode, HOME switching, section labels and a boot animation. See the [candidate controls and validation limits](verification/song-form-1.0.4/README.md). The stable 0.11.3 instructions below remain applicable to the published download.
+
 Emerald YM makes original, continuously generated music with five YM2612 FM voices, DAC percussion and a Sega-style PSG. It starts paused: turn MASTER down before PLAY. Listen through the speaker/headphones or record the stereo USB master mix at 16-bit / 44.1 kHz using Emerald YM FM-1 as the recording input. MASTER affects both outputs; GLO mutes only the physical outputs. USB monitoring in recording software is needed to hear the USB input through computer speakers. Computer-to-FM-1 audio and individual instrument tracks are not provided. See the [physical 0.11.3 results](verification/panel-grid-0.11.3/hardware/README.md) and [Windows audio-name refresh](WINDOWS-AUDIO-NAME.md).
 
 ## Playing and shaping the backing

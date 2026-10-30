@@ -1,5 +1,12 @@
 # Emerald YM changelog
 
+## 1.0.4 — unreleased — song form and animated boot
+
+- Adopt the owner's requested 1.0.4 numbering for the next stable release; preserve stable 0.11.3 and all published bytes/tags. This candidate is not yet installed or published.
+- Default to an 88-bar song: INTRO 8, VERSE 16, CHORUS 16, BREAK 8, VERSE 16, CHORUS 16, OUTRO 8, then stop. HOME toggles song/endless mode with bright/dim illumination. Enabling song restarts the current seed; PLAY after END starts it again. REC and USB Start reset the form; Continue preserves position.
+- Main-loop control-rate profiles change backing stems, relative melody density and ending attenuation without changing saved levels/FX/K1–K4. Arrangement masks also gate outgoing MIDI, including sub-block drum triggers. Live keys remain independent. OUT sends Stop at song completion; the outro's audio fade does not send MIDI CC volume automation.
+- Show section and local bar count in the transport tile. Add an original console vent-light sweep and progress strip during the existing dismissible boot period; no blocking wait, copied branding, sound asset or extra framebuffer.
+- Native compilation/full desktop tests and generic comparison pass. Original endless-mode PCM hashes stay unchanged. No device access, flash, release/tag or merge. Target timing and physical UI remain unverified for 1.0.4; keep the 85% guard and existing memory regions.
 ## 0.11.4 — 2026-10-30 — stable 0.11.3 publication
 
 - Publish stable v0.11.3 (not a prerelease) from exact tested source b7c6d0f860eb294f2376476e37f6a20f54ab572b, without rebuilding. Preserve package SHA-256 a71dae83f0a83f035a60094eee4253be6d32f3d4ac44f50d74bcdda597c95591 and all older releases/tags.

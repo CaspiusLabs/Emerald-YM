@@ -29,7 +29,9 @@ static uint8_t safe_mode;                           /* two failed boots: no audi
 
 #include "ym_output.h"
 #define YMO_SEND(packet) midi_out_try(packet)
+#define YMO_SOURCE_ENABLED(s) (ys_song_output_mask&(1u<<(s)))
 #include "ym_midi_out.h"
+#undef YMO_SOURCE_ENABLED
 #undef YMO_SEND
 static struct ym_midi_output ymidi_output;
 #define YMS_SEND(packet) midi_out_try(packet)

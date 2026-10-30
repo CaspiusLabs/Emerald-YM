@@ -28,6 +28,8 @@ void ym_mix_levels(uint32_t melody_percent,uint32_t drums_percent);
 uint32_t ym_live_active_keys(void);
 uint32_t ym_sequence_keys(void);
 void ym_reseed(uint32_t seed);
+/* Optional control-rate form; 255 retains the original endless arrangement. */
+void ym_song_section(uint32_t section);
 uint32_t ym_bar(void);
 uint32_t ym_seed(void);
 uint32_t ym_arena_bytes(void);

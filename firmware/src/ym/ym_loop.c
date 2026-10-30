@@ -12,7 +12,7 @@ static void fm1_main(void){
  if(en_dbg.magic!=DBG_MAGIC){memset(&en_dbg,0,sizeof en_dbg);en_dbg.magic=DBG_MAGIC;}
  if(safe_mode)safe_main();
  en_dbg.boots++;en_dbg.max_us=0;en_dbg.halves=0;en_dbg.cpu_q8=0;fm1_input_init();fm1_adc_init();panel_init();yled_init();
- yui_boot();ym_init(seed);ys_load();yclock.bpm=ytempo;ym_psg_enable(ypsg);ypost();audio_init();usb_start();
+ yui_boot();ym_init(seed);ys_load();yclock.bpm=ytempo;ym_psg_enable(ypsg);ys_song_reset();audio_init();usb_start();
 #if EN_TRS
  uart_midi_init();
 #endif
@@ -40,7 +40,8 @@ static void fm1_main(void){
    for(uint32_t i=0;i<NB;i++)if(raw_pressed&(1u<<panel.btn[i]))pressed|=1u<<i;
    youtput_controls(pressed);
    ymidi_controls(pressed);
-   if(pressed&(1u<<B_PLAY))ymidi_play();
+   if(pressed&(1u<<B_PLAY)){if(ysong.enabled&&ysong.done&&!yplaying)ym_reseed(ym_seed());ymidi_play();}
+   if(pressed&(1u<<B_HOME)){ysong.enabled^=1u;if(ysong.enabled)ym_reseed(ym_seed());else {ys_song_profile(&ysong,ym_bar(),ym_step());ys_song_apply();}}
    if(pressed&(1u<<B_REC)){uint32_t f=irq_save();seed^=fm1_ms+0x9e3779b9u;ym_reseed(seed?seed:1);yclock.events=yclock.phase=0;irq_restore(f);ypost();yrec_until=fm1_ms+180u;}
    if(pressed&(1u<<B_SEQ)){ymutation=ymutation?0:35;ypost();}
    if(pressed&(1u<<B_SAVE)){if(ys_dirty){yplaying=0;ypost();ys_quiet_at=fm1_ms;}ys_retry(fm1_ms);}
@@ -49,7 +50,7 @@ static void fm1_main(void){
    d=fm1_enc_take(panel.enc[EN_SELECT])*panel.dir[EN_SELECT];
    if(d){int32_t next=((int32_t)yinstrument+d)%12;if(next<0)next+=12;yinstrument=(uint32_t)next;}
    d=fm1_enc_take(panel.enc[EN_PRESET])*panel.dir[EN_PRESET];
-   if(d){uint32_t value=(uint32_t)clamp((int32_t)ylevels[yinstrument]+d*5,0,100);if(value!=ylevels[yinstrument]){ylevels[yinstrument]=value;ym_instrument_level(yinstrument,value);ys_changed(fm1_ms);}}
+   if(d){uint32_t value=(uint32_t)clamp((int32_t)ylevels[yinstrument]+d*5,0,100);if(value!=ylevels[yinstrument]){ylevels[yinstrument]=value;ym_instrument_level(yinstrument,ys_song_level(&ysong,yinstrument,value));ys_changed(fm1_ms);}}
    d=fm1_enc_take(panel.enc[EN_ALGO])*panel.dir[EN_ALGO];
    if(d){uint32_t effect=yfx_kind[yinstrument];uint32_t value=(uint32_t)clamp((int32_t)yfx_values[yinstrument][effect]+d*5,0,100);if(value!=yfx_values[yinstrument][effect]){yfx_values[yinstrument][effect]=value;ym_effect(yinstrument,effect,value);ys_changed(fm1_ms);}}
    d=fm1_enc_take(panel.enc[EN_K1])*panel.dir[EN_K1];ytempo=(uint32_t)clamp((int32_t)ytempo+d,80,180);
@@ -59,8 +60,8 @@ static void fm1_main(void){
    d=fm1_enc_take(panel.enc[EN_K4])*panel.dir[EN_K4];ytranspose=clamp(ytranspose+d,-12,12);
    if(oldtempo!=ytempo||olddensity!=ydensity||oldmutation!=ymutation||oldtranspose!=ytranspose){ypost();ys_changed(fm1_ms);}
    if(ys_due(fm1_ms,yplaying||fm1_in.notes||ymidi_keys)){ys_state=YS_WRITING;ydisplay();lcd_sync();ys_commit(fm1_ms);}
-   yled_update();
-   if(boot_until&&((int32_t)(boot_until-fm1_ms)>0)&&!pressed&&!yplaying&&!fm1_in.notes&&!ymidi_keys){}
+   ys_song_service();yled_update();
+   if(boot_until&&((int32_t)(boot_until-fm1_ms)>0)&&!pressed&&!yplaying&&!fm1_in.notes&&!ymidi_keys){yui_boot_tick(1100u-(boot_until-fm1_ms));}
    else {boot_until=0;ydisplay();}
   }
  }

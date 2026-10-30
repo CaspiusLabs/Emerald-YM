@@ -18,6 +18,7 @@ static void yled_update(void){
  else yled_add(yplaying?bright:dim,B_PLAY,1);
  yled_add((int32_t)(yrec_until-fm1_ms)>0?bright:dim,B_REC,0);
  yled_add(yusb_only?bright:dim,B_GLO,0);
+ yled_add(ysong.enabled?bright:dim,B_HOME,0);
  yled_add(ymidi_out?bright:dim,B_EDIT,0);
  yled_add(ymutation==0?bright:dim,B_SEQ,0);
  yled_add(ypsg?bright:dim,B_ARP,0);

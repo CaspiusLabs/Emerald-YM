@@ -2,6 +2,8 @@
 
 Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A real YM2612 emulator, a lightweight Sega-style PSG and an endless sequencer turn the FM-1 into a small chiptune instrument. Play along on its keyboard and shape each instrument independently.
 
+**Next stable version number: 1.0.4 — candidate, not installed or published.** Adds an 88-bar generative song with intro, verses, choruses, a break, fills and an ending; HOME switches between song and endless playback. The native console-inspired boot screen now animates. [Controls, preview and desktop evidence](docs/verification/song-form-1.0.4/README.md). Public/installed stable firmware below remains exact 0.11.3 until separate hardware validation/publication is authorized.
+
 **Current stable firmware: 0.11.3, hardware-tested.** Equal panel spacing, matching lower cards and level bars below their text; GLO stays dim when available and bright in USB ONLY. PLAY can drive external USB MIDI Clock and Start/Stop. The diagnostic request-loss race is fixed. [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
 
 **Download:** [Emerald YM 0.11.3 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.11.3/emerald-ym-0.11.3.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.11.3/SHA256SUMS) · [Stable release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.11.3)

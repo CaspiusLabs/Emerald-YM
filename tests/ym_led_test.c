@@ -3,7 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #define FM1_NCOL 11
-enum {B_FX=0,B_EDIT=4,B_GLO=5,B_SAVE=7,B_ARP=8,B_SEQ=9,B_PLAY=10,B_REC=11,B_OCTDN=12,B_OCTUP=13};
+enum {B_FX=0,B_EDIT=4,B_GLO=5,B_HOME=6,B_SAVE=7,B_ARP=8,B_SEQ=9,B_PLAY=10,B_REC=11,B_OCTDN=12,B_OCTUP=13};
+#include "../firmware/src/ym/ym_song.h"
 static const int8_t FM1_KEYMAP[6][11]={
  {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
  {5,11,4,10,3,9,2,8,-1,-1,-1},
@@ -25,6 +26,8 @@ static uint32_t ys_state;
 static void check(int v,const char*s){printf("%s: %s\n",s,v?"PASS":"FAIL");if(!v)exit(2);}
 int main(void){
  yled_init();yled_update();
+ check((fm1_led[7]&2)&&!(fm1_led_dim[7]&2),"HOME bright in song mode");
+ ysong.enabled=0;yled_update();check((fm1_led_dim[7]&2)&&!(fm1_led[7]&2),"HOME dim in endless mode");
  check((fm1_led_dim[9]&4)&&!(fm1_led[9]&4),"EDIT dim in MIDI IN mode");
  ymidi_out=1;yled_update();check((fm1_led[9]&4)&&!(fm1_led_dim[9]&4),"EDIT bright in USB MIDI OUT mode");
  ymidi_out=0;yled_update();check(!(fm1_led[9]&4),"EDIT clears bright bit on return to IN");
