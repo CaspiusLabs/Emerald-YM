@@ -1,0 +1,32 @@
+{
+  "release": "https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.11.3",
+  "tag_commit": "b7c6d0f860eb294f2376476e37f6a20f54ab572b",
+  "assets": [
+    {
+      "file": "emerald-ym-0.11.3.fwsc",
+      "bytes": 609677,
+      "sha256": "a71dae83f0a83f035a60094eee4253be6d32f3d4ac44f50d74bcdda597c95591",
+      "anonymous_download_matches": true,
+      "url": "https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.11.3/emerald-ym-0.11.3.fwsc"
+    },
+    {
+      "file": "SHA256SUMS",
+      "bytes": 90,
+      "sha256": "f4c19d9fe5f0ef47640c2864d90770b2b788ced98aee6f8a67b0af0b15df532f",
+      "anonymous_download_matches": true,
+      "url": "https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.11.3/SHA256SUMS"
+    },
+    {
+      "file": "ui-preview.png",
+      "bytes": 4310,
+      "sha256": "55cf75773da8d6b72ce8e7d10b360c04eea3bbbf97f034ec4ce4394b2d5e59ac",
+      "anonymous_download_matches": true,
+      "url": "https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.11.3/ui-preview.png"
+    }
+  ],
+  "stable_release": true,
+  "prerelease": false,
+  "latest_stable_verified": true,
+  "verified_date": "2026-10-30",
+  "firmware_rebuilt": false
+}
