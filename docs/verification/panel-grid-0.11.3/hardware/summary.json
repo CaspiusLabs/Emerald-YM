@@ -1,0 +1,67 @@
+{
+  "version": "0.11.3",
+  "identity": "FM-1_68001103",
+  "source_commit": "b7c6d0f860eb294f2376476e37f6a20f54ab572b",
+  "package_sha256": "a71dae83f0a83f035a60094eee4253be6d32f3d4ac44f50d74bcdda597c95591",
+  "checks": {
+    "capture_completed": true,
+    "physical_start_and_stop": true,
+    "at_least_180s_music": true,
+    "at_least_350_status_replies_while_playing": true,
+    "no_three_second_diagnostic_timeout": true,
+    "status_query_reply_counts_match": true,
+    "playing_in_all_music_statuses": true,
+    "no_idle_clock": true,
+    "no_held_notes_at_end": true,
+    "no_duplicate_note_ons": true,
+    "xruns_overload_failed_boots_zero": true,
+    "audio_has_signal_without_clipping": true
+  },
+  "passed": true,
+  "failure": null,
+  "music_seconds": 211.90732959995512,
+  "recording_seconds": 273.67,
+  "status_queries": 547,
+  "status_replies": 547,
+  "music_status_replies": 419,
+  "music_queries_excluding_final_half_second": 418,
+  "max_observed_status_gap_seconds": 0.5051814999897033,
+  "reply_latency_ms": {
+    "mean": 3.0603224873011574,
+    "max": 6.009600008837879
+  },
+  "cpu_average_sampled_pct_music": 45.7326968973747,
+  "cpu_max_pct": 72,
+  "max_block_us": 4189,
+  "xruns": 0,
+  "overload_blocks": 0,
+  "failed_boots": 0,
+  "midi_runs": [
+    {
+      "run": 1,
+      "start": 58.759326500003226,
+      "stop": 270.66665609995835,
+      "clocks": 11364,
+      "bpm_from_host_arrival_average": 134.06344750119968,
+      "interval_mean_ms": 18.647886852064048,
+      "interval_min_ms": 16.123600013088435,
+      "interval_max_ms": 25.21539997542277,
+      "first_clock_after_start_ms": 0.038300000596791506,
+      "timing_scope": "Python callback/Windows MIDI arrival, not electrical timing or receiver jitter"
+    }
+  ],
+  "audio": {
+    "analyzed_seconds": 180.0,
+    "rms": 668.7340299939469,
+    "peak": 14662,
+    "clipped_samples": 0,
+    "longest_zero_stereo_ms": 0.36281179138321995,
+    "longest_identical_stereo_ms": 0.36281179138321995
+  },
+  "final_state": "Physical PLAY stopped; EDIT OUT and USB ONLY remain selected (owner-confirmed)",
+  "settings_modified": false,
+  "scope": "Exact-package physical USB Clock/status/audio test; finite-duration evidence, not proof against every future timeout. Callback Clock timing is Windows arrival, not receiver/electrical jitter. No external synth/TRS-output test.",
+  "ui_panels_and_glo_owner_confirmed": true,
+  "usb_only_owner_confirmed": true,
+  "route_state_source": "Owner observation; status v1 does not expose routing"
+}

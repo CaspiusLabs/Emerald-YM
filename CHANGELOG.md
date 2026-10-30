@@ -1,5 +1,11 @@
 # Emerald YM changelog
 
+## 0.11.4 — 2026-10-30 — stable 0.11.3 publication
+
+- Publish stable v0.11.3 (not a prerelease) from exact tested source b7c6d0f860eb294f2376476e37f6a20f54ab572b, without rebuilding. Preserve package SHA-256 a71dae83f0a83f035a60094eee4253be6d32f3d4ac44f50d74bcdda597c95591 and all older releases/tags.
+- Update README/manual/installation with the aligned screen, dim/bright GLO, USB MIDI master behavior, exact-package physical results and current native UI preview. Archive raw hardware evidence separately from desktop tests.
+- Exact 0.11.3 physical run: 211.91 s music with MIDI Clock, USB ONLY recording and diagnostics; 547/547 status replies, no timeouts, sampled CPU average 45.73%, max 72%, max block 4189 us, XRUN/overload/failed boots 0. Owner confirmed layout, instrument bar, GLO and stop behavior.
+- Documentation/publication follow-up in existing PR #14 at the owner's request. VERSION 0.11.4 is documentation only; installed/released firmware stays exact 0.11.3. No build, flash, further device access or PR merge in this task.
 ## 0.11.3 — unreleased — aligned main-screen panels
 
 - Use a consistent six-pixel gutter between the volume rail, transport and parameter/mixer panels. Both bottom cards now match the 86-pixel columns and 44-pixel heights above; extend the rail footer to the same bottom edge.

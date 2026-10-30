@@ -1,5 +1,7 @@
 # Main panel grid — development 0.11.3
 
+**Later stage:** exact 0.11.3 was installed and physically validated, then published as stable without rebuilding. See the [separate hardware evidence](hardware/README.md) and [release package](../../../releases/v0.11.3/README.md). Documentation VERSION 0.11.4 does not replace the firmware. The original desktop-stage account below remains historical.
+
 Owner-requested layout correction, on a separate branch based on unmerged PR #13 (which depends on PR #12). Native rendering still uses changed-only complete tiles and the original 240x144 canvas; no extra framebuffer or DSP/USB/LED behavior change.
 
 - Six-pixel horizontal gutter between the volume rail and right grid, and between the two columns. Six-pixel vertical gutters between transport and each following card row.
