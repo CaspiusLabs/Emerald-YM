@@ -1,5 +1,12 @@
 # Emerald YM changelog
 
+## 0.11.1 — unreleased — diagnostic SysEx mailbox race
+
+- Route the shared SysEx mailbox through one main-loop dispatcher. A status request arriving after the old diagnostic check could previously be consumed and discarded by the following OTA handshake service. Late arrivals now wait for the next iteration; non-status frames still use the unchanged OTA decoder. No wire-protocol, audio-renderer, USB queue, memory-region or protection changes.
+- Reproduce the competing-consumer loss deterministically and test the production dispatch order at arrival boundaries in IN/OUT, all 11 status fields, OTA identity and malformed/unknown-frame recovery. Native compilation, full desktop regressions, package/update simulations and generic emulator comparison pass.
+- Preserve exact 0.11.0 physical reports, including the original diagnostic timeout (overall unqualified pass remains false), separately from the 0.11.1 desktop evidence. No per-request device trace proves which event caused the historic timeout; the reproduced race is a concrete loss path consistent with it.
+- Owner-requested follow-up in existing PR #12. No MIDI ports opened, device access, flash, release/tag or merge in this task. Installed exact 0.11.0 and public 0.10.0 remain unchanged. Physical validation of the fix is pending.
+
 ## 0.11.0 — unreleased — USB MIDI master Clock and Start/Stop
 
 - In EDIT OUT, PLAY resets the current-seed arrangement and sends USB Start (FA), Timing Clock (F8) at 24 PPQ and notes. The next PLAY sends Stop (FC). No Continue, idle Clock or Song Position Pointer output. K1 changes master tempo without resetting pulse phase.

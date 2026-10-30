@@ -1,0 +1,7 @@
+{
+  "edit_out": "Owner confirmed bright EDIT and USB MIDI OUT",
+  "initial_play": "Owner pressed physical PLAY; smooth playback and USB MIDI OUT confirmed",
+  "bpm_display": 134,
+  "followup": "Owner confirmed Stop / Start / Stop works; USB MIDI OUT remains",
+  "firmware_or_settings_modified_during_test": false
+}

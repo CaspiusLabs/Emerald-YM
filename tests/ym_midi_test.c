@@ -25,18 +25,69 @@ static uint32_t ym_seed(void){return 42;}
 static void ym_reseed(uint32_t seed){assert(seed==42);reseed_calls++;}
 static void ym_effect(uint32_t s,uint32_t e,uint32_t v){assert(s<12&&e<3&&v<=100);effect_calls++;}
 static void ys_changed(uint32_t ms){(void)ms;dirty_calls++;}
-static int ota_frame_get(const uint8_t**p,uint32_t*n){(void)p;(void)n;return 0;}
-static void ota_frame_done(void){}
-static void ota_wire_send(const uint8_t*p,uint32_t n){(void)p;(void)n;assert(0);}
+/* One ISR-published mailbox; inject completion at a selected get boundary. */
+static uint8_t frame[640],reply[128];
+static uint32_t frame_len,frame_ready,arrival_after,frame_gets,frame_releases,reply_len,replies;
+static int ota_frame_get(const uint8_t**p,uint32_t*n){
+ frame_gets++;if(arrival_after&&!--arrival_after)frame_ready=1;
+ if(!frame_ready)return 0;*p=frame;*n=frame_len;return 1;
+}
+static void ota_frame_done(void){assert(frame_ready);frame_ready=0;frame_releases++;}
+static int ota_wire_send(const uint8_t*p,uint32_t n){assert(n<=sizeof reply);memcpy(reply,p,n);reply_len=n;replies++;return 0;}
+#define OTA_FRAME_MAX 640u
+#define FELUCCA_ID "FM-1_68001101"
+#include "ota_handshake.h"
 static uint32_t audio_cpu_pct,audio_cpu_lifetime_peak,audio_xruns;
 static uint32_t ym_bar(void){return 1;}
 static struct {uint32_t halves,max_us;} en_dbg;
 static struct {uint32_t failed;} bootguard;
 #include "../firmware/src/ym/ym_midi.c"
+#include "ym_dispatch_iteration.h"
 #include "../firmware/src/ym/ym_midi_mode.h"
 static void usb(uint32_t s,uint32_t a,uint32_t b){assert(midi_input_put((s<<8)|(a<<16)|(b<<24)|(s>=0xf8?15:s>>4)));}
 static void trs(uint32_t b){um_byte(b);}
+static void status_frame(void){
+ static const uint8_t query[]={0x7d,0x45,0x4d,0x59,1};
+ memcpy(frame,query,sizeof query);frame_len=sizeof query;
+}
+static void diagnostic_race(void){
+ /* Reproduce 0.11.0: ISR publishes after yusb_service's empty read;
+  * the second consumer ota_service then releases it without replying. */
+ status_frame();arrival_after=2;yusb_service();assert(!frame_ready&&!replies);
+ ota_service();assert(!frame_ready&&!replies&&frame_releases==1);
+ /* Actual production iteration: late arrival survives until next iteration.
+  * Both IN/OUT, every status field and handshake still work. */
+ for(uint32_t mode=0;mode<2;mode++)for(uint32_t phase=1;phase<=3;phase++){
+  ymidi_out=mode;status_frame();arrival_after=phase;
+  uint32_t before=replies,gets=frame_gets,releases=frame_releases;
+  yplaying=1;audio_cpu_pct=46;audio_cpu_lifetime_peak=72;audio_xruns=0;
+  fm1_ms=100255;en_dbg.halves=12345;en_dbg.max_us=4188;bootguard.failed=0;
+  for(uint32_t k=0;k<phase;k++)ym_dispatch_iteration();
+  assert(replies==before+1&&frame_gets==gets+phase&&frame_releases==releases+1&&!frame_ready);
+  assert(reply_len==62&&reply[0]==0xf0&&reply[5]==0x41&&reply[61]==0xf7);
+  uint32_t expected[]={1,46,72,0,0,1,42,100255,12345,4188,0};
+  for(uint32_t i=0;i<11;i++){
+   uint32_t v=0;for(uint32_t j=0;j<5;j++){assert(reply[6+i*5+j]<128);v|=(uint32_t)reply[6+i*5+j]<<(7*j);}
+   assert(v==expected[i]);
+  }
+ }
+ /* Recognized OTA handshake and malformed/unknown frames release once;
+  * neither can poison the following status request. No flash hooks exist. */
+ uint8_t handshake[]={0,0x59,0x11,0,0,0,0xff};
+ frame_len=ota_pack7(handshake,sizeof handshake,frame);frame_ready=1;
+ uint32_t before=replies;ym_dispatch_iteration();assert(!frame_ready&&replies==before+1);
+ uint8_t decoded[64];uint32_t n=ota_unpack7(reply+1,reply_len-2,decoded,sizeof decoded);
+ assert(n==34&&decoded[2]==0x11&&!memcmp(decoded+6,FELUCCA_ID,strlen(FELUCCA_ID)));
+ for(uint32_t i=0;i<2;i++){
+  frame[0]=0x7d;frame_len=i?5:1;frame[1]=0;frame_ready=1;before=replies;
+  ym_dispatch_iteration();assert(!frame_ready&&replies==before);
+  status_frame();frame_ready=1;ym_dispatch_iteration();assert(replies==before+1);
+ }
+ ymidi_out=yplaying=0;fm1_ms=0;
+ puts("PASS: reproduced competing-consumer status loss; production single-owner dispatch preserves late requests in IN/OUT, all 11 fields, OTA identity and unknown-frame recovery");
+}
 int main(void){
+ diagnostic_race();
  /* Timestamp captured at arrival, not at the delayed UI/main-loop consumer. */
  now=100;usb(0xf8,0,0);assert(midi_in_at[0]==100);now=1000;yusb_service();assert(yclock.last==100);
  usb(0x90,60,100);trs(0x90);trs(60);trs(100);yusb_service();assert(ymidi_keys==(1u<<7));

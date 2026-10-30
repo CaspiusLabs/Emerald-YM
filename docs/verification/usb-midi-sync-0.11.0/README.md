@@ -1,5 +1,7 @@
 # USB MIDI master Clock / Start / Stop — 0.11.0 desktop verification
 
+**Later evidence:** the original desktop-stage account below is historical. Owner-authorized installation and physical PLAY tests were subsequently performed on the exact package: [hardware results](hardware/README.md). Functional checks passed, but a diagnostic timeout keeps the unqualified overall result false. The [0.11.1 repair](../usb-midi-sync-0.11.1/README.md) is desktop-tested only and is not installed.
+
 This branch starts from merged main (`cc72a7a`, PR #11). The owner authorized a new version, branch and PR with compilation/desktop tests only. **No device was accessed, no MIDI port opened and no firmware installed.** Public/installed exact 0.10.0, its package and tag remain unchanged. No new release/tag or PR merge is performed.
 
 ## Result and memory

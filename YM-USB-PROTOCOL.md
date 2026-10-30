@@ -2,6 +2,8 @@
 
 ## Development 0.11.0 master transport
 
+Development 0.11.1 uses identity `FM-1_68001101` and fixes main-loop shared-SysEx dispatch without changing any query/reply bytes or transport semantics. [Repair and desktop evidence](docs/verification/usb-midi-sync-0.11.1/README.md). Exact 0.11.0 is installed; 0.11.1 is not.
+
 Status v1 query/reply bytes remain unchanged; candidate identity is `FM-1_68001100`. In EDIT OUT, FM-1 owns clock/transport and ignores incoming USB F8/FA/FB/FC to prevent feedback. PLAY resets the arrangement and sends FA, then F8 at 24 PPQ; pause/output disable sends FC. No idle Clock, FB or Song Position Pointer output. In EDIT IN, existing USB clock following remains available; pre-switch queued real-time/performance packets are discarded.
 
 Outgoing realtime uses USB cable 0 / CIN 0xF with the status byte in packet byte 1. Count derives from native sequencer phase and is observed at block boundaries, with Start/Clock queued before same-block notes. A pending previous Clock, missed pulse or full queue stops the master without catch-up bursts, repairs uncertain notes and requests explicit PLAY restart. MIDI WAIT is local UI state; status v1 has no outgoing clock/fault field. See the [manual and unmeasured physical timing limits](docs/MANUAL.md#usb-midi-master-clock--development-0110). Later version-specific descriptions below retain their historical behavior.

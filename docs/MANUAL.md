@@ -104,7 +104,7 @@ The local output fades over one 256-frame block (~5.8 ms) to reduce switching cl
 
 ## USB MIDI master clock — development 0.11.0
 
-**Computer-tested candidate only; not installed or hardware-timed.** The published 0.10.0 behavior below remains unchanged. Version 0.11.0 adds clock/transport output over the existing USB MIDI port; the minijack remains input and external hardware still needs a compatible USB host or computer/interface route.
+Version 0.11.0 adds clock/transport output over the existing USB MIDI port; the minijack remains input and external hardware still needs a compatible USB host or computer/interface route. Exact 0.11.0 is installed and its functional PLAY/Clock/audio checks passed, but its first diagnostic run timed out. Development **0.11.1 repairs a reproduced diagnostic dispatch race and is desktop-tested only, not installed**. The public 0.10.0 release is unchanged. [Physical 0.11.0 evidence and limits](verification/usb-midi-sync-0.11.0/hardware/README.md) · [0.11.1 repair and tests](verification/usb-midi-sync-0.11.1/README.md).
 
 - **EDIT OUT:** FM-1 is master, using K1's internal tempo (80–180 BPM). Incoming USB Timing Clock, Start, Continue and Stop are ignored to prevent a DAW echo loop. Enable external MIDI clock on the receiving instrument. Local audio and USB capture continue.
 - **PLAY in OUT:** restart the arrangement with the current seed, send Start (`FA`), then Timing Clock (`F8`) at **24 pulses per quarter / six per sequencer step**, before the block's sequencer notes. The next PLAY pauses and sends Stop (`FC`) plus obsolete Note Offs. Another PLAY starts from the beginning again, rather than resuming with Continue.

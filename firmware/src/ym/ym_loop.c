@@ -25,7 +25,7 @@ static void fm1_main(void){
   {int32_t a=fm1_adc_read(FM1_ADC_MASTER);if(a>=0){uint32_t k;knob+=(a*16-knob)/8;k=(uint32_t)(knob/16);ymaster_adc=k;master_q12=(k*k)>>8;}}
   {static uint32_t held;uint32_t both=(1u<<panel.btn[B_OCTDN])|(1u<<panel.btn[B_OCTUP]);
    if((fm1_in.buttons&both)!=both)held=fm1_ms;else if(fm1_ms-held>5000u){ymidi_quiesce();enter_uboot("UBOOT");}}
-  yusb_service();ota_service();
+  yusb_service();
   ymidi_physical=fm1_in.notes;
   {static uint32_t previous=0xffffffffu;uint32_t held=ym_overload>=8u?0:fm1_in.notes|ymidi_keys;
    if(held!=previous){ym_live_keys(held);previous=held;}}

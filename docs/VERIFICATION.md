@@ -2,7 +2,7 @@
 
 Desktop tests, flash/update simulations, user feedback and physical FM-1 measurements are separate evidence. The reports in releases/ retain their original values; an offline report intentionally says flashed=false even when a separate hardware report records installation.
 
-Development **0.11.0 USB MIDI master Clock/Start/Stop is desktop-only**. See its [build/test/memory report](verification/usb-midi-sync-0.11.0/README.md). It has not been installed, target-timed or checked against external hardware. Exact installed/released 0.10.0 and its physical results below remain unchanged.
+Development **0.11.1 diagnostic repair is desktop-only**: native build, regression and full desktop tests pass; see [analysis and evidence](verification/usb-midi-sync-0.11.1/README.md). Installed exact **0.11.0** passed functional physical PLAY/Clock/Start/Stop and USB audio checks, but its first status run timed out; [raw physical evidence](verification/usb-midi-sync-0.11.0/hardware/README.md) retains overall_unqualified_pass=false. The fix is not installed or physically validated. Public release 0.10.0 and its version-specific results below remain unchanged. External receiver synchronization and long-session behavior remain unverified.
 
 ## Hardware-tested development 0.6.0 UI
 
