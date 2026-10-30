@@ -1,5 +1,10 @@
 # Emerald YM changelog
 
+## 0.11.3 — unreleased — aligned main-screen panels
+
+- Use a consistent six-pixel gutter between the volume rail, transport and parameter/mixer panels. Both bottom cards now match the 86-pixel columns and 44-pixel heights above; extend the rail footer to the same bottom edge.
+- Place the instrument level bar below its text, at the same inset, width and baseline as the other parameter bars. Keep full instrument names and remove the redundant SEL prefix so long names fit the narrower card.
+- Preserve changed-only native tile rendering, existing canvas, DSP/USB behavior and LED changes from 0.11.2. Separate branch/PR based on PR #13; no device access or flash. Installed firmware remains exact 0.11.1.
 ## 0.11.2 — unreleased — discoverable GLO illumination
 
 - Keep GLO dim while physical audio is enabled and bright in USB ONLY, matching the existing discoverable-control convention. Output routing and session-only behavior remain unchanged.

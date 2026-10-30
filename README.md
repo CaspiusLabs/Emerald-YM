@@ -2,7 +2,7 @@
 
 Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A real YM2612 emulator, a lightweight Sega-style PSG and an endless sequencer turn the FM-1 into a small chiptune instrument. Play along on its keyboard and shape each instrument independently.
 
-**Development 0.11.2 — not installed:** GLO stays dim when physical audio is enabled and bright in USB ONLY, making its available function visible in both states. This candidate retains the USB MIDI master and diagnostic repair from PR #12. Installed firmware is exact **0.11.1**; public release **0.10.0 is unchanged**. [GLO change and desktop checks](docs/verification/glo-led-0.11.2/README.md) · [Diagnostic repair](docs/verification/usb-midi-sync-0.11.1/README.md) · [Master clock behavior and timing limits](docs/MANUAL.md#usb-midi-master-clock--development-0110).
+**Development 0.11.3 — not installed:** the main screen uses equal six-pixel panel gaps, matching bottom-card widths and an instrument level bar below its text. It retains GLO's dim/bright illumination from 0.11.2, the USB MIDI master and diagnostic repair. Installed firmware is exact **0.11.1**; public release **0.10.0 is unchanged**. [New screen preview and desktop checks](docs/verification/panel-grid-0.11.3/README.md) · [GLO change](docs/verification/glo-led-0.11.2/README.md) · [Master clock behavior and timing limits](docs/MANUAL.md#usb-midi-master-clock--development-0110).
 
 **Current firmware: 0.10.0 (beta), hardware-tested.** [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
 
