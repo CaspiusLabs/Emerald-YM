@@ -15,14 +15,16 @@ static struct {uint32_t tempo,clock,density,mutation,bar,playing,overload,step,p
 static uint32_t yboot_frame=0xffffffffu;
 static void yui_boot_tick(uint32_t elapsed){
  uint32_t frame=elapsed/90u;if(frame>12u)frame=12u;if(frame==yboot_frame)return;yboot_frame=frame;
- /* Decorative vertical spectrogram: frequency bins across, time rows rise.
-  * Generate history from frame/row, without FFT, audio reads or history RAM. */
+ /* Decorative spectrum columns, matching the owner's segmented blue/pink
+  * reference. Heights animate; no FFT, audio reads or history allocation. */
  cv_begin(50,48,Y_BG);
- {static const uint16_t color[]={RGB(5,9,20),RGB(5,28,50),RGB(0,58,82),RGB(0,101,120),Y_BLUE,Y_GREEN,Y_AMBER,Y_WHITE};
-  for(uint32_t row=0;row<11u;row++)for(uint32_t bin=0;bin<12u;bin++){
-   uint32_t t=frame+32u+row,ridge=(t*3u)%23u,x=bin*2u,d=x>ridge?x-ridge:ridge-x;
-   uint32_t energy=d<6u?7u-d:((bin+t)%7u==0u?2u:1u);
-   cv_rect(1+(int)bin*4,2+(int)row*4,3,3,color[energy]);
+ {
+  for(uint32_t bin=0;bin<12u;bin++){
+   uint32_t height=5u+(bin*5u+frame*3u+(bin^frame))%11u;
+   for(uint32_t row=0;row<height;row++){
+    uint16_t color=row<6u?RGB(0,70+row*12,132+row*12):row<10u?RGB(45+(row-6u)*20,140-(row-6u)*12,185):RGB(130+(row-10u)*20,35,140);
+    cv_rect(1+(int)bin*4,44-(int)row*3,3,2,color);
+   }
   }
  }
  cv_rect(0,0,50,1,Y_EDGE);cv_rect(0,47,50,1,Y_EDGE);cv_rect(0,0,1,48,Y_EDGE);cv_rect(49,0,1,48,Y_EDGE);

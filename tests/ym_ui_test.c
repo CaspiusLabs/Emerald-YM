@@ -42,10 +42,15 @@ int main(void){
  check(40+text_w(&FONT_M,"EMERALD YM")<185,"large uppercase header fits before the smaller badge");
  palette_set(0);yui_boot();lcd_sync();image("build/host/ui-boot.ppm");
  {unsigned before=blits,clear=fills;yui_boot_tick(0);check(blits==before,"boot animation skips an unchanged frame");
-  for(uint32_t i=0;i<13u;i++){char path[80];uint16_t row[48];
-   for(int x=0;x<48;x++)row[x]=screen[99*240+157+x];
+  for(uint32_t i=0;i<13u;i++){char path[80];
    yui_boot_tick(i*90u);
-   if(i)check(!memcmp(row,&screen[95*240+157],sizeof row),"spectrogram history moves upward by one row");
+   for(uint32_t bin=0;bin<12u;bin++){
+    uint32_t h=5u+(bin*5u+i*3u+(bin^i))%11u,x=157u+bin*4u;
+    check(screen[101*240+x]!=Y_BG&&screen[(101-(h-1)*3)*240+x]!=Y_BG,
+     "spectrum columns grow upward from a common baseline");
+    check(screen[(h==15u?58u:101u-h*3u)*240+x]==Y_BG&&screen[100*240+x]==Y_BG&&screen[101*240+x+3]==Y_BG,
+     "spectrum clears above each bar and preserves segment/column gaps");
+   }
    sprintf(path,"build/host/ui-boot-%02u.ppm",i);image(path);}
   check(screen[102*240+26]==Y_RED,"boot volume fader returns to its lower position");
   yui_boot_tick(540);check(screen[78*240+26]==Y_RED&&screen[102*240+26]!=Y_RED,"boot volume fader moves upward and clears its previous marker");
