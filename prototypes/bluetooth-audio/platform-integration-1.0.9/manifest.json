@@ -1,0 +1,38 @@
+{
+  "sdk-reference-report.json.gz": {
+    "uncompressed_bytes": 210508,
+    "uncompressed_sha256": "ebdde31fcbf5ffa3798576cedf05a4781274c7d7a7a8c2c275159e32e7397581"
+  },
+  "sdk-default-report.json.gz": {
+    "uncompressed_bytes": 202384,
+    "uncompressed_sha256": "41fca34ef6efbdea40e16995e46c6511c006efaa93db2d0a9ae384b9a682a63a"
+  },
+  "production-report.json.gz": {
+    "uncompressed_bytes": 4963,
+    "uncompressed_sha256": "dd84740c7856b4d389088743924a3cc3ae102cc9f5af3102baae0c5365751731"
+  },
+  "combined-link.txt.gz": {
+    "uncompressed_bytes": 576,
+    "uncompressed_sha256": "8002afb1cba4229ac668fe0617d907e80b377e20bbf489f574b1397368fa7d66"
+  },
+  "combined-map.txt.gz": {
+    "uncompressed_bytes": 297373,
+    "uncompressed_sha256": "280107c53883e7e5158db451d5d793da8914a3a5ccb296337f4570e95338d935"
+  },
+  "sdk-map.txt.gz": {
+    "uncompressed_bytes": 221162,
+    "uncompressed_sha256": "fbe8f6f9b8d8edf3ffb3c8339e40bd3f232de0c11af0ff7a73397900a05273da"
+  },
+  "production-build.txt.gz": {
+    "uncompressed_bytes": 3745,
+    "uncompressed_sha256": "47ed3d3370f64212279788178ffa17e9e6a2f68de1269732ddf491bf8ede0182"
+  },
+  "desktop-tests.txt.gz": {
+    "uncompressed_bytes": 500,
+    "uncompressed_sha256": "55d651ee7b14c1dd422e7db4804ef4086772767f39dca8b33ed67341b01c072e"
+  },
+  "session-only-before-split.json.gz": {
+    "uncompressed_bytes": 195000,
+    "uncompressed_sha256": "f15e634791adb1fd9f4d9985e55d3bfb3b4c416197652a2cbfcf98afdda94e71"
+  }
+}

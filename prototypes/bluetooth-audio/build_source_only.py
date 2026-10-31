@@ -12,6 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from build_probe import ROOT, PIN, sections
 from elf_namespace import rename_defined_symbol
+from split_ram_sections import split_sections
 
 
 def main():
@@ -22,14 +23,26 @@ def main():
                         help="Offline virtual-only archive profile and 1024-frame/4-slot queues")
     parser.add_argument("--combined-preflight", action="store_true",
                         help="Attempt strict link with current Emerald objects, never create firmware")
+    parser.add_argument("--session-config", action="store_true",
+                        help="Experimental real RAM-only syscfg backend; no persistent pairing or guessed MAC")
+    parser.add_argument("--split-ram-sections", action="store_true",
+                        help="Split explicit RAM function sections in private bitcode, without moving code to XIP")
     args = parser.parse_args()
     if args.combined_preflight and not (args.lean_virtual and args.reference_rf):
         parser.error("Combined preflight requires --lean-virtual --reference-rf")
+    if args.session_config and not args.lean_virtual:
+        parser.error("Session configuration requires --lean-virtual")
+    if args.split_ram_sections and not args.lean_virtual:
+        parser.error("RAM section splitting requires --lean-virtual")
     sdk = ROOT / ".runtime/ac79-bt-sdk"
     tc = ROOT / ".runtime/toolchain/pi32"
     out = ROOT / "build/bt-prototype/source-only"
     if args.lean_virtual:
         out /= "lean-virtual"
+    if args.session_config:
+        out /= "session-config"
+    if args.split_ram_sections:
+        out /= "split-ram"
     if args.reference_rf:
         out /= "reference-rf"
     out.mkdir(parents=True, exist_ok=True)
@@ -43,8 +56,19 @@ def main():
             raise RuntimeError("Failed: " + name)
         return result
 
+    section_changes = {}
+    def split_object(obj):
+        ir = obj.with_suffix('.original.ll')
+        modified = obj.with_suffix('.split.ll')
+        run(obj.stem+'-ir', [tc/'bin/clang.exe', '-target', 'pi32v2', '-mcpu=r3', '-S', '-emit-llvm', '-x', 'ir', obj, '-o', ir])
+        text, changes = split_sections(ir.read_text(encoding='utf-8'))
+        if changes:
+            modified.write_text(text, encoding='utf-8')
+            section_changes[obj.name] = {'input_sha256': hashlib.sha256(obj.read_bytes()).hexdigest(), 'changes': changes}
+            run(obj.stem+'-split', [tc/'bin/clang.exe', '-target', 'pi32v2', '-mcpu=r3', '-mfprev1', '-c', '-emit-llvm', '-x', 'ir', modified, '-o', obj])
+
     profile = ROOT / "prototypes/bluetooth-audio/source-only"
-    incs = [profile, sdk / "apps/common/include", sdk / "apps/common/config/include"]
+    incs = [profile, ROOT / "prototypes/bluetooth-audio", sdk / "apps/common/include", sdk / "apps/common/config/include"]
     incs += [sdk / "include_lib" / p for p in ["", "system", "utils", "driver",
         "driver/cpu/wl82", "driver/device", "system/generic", "system/os/FreeRTOS/pi32v2",
         "btctrler", "btctrler/port/wl82", "btstack", "media", "utils/syscfg", "utils/event",
@@ -91,7 +115,18 @@ def main():
                     raise RuntimeError("Unexpected SDK profile definition: " + setting)
             source = out / "bt_profile_config.generated.c"
             source.write_text(text, encoding="utf-8")
+        if obj.stem == "user_cfg" and args.session_config:
+            text = source.read_text(encoding="utf-8")
+            begin = text.index('const u8 *bt_get_mac_addr(void)')
+            end = text.index('const char *bt_get_pin_code(void)', begin)
+            text = text[:begin] + ('extern const unsigned char *eym_session_mac(void);\n'
+                'const u8 *bt_get_mac_addr(void) { return eym_session_mac(); }\n'
+                'const char *bt_get_local_name(void) { return "Emerald YM FM-1"; }\n') + text[end:]
+            source = out / "user_cfg.generated.c"
+            source.write_text(text, encoding="utf-8")
         run(obj.stem, [tc / "bin/clang.exe", *flags, "-c", source, "-o", obj])
+        if args.split_ram_sections:
+            split_object(obj)
         objects.append(obj)
     obj = out / "platform_policy.o"
     run("platform_policy", [tc / "bin/clang.exe", *flags, "-c", profile / "platform_policy.c", "-o", obj])
@@ -112,7 +147,10 @@ def main():
         obj = out / "reference_rf.o"
         run("reference_rf", [tc / "bin/clang.exe", *flags, "-c", source, "-o", obj])
         objects.append(obj)
-    for name in ["pcm_queue", "sbc_queue", "sdk_encoder"]:
+    project_units = ["pcm_queue", "sbc_queue", "sdk_encoder"]
+    if args.session_config:
+        project_units += ["session_store", "session_config"]
+    for name in project_units:
         obj = out / (name + ".o")
         run(name, [tc / "bin/clang.exe", *flags, "-Wall", "-Werror", "-DEYM_BT_PI32=1", "-c",
                   ROOT / "prototypes/bluetooth-audio" / (name + ".c"), "-o", obj])
@@ -136,11 +174,18 @@ def main():
             raise RuntimeError("Pinned physical-output archive member changed")
         shutil.copyfile(source_cpu, private_cpu)
         run("remove-physical-output", [tc / "bin/llvm-ar.exe", "d", private_cpu, "subdevice_dac.c.o"])
+        if args.split_ram_sections:
+            member = out / 'vm_sfc.c.o'
+            member.write_bytes(run('extract-vm-sfc', [tc/'bin/llvm-ar.exe', 'p', private_cpu, member.name]).stdout)
+            split_object(member)
+            run('replace-vm-sfc', [tc/'bin/llvm-ar.exe', 'r', private_cpu, member])
         libs = [private_cpu if p == source_cpu else p for p in libs]
     roots = ["audio_server_info", "subdev_sbc_enc", "sbc_package_ops", "vir_dev_sub",
              "btstack_init", "a2dp_src_sdp_record_item", "a2dp_source_sbc_codec",
              "eym_bt_encoder_open", "eym_bt_encoder_push", "eym_bt_encoder_close",
              "a2dp_sbc_encoder_get_data"]
+    if args.session_config:
+        roots += ["eym_session_config_init", "syscfg_read", "syscfg_write"]
     link = [tc / "bin/pi32v2-ld.exe", "-plugin", tc / "bin/LLVMgold.dll",
             "--plugin-opt=mcpu=r3", "--plugin-opt=-mattr=+fprev1",
             "--plugin-opt=-function-sections", "--plugin-opt=-data-sections",
@@ -174,6 +219,8 @@ def main():
               "pcm_frames": 1024 if args.lean_virtual else 2048,
               "sbc_slots": 4 if args.lean_virtual else 8,
               "queue_pool_storage": args.lean_virtual,
+              "session_only_syscfg": args.session_config,
+              "ram_section_metadata_changes": section_changes,
               "hardware_accessed": False, "installable_package_created": False,
               "fm1_port_validated": False, "unresolved_symbols": names,
               "profile_contract_compiled": True, "advertised_source_codec": "SBC only",
@@ -210,6 +257,14 @@ def main():
         # NOT evidence of connected negotiation; the adapter is still unwired.
         table_symbols = run("final-symbol-sizes", [tc / "bin/llvm-nm.exe", "-S", elf]).stdout.decode()
         values = {m[3]: int(m[1], 16) for m in re.finditer(r"^([0-9a-fA-F]+)\s+(?:[0-9a-fA-F]+\s+)?(\w)\s+(\S+)$", table_symbols, re.M)}
+        if args.split_ram_sections:
+            changed = {c['function'] for unit in section_changes.values() for c in unit['changes']}
+            retained = {name: value for name, value in values.items()
+                        if name in changed or any(name.startswith(n+'.') for n in changed)}
+            if not retained or any(not 0x01C00000 <= addr < 0x01C06000 for addr in retained.values()):
+                raise RuntimeError('Split RAM functions escaped original RAMTEXT')
+            report['split_ram_function_addresses'] = retained
+            report['split_ram_placement_verified'] = True
         if values.get("a2dp_source_media_codec_begin") != values.get("a2dp_source_sbc_codec") or values.get("a2dp_source_media_codec_end", 0) - values.get("a2dp_source_media_codec_begin", 0) != 24:
             raise RuntimeError("Source codec selection table must contain SBC only")
         report["source_table_verified"] = True
@@ -270,7 +325,7 @@ def main():
             '#include "driver/cpu/wl82/system_data.ld"\n#include "server/media.ld"\n'
             '*(.classic*_code .classic*_const .hci*_code .hci*_const .link*_code .link*_const .lmp*_code .lmp*_const .bt_rf_code .bt_rf_const .sbc_eng_code .sbc_eng_const)\n', 1)
         app_ld = app_ld.replace('.data : { . = ALIGN(4); _data_start = .;', '.sdk_ram_code : { ram_text_rodata_begin = .; '
-            '*(.vm .spi_code .flushinv_icache .volatile_ram_code .os_str .uECC_const .crypto_const) ram_text_rodata_end = .; } > RAMTEXT AT > XIP\n'
+            '*(.vm .vm.* .spi_code .spi_code.* .flushinv_icache .flushinv_icache.* .volatile_ram_code .volatile_ram_code.* .os_str .uECC_const .crypto_const) ram_text_rodata_end = .; } > RAMTEXT AT > XIP\n'
             '.data : { . = ALIGN(4); _data_start = .; *(.volatile_ram .non_volatile_ram .os_data .os_port_data .sram .boot_info)\n'
             '#include "btctrler/btctler_lib_data.ld"\n#include "btstack/btstack_lib_data.ld"\n', 1)
         app_ld = app_ld.replace('.bss (NOLOAD) : { _bss_start = .;', '.bss (NOLOAD) : { _bss_start = .; *(.mem_heap .os_bss .os_port_bss) '

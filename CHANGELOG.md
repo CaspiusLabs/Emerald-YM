@@ -1,5 +1,12 @@
 # Emerald YM changelog
 
+## 1.0.9 — unreleased — session configuration / flash and RTOS port attempt (PR #9)
+
+- Add an opt-in real RAM-backed SDK syscfg implementation with task mutex serialization, bounded records and explicit errors. These functions have no flash backend; the SDK direct VM pairing path remains unresolved. MAC must be supplied by a future approved startup path, never invented or read from unknown flash sectors.
+- Split only explicit RAM function-section metadata in private SDK IR to enable GC while keeping retained functions in original RAMTEXT. Actual combined overflow decreases from 10,667 B to 9,455 B; it still fails.
+- Rebuild SDK and attempt a strict combined link to measure flash/cache/RTOS dependencies; preserve previous failed maps and stable 1.0.4. No hardware access, package, release or merge.
+
+
 ## 1.0.8 — unreleased — lean SDK and combined-link preflight (PR #9)
 
 - Add an opt-in virtual-only SDK archive profile without the unused physical DAC/IIS output registration member; original SDK libraries stay unchanged. Reduce prototype PCM/encoded queues to 1024 frames/four slots in that profile.

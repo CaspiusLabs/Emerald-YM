@@ -23,7 +23,7 @@ SECTIONS {
     } > XIP
     .sdk_ram_code : {
         ram_text_rodata_begin = .;
-        *(.vm .spi_code .flushinv_icache .volatile_ram_code)
+        *(.vm .vm.* .spi_code .spi_code.* .flushinv_icache .flushinv_icache.* .volatile_ram_code .volatile_ram_code.*)
         ram_text_rodata_end = .;
     } > RAMTEXT AT > XIP
     .data : {

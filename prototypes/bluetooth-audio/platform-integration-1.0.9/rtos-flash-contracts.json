@@ -1,0 +1,30 @@
+{
+  "sdk_commit": "d179b4484759423312073f5fbb232501aa491047",
+  "sdk_source_sha256": {
+    "include_lib/driver/cpu/wl82/asm/cpu.h": "268d7a820d87a3d6c8eff8996276c7959f4eda2e9fe79fbd38160796f81652d2",
+    "apps/common/system/init.c": "bb88b938ee461e098d7b2e817f55e710cb3b38503619ec91ffb4d06b2e95c426",
+    "cpu/wl82/setup.c": "5da126b810daa7b8f90a6e931147aa5daa6af6a901868f0fe2a79267121647e8",
+    "include_lib/system/os/os_api.h": "808759d1fc6fd9bb863bf78aaa13beaa59358df4de370632423cd372316d8a66",
+    "include_lib/utils/syscfg/syscfg_id.h": "ec05225d605207612dd573051cd2b0010ab30b0521b974875bfe73494c6a397c",
+    "include_lib/driver/device/vm.h": "2ad35f7d48f604f9dde128def83afde6d7d949bc08a1c28ebacc50051eec725c",
+    "include_lib/btstack/avctp_user.h": "46a3170562341b6631a6c153b28153a73996439f46cf2fa7f9f010238825f13e"
+  },
+  "cpu_core_num": 2,
+  "sdk_setup_arch_services": [
+    "wdt_init",
+    "clk_early_init",
+    "interrupt_init",
+    "code_movable_init",
+    "p33_io_latch_init"
+  ],
+  "rtos_entry_services": [
+    "setup_arch",
+    "os_init",
+    "task_create",
+    "os_start"
+  ],
+  "bt_vm_interface_retained": true,
+  "bt_vm_interface_public_typed_table_found": false,
+  "opaque_table_not_reimplemented": true,
+  "firmware_flash_hal_replaced": false
+}

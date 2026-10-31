@@ -1,6 +1,6 @@
-# Bluetooth headphone audio prototype — development 1.0.8
+# Bluetooth headphone audio prototype — development 1.0.9
 
-**Current work:** [lean SDK and combined-link preflight](lean-integration-1.0.8/README.md). The [1.0.7 baseline audit](current-audit/README.md) remains preserved. The prototype is now based on main d16ce4a; stable installed/released firmware is 1.0.4. The 0.8.x results below are historical, measured against 0.7.0. No Bluetooth package exists.
+**Current work:** [flash/cache and RTOS port attempt](platform-integration-1.0.9/README.md). The [1.0.8 lean profile](lean-integration-1.0.8/README.md) remains available. The [1.0.7 baseline audit](current-audit/README.md) remains preserved. The prototype is now based on main d16ce4a; stable installed/released firmware is 1.0.4. The 0.8.x results below are historical, measured against 0.7.0. No Bluetooth package exists.
 
 ## Historical 0.8.1 stage
 
