@@ -6,7 +6,7 @@ Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A
 
 **Download:** [Emerald YM 1.0.4 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v1.0.4/emerald-ym-1.0.4.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v1.0.4/SHA256SUMS) · [Stable release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v1.0.4)
 
-Exact newly built and physically retested package, 609,677 bytes, SHA-256 `f16da6faa7607541c94ac4bfbb0bb626e95eac0956e990a75317caf5b73a411f`. Tag `v1.0.4` points to source `7bb4efdd02499664296e96f134371c68403b22de`. Documentation VERSION **1.0.5** records publication; it is not replacement firmware. The older unpublished 1.0.4 desktop candidate and 1.0.8 physical reports describe different bytes.
+Exact newly built and physically retested package, 609,677 bytes, SHA-256 `f16da6faa7607541c94ac4bfbb0bb626e95eac0956e990a75317caf5b73a411f`. Tag `v1.0.4` points to source `7bb4efdd02499664296e96f134371c68403b22de`. Documentation VERSION **1.0.6** adds the K1–K4 test report; it is not replacement firmware. The older unpublished 1.0.4 desktop candidate and 1.0.8 physical reports describe different bytes.
 
 ![Current 1.0.4 song-mode screen from the native renderer](releases/v1.0.4/ui-preview.png)
 
@@ -36,6 +36,21 @@ The final newly built 1.0.4 package was retested after fixing PLAY; these are it
 | Owner observations | Final PLAY tip, smooth music and automatic END/DONE confirmed |
 
 These results describe the complete repeat. An earlier short trace of these same final bytes reported an unexplained MIDI Stop after about 2.52 s; the owner denied another button press, and a later status read found the local song at END/bar 89. That trace remains failed and its cause is unestablished. The full repeat had no extra Stop. Finite tests do not establish long-session reliability, electrical jitter, external receiver synchronization, USB packet counters or new recovery/TRS-input paths. Section/end updates are control-rate, not sample-exact. [Raw reports, earlier anomaly and scope](docs/verification/stable-1.0.4/README.md).
+
+## K1–K4 while playing: targeted physical test
+
+On the same exact stable **1.0.4**, each knob was turned separately in both directions, slowly and faster, during **MIDI OUT, stereo USB recording and read-only status polling**. HOME was dim/endless to exclude the song's automatic ending. After each phase the owner returned to the initial setting; final **130 BPM / 100% / 100% / 0** restoration was confirmed before stopping.
+
+| Test window | Unexpected MIDI Stop | Result |
+|---|---:|---|
+| K1 TEMPO | **0** | Clock changed with tempo and returned to approximately 130 BPM |
+| K2 DENSITY | **0** | Playback and Clock continued |
+| K3 MUTATION | **0** | Playback and Clock continued |
+| K4 TRANSPOSE | **0** | Note changes continued without stopping transport |
+
+**321.78 s music; 806/806 status replies, no timeout.** Sampled music CPU averaged **47.47%**, lifetime maximum **72%**, worst block **4,193 us**; XRUN/overload **0**. All four knob windows had USB audio signal and no clipped samples. The only Stop was the requested final PLAY press; no held outgoing notes remained. Total USB recording: 403.53 s, stereo PCM16/44.1 kHz.
+
+**The earlier unexplained Stop remains unresolved.** This finite test did not reproduce it; it does not prove that knob movements can never expose a fault. Phase windows include instruction/response time, not exact encoder-event telemetry. [Per-phase metrics, raw report and scope](docs/verification/knobs-midi-out-1.0.4/README.md).
 
 ## MIDI IN / OUT and EDIT (1.0.4)
 

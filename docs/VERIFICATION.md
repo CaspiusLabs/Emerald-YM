@@ -2,7 +2,11 @@
 
 Desktop tests, flash/update simulations, user feedback and physical FM-1 measurements are separate evidence. The reports in releases/ retain their original values; an offline report intentionally says flashed=false even when a separate hardware report records installation.
 
-**Current stable/installed firmware is exact 1.0.4**, source `7bb4efdd02499664296e96f134371c68403b22de`, package SHA-256 `f16da6faa7607541c94ac4bfbb0bb626e95eac0956e990a75317caf5b73a411f`. It was newly rebuilt with the final PLAY tip and physically retested before publication: 162.40 s full song, 407/407 diagnostic replies, CPU avg 47.59%, max 72%, longest block 4233 us, XRUN/overload/failed boots zero. [Separate stable 1.0.4 evidence](verification/stable-1.0.4/README.md). Documentation 1.0.5 is not replacement firmware. Earlier same-number desktop-candidate evidence, the aborted pre-fix run, exact 1.0.8 test and older release results remain distinct. No new external receiver/TRS/recovery/long-session claim.
+**Current stable/installed firmware is exact 1.0.4**, source `7bb4efdd02499664296e96f134371c68403b22de`, package SHA-256 `f16da6faa7607541c94ac4bfbb0bb626e95eac0956e990a75317caf5b73a411f`. It was newly rebuilt with the final PLAY tip and physically retested before publication: 162.40 s full song, 407/407 diagnostic replies, CPU avg 47.59%, max 72%, longest block 4233 us, XRUN/overload/failed boots zero. [Separate stable 1.0.4 evidence](verification/stable-1.0.4/README.md). Documentation 1.0.6 is not replacement firmware. Earlier same-number desktop-candidate evidence, the aborted pre-fix run, exact 1.0.8 test and older release results remain distinct. No new external receiver/TRS/recovery/long-session claim.
+
+## Targeted K1–K4 test on stable 1.0.4
+
+The later [targeted K1–K4 test on unchanged exact stable 1.0.4](verification/knobs-midi-out-1.0.4/README.md) captured 321.78 s music with MIDI OUT/USB audio/status: no unexpected Stop in any knob/restoration window, 806/806 replies/no timeout, CPU average 47.47%, lifetime max72%, worst block4193us, XRUN/overload0. Owner confirmed original 130/100/100/0 values restored. This is documentation VERSION 1.0.6, not a firmware change or explanation of the earlier short Stop; its failed record is retained.
 
 ## Hardware-tested development 0.6.0 UI
 

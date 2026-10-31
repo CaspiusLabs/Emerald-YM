@@ -1,0 +1,46 @@
+{
+  "initial_values": {
+    "tempo": 130,
+    "density": 100,
+    "mutation": 100,
+    "transpose": 0
+  },
+  "prepared_endless_home_dim_edit_out_play_paused": true,
+  "phases": [
+    {
+      "phase": "baseline",
+      "owner_answer": "tak",
+      "recorded_capture_seconds": 154.0
+    },
+    {
+      "phase": "K1",
+      "owner_answer": "tak",
+      "recorded_capture_seconds": 154.0
+    },
+    {
+      "phase": "K2",
+      "owner_answer": "tak",
+      "recorded_capture_seconds": 207.0
+    },
+    {
+      "phase": "K3",
+      "owner_answer": "tak",
+      "recorded_capture_seconds": 268.0
+    },
+    {
+      "phase": "K4",
+      "owner_answer": "tak",
+      "recorded_capture_seconds": 313.0
+    },
+    {
+      "phase": "restore",
+      "owner_answer": "restored_130_100_100_0",
+      "recorded_capture_seconds": 348.0
+    },
+    {
+      "phase": "manual_stop",
+      "owner_answer": "tak",
+      "recorded_capture_seconds": 403.0
+    }
+  ]
+}

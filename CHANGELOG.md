@@ -1,5 +1,12 @@
 # Emerald YM changelog
 
+## 1.0.6 — 2026-10-31 — K1–K4 hardware-test documentation
+
+- Archive the exact stable 1.0.4 K1–K4 MIDI OUT / USB audio / diagnostics run, including raw MIDI/status report, phase markers, owner feedback and per-phase audio metrics. No unexpected MIDI Stop during any knob or restoration window; the final PLAY Stop was the expected control.
+- Record 321.78 s music, 806/806 diagnostic replies, no timeout, sampled CPU average 47.47%, maximum 72%, worst block 4193 us, XRUN/overload 0, audible USB signal with no clipping in all four knob windows, and no held notes at the end. Initial 130/100/100/0 values were owner-confirmed restored.
+- Preserve the earlier unexplained ~2.52 s MIDI Stop and its failed evidence. This targeted run did not reproduce it and does not establish its cause or prove every possible knob movement safe.
+- Documentation only: no firmware changes, build, device access, flashing, release/tag or release-asset changes. Owner requested a separate PR, merge to main and branch cleanup retaining main plus codex/bluetooth-audio-prototype-0.8.0; preserve tags, read-only upstream and a local reference backup.
+
 ## 1.0.5 — 2026-10-31 — stable 1.0.4 publication documentation
 
 - Publish exact final 1.0.4 after fresh full-song hardware validation, without another rebuild. Archive native screen/boot previews, raw reports and download verification; update HOME, animation and measured results.

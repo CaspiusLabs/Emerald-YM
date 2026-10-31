@@ -1,0 +1,56 @@
+[
+  {
+    "seconds": 0.08019620005507022,
+    "phase": "setup",
+    "revision": 0,
+    "finish": false
+  },
+  {
+    "seconds": 20.25924110005144,
+    "phase": "baseline",
+    "revision": 1,
+    "finish": false
+  },
+  {
+    "seconds": 90.90908810001565,
+    "phase": "K1",
+    "revision": 2,
+    "finish": false
+  },
+  {
+    "seconds": 154.2770403000177,
+    "phase": "K2",
+    "revision": 3,
+    "finish": false
+  },
+  {
+    "seconds": 207.4325718000182,
+    "phase": "K3",
+    "revision": 4,
+    "finish": false
+  },
+  {
+    "seconds": 268.80093610001495,
+    "phase": "K4",
+    "revision": 5,
+    "finish": false
+  },
+  {
+    "seconds": 313.8972696000128,
+    "phase": "restore",
+    "revision": 6,
+    "finish": false
+  },
+  {
+    "seconds": 348.38146990002133,
+    "phase": "manual_stop",
+    "revision": 7,
+    "finish": false
+  },
+  {
+    "seconds": 403.52355900005205,
+    "phase": "finished",
+    "revision": 8,
+    "finish": true
+  }
+]
