@@ -1,5 +1,25 @@
 # Emerald YM changelog
 
+## 1.0.7 — unreleased — Bluetooth integration audit (PR #9)
+
+- Update the isolated Bluetooth prototype to main at d16ce4a; rerun SDK link/resource audits against current production sources without packaging or hardware access. Stable 1.0.4 remains unchanged.
+
+## 0.8.1 — unreleased — source-only SDK link audit (PR #9)
+
+- Add a classic A2DP source/SBC configuration through the SDK's private-profile mechanism. Disable sink, BLE, AAC, AVRCP, HFP/AG, SPP, HID, PAN, dual-source, private app helpers, RF test modes, eSCO master support and SDK OTA modes.
+- Compile the pinned SDK configuration, runtime, event/configuration services, shared RF and compiler libraries with LTO, per-function/data sections and the manufacturer's large-program call mode. Use real SDK registration tables and verify the source codec range selects only the SBC descriptor; retain actual SBC/virtual-input roots.
+- Add two offline audits: a default run requiring actual FM-1 RF calibration, and an explicit reference-board RF run that can complete strict SDK linking. Record final section placement, retained roots, undefined symbols, soft-double dependencies and comparison with the unchanged 0.7.0 baseline. This is not a combined Emerald/SDK link or a bootable FM-1 image.
+- Preserve the 0.8.0 failed-link evidence, document remaining memory/negotiation/platform work and continue the same draft PR #9 at owner request. No production source, release, package, tag, guard or installed firmware change; no device access.
+
+## 0.8.0 — unreleased — isolated Bluetooth audio prototype
+
+- Add an opt-in, non-installable PCM/SBC prototype under prototypes/bluetooth-audio. Bounded same-core queues convert the 24-bit master mix to stereo PCM16 and preserve complete encoded frames; an adapter compiles against the real pinned AC79 SDK virtual-input audio encoder API.
+- Add reproducible pi32v2 compilation, SDK partial/strict link probes, section-memory reports and desktop queue tests. No substitute SDK declarations, fake runtime, relaxed memory/85% limits or ignored-symbol executable.
+- Full A2DP firmware does not link yet. SDK task/board/profile integration, codec negotiation, stack wakeups and final placement/timing remain open. Archive the failures as evidence; do not present partial-link sizes as a final footprint or hardware result.
+- Keep production firmware sources, build selection, published binaries/tags and the installed 0.7.0 unchanged. No device access, flash, radio test or new release. Separate draft PR for the prototype.
+
+
+
 ## 1.0.6 — 2026-10-31 — K1–K4 hardware-test documentation
 
 - Archive the exact stable 1.0.4 K1–K4 MIDI OUT / USB audio / diagnostics run, including raw MIDI/status report, phase markers, owner feedback and per-phase audio metrics. No unexpected MIDI Stop during any knob or restoration window; the final PLAY Stop was the expected control.

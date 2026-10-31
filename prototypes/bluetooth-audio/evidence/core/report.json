@@ -1,0 +1,1345 @@
+{
+  "scope": "isolated target objects and unconfigured SDK dependency closure; NOT firmware",
+  "sdk_commit": "d179b4484759423312073f5fbb232501aa491047",
+  "target_compile_passed": true,
+  "partial_link_passed": true,
+  "strict_link_passed": false,
+  "hardware_accessed": false,
+  "installable_package_created": false,
+  "pcm_external_symbols": [],
+  "objects": {
+    "pcm_queue": [
+      {
+        "name": ".text",
+        "bytes": 0,
+        "writable": false,
+        "executable": true,
+        "nobits": false
+      },
+      {
+        "name": ".text.eym_bt_pcm_reset",
+        "bytes": 14,
+        "writable": false,
+        "executable": true,
+        "nobits": false
+      },
+      {
+        "name": ".text.eym_bt_pcm_push",
+        "bytes": 116,
+        "writable": false,
+        "executable": true,
+        "nobits": false
+      },
+      {
+        "name": ".text.eym_bt_pcm_read",
+        "bytes": 116,
+        "writable": false,
+        "executable": true,
+        "nobits": false
+      }
+    ],
+    "sbc_queue": [
+      {
+        "name": ".text",
+        "bytes": 0,
+        "writable": false,
+        "executable": true,
+        "nobits": false
+      },
+      {
+        "name": ".text.eym_bt_sbc_reset",
+        "bytes": 20,
+        "writable": false,
+        "executable": true,
+        "nobits": false
+      },
+      {
+        "name": ".text.eym_bt_sbc_drops",
+        "bytes": 10,
+        "writable": false,
+        "executable": true,
+        "nobits": false
+      },
+      {
+        "name": ".text.eym_bt_a2dp_offer_frame",
+        "bytes": 80,
+        "writable": false,
+        "executable": true,
+        "nobits": false
+      },
+      {
+        "name": ".text.a2dp_sbc_encoder_get_data",
+        "bytes": 120,
+        "writable": false,
+        "executable": true,
+        "nobits": false
+      },
+      {
+        "name": ".bss.queue",
+        "bytes": 4140,
+        "writable": true,
+        "executable": false,
+        "nobits": true
+      }
+    ],
+    "sdk_encoder": [
+      {
+        "name": ".text",
+        "bytes": 0,
+        "writable": false,
+        "executable": true,
+        "nobits": false
+      },
+      {
+        "name": ".text.eym_bt_encoder_open",
+        "bytes": 166,
+        "writable": false,
+        "executable": true,
+        "nobits": false
+      },
+      {
+        "name": ".text.pcm_read",
+        "bytes": 30,
+        "writable": false,
+        "executable": true,
+        "nobits": false
+      },
+      {
+        "name": ".text.eym_bt_encoder_close",
+        "bytes": 52,
+        "writable": false,
+        "executable": true,
+        "nobits": false
+      },
+      {
+        "name": ".text.eym_bt_encoder_push",
+        "bytes": 14,
+        "writable": false,
+        "executable": true,
+        "nobits": false
+      },
+      {
+        "name": ".text.sbc_write",
+        "bytes": 16,
+        "writable": false,
+        "executable": true,
+        "nobits": false
+      },
+      {
+        "name": ".bss.encoder",
+        "bytes": 4,
+        "writable": true,
+        "executable": false,
+        "nobits": true
+      },
+      {
+        "name": ".bss.pcm_queue",
+        "bytes": 8208,
+        "writable": true,
+        "executable": false,
+        "nobits": true
+      },
+      {
+        "name": ".rodata.str1.1",
+        "bytes": 29,
+        "writable": false,
+        "executable": false,
+        "nobits": false
+      },
+      {
+        "name": ".rodata.output_ops",
+        "bytes": 28,
+        "writable": false,
+        "executable": false,
+        "nobits": false
+      }
+    ]
+  },
+  "sdk_library_sha256": {
+    "audio_server.a": "8c46b12da87ca839ff955baf9d1f4d14f14560eedbfef20314e038e6b76729fc",
+    "btstack.a": "c3f4ebfade12823c0b160f202bbe626b74bb2dfc5e509a034af965c5da852a2b",
+    "btctrler.a": "9ef4262444b49171c4a5eab906e3939b1d4943350ac4993c18d8474d01d773de",
+    "lib_sbc_eng.a": "b17bb8872b47b1e1c68025b9a5308ddd9f4e9fd90a98ad5a2f5fdbdb49d29df3"
+  },
+  "unresolved_symbol_count": 423,
+  "unresolved_symbols": [
+    "ASCII_IntToStr",
+    "ASCII_StrCmpNoCase",
+    "ASCII_StrToInt",
+    "CONFIG_A2DP_DATA_CACHE_HI_AAC",
+    "CONFIG_A2DP_DATA_CACHE_HI_SBC",
+    "CONFIG_A2DP_DATA_CACHE_LOW_AAC",
+    "CONFIG_A2DP_DATA_CACHE_LOW_SBC",
+    "CONFIG_BREDR_INQUIRY",
+    "CONFIG_BTCTLER_FAST_CONNECT_ENABLE",
+    "CONFIG_BTCTLER_TWS_ENABLE",
+    "CONFIG_BTSTACK_SUPPORT_AAC",
+    "CONFIG_ESCO_MUX_RX_BULK_ENABLE",
+    "CONFIG_INQUIRY_PAGE_OFFSET_ADJUST",
+    "CONFIG_LMP_MASTER_ESCO_ENABLE",
+    "CONFIG_LMP_NAME_REQ_ENABLE",
+    "CONFIG_LMP_PASSKEY_ENABLE",
+    "CONFIG_TEST_DUT_CODE",
+    "CONFIG_TEST_DUT_ONLY_BOX_CODE",
+    "CONFIG_TEST_FCC_CODE",
+    "CONFIG_TWS_AFH_ENABLE",
+    "CONFIG_TWS_POWER_BALANCE_ENABLE",
+    "CONFIG_TWS_SUPER_TIMEOUT",
+    "CONFIG_WIFI_DETECT_ENABLE",
+    "CRC16",
+    "ESCO_FORWARD_ENABLE",
+    "Init_LwIP",
+    "P33_SYSTEM_RESET",
+    "UPDATA_BREDR_BASE_BEG",
+    "__BT_UPDATA_JUMP",
+    "__ctype_ptr__",
+    "__divdf3",
+    "__extendsfdf2",
+    "__fixdfsi",
+    "__floatunsidf",
+    "__local_irq_disable",
+    "__local_irq_enable",
+    "__muldf3",
+    "_swap16",
+    "a2dp_event_handler_begin",
+    "a2dp_event_handler_end",
+    "a2dp_mutual_support",
+    "a2dp_sink_media_codec_begin",
+    "a2dp_sink_media_codec_end",
+    "a2dp_sink_media_probe_begin",
+    "a2dp_sink_media_probe_end",
+    "a2dp_source_media_codec_begin",
+    "a2dp_source_media_codec_end",
+    "acl_rx_pool",
+    "acl_rx_pool_end",
+    "acl_tx_pool",
+    "acl_tx_pool_end",
+    "aes128_start_enc",
+    "aes_cmac",
+    "audio_dec_drc_close",
+    "audio_dec_eq_close",
+    "audio_decoder_begin",
+    "audio_decoder_end",
+    "audio_do_eq",
+    "audio_drc_run",
+    "audio_drc_set_samplerate",
+    "audio_effect_begin",
+    "audio_effect_end",
+    "audio_eq_set_info",
+    "audio_eq_set_output_buf",
+    "audio_eq_set_samplerate",
+    "audio_irq_sr_points",
+    "audio_mix_en",
+    "audio_mix_temp_buf_size",
+    "audio_package_begin",
+    "audio_package_end",
+    "audio_ps_temp_buf_size",
+    "audio_src_flt_in_sram",
+    "audio_src_temp_buf_size",
+    "audio_subdev_begin",
+    "audio_subdev_end",
+    "audio_sync_temp_buf_size",
+    "bi_free",
+    "bi_initialize",
+    "bi_poly_mod2",
+    "bi_poly_mul",
+    "bi_read_from_byte",
+    "bi_terminate",
+    "bi_wirte_to_byte",
+    "bit_clr_ie",
+    "bit_set_ie",
+    "ble_disable_wait_enable",
+    "ble_profile_loop",
+    "bredr_esco_standard_tws_link_close",
+    "bredr_esco_standard_tws_link_open",
+    "bt_ethernetif_input",
+    "bt_event_notify",
+    "bt_sfr_pop",
+    "bt_sleep_begin",
+    "bt_sleep_end",
+    "bt_vm_interface",
+    "btagc_enalbe",
+    "btstack_emitter_support",
+    "calloc",
+    "cbuf_clear",
+    "cbuf_get_data_size",
+    "cbuf_get_writeptr",
+    "cbuf_init",
+    "cbuf_is_write_able",
+    "cbuf_read",
+    "cbuf_read_alloc",
+    "cbuf_read_updata",
+    "cbuf_write",
+    "cbuf_write_alloc",
+    "cbuf_write_updata",
+    "ccm_memory_v2",
+    "ceil",
+    "channel_packet_clear",
+    "chip_crc16",
+    "clk_get",
+    "clk_get_osc_cap",
+    "config_asser",
+    "config_audio_dac_auto_src_en",
+    "config_audio_drc_en",
+    "config_audio_eq_en",
+    "config_bredr_afh_user",
+    "config_bt_function",
+    "config_bt_security_vulnerability",
+    "config_btctler_bredr_master",
+    "config_btctler_dual_a2dp",
+    "config_btctler_hci_standard",
+    "config_btctler_le_acl_packet_length",
+    "config_btctler_le_acl_total_nums",
+    "config_btctler_le_afh_en",
+    "config_btctler_le_features",
+    "config_btctler_le_hw_nums",
+    "config_btctler_le_master_multilink",
+    "config_btctler_le_roles",
+    "config_btctler_le_rx_nums",
+    "config_btctler_le_slave_conn_update_winden",
+    "config_btctler_le_tws",
+    "config_btctler_mode",
+    "config_btctler_modules",
+    "config_btctler_role_switch_fail_back_to_slave",
+    "config_btctler_role_switch_fail_disconnect",
+    "config_btctler_single_carrier_en",
+    "config_btstask_auto_exit_sniff",
+    "config_delete_link_key",
+    "config_fix_fre_enable",
+    "config_force_bt_pwr_tab_using_normal_level",
+    "config_le_gatt_client_num",
+    "config_le_gatt_server_num",
+    "config_le_hci_connection_num",
+    "config_le_sm_sub_sc_bridge_edr_enable",
+    "config_le_sm_sub_sc_enable",
+    "config_le_sm_support_enable",
+    "config_multilink_support_esco_enalbe",
+    "config_stack_modules",
+    "config_update_mode",
+    "config_vendor_le_bb",
+    "cpu_assert_debug",
+    "cpu_in_irq",
+    "cpu_irq_disabled",
+    "crc16_sw",
+    "crc_get_16bit",
+    "crc_get_32bit",
+    "delay",
+    "dev_close",
+    "dev_ioctl",
+    "dev_open",
+    "doe",
+    "dut_hci_emit_le_meta_event",
+    "f1_function",
+    "f2_function",
+    "f3_function",
+    "fclose",
+    "fget_name",
+    "flen",
+    "fopen",
+    "fread",
+    "free",
+    "fseek",
+    "ftell",
+    "fwrite",
+    "g_function",
+    "get_chip_id",
+    "get_ps_cal_api",
+    "gpio_close_uart1",
+    "gpio_set_uart1",
+    "hci_add_cmd_handler",
+    "hci_inquiry_support",
+    "hci_le_set_own_address_type",
+    "hid_conn_depend_on_dev_company",
+    "hw_sbc_init",
+    "hw_udelay",
+    "irq_read",
+    "keep_BT_CMPUK1",
+    "keep_BT_CMPUK2",
+    "keep_BT_CMPUK3",
+    "keep_BT_OFSI",
+    "keep_BT_OFSQ",
+    "lbuf_alloc",
+    "lbuf_avaliable",
+    "lbuf_dump",
+    "lbuf_free",
+    "lbuf_free_check",
+    "lbuf_free_space",
+    "lbuf_inc_ref",
+    "lbuf_init",
+    "lbuf_real_size",
+    "lbuf_realloc",
+    "lbuf_state",
+    "lmp_ch_update_resume_hdl",
+    "local_irq_disable",
+    "local_irq_enable",
+    "log_print",
+    "log_tag_const_c_BL",
+    "log_tag_const_c_TWS_LE",
+    "log_tag_const_d_AUDIO_ENCODER",
+    "log_tag_const_d_AUDIO_SERVER",
+    "log_tag_const_d_BL",
+    "log_tag_const_d_HCI_LL",
+    "log_tag_const_d_HCI_STD",
+    "log_tag_const_d_LE_BB",
+    "log_tag_const_d_LL",
+    "log_tag_const_d_LL_AFH",
+    "log_tag_const_d_LL_BIS",
+    "log_tag_const_d_LL_CIS",
+    "log_tag_const_d_LL_E",
+    "log_tag_const_d_LL_ISO",
+    "log_tag_const_d_LMP",
+    "log_tag_const_d_TWS",
+    "log_tag_const_d_TWS_LMP",
+    "log_tag_const_e_AUDIO_ENCODER",
+    "log_tag_const_e_AUDIO_SERVER",
+    "log_tag_const_e_BL",
+    "log_tag_const_e_HCI_LL5",
+    "log_tag_const_e_HCI_STD",
+    "log_tag_const_e_LE5_BB",
+    "log_tag_const_e_LE_BB",
+    "log_tag_const_e_LL",
+    "log_tag_const_e_LL_ADV",
+    "log_tag_const_e_LL_AFH",
+    "log_tag_const_e_LL_BIS",
+    "log_tag_const_e_LL_CIS",
+    "log_tag_const_e_LL_E",
+    "log_tag_const_e_LL_EXT_ADV",
+    "log_tag_const_e_LL_EXT_INIT",
+    "log_tag_const_e_LL_EXT_SCAN",
+    "log_tag_const_e_LL_INIT",
+    "log_tag_const_e_LL_ISO",
+    "log_tag_const_e_LL_M",
+    "log_tag_const_e_LL_PADV",
+    "log_tag_const_e_LL_PHY",
+    "log_tag_const_e_LL_RL",
+    "log_tag_const_e_LL_S",
+    "log_tag_const_e_LL_SCAN",
+    "log_tag_const_e_LL_TWS_ADV",
+    "log_tag_const_e_LL_TWS_SCAN",
+    "log_tag_const_e_LL_WL",
+    "log_tag_const_e_LMP",
+    "log_tag_const_i_AUDIO_ENCODER",
+    "log_tag_const_i_AUDIO_SERVER",
+    "log_tag_const_i_Analog",
+    "log_tag_const_i_BL",
+    "log_tag_const_i_HCI_LL",
+    "log_tag_const_i_HCI_LL5",
+    "log_tag_const_i_HCI_LMP",
+    "log_tag_const_i_HCI_STD",
+    "log_tag_const_i_LE5_BB",
+    "log_tag_const_i_LE_BB",
+    "log_tag_const_i_LL",
+    "log_tag_const_i_LL_ADV",
+    "log_tag_const_i_LL_AFH",
+    "log_tag_const_i_LL_BIS",
+    "log_tag_const_i_LL_CIS",
+    "log_tag_const_i_LL_E",
+    "log_tag_const_i_LL_EXT_ADV",
+    "log_tag_const_i_LL_EXT_INIT",
+    "log_tag_const_i_LL_EXT_SCAN",
+    "log_tag_const_i_LL_INIT",
+    "log_tag_const_i_LL_ISO",
+    "log_tag_const_i_LL_M",
+    "log_tag_const_i_LL_PADV",
+    "log_tag_const_i_LL_PHY",
+    "log_tag_const_i_LL_RL",
+    "log_tag_const_i_LL_S",
+    "log_tag_const_i_LL_SCAN",
+    "log_tag_const_i_LL_TWS_ADV",
+    "log_tag_const_i_LL_TWS_SCAN",
+    "log_tag_const_i_LL_WL",
+    "log_tag_const_i_LMP",
+    "log_tag_const_i_RF",
+    "log_tag_const_i_TWS",
+    "log_tag_const_i_TWS_LE",
+    "log_tag_const_i_TWS_LMP",
+    "log_tag_const_i_Thread",
+    "log_tag_const_v_LMP",
+    "log_tag_const_w_LL_AFH",
+    "low_power_exit_request",
+    "low_power_get",
+    "low_power_get_default_osc_type",
+    "low_power_get_osc_type",
+    "low_power_on",
+    "low_power_put",
+    "low_power_request",
+    "low_power_reset_osc_type",
+    "low_power_trace_drift",
+    "lwip_dhcp_release_and_stop",
+    "lwip_netif_remove",
+    "lwip_netif_set_up",
+    "lwip_renew",
+    "malloc",
+    "memcmp",
+    "memcpy",
+    "memmove",
+    "memset",
+    "more_addr_reconnect_support",
+    "more_avctp_cmd_support",
+    "more_hfp_cmd_support",
+    "msleep",
+    "norflash_ioctl",
+    "os_current_task",
+    "os_current_task_rom",
+    "os_mutex_create",
+    "os_mutex_del",
+    "os_mutex_pend",
+    "os_mutex_post",
+    "os_sem_create",
+    "os_sem_del",
+    "os_sem_pend",
+    "os_sem_post",
+    "os_sem_set",
+    "os_task_pend",
+    "os_taskq_accept",
+    "os_taskq_pend",
+    "os_taskq_post_msg",
+    "os_taskq_post_type",
+    "os_time_dly",
+    "power_is_poweroff_post",
+    "printf",
+    "printf_buf",
+    "put_buf",
+    "putchar",
+    "puts",
+    "ram_free",
+    "ram_malloc",
+    "realloc",
+    "request_irq",
+    "rf_dc_set_max",
+    "rf_dc_set_reload",
+    "rx_fre_offset_adjust_enable",
+    "sdfile_get_disk_capacity",
+    "sdk_version_info_get",
+    "sdp_record_item_begin",
+    "sdp_record_item_end",
+    "server_close",
+    "server_event_handler",
+    "server_open",
+    "server_req_complete",
+    "server_request",
+    "sniff_long_interval",
+    "sniff_support_reset_anchor_point",
+    "snprintf",
+    "spi_cache_way_switch",
+    "src_init",
+    "src_resample",
+    "strchr",
+    "strcmp",
+    "strcpy",
+    "strlen",
+    "strncmp",
+    "sub_audio_dev_init",
+    "sys_local_irq_disable",
+    "sys_local_irq_enable",
+    "sys_timeout_add",
+    "sys_timeout_del",
+    "sys_timer_add",
+    "sys_timer_del",
+    "sys_timer_get_ms",
+    "sys_timer_get_user_data",
+    "sys_timer_modify",
+    "sys_timer_re_run",
+    "sys_timer_set_user_data",
+    "syscfg_read",
+    "syscfg_write",
+    "task_create",
+    "task_kill",
+    "thread_fork",
+    "thread_kill",
+    "trim",
+    "tws_auto_pair_enable",
+    "tws_ble_link",
+    "tws_bulk_pool",
+    "tws_bulk_pool_end",
+    "tws_func_stub_begin",
+    "tws_func_stub_end",
+    "tws_link_ble_slave_start_monitor",
+    "tws_sync_call_begin",
+    "tws_sync_call_end",
+    "tws_sync_channel_begin",
+    "tws_sync_channel_end",
+    "uECC_compute_public_key",
+    "uECC_secp192r1",
+    "uECC_shared_secret",
+    "unrequest_irq",
+    "usr_timeout_add",
+    "usr_timer_del",
+    "videobuf_dqbuf",
+    "videobuf_qbuf",
+    "videobuf_queue_init",
+    "videobuf_queue_release",
+    "videobuf_reqbufs",
+    "videobuf_stream_alloc",
+    "videobuf_stream_finish",
+    "videobuf_stream_free",
+    "videobuf_stream_realloc",
+    "videobuf_streamoff",
+    "videobuf_streamon",
+    "wf_deepsl_reg_pop",
+    "wf_get_phcom_cnt",
+    "wf_rf_common_init",
+    "wfdet_ble_negotiation",
+    "wfdet_ble_process",
+    "wifi_det_change_channel_classification",
+    "wlc_main",
+    "wlc_wreg",
+    "xPortGetPhysiceMemorySize",
+    "zalloc"
+  ],
+  "partial_link_sections": [
+    {
+      "name": ".text",
+      "bytes": 92130,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".text.eym_bt_pcm_reset",
+      "bytes": 14,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".text.eym_bt_pcm_push",
+      "bytes": 116,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".text.eym_bt_pcm_read",
+      "bytes": 116,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".text.eym_bt_sbc_reset",
+      "bytes": 20,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".text.eym_bt_sbc_drops",
+      "bytes": 10,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".text.eym_bt_a2dp_offer_frame",
+      "bytes": 80,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".text.a2dp_sbc_encoder_get_data",
+      "bytes": 120,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".text.eym_bt_encoder_open",
+      "bytes": 166,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".text.pcm_read",
+      "bytes": 30,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".text.eym_bt_encoder_close",
+      "bytes": 52,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".text.eym_bt_encoder_push",
+      "bytes": 14,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".text.sbc_write",
+      "bytes": 16,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".bt_stack_code",
+      "bytes": 116316,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".hci_controller_code",
+      "bytes": 10992,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".classic_lmp_code",
+      "bytes": 63420,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".ble_hci_code",
+      "bytes": 13538,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".ble_att_code",
+      "bytes": 3712,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".link_bulk_code",
+      "bytes": 2840,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".classic_rf_code",
+      "bytes": 42754,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".lmp_irq_code",
+      "bytes": 708,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".link_task_code",
+      "bytes": 2596,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".classic_tws_code",
+      "bytes": 35674,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".bt_rf_code",
+      "bytes": 3086,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".ble_gatt_code",
+      "bytes": 8206,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".ble_db_code",
+      "bytes": 906,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".ble_sm_code",
+      "bytes": 13152,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".sbc_eng_code",
+      "bytes": 212,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".ble_ll_code",
+      "bytes": 84602,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".classic_lmp_auth_code",
+      "bytes": 2140,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".bt_updata_ram_code",
+      "bytes": 470,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".hci_interface_code",
+      "bytes": 1532,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".ble_rf_code",
+      "bytes": 36428,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".vendor_manager_code",
+      "bytes": 626,
+      "writable": false,
+      "executable": true,
+      "nobits": false
+    },
+    {
+      "name": ".rodata",
+      "bytes": 4133,
+      "writable": false,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".rodata.str1.1",
+      "bytes": 123198,
+      "writable": false,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".rodata.output_ops",
+      "bytes": 28,
+      "writable": false,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".bt_stack_const",
+      "bytes": 3836,
+      "writable": false,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".rodata.str1.16",
+      "bytes": 12946,
+      "writable": false,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".ble_att_const",
+      "bytes": 23,
+      "writable": false,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".ble_sm_const",
+      "bytes": 115,
+      "writable": false,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".classic_lmp_const",
+      "bytes": 114,
+      "writable": false,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".rodata.cst8",
+      "bytes": 8,
+      "writable": false,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".classic_rf_const",
+      "bytes": 2001,
+      "writable": false,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".vendor_manager_const",
+      "bytes": 12,
+      "writable": false,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".ble_ll_const",
+      "bytes": 508,
+      "writable": false,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".ble_hci_const",
+      "bytes": 25,
+      "writable": false,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".ble_rf_const",
+      "bytes": 168,
+      "writable": false,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".rodata.cst32",
+      "bytes": 32,
+      "writable": false,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".bt_rf_const",
+      "bytes": 792,
+      "writable": false,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".rodata.cst16",
+      "bytes": 112,
+      "writable": false,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".rodata.cst4",
+      "bytes": 8,
+      "writable": false,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".classic_lmp_auth_const",
+      "bytes": 1264,
+      "writable": false,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".data",
+      "bytes": 184,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".initcall",
+      "bytes": 4,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".lp_target",
+      "bytes": 16,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".server_info",
+      "bytes": 16,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".data.rel.ro",
+      "bytes": 344,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".sram",
+      "bytes": 312,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".audio_subdev.0",
+      "bytes": 12,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".bt_stack_data",
+      "bytes": 450,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".bt_stack_bss",
+      "bytes": 4891,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".bt_sleep",
+      "bytes": 120,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".a2dp_event_handler",
+      "bytes": 112,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".a2dp_source_media_codec",
+      "bytes": 48,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".a2dp_sink_media_codec",
+      "bytes": 48,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".ble_gatt_bss",
+      "bytes": 24,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".ble_att_bss",
+      "bytes": 64,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".ble_sm_bss",
+      "bytes": 32,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".ble_db_bss",
+      "bytes": 32,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".tws_func_stub",
+      "bytes": 8,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".classic_lmp_bss",
+      "bytes": 646,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".classic_lmp_data",
+      "bytes": 236,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".bd_base",
+      "bytes": 4196,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".classic_rf_bss",
+      "bytes": 232,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".classic_rf_data",
+      "bytes": 46,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".tws_sync_channel.1",
+      "bytes": 28,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".classic_tws_const",
+      "bytes": 8,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".tws_sync_channel.2",
+      "bytes": 28,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".tws_sync_channel.3",
+      "bytes": 28,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".tws_sync_channel.13",
+      "bytes": 28,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".tws_sync_channel.6",
+      "bytes": 28,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".tws_sync_channel.7",
+      "bytes": 28,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".tws_sync_channel.10",
+      "bytes": 28,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".tws_sync_channel.9",
+      "bytes": 56,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".hci_controller_data",
+      "bytes": 190,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".hci_controller_bss",
+      "bytes": 60,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".hci_controller_const",
+      "bytes": 40,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".h4_const",
+      "bytes": 4,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".hci_interface_bss",
+      "bytes": 1072,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".hci_interface_data",
+      "bytes": 8,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".hci_interface_const",
+      "bytes": 40,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".link_task_const",
+      "bytes": 8,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".vendor_manager_data",
+      "bytes": 42,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".ble_ll_bss",
+      "bytes": 224,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".ble_ll_data",
+      "bytes": 160,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".ble_hci_bss",
+      "bytes": 176,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".ble_hci_data",
+      "bytes": 212,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".ble_rf_bss",
+      "bytes": 60,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".ble_rf_data",
+      "bytes": 49,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".bt_rf_data",
+      "bytes": 1061,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".sys_event.tws_event",
+      "bytes": 12,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".tws_sync_channel.8",
+      "bytes": 28,
+      "writable": true,
+      "executable": false,
+      "nobits": false
+    },
+    {
+      "name": ".bss",
+      "bytes": 24624,
+      "writable": true,
+      "executable": false,
+      "nobits": true
+    },
+    {
+      "name": ".bss.queue",
+      "bytes": 4140,
+      "writable": true,
+      "executable": false,
+      "nobits": true
+    },
+    {
+      "name": ".bss.encoder",
+      "bytes": 4,
+      "writable": true,
+      "executable": false,
+      "nobits": true
+    },
+    {
+      "name": ".bss.pcm_queue",
+      "bytes": 8208,
+      "writable": true,
+      "executable": false,
+      "nobits": true
+    }
+  ],
+  "partial_link_allocated_bytes": 738872,
+  "partial_link_writable_bytes": 52755,
+  "partial_link_executable_bytes": 536794,
+  "warning": "No final placement/GC/profile config, task stacks, heap or RF buffers. These sums do not prove final fit or minimum A2DP cost."
+}
