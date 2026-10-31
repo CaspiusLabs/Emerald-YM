@@ -82,6 +82,8 @@ int main(void){
  initial=blits;
  ytempo=145;ydisplay();check(blits==initial+1&&last_w==86&&last_h==44,"one knob: exactly one atomic tile");
  initial=blits;yplaying=1;ydisplay();check(blits==initial+2,"transport change: transport + steps only");
+ check(screen[59*240+74]==Y_GREEN&&screen[58*240+74]==Y_CARD&&screen[60*240+74]==Y_CARD,
+  "PLAY triangle ends in a complete one-pixel tip, not a clipped vertical edge");
  initial=blits;current_step=8;ydisplay();check(blits==initial+1&&last_h==12,"one step: small strip only");
  image("build/host/ui-playing.ppm");ymutation=0;ytranspose=-7;ydisplay();image("build/host/ui-varied.ppm");
  initial=blits;yusb_only=1;ydisplay();check(blits==initial+1&&last_x==8&&last_y==184&&last_w==40&&last_h==38,"GLO redraws only the USB ONLY mode tile");image("build/host/ui-usb-only.ppm");
@@ -115,7 +117,7 @@ int main(void){
  ym_overload=8;yplaying=0;ydisplay();image("build/host/ui-overload.ppm");
  check(fills==clears,"no visible clears while playing or updating");
  ydisplay_invalidate();ydisplay();check(fills==clears+1,"full redraw only on explicit invalidation");
- ym_overload=0;ysong.enabled=1;ys_song_profile(&ysong,25,0);ydisplay();image("build/host/ui-song.ppm");
+ ym_overload=0;yplaying=1;ysong.enabled=1;ys_song_profile(&ysong,25,0);ydisplay();image("build/host/ui-song.ppm");
  initial=blits;ydisplay();check(blits==initial,"stable song section does not repaint");
  ysong.enabled=0;ydisplay();check(blits==initial+1,"HOME mode change redraws only transport");
  printf("Renderer bounds and redraw checks passed.\n");return 0;

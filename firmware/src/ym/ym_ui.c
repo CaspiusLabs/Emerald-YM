@@ -136,7 +136,7 @@ static void yui_volume(uint32_t position){
 static void yui_transport(uint32_t bar){
  char b[16];uint16_t accent=ym_overload>=8?Y_AMBER:yplaying?Y_GREEN:Y_DIM;
  cv_begin(178,24,Y_CARD);yui_frame(178,24);
- if(yplaying){for(int x=0;x<9;x++)cv_rect(8+x,5+x/2,1,13-x,accent);}
+ if(yplaying){for(int x=0;x<13;x++)cv_rect(8+x,5+x/2,1,13-x,accent);}
  else {cv_rect(8,6,3,12,accent);cv_rect(14,6,3,12,accent);}
  cv_text(25,4,&FONT_S,ym_overload>=8?"OVERLOAD":yplaying?"PLAYING":"PAUSED",accent);
  if(ys_state!=YS_CLEAN){
