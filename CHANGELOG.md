@@ -1,5 +1,9 @@
 # Emerald YM changelog
 
+## 1.0.5 — unreleased — animated boot volume fader
+
+- Add the characteristic red volume slider to the console's left front panel on the boot screen. It travels up and back down with the existing animation frames, in one complete 24x54 tile.
+- The boot gesture is decorative: no MASTER reads/gain changes, new delays/framebuffer, song or USB changes. Separate branch/PR based on unmerged 1.0.4; native build and existing UI/LED checks pass. No device access, flash, release/tag or merge; exact stable 0.11.3 remains installed/published.
 ## 1.0.4 — unreleased — song form and animated boot
 
 - Adopt the owner's requested 1.0.4 numbering for the next stable release; preserve stable 0.11.3 and all published bytes/tags. This candidate is not yet installed or published.
