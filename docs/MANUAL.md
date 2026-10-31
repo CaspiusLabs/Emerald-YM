@@ -1,14 +1,14 @@
-# Emerald YM 0.11.3 user manual
+# Emerald YM 1.0.4 user manual
 
-**Candidate 1.0.4:** adds default song mode, HOME switching, section labels and a boot animation. See the [candidate controls and validation limits](verification/song-form-1.0.4/README.md). The stable 0.11.3 instructions below remain applicable to the published download.
+Start with MASTER low. HOME bright selects the default 88-bar song; HOME dim selects endless generation. PLAY starts/pauses; after END it restarts the current seed. The form is INTRO 8, VERSE 16, CHORUS 16, BREAK 8, VERSE 16, CHORUS 16, OUTRO 8, then automatic pause. OUT sends MIDI Stop at completion. Section/local bar count appears in the transport tile. Live keys remain independent; temporary section gains/density never replace saved mixer/FX/K1–K4. HOME enabling, REC and USB Start reset the form; Continue preserves position. The outro's audio fade sends no MIDI volume CC automation. Mode/progress are not saved.
 
-Emerald YM makes original, continuously generated music with five YM2612 FM voices, DAC percussion and a Sega-style PSG. It starts paused: turn MASTER down before PLAY. Listen through the speaker/headphones or record the stereo USB master mix at 16-bit / 44.1 kHz using Emerald YM FM-1 as the recording input. MASTER affects both outputs; GLO mutes only the physical outputs. USB monitoring in recording software is needed to hear the USB input through computer speakers. Computer-to-FM-1 audio and individual instrument tracks are not provided. See the [physical 0.11.3 results](verification/panel-grid-0.11.3/hardware/README.md) and [Windows audio-name refresh](WINDOWS-AUDIO-NAME.md).
+The boot animation shows a moving red fader and cyan/pink spectrum columns on an original console silhouette. Graphics are decorative, not audio analysis, and dismiss through the existing button/key/playback path. USB records the stereo master mix at 44.1 kHz/16-bit; GLO mutes speaker/headphones while keeping USB capture active. [Stable validation](verification/stable-1.0.4/README.md).
 
 ## Playing and shaping the backing
 
 | Control | Action |
 |---|---|
-| PLAY | IN: start/pause backing. OUT: restart the current seed with USB Start/Clock, or pause with Stop |
+| PLAY | IN: start/pause, restarting after END. OUT: restart the current seed with USB Start/Clock, or pause with Stop |
 | REC | Choose a new seed and restart the sequence |
 | SAVE | Pause backing and commit pending instrument settings once quiet |
 | SEQ | Toggle mutation 0 / 35; this does not freeze every random decision |
@@ -17,6 +17,7 @@ Emerald YM makes original, continuously generated music with five YM2612 FM voic
 | K3 | Mutation, 0–100% |
 | K4 | Transpose, −12 to +12 semitones, including live keys |
 | MASTER | Overall output level |
+| HOME | Bright: song; dim: endless. Enabling song restarts the current seed; mode is session-only |
 
 A short boot screen uses an original console silhouette with a circular cartridge deck, vents and a red power LED. The version comes from VERSION at build time and appears below the 16-BIT badge. The boot screen does not delay USB/MIDI/panel servicing; a button, live note or playback dismisses it.
 
@@ -98,7 +99,7 @@ The left VOLUME rail follows the existing filtered position of the physical MAST
 
 Visual hysteresis suppresses small ADC fluctuations around a display-pixel boundary. It does not alter the audio gain law or knob filtering. Only the narrow slider tile redraws on movement; the static rail and other controls remain untouched. Transport, SAVE states, K1-K4, instrument level and selected effect controls keep their existing behavior. Exact 0.6.0 passed a subsequent 30-second physical recording/live-MIDI/status run (maximum audio CPU 72%, XRUNS 0); the owner confirmed correct screen/slider behavior. See the [version-specific evidence](verification/master-ui-0.6.0/README.md). Documentation version 0.6.1 does not change that firmware.
 
-## GLO / USB ONLY — 0.11.3
+## GLO / USB ONLY — 1.0.4
 
 GLO is dim when physical speaker/headphone audio is enabled. Press it to mute both physical outputs while keeping USB recording, live keys, backing and MIDI/status active: GLO becomes bright and the footer says USB ONLY. Press again to restore physical audio and dim illumination. MASTER and its slider still control the level sent to USB. The owner confirmed both LED states, physical mute and the aligned main screen on exact 0.11.3.
 
@@ -106,9 +107,9 @@ The local output fades over one 256-frame block (~5.8 ms) to reduce switching cl
 
 <a id="usb-midi-master-clock--development-0110"></a>
 
-## USB MIDI master clock — 0.11.3
+## USB MIDI master clock — 1.0.4
 
-Stable/installed 0.11.3 includes outgoing Clock/transport and the diagnostic dispatch repair. Exact-package combined Clock/USB-audio/status tests and the screen/GLO check passed; see [physical evidence and limits](verification/panel-grid-0.11.3/hardware/README.md). The minijack remains input; external hardware still requires a compatible USB host or computer/interface route.
+Stable/installed 1.0.4 includes outgoing Clock/transport and the diagnostic repair; see its [exact-package physical evidence and limits](verification/stable-1.0.4/README.md). The minijack remains input; external hardware still requires a compatible USB host or computer/interface route.
 
 - **EDIT OUT:** FM-1 is master, using K1's internal tempo (80–180 BPM). Incoming USB Timing Clock, Start, Continue and Stop are ignored to prevent a DAW echo loop. Enable external MIDI clock on the receiving instrument. Local audio and USB capture continue.
 - **PLAY in OUT:** restart the arrangement with the current seed, send Start (`FA`), then Timing Clock (`F8`) at **24 pulses per quarter / six per sequencer step**, before the block's sequencer notes. The next PLAY pauses and sends Stop (`FC`) plus obsolete Note Offs. Another PLAY starts from the beginning again, rather than resuming with Continue.

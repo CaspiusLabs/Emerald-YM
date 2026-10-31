@@ -1,5 +1,7 @@
 # Larger boot spectrum and matching cyan — candidate 1.0.8
 
+**Later stages:** exact 1.0.8 was [physically tested](hardware/README.md), then final PR #19 code was rebuilt/retested under the owner's chosen stable 1.0.4 number. The [stable evidence](../stable-1.0.4/README.md) is separate; the original desktop-stage scope below remains historical.
+
 Owner-requested extension of the right boot spectrum toward the console's right side and down to POWER. The complete tile is now 66x72 at (156,57), ending at x=222/y=129 exclusive, with sixteen columns and up to 23 segmented rows. The bottom segments end at y=127, aligned with the POWER text area; the frame ends at y=128. The left animated fader and central deck are unchanged.
 
 Blue segments use exact `Y_BLUE = RGB(50,197,255)`, the same color as **16-BIT SOUND SYSTEM**. Upper segments retain the purple/pink gradient. Decorative boot animation only: no FFT/audio analysis, gain/settings changes, delay, extra framebuffer or song/DSP/MIDI/USB change.

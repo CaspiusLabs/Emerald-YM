@@ -1,0 +1,6 @@
+{
+  "passed": false,
+  "aborted_for_ui_fix": true,
+  "reason": "Owner reported truncated PLAY triangle; capture stopped before any outgoing Start/Clock was observed",
+  "package_sha256": "e6957829a841dd51d32f3f2f7905e1444928b343a21a8d5efd12fe95bb1467aa"
+}

@@ -1,5 +1,11 @@
 # Emerald YM changelog
 
+## 1.0.5 — 2026-10-31 — stable 1.0.4 publication documentation
+
+- Publish exact final 1.0.4 after fresh full-song hardware validation, without another rebuild. Archive native screen/boot previews, raw reports and download verification; update HOME, animation and measured results.
+- Documentation-only follow-up in PR #19. Installed/released firmware stays exact 1.0.4; no automatic merge, new device access or Firmware Hub submission in publication work.
+- Record the earlier unexplained short MIDI Stop separately from the successful complete repeat; preserve its failure and disclose the unresolved cause rather than converting it into a pass.
+
 ## 1.0.4 — 2026-10-31 — stable numbering candidate from PR #19
 
 - At the owner's explicit request, renumber the current PR #19 code (including the final enlarged boot spectrum/fader and song mode) from unpublished 1.0.8 to 1.0.4. Rebuild and physically retest the new bytes before stable publication.

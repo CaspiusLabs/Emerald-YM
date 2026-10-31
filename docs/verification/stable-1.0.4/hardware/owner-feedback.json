@@ -1,0 +1,12 @@
+{
+  "version": "1.0.4",
+  "source_commit": "7bb4efdd02499664296e96f134371c68403b22de",
+  "full_play_triangle_tip_confirmed": true,
+  "smooth_music_confirmed": true,
+  "edit_out_ready_confirmed": true,
+  "home_song_enabled_confirmed": true,
+  "automatic_end_done_confirmed": true,
+  "tip_confirmation_scope": "same final bytes before full repeat",
+  "end_confirmation_scope": "complete repeat",
+  "answers": "tak"
+}

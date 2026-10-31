@@ -1,0 +1,27 @@
+{
+  "name": "emerald-ym-1.0.4.fwsc",
+  "identity": "FM-1_68010004",
+  "bytes": 609677,
+  "sha256": "f16da6faa7607541c94ac4bfbb0bb626e95eac0956e990a75317caf5b73a411f",
+  "application_bytes": 113584,
+  "ram_data_bss_bytes": 40320,
+  "ram_data_bss_available": 98304,
+  "pool_bytes": 101888,
+  "pool_available": 344064,
+  "sdk_reference_hashes_match": {
+    "uboot.boot": true,
+    "cfg_tool.bin": true,
+    "cfg/eq_cfg_hw.bin": true
+  },
+  "audio_code_tables_ram_bytes": 21620,
+  "ramtext_total_bytes": 24508,
+  "ramtext_available": 24576,
+  "host_stream_tests": "passed; 180+ seconds; deterministic across block sizes; seed variation; pause; parameter extremes; no audio-thread allocation; no limiter hits in test renders",
+  "ota_entry_simulation": "passed",
+  "loader_simulation_different_image": "passed",
+  "flashed": false,
+  "hardware_realtime_verified": false,
+  "ymfm_commit": "81aec25ccbb98f4873a255f7551ac4dadac59b4a",
+  "dub_base_commit": "e6fe7b8f8f3114019bb36b5b536ad458eacd2c2d",
+  "toolchain": "JieLi Windows 2.5.3; clang 4.0.1 pi32v2 r3"
+}

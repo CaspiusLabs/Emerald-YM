@@ -1,5 +1,7 @@
 # Song form and animated boot — candidate 1.0.4
 
+**Historical candidate:** this original 1.0.4 desktop package is not the later stable v1.0.4. The owner subsequently chose to renumber final PR #19 code back to 1.0.4, fix PLAY, rebuild and retest it. See the [stable package's separate hash/source/evidence](../stable-1.0.4/README.md); do not transfer this report to those different bytes.
+
 The owner requested numbering for future stable releases to start at **1.0.4**. This is a compile/desktop-tested candidate on a separate branch/PR, **not installed or published**. Exact stable 0.11.3 and its release/tag remain unchanged. No MIDI ports, device access, flashing, release/tag or merge in this task.
 
 ## Controls and arrangement
