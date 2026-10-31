@@ -41,6 +41,7 @@ SECTIONS {
         cpu0_sstack_begin = .; KEEP(*(.cpu0_sstack)) cpu0_sstack_end = .;
         cpu1_sstack_begin = .; KEEP(*(.cpu1_sstack)) cpu1_sstack_end = .;
     } > RAM
+    .pool (NOLOAD) : { *(.pool.bt) } > POOL
     .heap (NOLOAD) : { . = ALIGN(32); HEAP_BEGIN = .; } > POOL
     HEAP_END = ORIGIN(POOL) + LENGTH(POOL);
     RAM0_SIZE = LENGTH(RAM); SDRAM_SIZE = 0; CACHE_RAM_SIZE = 0;

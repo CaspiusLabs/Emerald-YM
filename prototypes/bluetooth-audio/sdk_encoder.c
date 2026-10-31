@@ -6,7 +6,7 @@
 #include "pcm_queue.h"
 #include "sbc_queue.h"
 
-static struct eym_bt_pcm_queue pcm_queue;
+static struct eym_bt_pcm_queue pcm_queue EYM_BT_STORAGE;
 static struct server *encoder;
 
 static int pcm_read(u8 *buf, u32 bytes)

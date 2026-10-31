@@ -1,0 +1,38 @@
+{
+  "sdk-reference-report.json.gz": {
+    "uncompressed_sha256": "3da8a85c87177d0f28731e22ea2e51e4bfdd5c499066904a9eba783117047c9e",
+    "uncompressed_bytes": 195037
+  },
+  "sdk-default-report.json.gz": {
+    "uncompressed_sha256": "9d1ff8c8eab8298a39721eae9dfa7b664116e5e0830654a66c10de8caea9920d",
+    "uncompressed_bytes": 188353
+  },
+  "production-report.json.gz": {
+    "uncompressed_sha256": "a327f64d8accc160b4c943e2cd5e702e11b0034004d110d546859ef5b0d0df65",
+    "uncompressed_bytes": 4938
+  },
+  "combined-link.txt.gz": {
+    "uncompressed_sha256": "9d51c5b8617fa6084222eeea9b6f96878f064a150df40507b6290add64b7bfbc",
+    "uncompressed_bytes": 552
+  },
+  "combined-map.txt.gz": {
+    "uncompressed_sha256": "5bdfdefb24e9bb670905ef277aea402a3a6dd2e4ad60411f61eab888b93af291",
+    "uncompressed_bytes": 293090
+  },
+  "production-build.txt.gz": {
+    "uncompressed_sha256": "e5b8858f4fabf9a2e775fa0c5e0b7a60c83100b71449cdbb42f85896ee6476da",
+    "uncompressed_bytes": 3746
+  },
+  "queue-tests.txt.gz": {
+    "uncompressed_sha256": "0b3953ffb6f6b022e3f3829ace424ad571da65f777add82762fda2935b95b07c",
+    "uncompressed_bytes": 336
+  },
+  "namespaced-startup-symbols.txt.gz": {
+    "uncompressed_sha256": "ff4e431e5bc6279dc058b2808ad4975ae859ffa97e16da84aade23e5b8dbd01b",
+    "uncompressed_bytes": 934
+  },
+  "sdk-map.txt.gz": {
+    "uncompressed_sha256": "4acfbec606997aee0aa942dfd7902fae55d10f63033a7917e6e9ef0a8bb4eb01",
+    "uncompressed_bytes": 216656
+  }
+}

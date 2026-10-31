@@ -6,8 +6,8 @@
 #include "sbc_queue.h"
 
 static struct eym_bt_pcm_queue q;
-static int input[4096];
-static short output[4096];
+static int input[EYM_BT_PCM_FRAMES * 2];
+static short output[EYM_BT_PCM_FRAMES * 2];
 
 int main(void)
 {
@@ -23,13 +23,13 @@ int main(void)
         assert(!a2dp_sbc_encoder_get_data(packet, sizeof(packet), &size) && !size);
         assert(!eym_bt_a2dp_offer_frame(frame, 0));
         assert(!eym_bt_a2dp_offer_frame(frame, 513));
-        for (i = 0; i < 8; ++i) assert(eym_bt_a2dp_offer_frame(frame, 118));
+        for (i = 0; i < EYM_BT_SBC_SLOTS; ++i) assert(eym_bt_a2dp_offer_frame(frame, 118));
         assert(!eym_bt_a2dp_offer_frame(frame, 118));
         assert(eym_bt_sbc_drops() == 3);
         assert(!a2dp_sbc_encoder_get_data(packet, 117, &size) && !size);
         assert(a2dp_sbc_encoder_get_data(packet, 237, &size) == 236 && size == 118);
         for (i = 0; i < 236; ++i) assert(packet[i] == frame[i % 118]);
-        assert(a2dp_sbc_encoder_get_data(packet, sizeof(packet), &size) == 708);
+        assert(a2dp_sbc_encoder_get_data(packet, sizeof(packet), &size) == (int)((EYM_BT_SBC_SLOTS - 2) * 118));
         assert(eym_bt_a2dp_offer_frame(frame, 118));
         assert(eym_bt_a2dp_offer_frame(frame, 120));
         assert(a2dp_sbc_encoder_get_data(packet, sizeof(packet), &size) == 118 && size == 118);
@@ -58,12 +58,12 @@ int main(void)
     assert(!q.dropped_frames && !q.silent_frames);
 
     eym_bt_pcm_reset(&q);
-    for (i = 0; i < 4096; ++i) input[i] = (int)i * 256;
-    assert(eym_bt_pcm_push(&q, input, 2048) == 2048);
+    for (i = 0; i < EYM_BT_PCM_FRAMES * 2; ++i) input[i] = (int)i * 256;
+    assert(eym_bt_pcm_push(&q, input, EYM_BT_PCM_FRAMES) == EYM_BT_PCM_FRAMES);
     assert(eym_bt_pcm_push(&q, input, 256) == 0);
     assert(q.dropped_frames == 256);
-    assert(eym_bt_pcm_read(&q, output, 2048) == 2048);
-    for (i = 0; i < 4096; ++i) assert(output[i] == (int)i);
+    assert(eym_bt_pcm_read(&q, output, EYM_BT_PCM_FRAMES) == EYM_BT_PCM_FRAMES);
+    for (i = 0; i < EYM_BT_PCM_FRAMES * 2; ++i) assert(output[i] == (int)i);
     assert(eym_bt_pcm_read(&q, output, 128) == 0);
     for (i = 0; i < 256; ++i) assert(output[i] == 0);
     puts("PASS: PCM stereo/clamp/silence/overflow/wrap, 10000 blocks; SBC whole frames/capacity/drop/size change");

@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Offline production-app/resource audit; no loader, package, USB or radio IO."""
 import hashlib
+import argparse
 import json
 import os
 from pathlib import Path
@@ -16,6 +17,9 @@ from build_probe import sections
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--lean', action='store_true', help='Compare the opt-in lean virtual SDK profile')
+    args = parser.parse_args()
     os.chdir(ROOT)
     os.environ['JIELI_TOOLCHAIN'] = str(ROOT / '.runtime/toolchain')
     os.environ['EN_FONT_NORAQM'] = '1'
@@ -40,7 +44,11 @@ def main():
     # Region consumption includes linker alignment gaps, not only section sums.
     baseline = {'RAMTEXT': span('.ram_text', '.audio_hot'),
                 'RAM': span('.data', '.bss'), 'POOL': byname['.pool']['bytes']}
-    sdk = json.loads((ROOT / 'build/bt-prototype/source-only/reference-rf/report.json').read_text(encoding='utf-8'))
+    sdk_path = ROOT / 'build/bt-prototype/source-only'
+    if args.lean:
+        sdk_path /= 'lean-virtual'
+    sdk_path /= 'reference-rf/report.json'
+    sdk = json.loads(sdk_path.read_text(encoding='utf-8'))
     assert sdk['strict_link_passed'] and not sdk['final_undefined'].strip()
     capacity = sdk['region_capacity_bytes']
     origins = {'XIP': 0x02000120, 'RAMTEXT': 0x01C00000,
@@ -58,7 +66,10 @@ def main():
     assert package_sha == 'f16da6faa7607541c94ac4bfbb0bb626e95eac0956e990a75317caf5b73a411f'
     report = dict(main_commit=ref, production_version='1.0.4', development_version=(ROOT/'VERSION').read_text().strip(),
                   production_sources_match_main=True, hardware_accessed=False, installable_package_created=False,
-                  combined_link_performed=False, production_checks=notes, production_sections=sec,
+                  combined_link_performed=bool(sdk.get('combined_preflight', {}).get('attempted')),
+                  combined_link_passed=bool(sdk.get('combined_preflight', {}).get('link_passed')),
+                  production_checks=notes, production_sections=sec,
+                  lean_virtual=args.lean, sdk_combined_preflight=sdk.get('combined_preflight'),
                   production_app_sha256=hashlib.sha256(image).hexdigest(), preserved_package_sha256=package_sha,
                   baseline_region_bytes=baseline, sdk_reference_region_bytes=sdk_spans,
                   sdk_reference_section_sum_bytes=sdk['region_section_bytes'],
@@ -66,7 +77,7 @@ def main():
                   conservative_overflow_bytes={k: max(0, v-capacity[k]) for k,v in combined.items()},
                   sdk_task_stack_queue_budget_bytes=sdk['task_table_stack_queue_budget_bytes'],
                   sdk_soft_double_symbols=sdk['soft_double_symbols'],
-                  sdk_report_sha256=hashlib.sha256((ROOT/'build/bt-prototype/source-only/reference-rf/report.json').read_bytes()).hexdigest())
+                  sdk_report_sha256=hashlib.sha256(sdk_path.read_bytes()).hexdigest())
     (out/'report.json').write_text(json.dumps(report, indent=2)+'\n', encoding='utf-8')
     print(json.dumps({k:report[k] for k in ['main_commit','baseline_region_bytes','sdk_reference_region_bytes','conservative_sum_bytes','conservative_overflow_bytes','production_app_sha256']},indent=2))
 

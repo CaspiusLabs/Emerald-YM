@@ -1,5 +1,12 @@
 # Emerald YM changelog
 
+## 1.0.8 — unreleased — lean SDK and combined-link preflight (PR #9)
+
+- Add an opt-in virtual-only SDK archive profile without the unused physical DAC/IIS output registration member; original SDK libraries stay unchanged. Reduce prototype PCM/encoded queues to 1024 frames/four slots in that profile.
+- Place only the non-executable queues in the existing POOL, with address checks and no region/guard change. Resolve the competing SDK boot-entry symbol in a private archive copy without altering executable bytes; CPU1 startup remains unported.
+- Attempt a real strict link against current Emerald production objects with original memory regions, no ignored symbols or success shims. Archive results and unresolved integration barriers. No production source, stable 1.0.4 package, hardware access, release or merge.
+
+
 ## 1.0.7 — unreleased — Bluetooth integration audit (PR #9)
 
 - Update the isolated Bluetooth prototype to main at d16ce4a; rerun SDK link/resource audits against current production sources without packaging or hardware access. Stable 1.0.4 remains unchanged.

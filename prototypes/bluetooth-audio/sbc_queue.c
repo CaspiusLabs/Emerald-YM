@@ -1,12 +1,12 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 #include "sbc_queue.h"
 #include "publication.h"
-#define SLOTS 8u
+#define SLOTS EYM_BT_SBC_SLOTS
 #define FRAME_BYTES 512u
 static struct {
     unsigned int write_pos, read_pos, drops;
     struct { unsigned int size; unsigned char data[FRAME_BYTES]; } frames[SLOTS];
-} queue;
+} queue EYM_BT_STORAGE;
 
 void eym_bt_sbc_reset(void)
 {
