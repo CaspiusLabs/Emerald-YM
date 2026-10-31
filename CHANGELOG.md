@@ -1,5 +1,21 @@
 # Emerald YM changelog
 
+## 1.0.5 — 2026-10-31 — stable 1.0.4 publication documentation
+
+- Publish exact final 1.0.4 after fresh full-song hardware validation, without another rebuild. Archive native screen/boot previews, raw reports and download verification; update HOME, animation and measured results.
+- Documentation-only follow-up in PR #19. Installed/released firmware stays exact 1.0.4; no automatic merge, new device access or Firmware Hub submission in publication work.
+- Record the earlier unexplained short MIDI Stop separately from the successful complete repeat; preserve its failure and disclose the unresolved cause rather than converting it into a pass.
+
+## 1.0.4 — 2026-10-31 — stable numbering candidate from PR #19
+
+- At the owner's explicit request, renumber the current PR #19 code (including the final enlarged boot spectrum/fader and song mode) from unpublished 1.0.8 to 1.0.4. Rebuild and physically retest the new bytes before stable publication.
+- Earlier 1.0.4 desktop-candidate and exact 1.0.8 hardware reports remain historical and separate; they do not identify this newly built package. Existing published releases/tags are unchanged.
+- Before publication, fix the owner-reported truncated PLAY triangle: draw all 13 columns through its one-pixel tip, then rebuild/retest these final bytes. Retain the aborted pre-fix capture separately; no stable 1.0.4 was published from it.
+
+## 1.0.8 — unreleased — larger boot spectrum and matching cyan
+
+- Expand the boot spectrum right/down from 50x48 to 66x72, with sixteen columns and a lower edge aligned with POWER. Preserve the left fader and central deck.
+- Use exact Y_BLUE (RGB 50/197/255), shared with 16-BIT SOUND SYSTEM, for the blue bar segments; keep purple/pink upper segments. Decorative UI only, no DSP or USB changes. Build/UI/LED/package checks only; no device access/flash/release/merge. Separate PR based on 1.0.7.
 ## 1.0.7 — unreleased — reference-style boot spectrum bars
 
 - Correct the right boot animation to match the owner's image: twelve vertical segmented spectrum bars, rising from a shared baseline with a blue/cyan-to-purple/pink gradient and changing heights.

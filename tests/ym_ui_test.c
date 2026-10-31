@@ -44,13 +44,14 @@ int main(void){
  {unsigned before=blits,clear=fills;yui_boot_tick(0);check(blits==before,"boot animation skips an unchanged frame");
   for(uint32_t i=0;i<13u;i++){char path[80];
    yui_boot_tick(i*90u);
-   for(uint32_t bin=0;bin<12u;bin++){
-    uint32_t h=5u+(bin*5u+i*3u+(bin^i))%11u,x=157u+bin*4u;
-    check(screen[101*240+x]!=Y_BG&&screen[(101-(h-1)*3)*240+x]!=Y_BG,
+   for(uint32_t bin=0;bin<16u;bin++){
+    uint32_t h=8u+(bin*5u+i*3u+(bin^i)+(bin*i)%3u)%16u,x=157u+bin*4u;
+    check(screen[126*240+x]==Y_BLUE&&screen[127*240+x]==Y_BLUE&&screen[(126-(h-1)*3)*240+x]!=Y_BG,
      "spectrum columns grow upward from a common baseline");
-    check(screen[(h==15u?58u:101u-h*3u)*240+x]==Y_BG&&screen[100*240+x]==Y_BG&&screen[101*240+x+3]==Y_BG,
+    check(screen[(h==23u?58u:126u-h*3u)*240+x]==Y_BG&&screen[125*240+x]==Y_BG&&screen[126*240+x+3]==Y_BG,
      "spectrum clears above each bar and preserves segment/column gaps");
    }
+   check(screen[128*240+221]==Y_EDGE,"expanded spectrum reaches the console right edge and POWER baseline");
    sprintf(path,"build/host/ui-boot-%02u.ppm",i);image(path);}
   check(screen[102*240+26]==Y_RED,"boot volume fader returns to its lower position");
   yui_boot_tick(540);check(screen[78*240+26]==Y_RED&&screen[102*240+26]!=Y_RED,"boot volume fader moves upward and clears its previous marker");
@@ -81,6 +82,8 @@ int main(void){
  initial=blits;
  ytempo=145;ydisplay();check(blits==initial+1&&last_w==86&&last_h==44,"one knob: exactly one atomic tile");
  initial=blits;yplaying=1;ydisplay();check(blits==initial+2,"transport change: transport + steps only");
+ check(screen[59*240+74]==Y_GREEN&&screen[58*240+74]==Y_CARD&&screen[60*240+74]==Y_CARD,
+  "PLAY triangle ends in a complete one-pixel tip, not a clipped vertical edge");
  initial=blits;current_step=8;ydisplay();check(blits==initial+1&&last_h==12,"one step: small strip only");
  image("build/host/ui-playing.ppm");ymutation=0;ytranspose=-7;ydisplay();image("build/host/ui-varied.ppm");
  initial=blits;yusb_only=1;ydisplay();check(blits==initial+1&&last_x==8&&last_y==184&&last_w==40&&last_h==38,"GLO redraws only the USB ONLY mode tile");image("build/host/ui-usb-only.ppm");
@@ -114,7 +117,7 @@ int main(void){
  ym_overload=8;yplaying=0;ydisplay();image("build/host/ui-overload.ppm");
  check(fills==clears,"no visible clears while playing or updating");
  ydisplay_invalidate();ydisplay();check(fills==clears+1,"full redraw only on explicit invalidation");
- ym_overload=0;ysong.enabled=1;ys_song_profile(&ysong,25,0);ydisplay();image("build/host/ui-song.ppm");
+ ym_overload=0;yplaying=1;ysong.enabled=1;ys_song_profile(&ysong,25,0);ydisplay();image("build/host/ui-song.ppm");
  initial=blits;ydisplay();check(blits==initial,"stable song section does not repaint");
  ysong.enabled=0;ydisplay();check(blits==initial+1,"HOME mode change redraws only transport");
  printf("Renderer bounds and redraw checks passed.\n");return 0;

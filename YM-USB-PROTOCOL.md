@@ -1,8 +1,10 @@
 # Emerald YM USB status protocol v1 (firmware 0.1.2 and later)
 
-## Stable 0.11.3 master transport
+## Stable 1.0.4 master transport
 
-Current identity is `FM-1_68001103`. Status v1 query/reply bytes remain unchanged. The 0.11.1 main-loop shared-SysEx dispatch repair is retained. Exact 0.11.3 is installed and published; [physical validation](docs/verification/panel-grid-0.11.3/hardware/README.md) records no diagnostic timeout during combined MIDI Clock/audio/status capture.
+Current identity is `FM-1_68010004`. Status v1 query/reply bytes remain unchanged. The 0.11.1 main-loop shared-SysEx dispatch repair is retained. Exact 1.0.4 is installed and published; [physical validation](docs/verification/stable-1.0.4/README.md) records no diagnostic timeout during combined MIDI Clock/audio/status capture.
+
+HOME bright selects the 88-bar song and automatic end; HOME dim selects endless generation. Song completion sends Stop in OUT; source masks gate arrangement notes. There is no new SysEx message.
 
 In EDIT OUT, FM-1 owns clock/transport and ignores incoming USB F8/FA/FB/FC to prevent feedback. PLAY resets the arrangement and sends FA, then F8 at 24 PPQ; pause/output disable sends FC. No idle Clock, FB or Song Position Pointer output. In EDIT IN, existing USB clock following remains available; pre-switch queued real-time/performance packets are discarded.
 

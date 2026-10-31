@@ -1,38 +1,43 @@
 # Emerald YM
 
-Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A real YM2612 emulator, a lightweight Sega-style PSG and an endless sequencer turn the FM-1 into a small chiptune instrument. Play along on its keyboard and shape each instrument independently.
+Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A real YM2612 emulator, lightweight Sega-style PSG and generative sequencer turn the FM-1 into a small chiptune instrument. Play along on its keyboard and shape each instrument independently.
 
-**Candidate 1.0.7 — not installed or published.** Retains the 88-bar song, HOME song/endless switch and animated red volume fader; the boot console's right panel now shows segmented vertical spectrum bars with a blue-to-pink gradient, matching the owner's reference. [Updated boot preview and checks](docs/verification/boot-spectrum-1.0.7/README.md) · [Song controls and full desktop evidence](docs/verification/song-form-1.0.4/README.md). Public/installed stable firmware below remains exact 0.11.3 until separate hardware validation/publication is authorized.
+**Current stable firmware: 1.0.4, hardware-tested.** Includes complete song form, HOME song/endless switching, animated console startup, red volume fader and enlarged cyan/pink spectrum bars. The PLAY triangle has its complete tip. [Manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build](BUILDING.md) · [Test evidence](docs/verification/stable-1.0.4/README.md)
 
-**Current stable firmware: 0.11.3, hardware-tested.** Equal panel spacing, matching lower cards and level bars below their text; GLO stays dim when available and bright in USB ONLY. PLAY can drive external USB MIDI Clock and Start/Stop. The diagnostic request-loss race is fixed. [User manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build from source](BUILDING.md) · [Test evidence](docs/VERIFICATION.md)
+**Download:** [Emerald YM 1.0.4 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v1.0.4/emerald-ym-1.0.4.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v1.0.4/SHA256SUMS) · [Stable release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v1.0.4)
 
-**Download:** [Emerald YM 0.11.3 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.11.3/emerald-ym-0.11.3.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.11.3/SHA256SUMS) · [Stable release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.11.3)
+Exact newly built and physically retested package, 609,677 bytes, SHA-256 `f16da6faa7607541c94ac4bfbb0bb626e95eac0956e990a75317caf5b73a411f`. Tag `v1.0.4` points to source `7bb4efdd02499664296e96f134371c68403b22de`. Documentation VERSION **1.0.5** records publication; it is not replacement firmware. The older unpublished 1.0.4 desktop candidate and 1.0.8 physical reports describe different bytes.
 
-This is the exact tested 609,677-byte package, published without rebuilding: SHA-256 `a71dae83f0a83f035a60094eee4253be6d32f3d4ac44f50d74bcdda597c95591`. Tag `v0.11.3` points to firmware source `b7c6d0f860eb294f2376476e37f6a20f54ab572b`. Documentation VERSION 0.11.4 records publication and does not identify another firmware image.
+![Current 1.0.4 song-mode screen from the native renderer](releases/v1.0.4/ui-preview.png)
 
-![Emerald YM 0.11.3 main screen, captured from the native firmware UI renderer](releases/v0.11.3/ui-preview.png)
+*Native 240 × 240 renderer capture, not a photograph. Equal panel gaps, matching bottom cards, bars below text and the current section/local bar count.*
 
-*240 × 240 native UI render, not a photograph. All panel gutters are six pixels; both lower cards match the 86 × 44 cards above. Instrument and effect bars sit below their text. The owner separately confirmed the physical layout and GLO dim/bright behavior.*
+## Song mode and animated startup
 
-## Physical 0.11.3 tests
+**HOME bright** enables an 88-bar song: **INTRO 8 → VERSE 16 → CHORUS 16 → BREAK 8 → VERSE 16 → CHORUS 16 → OUTRO 8 → END**. At 134 BPM it lasts about 2 min 38 s. The outro reduces backing level, then pauses automatically; in MIDI OUT it sends Stop and releases notes. **HOME dim** returns to endless generation. Enabling song restarts the current seed; PLAY after END starts it again. REC chooses a new seed. Mode/progress are not saved; instrument levels, FX and K1–K4 retain their normal persistence. Section changes temporarily scale stems/density without replacing saved settings. Live keys remain available. The audio fade does not send MIDI volume CC automation.
 
-The exact stable package passed **3 min 32 s of backing with outgoing MIDI Clock, USB audio recording in USB ONLY and read-only diagnostics**:
+The silent startup animation uses an original console silhouette, moving red fader and segmented spectrum bars. The larger right panel reaches POWER; its cyan matches **16-BIT SOUND SYSTEM**. It is decorative, not audio analysis. Tiny changed-only tiles keep the existing dismissible boot period without a new framebuffer or blocking delay.
+
+![Native animated startup preview; loops here for display only](releases/v1.0.4/boot-preview.gif)
+
+## Physical 1.0.4 results
+
+The final newly built 1.0.4 package was retested after fixing PLAY; these are its own results, not copied from 1.0.8:
 
 | Check | Result |
 |---|---|
-| Diagnostic requests / valid replies | **547 / 547, no timeouts** |
-| Status response latency | Average 3.06 ms, maximum 6.01 ms |
-| Average sampled audio CPU | **45.73%** during music |
-| Maximum audio CPU / longest block | **72% / 4,189 us** |
+| Complete song / automatic END | 162.40 s, 88 bars; stopped at bar 89 |
+| Diagnostics | **407 queries / 407 replies**, no timeout; maximum reply 6.55 ms |
+| Sampled music CPU average / maximum | **47.59% / 72%** |
+| Longest block | 4,233 us |
 | XRUN / overload / failed boots | **0 / 0 / 0** |
-| MIDI master | Physical PLAY sent Start/Clock and Stop; 11,364 Clock pulses captured, average 134.063 BPM |
-| Stop | No idle Clock or remaining captured notes |
-| USB audio in USB ONLY | 273.67 s stereo PCM16/44.1 kHz captured; 180 s analyzed, signal present with no clipped samples |
-| Physical UI / GLO | Owner confirmed aligned panels, below-text instrument bar, dim normal GLO, bright USB ONLY and physical mute |
+| USB MIDI master | Start/Clock and automatic Stop; no idle Clock or remaining captured notes |
+| USB audio | 203.81 s stereo PCM16/44.1 kHz; signal present, no clipped samples in the analyzed music |
+| Owner observations | Final PLAY tip, smooth music and automatic END/DONE confirmed |
 
-These are finite physical results, not proof against every future timeout or validation of external-synth synchronization, electrical jitter or USB packet counters. No new minijack or cross-firmware recovery tests are claimed. The earlier 0.11.0 diagnostic timeout remains recorded as a failure. [Exact package, raw reports and scope](docs/verification/panel-grid-0.11.3/hardware/README.md) · [Separate desktop tests and memory](docs/verification/panel-grid-0.11.3/README.md).
+These results describe the complete repeat. An earlier short trace of these same final bytes reported an unexplained MIDI Stop after about 2.52 s; the owner denied another button press, and a later status read found the local song at END/bar 89. That trace remains failed and its cause is unestablished. The full repeat had no extra Stop. Finite tests do not establish long-session reliability, electrical jitter, external receiver synchronization, USB packet counters or new recovery/TRS-input paths. Section/end updates are control-rate, not sample-exact. [Raw reports, earlier anomaly and scope](docs/verification/stable-1.0.4/README.md).
 
-## MIDI IN / OUT and EDIT (0.11.3)
+## MIDI IN / OUT and EDIT (1.0.4)
 
 Press **EDIT** to switch note direction:
 
@@ -76,7 +81,7 @@ Release **v0.10.0** contains the exact tested 609,677-byte package, published wi
 
 Press **GLO** to mute the FM-1 speaker **and headphone output**, while USB audio, MIDI, diagnostics and playback continue. GLO changes from **dim to bright**, and the display shows **USB ONLY** below the MASTER slider. Press GLO again to restore the physical outputs and dim illumination. MASTER continues controlling the USB-recorded level. This is a digital output mute, not a power-off of the speaker amplifier.
 
-All buttons with available assigned functions are visibly illuminated: dim when inactive, bright when active or acknowledging an action, with transport/error colors retained. This rule applies to GLO in stable 0.11.3; older releases turned its LED off with physical audio enabled.
+All buttons with available assigned functions are visibly illuminated: dim when inactive, bright when active or acknowledging an action, with transport/error colors retained. This rule applies to GLO in stable 1.0.4; older releases turned its LED off with physical audio enabled.
 
 Switching fades the physical output over about 5.8 ms; USB receives the unchanged mix before that fade. The mode is not saved: physical outputs are enabled after reboot. Release 0.7.0 contains the exact tested package, without rebuilding. A 30-second USB ONLY recording/live-MIDI/status test passed: average sampled audio CPU 47.77%, maximum 73%, longest block 4242 us, XRUNS 0, overload 0, failed boots 0. The owner confirmed speaker mute/restore, GLO illumination and the USB ONLY label. Captured audio: 32.34 s stereo PCM16/44.1 kHz, no clipping. [Raw hardware results](docs/verification/usb-only-0.7.0/hardware/summary.json). Documentation version 0.7.1 does not change firmware. [Validation scope](docs/verification/usb-only-0.7.0/README.md).
 
@@ -114,9 +119,10 @@ This is original generative music inspired by the Mega Drive/Genesis sound palet
 
 Start with MASTER low, then press PLAY. The sequencer is paused after boot.
 
-| Control | Function in 0.11.3 |
+| Control | Function in 1.0.4 |
 |---|---|
-| PLAY | IN: start/pause backing. OUT: restart with MIDI Start/Clock, or pause with Stop; live keys still work in pause |
+| PLAY | Start/pause; restart after END. OUT sends MIDI Start/Clock or Stop. Live keys remain available |
+| HOME | Bright: 88-bar song; dim: endless generation. Enabling song restarts the current seed |
 | REC | Generate a new seed and sequence |
 | SAVE | Pause the backing and save instrument levels/effects and K1–K4 after notes have settled |
 | SEQ | Toggle mutation between 0 and 35 |
@@ -135,7 +141,7 @@ Effect amounts and levels remain independent when changing selections. All twelv
 
 ## Compatibility and data
 
-Target: M-VAVE **FM-1**, not SMK-37 or other models. USB MIDI name: `Emerald YM FM-1`. Stable 0.11.3 identity: `FM-1_68001103`; older release 0.4.3 identity: `FM-1_68000403`. The `.fwsc` includes the inherited Felucca update loader.
+Target: M-VAVE **FM-1**, not SMK-37 or other models. USB MIDI name: `Emerald YM FM-1`. Stable 1.0.4 identity: `FM-1_68010004`; older release 0.4.3 identity: `FM-1_68000403`. The `.fwsc` includes the inherited Felucca update loader.
 
 Emerald YM does **not** import stock, DUB-1 or other firmware's presets, projects or samples. It does not provide a way to back them up or restore them. Back up with your existing firmware's tools before switching. Firmware installation writes flash; do not assume another firmware's data will survive switching or recovery. From 0.4.0, instrument levels/FX are stored in the existing project-sector pair at `0xFC000` / `0xFD000`. Saving may replace another firmware's data there; panel calibration and the update-loader area are separate.
 

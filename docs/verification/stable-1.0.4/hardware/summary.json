@@ -1,0 +1,66 @@
+{
+  "version": "1.0.4",
+  "identity": "FM-1_68010004",
+  "source_commit": "7bb4efdd02499664296e96f134371c68403b22de",
+  "package_sha256": "f16da6faa7607541c94ac4bfbb0bb626e95eac0956e990a75317caf5b73a411f",
+  "checks": {
+    "capture_completed": true,
+    "physical_start_and_automatic_stop": true,
+    "full_88_bar_duration": true,
+    "at_least_200_status_replies_while_playing": true,
+    "automatic_end_at_bar_89": true,
+    "no_three_second_diagnostic_timeout": true,
+    "status_query_reply_counts_match": true,
+    "playing_in_all_music_statuses": true,
+    "no_idle_clock": true,
+    "no_held_notes_at_end": true,
+    "no_duplicate_note_ons": true,
+    "xruns_overload_failed_boots_zero": true,
+    "audio_has_signal_without_clipping": true
+  },
+  "passed": true,
+  "failure": null,
+  "music_seconds": 162.39724999997998,
+  "recording_seconds": 203.81,
+  "status_queries": 407,
+  "status_replies": 407,
+  "music_status_replies": 320,
+  "music_queries_excluding_final_half_second": 319,
+  "max_observed_status_gap_seconds": 0.5052152000134811,
+  "reply_latency_ms": {
+    "mean": 3.1940326791403115,
+    "max": 6.5543000237084925
+  },
+  "cpu_average_sampled_pct_music": 47.5875,
+  "cpu_max_pct": 72,
+  "max_block_us": 4233,
+  "xruns": 0,
+  "overload_blocks": 0,
+  "failed_boots": 0,
+  "midi_runs": [
+    {
+      "run": 1,
+      "start": 38.40972110000439,
+      "stop": 200.80697109998437,
+      "clocks": 8449,
+      "bpm_from_host_arrival_average": 130.06122455404287,
+      "interval_mean_ms": 19.221716607482836,
+      "interval_min_ms": 15.686700004152954,
+      "interval_max_ms": 25.03299998352304,
+      "first_clock_after_start_ms": 0.03589998232200742,
+      "timing_scope": "Python callback/Windows MIDI arrival, not electrical timing or receiver jitter"
+    }
+  ],
+  "audio": {
+    "analyzed_seconds": 160.09725623582767,
+    "rms": 739.2290114268031,
+    "peak": 5875,
+    "clipped_samples": 0,
+    "longest_zero_stereo_ms": 0.36281179138321995,
+    "longest_identical_stereo_ms": 0.36281179138321995
+  },
+  "final_state": "Automatic END; backing paused; EDIT OUT remains selected",
+  "final_status_bar": 89,
+  "settings_modified": false,
+  "scope": "Exact-package physical USB Clock/status/audio test; finite-duration evidence, not proof against every future timeout. Callback Clock timing is Windows arrival, not receiver/electrical jitter. No external synth/TRS-output test."
+}

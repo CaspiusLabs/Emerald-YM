@@ -17,17 +17,17 @@ static void yui_boot_tick(uint32_t elapsed){
  uint32_t frame=elapsed/90u;if(frame>12u)frame=12u;if(frame==yboot_frame)return;yboot_frame=frame;
  /* Decorative spectrum columns, matching the owner's segmented blue/pink
   * reference. Heights animate; no FFT, audio reads or history allocation. */
- cv_begin(50,48,Y_BG);
+ cv_begin(66,72,Y_BG);
  {
-  for(uint32_t bin=0;bin<12u;bin++){
-   uint32_t height=5u+(bin*5u+frame*3u+(bin^frame))%11u;
+  for(uint32_t bin=0;bin<16u;bin++){
+   uint32_t height=8u+(bin*5u+frame*3u+(bin^frame)+(bin*frame)%3u)%16u;
    for(uint32_t row=0;row<height;row++){
-    uint16_t color=row<6u?RGB(0,70+row*12,132+row*12):row<10u?RGB(45+(row-6u)*20,140-(row-6u)*12,185):RGB(130+(row-10u)*20,35,140);
-    cv_rect(1+(int)bin*4,44-(int)row*3,3,2,color);
+    uint16_t color=row<12u?Y_BLUE:row<18u?RGB(50+(row-12u)*24,197-(row-12u)*25,255-(row-12u)*12):RGB(190+(row-18u)*10,47-(row-18u)*3,180-(row-18u)*4);
+    cv_rect(1+(int)bin*4,69-(int)row*3,3,2,color);
    }
   }
  }
- cv_rect(0,0,50,1,Y_EDGE);cv_rect(0,47,50,1,Y_EDGE);cv_rect(0,0,1,48,Y_EDGE);cv_rect(49,0,1,48,Y_EDGE);
+ cv_rect(0,0,66,1,Y_EDGE);cv_rect(0,71,66,1,Y_EDGE);cv_rect(0,0,1,72,Y_EDGE);cv_rect(65,0,1,72,Y_EDGE);
  cv_blit(156,57);
  /* Miniature red volume fader on the console's left front panel. The boot
   * gesture is decorative; it neither reads nor changes the MASTER gain. */
@@ -136,7 +136,7 @@ static void yui_volume(uint32_t position){
 static void yui_transport(uint32_t bar){
  char b[16];uint16_t accent=ym_overload>=8?Y_AMBER:yplaying?Y_GREEN:Y_DIM;
  cv_begin(178,24,Y_CARD);yui_frame(178,24);
- if(yplaying){for(int x=0;x<9;x++)cv_rect(8+x,5+x/2,1,13-x,accent);}
+ if(yplaying){for(int x=0;x<13;x++)cv_rect(8+x,5+x/2,1,13-x,accent);}
  else {cv_rect(8,6,3,12,accent);cv_rect(14,6,3,12,accent);}
  cv_text(25,4,&FONT_S,ym_overload>=8?"OVERLOAD":yplaying?"PLAYING":"PAUSED",accent);
  if(ys_state!=YS_CLEAN){
