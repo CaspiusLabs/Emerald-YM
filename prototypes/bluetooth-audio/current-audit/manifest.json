@@ -1,0 +1,30 @@
+{
+  "sdk-default-report.json.gz": {
+    "uncompressed_sha256": "1f96fa7ce2b690692c18e481edf612ed3f21a25d071f7c667a0c051bd7517056",
+    "uncompressed_bytes": 195515
+  },
+  "sdk-reference-report.json.gz": {
+    "uncompressed_sha256": "1ed22c4d8181347a76ba4dd63b561d76ff758d21d7c668cec3819de9dac0be0b",
+    "uncompressed_bytes": 199963
+  },
+  "production-build.txt.gz": {
+    "uncompressed_sha256": "011277729e62e7d1f02d0387fb7c10392701678ca6595798599450bfee1f911c",
+    "uncompressed_bytes": 3748
+  },
+  "sdk-default-link.txt.gz": {
+    "uncompressed_sha256": "1329690faf1d75b4056d0596de7c23b089e45054115b95411775dbc8b9d40c1e",
+    "uncompressed_bytes": 533
+  },
+  "sdk-reference-link.txt.gz": {
+    "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "uncompressed_bytes": 0
+  },
+  "production-report.json.gz": {
+    "uncompressed_sha256": "f8f01848337d6edd42c7f0839edcc5c79e30b680dffe61be196ef882ec6b3e24",
+    "uncompressed_bytes": 3051
+  },
+  "queue-tests.txt.gz": {
+    "uncompressed_sha256": "667f3d89e16d327eb87b93f668e480b5aa4ec927dbdf8f7faff97d95d60ecb94",
+    "uncompressed_bytes": 168
+  }
+}

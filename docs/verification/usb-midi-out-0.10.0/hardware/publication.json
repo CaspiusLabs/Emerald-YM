@@ -1,0 +1,27 @@
+{
+  "release": "https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.10.0",
+  "tag_commit": "e906fbc5eb3c91e45c95101c46bd0d674eef533d",
+  "assets": [
+    {
+      "file": "emerald-ym-0.10.0.fwsc",
+      "bytes": 609677,
+      "sha256": "195cd2d1a504d5936e79cde227d64d2d8d1bd407945e8156dac795f682d59401",
+      "anonymous_download_matches": true,
+      "url": "https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.10.0/emerald-ym-0.10.0.fwsc"
+    },
+    {
+      "file": "SHA256SUMS",
+      "bytes": 90,
+      "sha256": "3a2c570be1f0db4757215279d892f98965a2483752d5d05782a6b3d01ceaacae",
+      "anonymous_download_matches": true,
+      "url": "https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.10.0/SHA256SUMS"
+    },
+    {
+      "file": "ui-preview.png",
+      "bytes": 4260,
+      "sha256": "fd74ca931b708913ef7a5c283f9ceb32d02bda3d4d39bdd807387f7bffdf75a6",
+      "anonymous_download_matches": true,
+      "url": "https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.10.0/ui-preview.png"
+    }
+  ]
+}

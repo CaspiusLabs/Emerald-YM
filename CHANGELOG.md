@@ -1,5 +1,9 @@
 # Emerald YM changelog
 
+## 1.0.7 — unreleased — Bluetooth integration audit (PR #9)
+
+- Update the isolated Bluetooth prototype to main at d16ce4a; rerun SDK link/resource audits against current production sources without packaging or hardware access. Stable 1.0.4 remains unchanged.
+
 ## 0.8.1 — unreleased — source-only SDK link audit (PR #9)
 
 - Add a classic A2DP source/SBC configuration through the SDK's private-profile mechanism. Disable sink, BLE, AAC, AVRCP, HFP/AG, SPP, HID, PAN, dual-source, private app helpers, RF test modes, eSCO master support and SDK OTA modes.
@@ -13,6 +17,103 @@
 - Add reproducible pi32v2 compilation, SDK partial/strict link probes, section-memory reports and desktop queue tests. No substitute SDK declarations, fake runtime, relaxed memory/85% limits or ignored-symbol executable.
 - Full A2DP firmware does not link yet. SDK task/board/profile integration, codec negotiation, stack wakeups and final placement/timing remain open. Archive the failures as evidence; do not present partial-link sizes as a final footprint or hardware result.
 - Keep production firmware sources, build selection, published binaries/tags and the installed 0.7.0 unchanged. No device access, flash, radio test or new release. Separate draft PR for the prototype.
+
+
+
+## 1.0.6 — 2026-10-31 — K1–K4 hardware-test documentation
+
+- Archive the exact stable 1.0.4 K1–K4 MIDI OUT / USB audio / diagnostics run, including raw MIDI/status report, phase markers, owner feedback and per-phase audio metrics. No unexpected MIDI Stop during any knob or restoration window; the final PLAY Stop was the expected control.
+- Record 321.78 s music, 806/806 diagnostic replies, no timeout, sampled CPU average 47.47%, maximum 72%, worst block 4193 us, XRUN/overload 0, audible USB signal with no clipping in all four knob windows, and no held notes at the end. Initial 130/100/100/0 values were owner-confirmed restored.
+- Preserve the earlier unexplained ~2.52 s MIDI Stop and its failed evidence. This targeted run did not reproduce it and does not establish its cause or prove every possible knob movement safe.
+- Documentation only: no firmware changes, build, device access, flashing, release/tag or release-asset changes. Owner requested a separate PR, merge to main and branch cleanup retaining main plus codex/bluetooth-audio-prototype-0.8.0; preserve tags, read-only upstream and a local reference backup.
+
+## 1.0.5 — 2026-10-31 — stable 1.0.4 publication documentation
+
+- Publish exact final 1.0.4 after fresh full-song hardware validation, without another rebuild. Archive native screen/boot previews, raw reports and download verification; update HOME, animation and measured results.
+- Documentation-only follow-up in PR #19. Installed/released firmware stays exact 1.0.4; no automatic merge, new device access or Firmware Hub submission in publication work.
+- Record the earlier unexplained short MIDI Stop separately from the successful complete repeat; preserve its failure and disclose the unresolved cause rather than converting it into a pass.
+
+## 1.0.4 — 2026-10-31 — stable numbering candidate from PR #19
+
+- At the owner's explicit request, renumber the current PR #19 code (including the final enlarged boot spectrum/fader and song mode) from unpublished 1.0.8 to 1.0.4. Rebuild and physically retest the new bytes before stable publication.
+- Earlier 1.0.4 desktop-candidate and exact 1.0.8 hardware reports remain historical and separate; they do not identify this newly built package. Existing published releases/tags are unchanged.
+- Before publication, fix the owner-reported truncated PLAY triangle: draw all 13 columns through its one-pixel tip, then rebuild/retest these final bytes. Retain the aborted pre-fix capture separately; no stable 1.0.4 was published from it.
+
+## 1.0.8 — unreleased — larger boot spectrum and matching cyan
+
+- Expand the boot spectrum right/down from 50x48 to 66x72, with sixteen columns and a lower edge aligned with POWER. Preserve the left fader and central deck.
+- Use exact Y_BLUE (RGB 50/197/255), shared with 16-BIT SOUND SYSTEM, for the blue bar segments; keep purple/pink upper segments. Decorative UI only, no DSP or USB changes. Build/UI/LED/package checks only; no device access/flash/release/merge. Separate PR based on 1.0.7.
+## 1.0.7 — unreleased — reference-style boot spectrum bars
+
+- Correct the right boot animation to match the owner's image: twelve vertical segmented spectrum bars, rising from a shared baseline with a blue/cyan-to-purple/pink gradient and changing heights.
+- Replace the earlier scrolling heatmap. Keep the same 50x48 tile, left volume fader and decorative/no-audio-analysis behavior. Native build/UI/LED/package checks only; no device access, flash, release/tag or merge. Separate PR based on unmerged 1.0.6.
+## 1.0.6 — unreleased — vertical boot spectrogram
+
+- Replace the console's right-hand vent sweep with a vertically scrolling colored spectrogram, retaining the left red volume fader and progress strip.
+- Procedural frequency/time cells stay inside the existing 50x48 tile. Decorative boot graphics only: no audio analysis, FFT, history buffer, delay or DSP/USB changes. Separate branch/PR based on unmerged 1.0.5; native build/UI/LED/package checks pass. No device access, flash, release/tag or merge.
+## 1.0.5 — unreleased — animated boot volume fader
+
+- Add the characteristic red volume slider to the console's left front panel on the boot screen. It travels up and back down with the existing animation frames, in one complete 24x54 tile.
+- The boot gesture is decorative: no MASTER reads/gain changes, new delays/framebuffer, song or USB changes. Separate branch/PR based on unmerged 1.0.4; native build and existing UI/LED checks pass. No device access, flash, release/tag or merge; exact stable 0.11.3 remains installed/published.
+## 1.0.4 — unreleased — song form and animated boot
+
+- Adopt the owner's requested 1.0.4 numbering for the next stable release; preserve stable 0.11.3 and all published bytes/tags. This candidate is not yet installed or published.
+- Default to an 88-bar song: INTRO 8, VERSE 16, CHORUS 16, BREAK 8, VERSE 16, CHORUS 16, OUTRO 8, then stop. HOME toggles song/endless mode with bright/dim illumination. Enabling song restarts the current seed; PLAY after END starts it again. REC and USB Start reset the form; Continue preserves position.
+- Main-loop control-rate profiles change backing stems, relative melody density and ending attenuation without changing saved levels/FX/K1–K4. Arrangement masks also gate outgoing MIDI, including sub-block drum triggers. Live keys remain independent. OUT sends Stop at song completion; the outro's audio fade does not send MIDI CC volume automation.
+- Show section and local bar count in the transport tile. Add an original console vent-light sweep and progress strip during the existing dismissible boot period; no blocking wait, copied branding, sound asset or extra framebuffer.
+- Native compilation/full desktop tests and generic comparison pass. Original endless-mode PCM hashes stay unchanged. No device access, flash, release/tag or merge. Target timing and physical UI remain unverified for 1.0.4; keep the 85% guard and existing memory regions.
+## 0.11.4 — 2026-10-30 — stable 0.11.3 publication
+
+- Publish stable v0.11.3 (not a prerelease) from exact tested source b7c6d0f860eb294f2376476e37f6a20f54ab572b, without rebuilding. Preserve package SHA-256 a71dae83f0a83f035a60094eee4253be6d32f3d4ac44f50d74bcdda597c95591 and all older releases/tags.
+- Update README/manual/installation with the aligned screen, dim/bright GLO, USB MIDI master behavior, exact-package physical results and current native UI preview. Archive raw hardware evidence separately from desktop tests.
+- Exact 0.11.3 physical run: 211.91 s music with MIDI Clock, USB ONLY recording and diagnostics; 547/547 status replies, no timeouts, sampled CPU average 45.73%, max 72%, max block 4189 us, XRUN/overload/failed boots 0. Owner confirmed layout, instrument bar, GLO and stop behavior.
+- Documentation/publication follow-up in existing PR #14 at the owner's request. VERSION 0.11.4 is documentation only; installed/released firmware stays exact 0.11.3. No build, flash, further device access or PR merge in this task.
+## 0.11.3 — unreleased — aligned main-screen panels
+
+- Use a consistent six-pixel gutter between the volume rail, transport and parameter/mixer panels. Both bottom cards now match the 86-pixel columns and 44-pixel heights above; extend the rail footer to the same bottom edge.
+- Place the instrument level bar below its text, at the same inset, width and baseline as the other parameter bars. Keep full instrument names and remove the redundant SEL prefix so long names fit the narrower card.
+- Preserve changed-only native tile rendering, existing canvas, DSP/USB behavior and LED changes from 0.11.2. Separate branch/PR based on PR #13; no device access or flash. Installed firmware remains exact 0.11.1.
+## 0.11.2 — unreleased — discoverable GLO illumination
+
+- Keep GLO dim while physical audio is enabled and bright in USB ONLY, matching the existing discoverable-control convention. Output routing and session-only behavior remain unchanged.
+- Record the owner's rule in AGENTS.md: every available assigned panel function has visible button illumination, dim when inactive and bright when active or acknowledging an action, with meaningful transport/error colors preserved.
+- Separate branch/PR based on unmerged PR #12 (0.11.1). Native build/package and existing UI/LED regression checks pass; no device access or flash. Installed exact 0.11.1 and public release 0.10.0 remain unchanged.
+## 0.11.1 — unreleased — diagnostic SysEx mailbox race
+
+- Route the shared SysEx mailbox through one main-loop dispatcher. A status request arriving after the old diagnostic check could previously be consumed and discarded by the following OTA handshake service. Late arrivals now wait for the next iteration; non-status frames still use the unchanged OTA decoder. No wire-protocol, audio-renderer, USB queue, memory-region or protection changes.
+- Reproduce the competing-consumer loss deterministically and test the production dispatch order at arrival boundaries in IN/OUT, all 11 status fields, OTA identity and malformed/unknown-frame recovery. Native compilation, full desktop regressions, package/update simulations and generic emulator comparison pass.
+- Preserve exact 0.11.0 physical reports, including the original diagnostic timeout (overall unqualified pass remains false), separately from the 0.11.1 desktop evidence. No per-request device trace proves which event caused the historic timeout; the reproduced race is a concrete loss path consistent with it.
+- Owner-requested follow-up in existing PR #12. No MIDI ports opened, device access, flash, release/tag or merge in this task. Installed exact 0.11.0 and public 0.10.0 remain unchanged. Physical validation of the fix is pending.
+
+## 0.11.0 — unreleased — USB MIDI master Clock and Start/Stop
+
+- In EDIT OUT, PLAY resets the current-seed arrangement and sends USB Start (FA), Timing Clock (F8) at 24 PPQ and notes. The next PLAY sends Stop (FC). No Continue, idle Clock or Song Position Pointer output. K1 changes master tempo without resetting pulse phase.
+- Derive outgoing pulse count from the actual native sequencer step/phase in the existing XIP snapshot. No independent timer, sample-loop callback, allocation, libm/double, memory-map or protective-threshold change. Emission is quantized to 256-frame audio blocks; physical jitter and receiver behavior are unmeasured.
+- OUT ignores incoming USB Clock/Start/Continue/Stop to prevent feedback and clears external follower mode. EDIT OUT during playback restarts the arrangement; EDIT IN sends outgoing Stop/Note Off while keeping local playback. IN retains the existing clock follower.
+- Stop on pause, output disable, reset, overload and update entry. A missed/still-queued Clock or full output queue stops synchronization without catch-up bursts, clears uncertain queued performance data and repairs notes. USB MIDI WAIT requests an explicit PLAY restart after a stall/disconnect.
+- Add production-queue/actual-engine master tests, 60-second renders at 80/132/180 BPM, ordering, tempo changes, phase/cursor wrap, same-seed restarts, Stop retry, stall/reconnect and IN/OUT ownership/UI tests. Separate branch/PR from merged main. Compile/desktop tests only: no device access, flash, release/tag or merge; installed/released exact 0.10.0 is preserved.
+
+## 0.10.1 — 2026-10-29 — 0.10.0 publication and hardware evidence
+
+- Publish exact tested 0.10.0 without rebuilding: tag v0.10.0 at e906fbc5eb3c91e45c95101c46bd0d674eef533d; package SHA-256 195cd2d1a504d5936e79cde227d64d2d8d1bd407945e8156dac795f682d59401. Archive raw physical reports separately from desktop evidence.
+- Update English README/manual with MIDI IN/OUT, EDIT, channel map, USB Clock, 60-second combined MIDI OUT/audio/status results and the native 0.10.0 screen render. Link the release download and checksums.
+- Owner-requested follow-up in existing PR #11. Documentation-only version; no firmware-source change, rebuild, additional device access or PR merge.
+
+## 0.10.0 — 2026-10-29 — EDIT / USB MIDI note output
+
+- EDIT switches between note input (dim) and USB note output (bright); the header shows USB MIDI OUT. The mode resets to input at boot and is not saved. USB Clock/transport, diagnostics and USB audio remain available in both modes; note/FX input is ignored in OUT, with no MIDI Thru or feedback echo.
+- Export physical keyboard notes on channel 1 and separate FM, PSG and percussion sequencer parts on channels 2–8 and 10. Local synthesis continues. Retry Note Off under USB queue pressure; clean up mode/transpose/seed/Stop/overload transitions and recover after USB suspend/reset.
+- Read a block-end engine snapshot in XIP within the measured audio budget; small trigger counters preserve retriggers and sub-block drums. Move only sequence-selection constants to the existing XIP pitch section, outside sample loops. No memory-map, flash-off, startup-copy or protective-threshold change.
+- The FM-1 minijack remains MIDI IN: the official SDK documents DIN input and USB/BLE output, with no supported jack-output mode. Physical DIN/TRS output requires a USB host/PC routing Emerald to a MIDI interface such as UM-ONE. No UART TX pin/register changes.
+- Initial implementation used a separate branch/PR based on unmerged PR #10 and compile/desktop tests only. Subsequent owner-authorized exact-0.10.0 installation and USB MIDI/audio/EDIT tests passed; see the 0.10.1 publication/evidence entry above. No automatic PR merge.
+
+## 0.9.0 — unreleased — USB MIDI Clock and TRS MIDI IN
+
+- Follow USB Timing Clock at 24 PPQ: six pulses per sequencer step. USB Start resets the arrangement with the current seed and waits for Clock; Continue preserves position; Stop pauses. A 500 ms clock gap or MIDI input loss stops external playback until explicitly resumed. Turning K1 returns to saved/manual internal tempo.
+- Enable the inherited PH8/UART1 TRS MIDI IN path. Keep USB/TRS held-note masks separate and reserve clock/transport ownership for USB; TRS supports live notes and existing FX CCs, with no SysEx/update entry.
+- Timestamp input at ISR queue publication, estimate 30–300 BPM over a quarter note for display/gates and consume external steps at audio-block boundaries with bounded catch-up. Move the existing gate-duration division to control rate; internal reference audio stays bit-exact.
+- Add real dispatcher/UART parser/queue/renderer/clock tests, wrap/jitter/loss/transport/overflow coverage and changed-tile external-clock UI checks. Compile/package/memory, generic emulator and full desktop/simulated-update suites pass. RAMTEXT is 24,560/24,576 B; no guard or region expansion.
+- No FM-1 access or flash; installed/released 0.7.0 stays unchanged. Separate branch/PR from the unmerged Bluetooth prototype. This candidate has no physical clock/TRS/CPU validation and no public release/tag.
 
 ## 0.7.1 — 2026-10-28 — publication documentation
 

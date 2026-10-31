@@ -8,6 +8,9 @@
 #include "../hal/fm1_uart.h"   /* registers; relative, so the host test finds it too */
 
 #define UM_RING 128u
+#ifndef MIDI_UART_SOURCE
+#define MIDI_UART_SOURCE 0u
+#endif
 static volatile uint8_t um_ring[UM_RING] __attribute__((aligned(16)));
 static struct {
     uint32_t rd, pend;
@@ -17,12 +20,7 @@ static struct {
 
 static int um_put(uint32_t pkt)                    /* into midi_in_q (usb.c): 0 = full */
 {
-    if (mi_w - mi_r >= MQ)
-        return 0;
-    midi_in_q[mi_w % MQ] = pkt;
-    RING_PUBLISH();
-    mi_w++;
-    return 1;
+    return midi_input_put(pkt | MIDI_UART_SOURCE);
 }
 
 static void uart_midi_init(void)                   /* before TIMER5 starts: PORTH read-modify-write */
@@ -71,6 +69,7 @@ static void uart_midi_take(uint32_t n)
 {
     um.pend += n;
     if (um.pend > UM_RING) {                       /* the DMA lapped us: wait for a whole new status */
+        midi_in_lost++;
         um.drops += um.pend - UM_RING;
         um.rd = (um.rd + um.pend - UM_RING) & (UM_RING - 1u);
         um.pend = UM_RING;

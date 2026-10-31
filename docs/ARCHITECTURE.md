@@ -9,6 +9,7 @@
 | firmware/src/ym/ymfm | ymfm core and local restricted-profile optimizations |
 | firmware/src/ym/ym_tables.h | Tuning tables and original short drum samples |
 | firmware/src/ym/main.c, ym_loop.c | Startup, audio interrupt, watchdog, timing, panel and USB |
+| firmware/src/ym/ym_clock.h, ym_midi.c, src/midi_input.h | USB clock follower, per-port live input, timestamped shared ISR queue |
 | firmware/src/ym/ym_ui.c, ym_leds.c | Changed-tile UI and complete-row LED publication |
 | firmware/hal | CPU, display, panel, DMA, flash and guards |
 | firmware/app.ld | XIP, .ram_text, .audio_hot, data, pool and stacks |
@@ -48,3 +49,39 @@ The 40px left rail is drawn once as 40x136 and 40x32 static tiles. The moving tr
 ym_output.h owns the output fork: generate the existing master mix (or protected silence), feed uac_tap, then fade/zero only the physical I2S/DMA buffer. A 0..256 integer local gain ramps one step per stereo frame; unity bypasses scaling bit-for-bit and a settled mute uses memset. No allocation, codec reset, stopped DMA, 64-bit sample multiply or gain-stage change before USB. The route helper remains inside render_block timing, including the existing 85% guard.
 
 GLO changes a 32-bit volatile session flag on button edges; it does not dirty persistent settings. Complete LED-row publication adds bright GLO only while muted. A separate changed-only 40x32 tile replaces the headphone symbol with USB ONLY; MASTER and other UI tiles retain their behavior. Status v1 is unchanged and does not report USB ONLY state; physical confirmation is separate evidence.
+
+## Development 0.9.0 MIDI scheduling
+
+USB and UART1 producers share the existing TIMER5 context outside the renderer. The bounded input queue publishes a TIMER4 arrival timestamp alongside each complete packet, before advancing the write index. Emerald normalizes USB's source to 0 and tags TRS as 1 internally; these tags never alter the outgoing USB descriptor or wire protocol. MIDI masks are separate per input and combined with the physical keyboard. FIFO/DMA loss clears MIDI-held masks and stops the external follower rather than silently losing timing pulses.
+
+The main-loop clock follower consumes USB real-time messages, counts 24 pulses/quarter and publishes one sequencer boundary per six pulses. A 24-interval timestamp window estimates integer BPM only for gate duration and UI; it does not drive external sequencing. On Start the seed is preserved but the renderer resets the arrangement; Continue preserves phase. Missing Clock for more than 500 ms pauses until explicit resume, without automatic internal fallback. Clock metadata is not persisted. TRS real-time/SysEx does not control the follower/updater.
+
+The renderer's existing tempo accumulator is bypassed in external mode and consumes at most one queued boundary per block after FX synchronization, preserving bounded render work. The old native-sample gate unit division is now computed in XIP control code and read at tick time, leaving internal-mode reference PCM bit-exact. Audio code still fits in the original RAMTEXT with 16 B spare, and the new setter uses existing FL_FAR and linker address checks. USB Clock timing accuracy/USB+TRS load are not physically measured; no allocation, libm/double, region expansion, flash-off XIP call or higher overload threshold was introduced.
+
+## Development 0.10.0 outgoing notes
+
+EDIT selects note/FX input or USB performance output; it does not reroute the minijack electrically. OUT ignores both incoming note/CC sources, clears their held masks and discards pre-switch note/CC packets while preserving queued Clock/transport. Status v1 remains outside this gate. The mode/revision is not part of settings.
+
+The engine increments per-source trigger serials at note/hit boundaries, plus a restart epoch. Its XIP-only ym_midi_snapshot is called by the audio owner after rendering; it copies current FM/PSG/drum note states, serials and applied transpose. The XIP publisher runs within render_block timing, after the unchanged DSP/UAC/local-output fork. It exports physical keyboard keys separately, so incoming MIDI is never echoed. Serial counters retain retriggers and sub-block drum pulses; fixed arrays and bounded loops replace event allocation. Under prolonged host backpressure intermediate events can coalesce. Accepted Offs are queued before new Ons, and rejected Offs remain pending for retry. USB SysEx retains priority over performance packets.
+
+Only event-selection constants (motifs, roots, chord/scale/rhythm tables) move to the existing .ym_pitch section; sample-loop oscillator tables and critical FX code stay in copied RAM. Build guards check these XIP addresses, the snapshot address, unchanged region limits, .audio_hot.fx startup/PC coverage and the flash-off call prohibition. There is no map expansion or threshold change. A subsequent [physical USB MIDI/audio/status test](verification/usb-midi-out-0.10.0/hardware/README.md) measured 45.98% sampled average CPU and 72% maximum with XRUN/overload 0. It verified captured output and EDIT cleanup; separate endpoint counters, destination-synth rendering and long-session operation remain unverified.
+
+## Development 0.11.0 USB master clock
+
+EDIT OUT selects internal clock ownership. PLAY resets the current seed; main-loop control publication remains IRQ-masked through the existing far-call controls. IN retains the USB follower. OUT rejects incoming F8/FA/FB/FC, while EDIT discards pre-switch queued performance/realtime input. No persistent field or SysEx extension is introduced.
+
+The existing XIP snapshot derives a cumulative 24 PPQ count from `(steps-1)*6 + 1 + floor(step_phase*6/(7670454*60))`; the product fits uint32. The audio-owner synchronizer runs in XIP within render_block timing and before the note publisher. It enqueues Start and one due Clock before notes, and Stop on transport/end-of-route changes. Generation/epoch changes synchronize restarts; tempo edits preserve phase. No independent timer, sample-loop callback, allocation, libm/double or new executable region is added.
+
+The producer tracks the queue cursor after Clock enqueue. If that pulse is still queued when the next is due, a pulse is missed, or enqueue fails, it clears unsent performance packets, retries Stop, requests note panic/cleanup and latches MIDI WAIT. Main-loop playback pauses until explicit PLAY restarts. The USB MIDI consumer is excluded by the existing in_audio rule while the audio owner touches its queue; nested UAC service remains independent. USB SysEx retains priority. Acceptance into the endpoint queue is not a receiver acknowledgement; target scheduling, clock jitter and CPU need later physical measurements. Software timing remains block-quantized (~5.8 ms).
+
+## Development 0.11.1 diagnostic dispatch
+
+The USB ISR publishes a single SysEx mailbox and leaves it immutable until `ota_frame_done`. The Emerald main loop calls only `yusb_service` to dispatch that mailbox: if empty it returns, if the frame is the documented status request it replies, otherwise it calls the existing OTA handshake service while the same frame remains claimed. Do not append an independent `ota_service` call: a request published between two consumers' checks can otherwise be decoded as an unknown OTA message and released without a diagnostic reply. No interrupts are masked across SysEx transmission and no protocol, queue, renderer or memory-map change is needed. A late arrival is handled on the next normal iteration. Update-session processing remains unchanged.
+
+## Candidate 1.0.4 song and boot animation
+
+`ym_song.h` computes a bounded 88-bar profile from native bar/step at the existing ~20 ms main-loop control cadence. It publishes effective stem gains, relative density and a section override through existing control requests plus XIP `ym_song_section`, using FL_FAR/address checks. Saved mixer/FX/knobs stay untouched. Source 10 remains independent for live playing. The native tick reads the override or retains the original endless modulo-32 behavior when disabled; no new oscillator loop, memory region or timer is introduced. Publication and MIDI output-mask changes use existing brief IRQ exclusion. The XIP note publisher suppresses both active notes and serial-only short drum pulses for masked stems, while retaining physical-key output and Clock transport.
+
+Completion requests a normal backing pause at control rate, so transitions/end are not sample-exact and can follow a bar boundary by one control interval plus an audio block. Existing OUT synchronization sends Stop and note cleanup; the internal outro gain reduction affects audio, not external MIDI CC volume. A pending reseed defers old-bar completion checks until the audio owner consumes the reset. Song mode and progress are session-only. HOME enabling, REC and USB Start reset the form; Continue preserves it. Native engine-only tests default to the original endless mode and retain reference PCM hashes.
+
+The boot sweep redraws only a 50x48 console-vent tile and 224x5 progress strip every changed 90 ms frame during the existing 1.1 s boot window. It adds no blocking delay/framebuffer and dismisses through the existing playback/button/key path. Target UI/DMA timing and combined audio/status load still need separately authorized physical validation.

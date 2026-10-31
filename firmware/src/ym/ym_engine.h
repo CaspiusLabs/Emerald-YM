@@ -7,6 +7,13 @@ extern "C" {
 void ym_init(uint32_t seed);
 void ym_render(int32_t *out,uint32_t frames,uint32_t gain_q12);
 void ym_control(uint32_t tempo,uint32_t density,uint32_t mutation,int32_t transpose,uint32_t playing);
+/* Main-loop publication: cumulative six-clock boundaries, consumed once/block.
+ * Start must also reseed; external mode never advances from its BPM estimate. */
+void ym_external_clock(uint32_t enabled,uint32_t events,uint32_t bpm);
+/* Audio-owner snapshot after a block, not callable concurrently with rendering.
+ * Serial numbers preserve retriggers, including drums shorter than one block. */
+struct ym_midi_state { uint32_t epoch,playing,serial[12]; int32_t note[12],transpose; uint32_t clocks; };
+void ym_midi_snapshot(struct ym_midi_state *out);
 /* Held FM-1 key bitmap F3..G5; audio thread owns voice allocation. */
 void ym_live_keys(uint32_t keys);
 void ym_psg_enable(uint32_t enabled);
@@ -21,6 +28,8 @@ void ym_mix_levels(uint32_t melody_percent,uint32_t drums_percent);
 uint32_t ym_live_active_keys(void);
 uint32_t ym_sequence_keys(void);
 void ym_reseed(uint32_t seed);
+/* Optional control-rate form; 255 retains the original endless arrangement. */
+void ym_song_section(uint32_t section);
 uint32_t ym_bar(void);
 uint32_t ym_seed(void);
 uint32_t ym_arena_bytes(void);

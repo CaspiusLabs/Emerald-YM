@@ -30,6 +30,7 @@ alignas(8) static uint8_t chip_mem[sizeof(ymfm::ym2612)];
 static ymfm::ym2612 *chip;
 static uint32_t state,initial_seed,steps,step_phase,resample_phase,native_count,notes;
 static uint32_t hold[5];
+static uint32_t midi_epoch,midi_serial[12];
 static int8_t motifs[4][8];
 static int32_t prev_l,prev_r,next_l,next_r;
 static int32_t last_dac;
@@ -39,6 +40,9 @@ static uint32_t tempo=132,density=100,mutation=35,playing=1;
 static int32_t transpose;
 static volatile uint32_t req_tempo=132,req_density=100,req_mutation=35,req_play=1,req_seed;
 static volatile int32_t req_transpose;
+static volatile uint32_t req_clock_mode,req_clock_events,req_unit=(7670454u/144u)*15u/132u;
+static uint32_t clock_applied;
+static volatile uint32_t req_song_section=255;
 #define EMERALD_FX 1
 #include "ym_psg.h"
 static uint32_t random32(){state^=state<<13;state^=state>>17;state^=state<<5;return state;}
@@ -58,18 +62,18 @@ static FX_CODE void patch(int c,const Patch&p,int pan){
 }
 static FX_CODE void note(int c,int n,uint32_t gate){
  n+=transpose;if(n<12)n=12;if(n>115)n=115;int f=ym_pitch[n];off(c);
- cw(c,0xa4,f>>8);cw(c,0xa0,f&255);wr(0x28,0xf0|key(c));hold[c]=(gate*fx_gate[c])>>8;fm_note[c]=(int16_t)n;notes++;
+ cw(c,0xa4,f>>8);cw(c,0xa0,f&255);wr(0x28,0xf0|key(c));hold[c]=(gate*fx_gate[c])>>8;fm_note[c]=(int16_t)n;notes++;midi_serial[c]++;
 }
 struct Drum {const int8_t*p;uint32_t len,pos,level,velocity,end;};
 static Drum drums[4];
-static FX_CODE void hit(int d,uint32_t level){drums[d].pos=0;drums[d].velocity=level;drums[d].level=(level*req_voice_gain[d+5]+128u)>>8;}
+static FX_CODE void hit(int d,uint32_t level){drums[d].pos=0;drums[d].velocity=level;drums[d].level=(level*req_voice_gain[d+5]+128u)>>8;midi_serial[d+5]++;}
 static FX_CODE void make_motifs(){
- static const int8_t base[4][8]={{2,4,5,4,2,1,0,1},{1,2,4,3,2,1,2,4},{4,5,6,5,4,2,1,0},{3,2,1,0,1,2,4,3}};
+ static const int8_t base[4][8] PSG_PITCH_DATA={{2,4,5,4,2,1,0,1},{1,2,4,3,2,1,2,4},{4,5,6,5,4,2,1,0},{3,2,1,0,1,2,4,3}};
  uint32_t rot=pick(4);for(int m=0;m<4;m++)for(int k=0;k<8;k++)motifs[m][k]=base[(m+rot)%4][k];
  for(int m=0;m<4;m++){int k=1+pick(6),n=motifs[m][k]+(pick(2)?1:-1);motifs[m][k]=n<0?0:n>6?6:n;}
 }
 static FX_CODE void restart(uint32_t seed){
- state=initial_seed=seed?seed:1;steps=step_phase=notes=0;psg_reset();fx_reset_audio();
+ midi_epoch++;state=initial_seed=seed?seed:1;steps=step_phase=notes=clock_applied=0;psg_reset();fx_reset_audio();
  for(int c=0;c<5;c++)if(fx_values[c][0]||fx_values[c][1])fx_dirty|=1u<<c;
  chip->reset();wr(0x22,0);wr(0x27,0);wr(0x2a,128);wr(0x2b,128);last_dac=128;
  for(int c=0;c<5;c++)off(c);
@@ -78,20 +82,20 @@ static FX_CODE void restart(uint32_t seed){
  drums[2]={ym_hat,sizeof(ym_hat),sizeof(ym_hat),100,100,sizeof(ym_hat)};drums[3]={ym_open,sizeof(ym_open),sizeof(ym_open),100,100,sizeof(ym_open)};make_motifs();
 }
 static FX_CODE void tick(){
- uint32_t b=steps/16,pos=steps%16,section=b%32;bool intro=section<4,bridge=section>=16&&section<24;
- static const int8_t roots[]={40,37,45,47,44,37,42,47},ci[]={1,1,2,3,1,4,6,7};
- static const int8_t chords[8][3]={{64,68,71},{64,68,71},{61,64,68},{63,66,69},{63,68,71},{64,68,71},{61,64,69},{63,66,69}};
- static const int8_t scale[]={64,66,68,69,71,73,75};
- uint32_t idx=bridge?ci[b%8]:b%8,unit=(7670454u/144u)*15u/tempo;
+ uint32_t b=steps/16,pos=steps%16,section=req_song_section==255u?b%32:req_song_section;bool intro=section<4,bridge=section>=16&&section<24;
+ static const int8_t roots[] PSG_PITCH_DATA={40,37,45,47,44,37,42,47},ci[] PSG_PITCH_DATA={1,1,2,3,1,4,6,7};
+ static const int8_t chords[8][3] PSG_PITCH_DATA={{64,68,71},{64,68,71},{61,64,68},{63,66,69},{63,68,71},{64,68,71},{61,64,69},{63,66,69}};
+ static const int8_t scale[] PSG_PITCH_DATA={64,66,68,69,71,73,75};
+ uint32_t idx=bridge?ci[b%8]:b%8,unit=req_unit;
  if(pos==0&&b&&b%8==0&&pick(100)<mutation){int m=pick(4),k=1+pick(6),n=motifs[m][k]+(pick(2)?1:-1);motifs[m][k]=n<0?0:n>6?6:n;}
- static const uint8_t bp[]={0,3,4,7,10,12,14,15};
+ static const uint8_t bp[] PSG_PITCH_DATA={0,3,4,7,10,12,14,15};
  for(int k=0;k<8;k++)if(pos==bp[k]&&!(intro&&k==7)&&!(bridge&&k==3)){
   int n=roots[idx]+(k==1||k==5?12:k==3||k==6?7:0);
   if(k==7)n=roots[(idx+1)%8]+(pick(2)?-1:1);
   note(0,n,unit*(k==0?7:4)/5);
  }
  if(!intro||section>=2)if(pos==0||pos==3||(!bridge&&(pos==6||pos==11)))for(int v=0;v<3;v++)note(v+2,chords[idx][v],unit*4/5);
- static const uint8_t ra[]={0,2,5,6,8,11,12,14},rb[]={0,3,4,6,9,10,12,14};const uint8_t*rh=b%2?rb:ra;
+ static const uint8_t ra[] PSG_PITCH_DATA={0,2,5,6,8,11,12,14},rb[] PSG_PITCH_DATA={0,3,4,6,9,10,12,14};const uint8_t*rh=b%2?rb:ra;
  if(!intro)for(int k=0;k<8;k++)if(pos==rh[k]&&!(bridge&&(k==1||k==5))&&(k==0||pick(100)<density)){
   int degree=motifs[b%4][k];if(section>=24&&k==5&&degree<6)degree++;
   int n=(k==0||k==4?chords[idx][(b/4+k)%3]:scale[degree])+(bridge?0:12);
@@ -104,9 +108,9 @@ static FX_CODE void tick(){
  if(b%8==7&&pos>=12)hit(1,35+(pos-12)*15);
  if(req_psg){
   /* Stable up/down chord arp, one octave below the original short bleeps. */
-  static const uint8_t arp[]={0,1,2,1,0,1,2,1};
-  if((pos&1u)==0u){psg_note=(uint8_t)(chords[idx][arp[pos/2]]+transpose);psg_gate=((unit*7/4)*fx_gate[9])>>8;}
-  if((pos&3u)==2u){psg_lfsr=0x8000;psg_noise_hold=(2205u*fx_gate[11])>>8;}
+  static const uint8_t arp[] PSG_PITCH_DATA={0,1,2,1,0,1,2,1};
+  if((pos&1u)==0u){psg_note=(uint8_t)(chords[idx][arp[pos/2]]+transpose);psg_gate=((unit*7/4)*fx_gate[9])>>8;midi_serial[9]++;}
+  if((pos&3u)==2u){psg_lfsr=0x8000;psg_noise_hold=(2205u*fx_gate[11])>>8;midi_serial[11]++;}
  }
  psg_targets();
  steps++;
@@ -125,7 +129,7 @@ static void native(){
  if(playing){
   if(psg_gate&&!--psg_gate)psg_note=255;
   for(int c=0;c<5;c++)if(hold[c]&&!--hold[c])off(c);
-  if(steps==0)tick();step_phase+=tempo*4u*144u;if(step_phase>=7670454u*60u){step_phase-=7670454u*60u;tick();}
+  if(tempo){if(steps==0)tick();step_phase+=tempo*4u*144u;if(step_phase>=7670454u*60u){step_phase-=7670454u*60u;tick();}}
  }
  if(!(native_count++&3)){
   int v=0;fx_drum_send=0;
@@ -150,10 +154,17 @@ extern "C" void ym_init(uint32_t seed){
  for(int k=0;k<5;k++)emerald_fm_gain_q8[k]=256;drum_gain=1.0f;old_keys=live_mask=sequence_mask=key_clock=0;old_psg=1;
  for(int k=0;k<27;k++)key_age[k]=0;sequence_gain=0;
  playing=req_play=1;tempo=req_tempo=132;density=req_density=100;mutation=req_mutation=35;transpose=req_transpose=0;
+ req_song_section=255;req_clock_mode=req_clock_events=0;req_unit=(7670454u/144u)*15u/132u;
  resample_phase=native_count=0;prev_l=prev_r=next_l=next_r=0;dc_l=dc_r=gain=0;restart(seed);
 }
-extern "C" YM_CONTROL_CODE void ym_control(uint32_t t,uint32_t d,uint32_t m,int32_t tr,uint32_t p){req_tempo=t<80?80:t>180?180:t;req_density=d>100?100:d;req_mutation=m>100?100:m;req_transpose=tr< -12?-12:tr>12?12:tr;req_play=p!=0;}
+extern "C" YM_CONTROL_CODE void ym_control(uint32_t t,uint32_t d,uint32_t m,int32_t tr,uint32_t p){req_tempo=t<80?80:t>180?180:t;if(!req_clock_mode)req_unit=(7670454u/144u)*15u/req_tempo;req_density=d>100?100:d;req_mutation=m>100?100:m;req_transpose=tr< -12?-12:tr>12?12:tr;req_play=p!=0;}
+extern "C" YM_CONTROL_CODE void ym_external_clock(uint32_t enabled,uint32_t events,uint32_t bpm){
+ req_clock_mode=enabled!=0;req_clock_events=events;
+ if(enabled)req_tempo=bpm<30?30:bpm>300?300:bpm;
+ req_unit=(7670454u/144u)*15u/req_tempo;
+}
 extern "C" YM_CONTROL_CODE void ym_reseed(uint32_t s){req_seed=s?s:1;}
+extern "C" YM_CONTROL_CODE void ym_song_section(uint32_t s){req_song_section=s<=31u?s:255u;}
 extern "C" YM_CONTROL_CODE void ym_live_keys(uint32_t keys){req_keys=keys&0x07ffffffu;}
 extern "C" YM_CONTROL_CODE void ym_psg_enable(uint32_t enabled){req_psg=enabled!=0;}
 extern "C" YM_CONTROL_CODE void ym_psg_level(uint32_t percent){req_psg_level=percent>400?400:percent;}
@@ -170,19 +181,34 @@ extern "C" YM_CONTROL_CODE void ym_effect(uint32_t source,uint32_t effect,uint32
 extern "C" YM_CONTROL_CODE void ym_drum_level(uint32_t percent){req_drum_gain_q8=((percent>100?100:percent)*256u+50u)/100u;}
 extern "C" YM_CONTROL_CODE uint32_t ym_live_active_keys(){return live_mask;}
 extern "C" YM_CONTROL_CODE uint32_t ym_sequence_keys(){return sequence_mask;}
+extern "C" YM_CONTROL_CODE void ym_midi_snapshot(struct ym_midi_state*out){
+ static const int32_t percussion[4] PSG_PITCH_DATA={36,38,42,46};
+ out->epoch=midi_epoch;out->playing=playing;out->transpose=transpose;
+ /* Same native phase as tick(): 24 PPQ = six pulses per sixteenth.
+  * 6*phase < 2^32. XIP observer only; no new sample-loop work or timer. */
+ out->clocks=steps?(steps-1u)*6u+1u+(step_phase*6u)/(7670454u*60u):0u;
+ for(int s=0;s<12;s++){out->serial[s]=midi_serial[s];out->note[s]=-1;}
+ if(!playing)return;
+ for(int c=0;c<5;c++)if(hold[c])out->note[c]=fm_note[c];
+ for(int d=0;d<4;d++)if(drums[d].pos<drums[d].end)out->note[d+5]=percussion[d];
+ if(req_psg&&psg_gate&&live_key[2]==255)out->note[9]=psg_note;
+ if(req_psg&&psg_noise_hold)out->note[11]=76;
+}
 extern "C" YM_CONTROL_CODE uint32_t ym_bar(){return steps?((steps-1)/16)+1:1;}
 extern "C" YM_CONTROL_CODE uint32_t ym_step(){return steps?(steps-1)%16u:0u;}
 extern "C" YM_CONTROL_CODE uint32_t ym_seed(){return initial_seed;}
 extern "C" uint32_t ym_arena_bytes(){return arena_used;}
 extern "C" uint32_t ym_note_count(){return notes;}
 extern "C" void ym_render(int32_t*out,uint32_t frames,uint32_t master){
- tempo=req_tempo;density=req_density;mutation=req_mutation;transpose=req_transpose;
+ tempo=req_clock_mode?0:req_tempo;density=req_density;mutation=req_mutation;transpose=req_transpose;
  uint32_t newseed=req_seed;if(newseed){req_seed=0;restart(newseed);}
  if(playing&&!req_play){for(int c=0;c<5;c++)off(c);}playing=req_play;
  uint32_t changed=fx_sync();if(changed&31u)fx_apply_fm(changed);
  for(int c=0;c<5;c++)emerald_fm_gain_q8[c]=req_voice_gain[c];
  for(int d=0;d<4;d++){drums[d].level=(drums[d].velocity*req_voice_gain[d+5]+128u)>>8;drums[d].end=(drums[d].len*fx_gate[d+5])>>8;}
  psg_arp_mix=float(req_voice_gain[9])*(1.0f/256.0f);psg_live_mix=float(req_voice_gain[10])*(1.0f/256.0f);psg_noise_mix=float(req_voice_gain[11])*(1.0f/256.0f);drum_gain_q8=req_drum_gain_q8;drum_gain=float(drum_gain_q8)*(1.0f/256.0f);
+ if(tempo)clock_applied=0;
+ else if(playing&&clock_applied!=req_clock_events){clock_applied++;tick();}
  live_update();psg_targets();
  float target=float(master)/4096.0f,psg_level=float(req_psg_level)*0.01f;
  for(uint32_t i=0;i<frames;i++){

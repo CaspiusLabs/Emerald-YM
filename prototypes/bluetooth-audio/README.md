@@ -1,4 +1,8 @@
-# Bluetooth headphone audio prototype — development 0.8.1
+# Bluetooth headphone audio prototype — development 1.0.7
+
+**Current audit:** [main integration and memory](current-audit/README.md). The prototype is now based on main d16ce4a; stable installed/released firmware is 1.0.4. The 0.8.x results below are historical, measured against 0.7.0. No Bluetooth package exists.
+
+## Historical 0.8.1 stage
 
 **Status: reference SDK strict link passes; FM-1 integration is incomplete. Not installable.** No FM-1 access, flashing, pairing, microphone recording or radio transmission was performed. Installed/released Emerald YM remains exact **0.7.0**. VERSION 0.8.1 identifies this development work, not a new tested hardware image. The [source-only follow-up](source-only/README.md) records the reduced configuration, final reference-link memory and remaining porting work. The original 0.8.0 reports below remain unchanged historical evidence.
 

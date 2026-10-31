@@ -36,4 +36,6 @@ if errorlevel 1 exit /b 1
 build\host\ota_test.exe build\emerald-ym-%EYM_VERSION%.fwsc
 if errorlevel 1 exit /b 1
 cl /nologo /O2 /MT /std:c11 tests\ldr_test.c /Fobuild\host\ /Febuild\host\ldr_test.exe
+if errorlevel 1 exit /b 1
+call tools\test-midi-windows.cmd
 exit /b %errorlevel%

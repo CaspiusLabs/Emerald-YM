@@ -28,6 +28,38 @@ struct en_dbg {
 static uint8_t safe_mode;                           /* two failed boots: no audio, USB on (safe_main) */
 
 #include "ym_output.h"
+#define YMO_SEND(packet) midi_out_try(packet)
+#define YMO_SOURCE_ENABLED(s) (ys_song_output_mask&(1u<<(s)))
+#include "ym_midi_out.h"
+#undef YMO_SOURCE_ENABLED
+#undef YMO_SEND
+static struct ym_midi_output ymidi_output;
+#define YMS_SEND(packet) midi_out_try(packet)
+#define YMS_TICKET() mo_w
+#define YMS_PENDING(ticket) ((int32_t)(mo_r-(ticket))<0)
+#define YMS_DROP() (mo_r=mo_w)
+#include "ym_midi_sync.h"
+#undef YMS_SEND
+#undef YMS_TICKET
+#undef YMS_PENDING
+#undef YMS_DROP
+static struct ym_midi_sync ymidi_sync;
+static void ymidi_output_block(void){
+ struct ym_midi_state v;
+ uint32_t enabled=ymidi_out&&ym_overload<8u&&!usb.ota_req&&!usb.uboot_req;
+ uint32_t ready=usb.config&&!usb.suspended&&!usb.detached;
+ if(!ready)mo_r=mo_w; /* no stale Note On when a suspended host resumes */
+ /* Snapshot reader and publisher execute in XIP outside ym_render, but inside
+  * render_block's measured budget. No observer in the native sample loop. */
+ ym_midi_snapshot(&v);
+ if(!yms_update(&ymidi_sync,&v,enabled,ready,usb.resets,ymidi_revision)){
+  v.playing=0;for(uint32_t s=0;s<12u;s++)v.note[s]=-1;
+ }
+ if(ymidi_sync.recover)ymidi_output.panic=9u;
+ if(ymidi_sync.blocked)ymidi_clock_fault=1;
+ ymo_update(&ymidi_output,&v,enabled,ready,
+            usb.resets,ymidi_revision,enabled?ymidi_physical:0,v.transpose);
+}
 
 static void render_block(int32_t *o)                /* ALNK0: one half, measured */
 {
@@ -42,6 +74,7 @@ static void render_block(int32_t *o)                /* ALNK0: one half, measured
             youtput_block(o + 2u * k, REND_FRAMES, master_q12, yusb_only);
         }
     }
+    ymidi_output_block();
     us = (fm1_ticks() - t0) / FM1_TICKS_PER_US;
     en_dbg.cpu_q8 = (en_dbg.cpu_q8 * 15u + (us * 256u) / budget) / 16u;
     audio_cpu_pct = (en_dbg.cpu_q8 * 100u) >> 8;

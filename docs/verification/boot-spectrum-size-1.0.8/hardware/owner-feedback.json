@@ -1,0 +1,11 @@
+{
+  "version": "1.0.8",
+  "boot_slider_and_expanded_spectrum_confirmed": true,
+  "home_bright_intro_and_dim_endless_bar_confirmed": true,
+  "home_left_bright_and_play_paused_before_measurement": true,
+  "owner_answer": "tak",
+  "intro_and_smooth_music_confirmed": true,
+  "start_answer": "tak",
+  "automatic_ending_and_END_DONE_confirmed": true,
+  "end_answer": "tak"
+}

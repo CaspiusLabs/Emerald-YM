@@ -15,10 +15,13 @@ static void lcd_blit(uint32_t x,uint32_t y,uint32_t w,uint32_t h,const uint16_t*
  for(uint32_t j=0;j<h;j++)for(uint32_t i=0;i<w;i++){uint16_t v=p[j*w+i];screen[(j+y)*240+i+x]=(uint16_t)((v>>8)|(v<<8));}
 }
 #include "../firmware/src/gfx.c"
+#include "../firmware/src/ym/ym_clock.h"
+#include "../firmware/src/ym/ym_song.h"
+static struct ym_clock yclock={0,0,0,0,0,132,0,0,0,0};
 static void fmt_int(char*b,int32_t v){sprintf(b,"%d",v);}
 static unsigned str_len(const char*s){return (unsigned)strlen(s);}
 static void str_cpy(char*d,const char*s,unsigned max){unsigned i=0;while(s[i]&&i+1<max){d[i]=s[i];i++;}d[i]=0;}
-static uint32_t yusb_only,ymaster_adc=512;
+static uint32_t yusb_only,ymaster_adc=512,ymidi_out,ymidi_clock_fault;
 static uint32_t ytempo=132,ydensity=100,ymutation=35,yplaying,ym_overload,audio_cpu_lifetime_peak=80,audio_xruns;
 static int32_t ytranspose;
 static uint32_t ypsg=1,yinstrument,ylevels[12]={100,100,100,100,100,100,100,100,100,100,100,100};
@@ -34,10 +37,31 @@ static uint32_t ys_state;
 static void check(int v,const char*s){printf("%s: %s\n",s,v?"PASS":"FAIL");if(!v)exit(2);}
 static void image(const char*path){FILE*f=fopen(path,"wb");if(!f)exit(5);fprintf(f,"P6\n240 240\n255\n");for(int i=0;i<240*240;i++){uint16_t c=screen[i];uint8_t p[3]={(uint8_t)(((c>>11)&31)*255/31),(uint8_t)(((c>>5)&63)*255/63),(uint8_t)((c&31)*255/31)};fwrite(p,1,3,f);}fclose(f);}
 int main(void){
+ ysong.enabled=0;
  FILE*vf=fopen("VERSION","r");if(!vf||fscanf(vf,"%15s",test_version)!=1)exit(6);fclose(vf);
  check(40+text_w(&FONT_M,"EMERALD YM")<185,"large uppercase header fits before the smaller badge");
- palette_set(0);yui_boot();lcd_sync();image("build/host/ui-boot.ppm");ydisplay();lcd_sync();image("build/host/ui-paused.ppm");unsigned initial=blits,clears=fills;
+ palette_set(0);yui_boot();lcd_sync();image("build/host/ui-boot.ppm");
+ {unsigned before=blits,clear=fills;yui_boot_tick(0);check(blits==before,"boot animation skips an unchanged frame");
+  for(uint32_t i=0;i<13u;i++){char path[80];
+   yui_boot_tick(i*90u);
+   for(uint32_t bin=0;bin<16u;bin++){
+    uint32_t h=8u+(bin*5u+i*3u+(bin^i)+(bin*i)%3u)%16u,x=157u+bin*4u;
+    check(screen[126*240+x]==Y_BLUE&&screen[127*240+x]==Y_BLUE&&screen[(126-(h-1)*3)*240+x]!=Y_BG,
+     "spectrum columns grow upward from a common baseline");
+    check(screen[(h==23u?58u:126u-h*3u)*240+x]==Y_BG&&screen[125*240+x]==Y_BG&&screen[126*240+x+3]==Y_BG,
+     "spectrum clears above each bar and preserves segment/column gaps");
+   }
+   check(screen[128*240+221]==Y_EDGE,"expanded spectrum reaches the console right edge and POWER baseline");
+   sprintf(path,"build/host/ui-boot-%02u.ppm",i);image(path);}
+  check(screen[102*240+26]==Y_RED,"boot volume fader returns to its lower position");
+  yui_boot_tick(540);check(screen[78*240+26]==Y_RED&&screen[102*240+26]!=Y_RED,"boot volume fader moves upward and clears its previous marker");
+  check(fills==clear,"boot animation uses bounded tiles without whole-screen clears");}
+ ydisplay();lcd_sync();image("build/host/ui-paused.ppm");unsigned initial=blits,clears=fills;
  for(int i=0;i<100;i++)ydisplay();check(blits==initial&&fills==clears,"idle: zero repeated LCD writes");
+ ymidi_out=1;ydisplay();check(blits==initial+1&&last_w==240&&last_h==44,"EDIT updates only the complete header tile");image("build/host/ui-midi-out.ppm");
+ initial=blits;ydisplay();check(blits==initial,"stable MIDI OUT has no repeated LCD writes");
+ ymidi_clock_fault=1;ydisplay();check(blits==initial+1&&last_h==44,"clock backpressure changes only the MIDI header");image("build/host/ui-midi-wait.ppm");
+ initial=blits;ydisplay();check(blits==initial,"stable MIDI WAIT has no repeated LCD writes");ymidi_clock_fault=0;ymidi_out=0;ydisplay();
 
  {static uint16_t before[240*240];memcpy(before,screen,sizeof screen);
   initial=blits;ymaster_adc=1023;ydisplay();
@@ -58,21 +82,43 @@ int main(void){
  initial=blits;
  ytempo=145;ydisplay();check(blits==initial+1&&last_w==86&&last_h==44,"one knob: exactly one atomic tile");
  initial=blits;yplaying=1;ydisplay();check(blits==initial+2,"transport change: transport + steps only");
+ check(screen[59*240+74]==Y_GREEN&&screen[58*240+74]==Y_CARD&&screen[60*240+74]==Y_CARD,
+  "PLAY triangle ends in a complete one-pixel tip, not a clipped vertical edge");
  initial=blits;current_step=8;ydisplay();check(blits==initial+1&&last_h==12,"one step: small strip only");
  image("build/host/ui-playing.ppm");ymutation=0;ytranspose=-7;ydisplay();image("build/host/ui-varied.ppm");
- initial=blits;yusb_only=1;ydisplay();check(blits==initial+1&&last_x==8&&last_y==184&&last_w==40&&last_h==32,"GLO redraws only the USB ONLY mode tile");image("build/host/ui-usb-only.ppm");
+ initial=blits;yusb_only=1;ydisplay();check(blits==initial+1&&last_x==8&&last_y==184&&last_w==40&&last_h==38,"GLO redraws only the USB ONLY mode tile");image("build/host/ui-usb-only.ppm");
  initial=blits;ydisplay();check(blits==initial,"stable USB ONLY mode never redraws");yusb_only=0;ydisplay();
  initial=blits;yinstrument=9;ydisplay();check(blits==initial+2,"SELECT updates instrument and its effect tile");
- initial=blits;ypsg=0;ydisplay();check(blits==initial+1&&last_h==38,"PSG switch updates selected voice tile");
- initial=blits;ylevels[yinstrument]=50;ydisplay();check(blits==initial+1&&last_w==116,"PRESETS updates only selected instrument level");
- initial=blits;yfx_kind[yinstrument]=2;ydisplay();check(blits==initial+1&&last_w==60,"FX button changes only effect tile");
- initial=blits;yfx_values[yinstrument][2]=65;ydisplay();check(blits==initial+1&&last_w==60,"ALGORITHM changes only selected effect tile");
+ initial=blits;ypsg=0;ydisplay();check(blits==initial+1&&last_h==44,"PSG switch updates selected voice tile");
+ initial=blits;ylevels[yinstrument]=50;ydisplay();check(blits==initial+1&&last_w==86&&last_x==54&&last_y==178,"PRESETS updates only the aligned instrument tile");
+ initial=blits;yfx_kind[yinstrument]=2;ydisplay();check(blits==initial+1&&last_w==86&&last_x==146&&last_y==178,"FX button changes only the aligned effect tile");
+ initial=blits;yfx_values[yinstrument][2]=65;ydisplay();check(blits==initial+1&&last_w==86,"ALGORITHM changes only selected effect tile");
  initial=blits;ys_state=YS_DIRTY;ydisplay();check(blits==initial+1&&last_h==24,"pending save updates only transport tile");
  ys_state=YS_WRITING;ydisplay();image("build/host/ui-saving.ppm");ys_state=YS_SAVED;ydisplay();image("build/host/ui-saved.ppm");ys_state=YS_ERROR;ydisplay();image("build/host/ui-save-error.ppm");ys_state=YS_CLEAN;ydisplay();
  initial=blits;audio_cpu_lifetime_peak=95;audio_xruns=42;ydisplay();check(blits==initial,"USB diagnostics never trigger screen writes");
  ypsg=1;ydisplay();image("build/host/ui-mixer.ppm");
+ {int gutters=1;
+  for(int y=48;y<222;y++)for(int x=48;x<54;x++)if(screen[y*240+x]!=Y_BG)gutters=0;
+  for(int y=78;y<222;y++)for(int x=140;x<146;x++)if(screen[y*240+x]!=Y_BG)gutters=0;
+  for(int row=0;row<3;row++)for(int y=72+row*50;y<78+row*50;y++)
+   for(int x=54;x<232;x++)if(screen[y*240+x]!=Y_BG)gutters=0;
+  check(gutters,"all panel gutters are six clear pixels horizontally and vertically");
+  check(screen[178*240+54]==Y_EDGE&&screen[178*240+139]==Y_EDGE&&screen[178*240+146]==Y_EDGE&&screen[178*240+231]==Y_EDGE,
+   "bottom panels share the upper columns and 86-pixel widths");
+  check(screen[217*240+59]==Y_GREEN&&screen[217*240+96]==Y_GREEN&&screen[217*240+97]==Y_EDGE,
+   "instrument 50-percent level uses the full-width bar below both text lines");
+ }
+ initial=blits;yclock.mode=yclock.running=1;yclock.bpm=120;ydisplay();
+ check(blits==initial+1&&last_w==86&&last_h==44,"USB clock updates only the tempo tile");image("build/host/ui-usb-clock.ppm");
+ initial=blits;for(int i=0;i<100;i++)ydisplay();check(blits==initial,"stable external clock never redraws");
+ yclock.bpm=30;ydisplay();yclock.bpm=300;ydisplay();
+ initial=blits;yclock.lost=1;yclock.running=0;ydisplay();check(blits==initial+1,"clock loss redraws its label without a whole-screen clear");
+ image("build/host/ui-usb-clock-lost.ppm");yc_internal(&yclock);ydisplay();
  ym_overload=8;yplaying=0;ydisplay();image("build/host/ui-overload.ppm");
  check(fills==clears,"no visible clears while playing or updating");
  ydisplay_invalidate();ydisplay();check(fills==clears+1,"full redraw only on explicit invalidation");
+ ym_overload=0;yplaying=1;ysong.enabled=1;ys_song_profile(&ysong,25,0);ydisplay();image("build/host/ui-song.ppm");
+ initial=blits;ydisplay();check(blits==initial,"stable song section does not repaint");
+ ysong.enabled=0;ydisplay();check(blits==initial+1,"HOME mode change redraws only transport");
  printf("Renderer bounds and redraw checks passed.\n");return 0;
 }

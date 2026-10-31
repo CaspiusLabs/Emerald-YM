@@ -1,4 +1,6 @@
-# Reduced A2DP/SBC SDK audit — development 0.8.1
+# Reduced A2DP/SBC SDK audit — historical development 0.8.1
+
+For the refreshed audit against stable 1.0.4 production sources, see [current integration audit](../current-audit/README.md). Historical 0.7.0 comparisons below remain unchanged.
 
 This continues **draft PR #9**. It fixes the SDK reference link, not the FM-1 port. Production Emerald, the installed/released 0.7.0, its package and all memory/85% guards are unchanged. No hardware was accessed and no .fwsc, release or tag was created.
 

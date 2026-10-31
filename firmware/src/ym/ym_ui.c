@@ -11,7 +11,34 @@
 #define Y_AMBER RGB(255,176,64)
 #define Y_RED RGB(255,35,40)
 static uint8_t yui_ready;
-static struct {uint32_t tempo,density,mutation,bar,playing,overload,step,psg,selected,level,fxsource,fxkind,fxvalue,save,master,usb_only;int32_t transpose;} yui_old;
+static struct {uint32_t tempo,clock,density,mutation,bar,playing,overload,step,psg,selected,level,fxsource,fxkind,fxvalue,save,master,usb_only,midi,song;int32_t transpose;} yui_old;
+static uint32_t yboot_frame=0xffffffffu;
+static void yui_boot_tick(uint32_t elapsed){
+ uint32_t frame=elapsed/90u;if(frame>12u)frame=12u;if(frame==yboot_frame)return;yboot_frame=frame;
+ /* Decorative spectrum columns, matching the owner's segmented blue/pink
+  * reference. Heights animate; no FFT, audio reads or history allocation. */
+ cv_begin(66,72,Y_BG);
+ {
+  for(uint32_t bin=0;bin<16u;bin++){
+   uint32_t height=8u+(bin*5u+frame*3u+(bin^frame)+(bin*frame)%3u)%16u;
+   for(uint32_t row=0;row<height;row++){
+    uint16_t color=row<12u?Y_BLUE:row<18u?RGB(50+(row-12u)*24,197-(row-12u)*25,255-(row-12u)*12):RGB(190+(row-18u)*10,47-(row-18u)*3,180-(row-18u)*4);
+    cv_rect(1+(int)bin*4,69-(int)row*3,3,2,color);
+   }
+  }
+ }
+ cv_rect(0,0,66,1,Y_EDGE);cv_rect(0,71,66,1,Y_EDGE);cv_rect(0,0,1,72,Y_EDGE);cv_rect(65,0,1,72,Y_EDGE);
+ cv_blit(156,57);
+ /* Miniature red volume fader on the console's left front panel. The boot
+  * gesture is decorative; it neither reads nor changes the MASTER gain. */
+ {int y=41-(int)(frame<=6u?frame:12u-frame)*4;
+  cv_begin(24,54,RGB(17,20,28));cv_text(3,0,&FONT_XS,"VOL",Y_DIM);
+  cv_rect(7,14,10,39,Y_EDGE);cv_rect(8,15,8,37,Y_BG);
+  for(int k=0;k<6;k++)cv_rect(10,17+k*6,4,1,Y_DIM);
+  cv_rect(3,y,18,8,Y_EDGE);cv_rect(4,y+1,16,6,Y_CARD);
+  cv_rect(4,y+3,16,2,Y_RED);cv_blit(22,58);}
+ cv_begin(224,5,Y_BG);cv_rect(0,1,224,2,Y_EDGE);cv_rect(0,1,(int32_t)((frame+1u)*224u/13u),2,Y_BLUE);cv_blit(8,154);
+}
 /* Original console silhouette: circular cartridge deck, vents and red power LED.
  * Drawn in the existing tile canvas, no bitmap asset or extra framebuffer. */
 static void yui_ring(int cx,int cy,int r,uint16_t c){
@@ -23,13 +50,13 @@ static void yui_ring(int cx,int cy,int r,uint16_t c){
  }
 }
 static void yui_boot(void){
+ yboot_frame=0xffffffffu;
  lcd_fill(0,0,240,240,Y_BG);cv_begin(224,128,Y_BG);
  cv_rect(6,17,212,102,RGB(39,42,49));cv_rect(3,22,218,90,RGB(26,29,36));
  cv_rect(9,24,206,82,RGB(17,20,28));
  for(int r=39;r>=35;r--)yui_ring(91,63,r,r==37?RGB(162,147,102):Y_EDGE);
  yui_ring(91,63,31,RGB(49,55,66));cv_rect(60,43,62,11,C_BLACK);
  cv_rect(62,44,58,2,Y_DIM);cv_text(72,64,&FONT_XS,"16-BIT",Y_WHITE);
- for(int k=0;k<10;k++)cv_rect(148,32+k*5,49,2,RGB(57,63,75));
  cv_rect(18,93,5,5,RGB(255,55,66));cv_text(27,92,&FONT_XS,"POWER",Y_DIM);
  cv_rect(63,109,34,6,C_BLACK);cv_rect(131,109,34,6,C_BLACK);
  cv_blit(8,25);
@@ -37,7 +64,7 @@ static void yui_boot(void){
  cv_text((224-text_w(&FONT_M,"EMERALD YM"))/2,0,&FONT_M,"EMERALD YM",Y_WHITE);
  cv_text((224-text_w(&FONT_XS,"16-BIT SOUND SYSTEM"))/2,28,&FONT_XS,"16-BIT SOUND SYSTEM",Y_BLUE);
  cv_text((224-text_w(&FONT_XS,EN_VERSION))/2,45,&FONT_XS,EN_VERSION,Y_DIM);cv_blit(8,164);
- yui_ready=0;
+ yui_boot_tick(0);yui_ready=0;
 }
 static void yui_header(void){
  cv_begin(240,44,Y_BG);
@@ -50,14 +77,15 @@ static void yui_header(void){
  cv_line(7,20,37,20,Y_GREEN);cv_line(22,5,22,35,Y_GREEN);
  cv_text(41,2,&FONT_M,"EMERALD YM",RGB(14,68,122));
  cv_text(40,1,&FONT_M,"EMERALD YM",Y_WHITE);
- cv_text(45,28,&FONT_XS,"YM + PSG / LIVE",Y_BLUE);
+ cv_text(45,28,&FONT_XS,ymidi_out?(ymidi_clock_fault?"USB MIDI WAIT":"USB MIDI OUT"):"YM + PSG / LIVE",ymidi_out?Y_AMBER:Y_BLUE);
  cv_rect(185,4,48,21,Y_EDGE);cv_rect(187,6,44,17,Y_CARD);
  cv_text(191,6,&FONT_XS,"16-BIT",Y_WHITE);
  cv_rect(191,19,36,1,Y_BLUE);cv_rect(191,21,36,1,Y_BLUE);
  cv_text(185+(48-text_w(&FONT_XS,EN_VERSION))/2,28,&FONT_XS,EN_VERSION,Y_DIM);
  cv_rect(8,42,224,1,Y_EDGE);cv_blit(0,0);
 }
-/* Reference-inspired layout on a 240x240 LCD: 40px volume rail and 180px cards. */
+/* One 6px gutter: rail x=8..47, right grid x=54..231; 86px columns.
+ * Transport ends at y=71; 44px card rows start at 78, 128 and 178. */
 static void yui_frame(int w,int h){
  cv_rect(0,0,w,1,Y_EDGE);cv_rect(0,h-1,w,1,Y_EDGE);
  cv_rect(0,0,1,h,Y_EDGE);cv_rect(w-1,0,1,h,Y_EDGE);
@@ -83,8 +111,8 @@ static void yui_volume_base(void){
  cv_blit(8,48);
 }
 static void yui_output_mode(void){
- cv_begin(40,32,Y_CARD);cv_rect(0,0,1,32,Y_EDGE);cv_rect(39,0,1,32,Y_EDGE);
- cv_rect(0,31,40,1,Y_EDGE);cv_rect(1,30,38,1,Y_BLUE);
+ cv_begin(40,38,Y_CARD);cv_rect(0,0,1,38,Y_EDGE);cv_rect(39,0,1,38,Y_EDGE);
+ cv_rect(0,37,40,1,Y_EDGE);cv_rect(1,36,38,1,Y_BLUE);
  if(yusb_only){
   cv_text(11,3,&FONT_XS,"USB",Y_AMBER);cv_text(8,16,&FONT_XS,"ONLY",Y_AMBER);
  }else{
@@ -107,21 +135,25 @@ static void yui_volume(uint32_t position){
 }
 static void yui_transport(uint32_t bar){
  char b[16];uint16_t accent=ym_overload>=8?Y_AMBER:yplaying?Y_GREEN:Y_DIM;
- cv_begin(180,24,Y_CARD);yui_frame(180,24);
- if(yplaying){for(int x=0;x<9;x++)cv_rect(8+x,5+x/2,1,13-x,accent);}
+ cv_begin(178,24,Y_CARD);yui_frame(178,24);
+ if(yplaying){for(int x=0;x<13;x++)cv_rect(8+x,5+x/2,1,13-x,accent);}
  else {cv_rect(8,6,3,12,accent);cv_rect(14,6,3,12,accent);}
  cv_text(25,4,&FONT_S,ym_overload>=8?"OVERLOAD":yplaying?"PLAYING":"PAUSED",accent);
  if(ys_state!=YS_CLEAN){
   static const char*const save[]={"","SAVE *","SAVING","SAVED","SAVE ERR"};
   cv_text(126,6,&FONT_XS,save[ys_state],ys_state==YS_ERROR?Y_AMBER:ys_state==YS_SAVED?Y_GREEN:Y_DIM);
+ }else if(ysong.enabled){
+  cv_text(110,1,&FONT_XS,ys_song_names[ysong.phase],Y_BLUE);
+  if(ysong.done)cv_text(110,12,&FONT_XS,"DONE",Y_DIM);
+  else {fmt_int(b,(int32_t)ysong.local);str_cpy(b+str_len(b),"/",sizeof b-str_len(b));fmt_int(b+str_len(b),(int32_t)ysong.length);cv_text(110,12,&FONT_XS,b,Y_DIM);}
  }else {cv_text(111,6,&FONT_XS,"BAR",Y_DIM);fmt_int(b,(int32_t)(bar%100000u));cv_text(136,4,&FONT_S,b,Y_WHITE);}
- cv_blit(52,48);
+ cv_blit(54,48);
 }
 static void yui_card(uint32_t index,int32_t value){
  static const char*const label[]={"K1 TEMPO","K2 DENSITY","K3 MUTATION","K4 TRANSPOSE"};
  char b[16];uint16_t accent=index==0||index==3?Y_BLUE:Y_GREEN;
  cv_begin(86,44,Y_CARD);yui_frame(86,44);
- cv_text(5,2,&FONT_XS,label[index],Y_DIM);
+ cv_text(5,2,&FONT_XS,index==0&&yclock.mode?(yclock.lost?"USB LOST":yclock.running?"K1 USB CLK":"USB WAIT"):label[index],Y_DIM);
  if(index==3&&value>0){b[0]='+';fmt_int(b+1,value);}else fmt_int(b,value);
  cv_text(5,14,&FONT_M,b,Y_WHITE);
  cv_text(62,24,&FONT_XS,index==0?"BPM":index==3?"ST":"%",accent);
@@ -131,29 +163,28 @@ static void yui_card(uint32_t index,int32_t value){
   cv_rect(value<0?x:43,39,value<0?43-x:x-43,3,accent);
   cv_rect(42,38,1,5,Y_DIM);cv_rect(x-1,38,2,5,Y_WHITE);
  }else{
-  uint32_t fill=index==0?(uint32_t)(value-80)*76u/100u:(uint32_t)value*76u/100u;
+  uint32_t fill=index==0?(yclock.mode?(uint32_t)(value<30?0:value-30)*76u/270u:(uint32_t)(value-80)*76u/100u):(uint32_t)value*76u/100u;
   if(fill>76u)fill=76u;cv_rect(5,39,(int32_t)fill,3,accent);
  }
- cv_blit(index&1u?146u:52u,index>=2u?128u:78u);
+ cv_blit(index&1u?146u:54u,index>=2u?128u:78u);
 }
 static void yui_voice(void){
  static const char*const names[]={"FM BASS","FM LEAD","FM CHORD 1","FM CHORD 2","FM CHORD 3","KICK","SNARE","CLOSED HAT","OPEN HAT","PSG ARP","PSG LIVE","PSG NOISE"};
  char b[32];uint32_t value=ylevels[yinstrument];int enabled=yinstrument<9u||ypsg;
- cv_begin(116,38,Y_CARD);yui_frame(116,38);
- str_cpy(b,"SEL ",sizeof b);str_cpy(b+4,names[yinstrument],sizeof b-4);
- cv_text(4,3,&FONT_XS,b,Y_DIM);
+ cv_begin(86,44,Y_CARD);yui_frame(86,44);
+ cv_text(5,2,&FONT_XS,names[yinstrument],Y_DIM);
  if(enabled){str_cpy(b,"PRE ",sizeof b);fmt_int(b+4,(int32_t)value);str_cpy(b+str_len(b),"%",sizeof b-str_len(b));}
  else str_cpy(b,"PSG OFF",sizeof b);
- cv_text(4,18,&FONT_S,b,enabled?Y_GREEN:Y_DIM);
- cv_rect(65,29,47,3,Y_EDGE);if(enabled)cv_rect(65,29,(int32_t)(value*47u/100u),3,Y_GREEN);
- cv_blit(52,178);
+ cv_text(5,17,&FONT_S,b,enabled?Y_GREEN:Y_DIM);
+ cv_rect(5,39,76,3,Y_EDGE);if(enabled)cv_rect(5,39,(int32_t)(value*76u/100u),3,Y_GREEN);
+ cv_blit(54,178);
 }
 static void yui_effect(void){
  static const char*const names[]={"DECAY","COLOR","ECHO"};
  char b[20];uint32_t kind=yfx_kind[yinstrument],value=yfx_values[yinstrument][kind];
- cv_begin(60,38,Y_CARD);yui_frame(60,38);str_cpy(b,"ALG ",sizeof b);str_cpy(b+4,names[kind],sizeof b-4);
- cv_text(4,3,&FONT_XS,b,Y_DIM);fmt_int(b,(int32_t)value);str_cpy(b+str_len(b),"%",sizeof b-str_len(b));
- cv_text(4,17,&FONT_S,b,value?Y_AMBER:Y_DIM);cv_rect(4,34,52,2,Y_EDGE);cv_rect(4,34,(int32_t)(value*52u/100u),2,Y_AMBER);cv_blit(172,178);
+ cv_begin(86,44,Y_CARD);yui_frame(86,44);str_cpy(b,"ALG ",sizeof b);str_cpy(b+4,names[kind],sizeof b-4);
+ cv_text(5,2,&FONT_XS,b,Y_DIM);fmt_int(b,(int32_t)value);str_cpy(b+str_len(b),"%",sizeof b-str_len(b));
+ cv_text(5,17,&FONT_S,b,value?Y_AMBER:Y_DIM);cv_rect(5,39,76,3,Y_EDGE);cv_rect(5,39,(int32_t)(value*76u/100u),3,Y_AMBER);cv_blit(146,178);
 }
 static void yui_steps(uint32_t step){
  cv_begin(224,12,Y_BG);
@@ -168,11 +199,14 @@ static void ydisplay(void){
   lcd_fill(0,0,240,240,Y_BG);yui_header();yui_volume_base();
   memset(&yui_old,255,sizeof yui_old);yui_old.transpose=1000;yui_ready=1;
  }
- if(yui_old.playing!=yplaying||yui_old.bar!=bar||yui_old.overload!=overloaded||yui_old.save!=ys_state){yui_transport(bar);yui_old.playing=yplaying;yui_old.bar=bar;yui_old.overload=overloaded;yui_old.save=ys_state;}
+ {uint32_t midi=ymidi_out?(1u|(ymidi_clock_fault<<1)):0u;
+ if(yui_old.midi!=midi){if(yui_old.midi!=0xffffffffu)yui_header();yui_old.midi=midi;}}
+ if(yui_old.playing!=yplaying||yui_old.bar!=bar||yui_old.overload!=overloaded||yui_old.save!=ys_state||yui_old.song!=ysong.enabled){yui_transport(bar);yui_old.playing=yplaying;yui_old.bar=bar;yui_old.overload=overloaded;yui_old.save=ys_state;yui_old.song=ysong.enabled;}
  {uint32_t position=yui_master_position(ymaster_adc,yui_old.master);
   if(yui_old.master!=position){yui_volume(position);yui_old.master=position;}}
  if(yui_old.usb_only!=yusb_only){yui_output_mode();yui_old.usb_only=yusb_only;}
- if(yui_old.tempo!=ytempo){yui_card(0,(int32_t)ytempo);yui_old.tempo=ytempo;}
+ {uint32_t tempo=yclock.mode?yclock.bpm:ytempo,clock=yclock.mode?(yclock.lost?3u:yclock.running?1u:2u):0u;
+ if(yui_old.tempo!=tempo||yui_old.clock!=clock){yui_card(0,(int32_t)tempo);yui_old.tempo=tempo;yui_old.clock=clock;}}
  if(yui_old.density!=ydensity){yui_card(1,(int32_t)ydensity);yui_old.density=ydensity;}
  if(yui_old.mutation!=ymutation){yui_card(2,(int32_t)ymutation);yui_old.mutation=ymutation;}
  if(yui_old.transpose!=ytranspose){yui_card(3,ytranspose);yui_old.transpose=ytranspose;}

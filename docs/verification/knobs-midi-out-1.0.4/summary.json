@@ -1,0 +1,321 @@
+{
+  "version": "1.0.4",
+  "identity": "FM-1_68010004",
+  "package_sha256": "f16da6faa7607541c94ac4bfbb0bb626e95eac0956e990a75317caf5b73a411f",
+  "source_commit": "7bb4efdd02499664296e96f134371c68403b22de",
+  "passed": true,
+  "checks": {
+    "all_four_knob_windows_captured": true,
+    "no_stop_during_knobs_or_restoration": true,
+    "one_start_and_controlled_final_stop": true,
+    "continuous_diagnostics": true,
+    "no_audio_boot_faults": true,
+    "capture_finished": true,
+    "no_held_output_notes_at_end": true,
+    "usb_audio_signal_and_no_clipping_all_knobs": true
+  },
+  "phase_results": [
+    {
+      "phase": "setup",
+      "instruction_window_seconds": 20.17904489999637,
+      "start_seconds": 0.08019620005507022,
+      "end_seconds": 20.25924110005144,
+      "midi_start_count": 0,
+      "midi_stop_count": 0,
+      "midi_clock_count": 0,
+      "clock_bpm_24_interval_windows": {
+        "min": null,
+        "max": null
+      },
+      "note_on_count": 0,
+      "melodic_note_range": null,
+      "status_replies": 41,
+      "cpu_average_sampled_pct": 34,
+      "audio": {
+        "seconds": 20.17904761904762,
+        "rms": 0.4790461806751332,
+        "peak": 1,
+        "clipped_samples": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "instruction_window_seconds": 70.64984699996421,
+      "start_seconds": 20.25924110005144,
+      "end_seconds": 90.90908810001565,
+      "midi_start_count": 1,
+      "midi_stop_count": 0,
+      "midi_clock_count": 2580,
+      "clock_bpm_24_interval_windows": {
+        "min": 128.76136076910112,
+        "max": 131.4913441466862
+      },
+      "note_on_count": 1328,
+      "melodic_note_range": [
+        36,
+        87
+      ],
+      "status_replies": 141,
+      "cpu_average_sampled_pct": 43.226950354609926,
+      "audio": {
+        "seconds": 70.64984126984127,
+        "rms": 528.924332274354,
+        "peak": 4876,
+        "clipped_samples": 0
+      }
+    },
+    {
+      "phase": "K1",
+      "instruction_window_seconds": 63.36795220000204,
+      "start_seconds": 90.90908810001565,
+      "end_seconds": 154.2770403000177,
+      "midi_start_count": 0,
+      "midi_stop_count": 0,
+      "midi_clock_count": 3243,
+      "clock_bpm_24_interval_windows": {
+        "min": 103.310694513138,
+        "max": 172.61214828036452
+      },
+      "note_on_count": 1714,
+      "melodic_note_range": [
+        36,
+        87
+      ],
+      "status_replies": 126,
+      "cpu_average_sampled_pct": 47.476190476190474,
+      "audio": {
+        "seconds": 63.36795918367347,
+        "rms": 640.5693237931939,
+        "peak": 4846,
+        "clipped_samples": 0
+      }
+    },
+    {
+      "phase": "K2",
+      "instruction_window_seconds": 53.15553150000051,
+      "start_seconds": 154.2770403000177,
+      "end_seconds": 207.4325718000182,
+      "midi_start_count": 0,
+      "midi_stop_count": 0,
+      "midi_clock_count": 2766,
+      "clock_bpm_24_interval_windows": {
+        "min": 128.42542720928103,
+        "max": 131.8859292179141
+      },
+      "note_on_count": 1395,
+      "melodic_note_range": [
+        36,
+        87
+      ],
+      "status_replies": 106,
+      "cpu_average_sampled_pct": 46.75471698113208,
+      "audio": {
+        "seconds": 53.155532879818594,
+        "rms": 606.065692634672,
+        "peak": 4987,
+        "clipped_samples": 0
+      }
+    },
+    {
+      "phase": "K3",
+      "instruction_window_seconds": 61.368364299996756,
+      "start_seconds": 207.4325718000182,
+      "end_seconds": 268.80093610001495,
+      "midi_start_count": 0,
+      "midi_stop_count": 0,
+      "midi_clock_count": 3192,
+      "clock_bpm_24_interval_windows": {
+        "min": 127.77476205529618,
+        "max": 132.60295624279183
+      },
+      "note_on_count": 1681,
+      "melodic_note_range": [
+        36,
+        87
+      ],
+      "status_replies": 123,
+      "cpu_average_sampled_pct": 47.67479674796748,
+      "audio": {
+        "seconds": 61.368367346938776,
+        "rms": 642.0894254215681,
+        "peak": 4789,
+        "clipped_samples": 0
+      }
+    },
+    {
+      "phase": "K4",
+      "instruction_window_seconds": 45.096333499997854,
+      "start_seconds": 268.80093610001495,
+      "end_seconds": 313.8972696000128,
+      "midi_start_count": 0,
+      "midi_stop_count": 0,
+      "midi_clock_count": 2346,
+      "clock_bpm_24_interval_windows": {
+        "min": 127.76425960704894,
+        "max": 132.2870019453618
+      },
+      "note_on_count": 1257,
+      "melodic_note_range": [
+        33,
+        99
+      ],
+      "status_replies": 90,
+      "cpu_average_sampled_pct": 47.7,
+      "audio": {
+        "seconds": 45.096326530612245,
+        "rms": 642.909236209166,
+        "peak": 4772,
+        "clipped_samples": 0
+      }
+    },
+    {
+      "phase": "restore",
+      "instruction_window_seconds": 34.484200300008524,
+      "start_seconds": 313.8972696000128,
+      "end_seconds": 348.38146990002133,
+      "midi_start_count": 0,
+      "midi_stop_count": 0,
+      "midi_clock_count": 1794,
+      "clock_bpm_24_interval_windows": {
+        "min": 127.53366888513692,
+        "max": 132.5327764637382
+      },
+      "note_on_count": 913,
+      "melodic_note_range": [
+        36,
+        87
+      ],
+      "status_replies": 69,
+      "cpu_average_sampled_pct": 47.30434782608695,
+      "audio": {
+        "seconds": 34.48419501133787,
+        "rms": 622.1074501528896,
+        "peak": 4657,
+        "clipped_samples": 0
+      }
+    },
+    {
+      "phase": "manual_stop",
+      "instruction_window_seconds": 55.14208910003072,
+      "start_seconds": 348.38146990002133,
+      "end_seconds": 403.52355900005205,
+      "midi_start_count": 0,
+      "midi_stop_count": 1,
+      "midi_clock_count": 766,
+      "clock_bpm_24_interval_windows": {
+        "min": 128.75751997186646,
+        "max": 131.32936398528412
+      },
+      "note_on_count": 443,
+      "melodic_note_range": [
+        36,
+        87
+      ],
+      "status_replies": 110,
+      "cpu_average_sampled_pct": 41.67272727272727,
+      "audio": {
+        "seconds": 55.14208616780046,
+        "rms": 353.63727578239866,
+        "peak": 4882,
+        "clipped_samples": 0
+      }
+    },
+    {
+      "phase": "finished",
+      "instruction_window_seconds": 0.006440999947926684,
+      "start_seconds": 403.52355900005205,
+      "end_seconds": 403.53,
+      "midi_start_count": 0,
+      "midi_stop_count": 0,
+      "midi_clock_count": 0,
+      "clock_bpm_24_interval_windows": {
+        "min": null,
+        "max": null
+      },
+      "note_on_count": 0,
+      "melodic_note_range": null,
+      "status_replies": 0,
+      "cpu_average_sampled_pct": null,
+      "audio": {
+        "seconds": 0.006462585034013605,
+        "rms": 0.49559462778335206,
+        "peak": 1,
+        "clipped_samples": 0
+      }
+    }
+  ],
+  "transport_events": [
+    {
+      "seconds": 41.324234700005036,
+      "phase": "baseline",
+      "type": "start"
+    },
+    {
+      "seconds": 363.1051146000391,
+      "phase": "manual_stop",
+      "type": "stop"
+    }
+  ],
+  "unexpected_stop_events": [],
+  "music_seconds": 321.78087990003405,
+  "audio_recording_seconds": 403.53,
+  "status_queries": 806,
+  "status_replies": 806,
+  "status_timeouts": [],
+  "faults": [],
+  "status_latency_max_ms": 10.290700010955334,
+  "cpu_average_sampled_pct_music": 47.46865203761755,
+  "cpu_lifetime_max_pct": 72,
+  "max_block_us": 4193,
+  "xruns": 0,
+  "overload_blocks": 0,
+  "remaining_notes": [],
+  "duplicate_note_ons": 0,
+  "owner_feedback": {
+    "initial_values": {
+      "tempo": 130,
+      "density": 100,
+      "mutation": 100,
+      "transpose": 0
+    },
+    "prepared_endless_home_dim_edit_out_play_paused": true,
+    "phases": [
+      {
+        "phase": "baseline",
+        "owner_answer": "tak",
+        "recorded_capture_seconds": 154.0
+      },
+      {
+        "phase": "K1",
+        "owner_answer": "tak",
+        "recorded_capture_seconds": 154.0
+      },
+      {
+        "phase": "K2",
+        "owner_answer": "tak",
+        "recorded_capture_seconds": 207.0
+      },
+      {
+        "phase": "K3",
+        "owner_answer": "tak",
+        "recorded_capture_seconds": 268.0
+      },
+      {
+        "phase": "K4",
+        "owner_answer": "tak",
+        "recorded_capture_seconds": 313.0
+      },
+      {
+        "phase": "restore",
+        "owner_answer": "restored_130_100_100_0",
+        "recorded_capture_seconds": 348.0
+      },
+      {
+        "phase": "manual_stop",
+        "owner_answer": "tak",
+        "recorded_capture_seconds": 403.0
+      }
+    ]
+  },
+  "scope": "Manual K1-K4 instruction windows, not precise encoder event telemetry. Host sent read-only identity/status only. Tempo estimates are Windows arrivals; finite test does not prove all rotations safe or explain the earlier Stop conclusively."
+}

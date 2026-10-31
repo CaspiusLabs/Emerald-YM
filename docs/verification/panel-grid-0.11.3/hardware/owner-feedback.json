@@ -1,0 +1,11 @@
+{
+  "version": "0.11.3",
+  "answer": "tak",
+  "panel_gaps_and_equal_bottom_cards_confirmed": true,
+  "instrument_bar_below_text_confirmed": true,
+  "glo_dim_normal_bright_usb_only_confirmed": true,
+  "physical_output_muted_and_usb_only_left_enabled": true,
+  "edit_out_and_play_confirmed": true,
+  "physical_stop_and_correct_screen_confirmed": true,
+  "stop_answer": "tak"
+}

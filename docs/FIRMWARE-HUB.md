@@ -2,7 +2,7 @@
 
 Prepared against the [submission requirements](https://thefirmwarehub.com/submit/) and [knowledge base](https://thefirmwarehub.com/kb/) checked on 2026-10-27. No submission email has been sent. The owner authorized public visibility after checking the release download and README on 2026-10-27. The repository is public; no further hardware tests are planned in this task. Unverified paths remain explicitly listed below.
 
-The current public release is now [0.6.0](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.6.0), with USB audio and the new MASTER screen; see its exact-package reports in verification/master-ui-0.6.0. The preparation/checklist below records the older 0.4.3 submission scope: its V15/Dinghy and interruption results must not be transferred to 0.6.0.
+The current public stable release is [1.0.4](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v1.0.4); see its [fresh exact-package full-song/USB/UI results](verification/stable-1.0.4/README.md). The older 0.4.3 submission checklist and V15/Dinghy/interruption results below do not transfer to 1.0.4. No new submission is authorized by this publication task.
 
 ## Submission details — historical 0.4.3 preparation
 

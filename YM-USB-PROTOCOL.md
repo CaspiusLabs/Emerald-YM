@@ -1,6 +1,16 @@
 # Emerald YM USB status protocol v1 (firmware 0.1.2 and later)
 
-This is the protocol implemented by `firmware/src/ym/ym_loop.c`, not a guessed command for stock M-VAVE or DUB-1. Compatible identities are `FM-1_68000102` (0.1.2), `FM-1_68000103` (0.1.3), `FM-1_68000104` (0.1.4), `FM-1_68000200` (0.2.0), `FM-1_68000201` (0.2.1), `FM-1_68000202` (0.2.2), `FM-1_68000203` (0.2.3), `FM-1_68000204` (0.2.4), `FM-1_68000300` (0.3.0), `FM-1_68000301` (0.3.1), `FM-1_68000400` (0.4.0), `FM-1_68000402` (0.4.2), `FM-1_68000403` (0.4.3), and `FM-1_68000500` (0.5.0) `FM-1_68000501` (0.5.1), `FM-1_68000600` (0.6.0), and development `FM-1_68000700` (0.7.0). The UI update in 0.1.4 does not change the protocol. It never exposes flash erase/write, preset or firmware operations. The existing Felucca updater is separate and unchanged.
+## Stable 1.0.4 master transport
+
+Current identity is `FM-1_68010004`. Status v1 query/reply bytes remain unchanged. The 0.11.1 main-loop shared-SysEx dispatch repair is retained. Exact 1.0.4 is installed and published; [physical validation](docs/verification/stable-1.0.4/README.md) records no diagnostic timeout during combined MIDI Clock/audio/status capture.
+
+HOME bright selects the 88-bar song and automatic end; HOME dim selects endless generation. Song completion sends Stop in OUT; source masks gate arrangement notes. There is no new SysEx message.
+
+In EDIT OUT, FM-1 owns clock/transport and ignores incoming USB F8/FA/FB/FC to prevent feedback. PLAY resets the arrangement and sends FA, then F8 at 24 PPQ; pause/output disable sends FC. No idle Clock, FB or Song Position Pointer output. In EDIT IN, existing USB clock following remains available; pre-switch queued real-time/performance packets are discarded.
+
+Outgoing realtime uses USB cable 0 / CIN 0xF with the status byte in packet byte 1. Count derives from native sequencer phase and is observed at block boundaries, with Start/Clock queued before same-block notes. A pending previous Clock, missed pulse or full queue stops the master without catch-up bursts, repairs uncertain notes and requests explicit PLAY restart. MIDI WAIT is local UI state; status v1 has no outgoing clock/fault field. See the [manual and timing limits](docs/MANUAL.md#usb-midi-master-clock--development-0110). Later version-specific descriptions below retain their historical behavior.
+
+This is the protocol implemented by `firmware/src/ym/ym_midi.c` (previously in `ym_loop.c`), not a guessed command for stock M-VAVE or DUB-1. Compatible identities are `FM-1_68000102` (0.1.2), `FM-1_68000103` (0.1.3), `FM-1_68000104` (0.1.4), `FM-1_68000200` (0.2.0), `FM-1_68000201` (0.2.1), `FM-1_68000202` (0.2.2), `FM-1_68000203` (0.2.3), `FM-1_68000204` (0.2.4), `FM-1_68000300` (0.3.0), `FM-1_68000301` (0.3.1), `FM-1_68000400` (0.4.0), `FM-1_68000402` (0.4.2), `FM-1_68000403` (0.4.3), and `FM-1_68000500` (0.5.0) `FM-1_68000501` (0.5.1), `FM-1_68000600` (0.6.0), `FM-1_68000700` (0.7.0), and development `FM-1_68000900` (0.9.0). The UI update in 0.1.4 does not change the protocol. It never exposes flash erase/write, preset or firmware operations. The existing Felucca updater is separate and unchanged.
 
 Send status query bytes: `F0 7D 45 4D 59 01 F7`. Manufacturer byte `7D` is the non-commercial/experimental namespace; `45 4D 59` is ASCII `EMY`.
 
@@ -20,7 +30,7 @@ Reply: `F0 7D 45 4D 59 41`, then eleven uint32 values, then `F7`. Each value is 
 
 The status query takes a brief, consistent snapshot and replies; it changes no synth setting or persistent data. Unsupported commands are ignored by this handler. There is no command to bypass overload protection or reset its counters.
 
-Standard single-byte MIDI System Real-Time messages are also supported: `FA` Start and `FB` Continue request playback; `FC` Stop requests a fade to silence. For this continuous generator Start and Continue both resume the existing position; they do not reseed. Start/Continue are ignored when the overload protection has latched. MIDI Clock F8 remains unused. In 0.2.0, Note On/Off (all MIDI channels) in the F3..G5 range (53..79) adds held keys to the physical keyboard mask. Velocity zero is Note Off; nonzero velocity is a gate (no velocity scaling). CC 120/123 clears USB-held notes. These are standard MIDI messages, not private SysEx. Earlier versions ignore note messages. Physical PLAY works as before.
+Before 0.9.0, standard single-byte MIDI System Real-Time messages are supported as follows: `FA` Start and `FB` Continue request playback; `FC` Stop requests a fade to silence. For this continuous generator Start and Continue both resume the existing position; they do not reseed. Start/Continue are ignored when the overload protection has latched. MIDI Clock F8 remains unused. In 0.2.0, Note On/Off (all MIDI channels) in the F3..G5 range (53..79) adds held keys to the physical keyboard mask. Velocity zero is Note Off; nonzero velocity is a gate (no velocity scaling). CC 120/123 clears USB-held notes. These are standard MIDI messages, not private SysEx. Earlier versions ignore note messages. Physical PLAY works as before.
 
 Query only the explicitly selected Emerald YM FM-1 input/output pair. Do not probe other connected MIDI gear. Suggested test: verify identity via the unchanged documented Felucca identity handshake; read baseline; send Start; collect status once per second for 30 seconds; send Stop; read status. Stop immediately on overload or increasing XRUNs.
 
@@ -61,3 +71,17 @@ The new volume slider displays the existing filtered physical MASTER ADC positio
 ## Development 0.7.0 USB ONLY
 
 GLO toggles session-only physical-output mute. USB capture stays before that mute; MIDI and status v1 are unchanged. There is no remote routing command or route-status field. Confirm GLO/physical silence with the owner; the read-only query cannot establish the switch position. The existing persistent-effects stress guard remains in place.
+
+## Development 0.9.0 USB Clock and TRS input
+
+USB FA selects external clock and resets the arrangement with the current seed; FB selects external clock and preserves pulse/step position; FC pauses. F8 is 24 PPQ, with the first pulse after FA triggering step 1 and every six pulses advancing a sixteenth. F8 alone updates the tempo estimate but does not take over internal playback. External steps count pulses rather than free-running at estimated BPM. More than 500 ms without a clock stops external playback; returning F8 alone cannot restart it. Start/Continue remain blocked by overload protection. K1 restores internal tempo. No Song Position Pointer, outgoing Clock or TRS transport/Clock support is added.
+
+The unchanged Playing status field reflects the requested transport: 1 can mean armed and waiting for the first external pulse. It is not proof that the arrangement is advancing; use bar progress and evidence of an actual clock source for that assessment.
+
+The minijack input accepts live notes and existing effect CCs. Its internal queue source is tagged separately from USB, with per-port held masks; CC120/123 clears only the originating port. This source tag is not a new USB cable or wire protocol. TRS SysEx is ignored, including updater requests. Input loss clears both MIDI held masks and stops external playback. Physical keys remain independent. External mode/BPM are session-only and not exposed in status v1; the private query/reply bytes above are unchanged. See [manual and physical-test limits](docs/MANUAL.md#usb-midi-clock-and-trs-input--development-090).
+
+## Development 0.10.0 note direction
+
+EDIT is a local session-only mode switch. In IN (dim), existing USB/TRS notes and CCs are accepted. In OUT (bright), those messages are ignored and their held masks cleared; only physical keyboard and generated notes are exported over USB. USB real-time Clock/transport and the status query remain accepted. No new SysEx, wire cable number, Clock output, Thru or remote mode setter is added. Status v1 cannot report EDIT state.
+
+Output is standard Note On/Off at velocity 90, cable 0: keyboard ch1; FM bass/lead/chords ch2–6; PSG arp ch7; noise ch8 note76; DAC drums ch10 notes36/38/42/46. After a USB suspend/reset following output use, cleanup sends CC123 to channels1–8 and10. Notes are block-quantized (~5.8ms); long backpressure may coalesce intermediate events while retaining release retries. See the [manual](docs/MANUAL.md#edit--usb-midi-out--0100) for routing and cleanup limitations. The physical minijack remains input; no undocumented TX register/pin changes are made.

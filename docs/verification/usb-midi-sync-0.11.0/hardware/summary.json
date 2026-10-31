@@ -1,0 +1,61 @@
+{
+  "version": "0.11.0",
+  "source_commit": "3f533ed8658fc3db9b40483634eb2ea4cbd1e602",
+  "package_sha256": "5dfcfb62e2f4f2d6ff30089cba4213db2cf1af9bf42603b36e586946d5d22487",
+  "functional_checks_passed": true,
+  "diagnostic_continuity_passed": false,
+  "overall_unqualified_pass": false,
+  "checks": {
+    "physical_start_captured": true,
+    "start_then_clock_then_notes": true,
+    "clock_matches_display_134_bpm": true,
+    "at_least_60s_clock_audio_capture": true,
+    "physical_stop_restart_stop_captured": true,
+    "clock_pauses_between_and_after_stops": true,
+    "restart_bpm_matches": true,
+    "local_bar_reset_on_restart": true,
+    "no_notes_left_after_final_stop": true,
+    "no_duplicate_note_ons_followup": true,
+    "usb_audio_signal": true,
+    "no_audio_clipping_in_body": true,
+    "xruns_overload_failed_boots_zero": true,
+    "followup_diagnostics_recovered": true
+  },
+  "first_session_failure": "Documented status timeout",
+  "first_session_last_successful_status_seconds": 100.25534750000224,
+  "followup_diagnostic_samples": 54,
+  "followup_status_timeouts": 0,
+  "bpm_display": 134,
+  "clock_bpm_average_first_run": 134.06691561829135,
+  "clock_bpm_average_restart": 134.07265238240848,
+  "first_run_callback_interval_ms": {
+    "interval_mean_ms": 18.647404458217533,
+    "interval_min_ms": 16.27679998637177,
+    "interval_max_ms": 25.683100015157834
+  },
+  "timing_scope": "Windows/Python callback arrival timestamps; block-quantized source, not electrical/receiver jitter",
+  "cpu_average_sampled_pct_first_run": 45.672413793103445,
+  "cpu_max_pct": 72,
+  "max_block_us": 4188,
+  "xruns": 0,
+  "overload_blocks": 0,
+  "failed_boots": 0,
+  "audio_seconds_recorded": 103.76,
+  "audio_analysis": {
+    "analyzed_seconds": 60.0,
+    "rms": 315.9999106804867,
+    "peak": 3262,
+    "clipped_samples": 0,
+    "max_zero_stereo_ms": 0.2947845804988662,
+    "max_identical_stereo_ms": 0.36281179138321995,
+    "scope": "Signal continuity check, not proof of glitch-free USB packets"
+  },
+  "final_state": "Physical PLAY stopped; MIDI OUT remains selected; no observed held output notes",
+  "settings_modified": false,
+  "limitations": [
+    "First main recording aborted on a 3s status timeout; preserved as failed/incomplete raw run. Clock and audio were still arriving.",
+    "Fresh session diagnostics recovered; timeout cause unestablished.",
+    "First captured Start and final Stop lie in separate recordings, with an observation gap; no invented Clock continuity across that gap.",
+    "No external synth, physical minijack output, long-run or USB packet-counter test."
+  ]
+}

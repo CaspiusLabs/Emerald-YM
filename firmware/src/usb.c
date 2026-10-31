@@ -126,18 +126,21 @@ static volatile uint32_t so_w, so_r;
 #endif
 
 /* MIDI rings: 4-byte USB-MIDI event packets */
-#define MQ 64u
-static uint32_t midi_in_q[MQ], midi_out_q[MQ];
-static volatile uint32_t mi_w, mi_r, mo_w, mo_r;
+#include "midi_input.h"
+static uint32_t midi_out_q[MQ];
+static volatile uint32_t mo_w, mo_r;
 
-static void midi_out_event(uint32_t pkt)            /* from the audio ISR */
+static int midi_out_try(uint32_t pkt)               /* single audio-owner producer */
 {
-    if (usb.config && mo_w - mo_r < MQ) {
+    if (usb.config && !usb.suspended && mo_w - mo_r < MQ) {
         midi_out_q[mo_w % MQ] = pkt;
         RING_PUBLISH();
         mo_w++;
+        return 1;
     }
+    return 0;
 }
+static void midi_out_event(uint32_t pkt) { (void)midi_out_try(pkt); }
 
 /* ------------------------------------------------------- descriptors --- */
 /* interfaces: 0 audio control, 1 MIDI streaming, 2 audio streaming (FELUCCA_UAC), then CDC's two.
@@ -654,11 +657,9 @@ static void ep1_rx(void)
             uint32_t k, nb = cin == 4u || cin == 7u ? 3u : cin == 6u ? 2u : 1u;
             for (k = 0; k < nb; k++)
                 sysex_byte(ep1rx[i + 1 + k]);
-        } else if (((cin >= 8u && cin <= 0xEu) || (cin == 0xFu && ep1rx[i + 1] >= 0xF8u)) && mi_w - mi_r < MQ) {
+        } else if ((cin >= 8u && cin <= 0xEu) || (cin == 0xFu && ep1rx[i + 1] >= 0xF8u)) {
             /* CIN 0xF: a single byte; the real-time ones (clock, start, continue, stop) matter */
-            midi_in_q[mi_w % MQ] = pkt;
-            RING_PUBLISH();
-            mi_w++;
+            midi_input_put(MIDI_USB_INPUT_PACKET(pkt));
         }
     }
     usb.rx_pkts++;
