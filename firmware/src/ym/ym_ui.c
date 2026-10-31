@@ -11,7 +11,16 @@
 #define Y_AMBER RGB(255,176,64)
 #define Y_RED RGB(255,35,40)
 static uint8_t yui_ready;
-static struct {uint32_t tempo,clock,density,mutation,bar,playing,overload,step,psg,selected,level,fxsource,fxkind,fxvalue,save,master,usb_only,midi;int32_t transpose;} yui_old;
+static struct {uint32_t tempo,clock,density,mutation,bar,playing,overload,step,psg,selected,level,fxsource,fxkind,fxvalue,save,master,usb_only,midi,song;int32_t transpose;} yui_old;
+static uint32_t yboot_frame=0xffffffffu;
+static void yui_boot_tick(uint32_t elapsed){
+ uint32_t frame=elapsed/90u;if(frame>12u)frame=12u;if(frame==yboot_frame)return;yboot_frame=frame;
+ /* Power-on sweep across the original console vents; complete tiny tiles. */
+ cv_begin(50,48,RGB(17,20,28));
+ for(uint32_t k=0;k<10;k++)cv_rect(0,k*5u,49,2,k==frame%10u?Y_BLUE:RGB(57,63,75));
+ cv_blit(156,57);
+ cv_begin(224,5,Y_BG);cv_rect(0,1,224,2,Y_EDGE);cv_rect(0,1,(int32_t)((frame+1u)*224u/13u),2,Y_BLUE);cv_blit(8,154);
+}
 /* Original console silhouette: circular cartridge deck, vents and red power LED.
  * Drawn in the existing tile canvas, no bitmap asset or extra framebuffer. */
 static void yui_ring(int cx,int cy,int r,uint16_t c){
@@ -23,6 +32,7 @@ static void yui_ring(int cx,int cy,int r,uint16_t c){
  }
 }
 static void yui_boot(void){
+ yboot_frame=0xffffffffu;
  lcd_fill(0,0,240,240,Y_BG);cv_begin(224,128,Y_BG);
  cv_rect(6,17,212,102,RGB(39,42,49));cv_rect(3,22,218,90,RGB(26,29,36));
  cv_rect(9,24,206,82,RGB(17,20,28));
@@ -37,7 +47,7 @@ static void yui_boot(void){
  cv_text((224-text_w(&FONT_M,"EMERALD YM"))/2,0,&FONT_M,"EMERALD YM",Y_WHITE);
  cv_text((224-text_w(&FONT_XS,"16-BIT SOUND SYSTEM"))/2,28,&FONT_XS,"16-BIT SOUND SYSTEM",Y_BLUE);
  cv_text((224-text_w(&FONT_XS,EN_VERSION))/2,45,&FONT_XS,EN_VERSION,Y_DIM);cv_blit(8,164);
- yui_ready=0;
+ yui_boot_tick(0);yui_ready=0;
 }
 static void yui_header(void){
  cv_begin(240,44,Y_BG);
@@ -115,6 +125,10 @@ static void yui_transport(uint32_t bar){
  if(ys_state!=YS_CLEAN){
   static const char*const save[]={"","SAVE *","SAVING","SAVED","SAVE ERR"};
   cv_text(126,6,&FONT_XS,save[ys_state],ys_state==YS_ERROR?Y_AMBER:ys_state==YS_SAVED?Y_GREEN:Y_DIM);
+ }else if(ysong.enabled){
+  cv_text(110,1,&FONT_XS,ys_song_names[ysong.phase],Y_BLUE);
+  if(ysong.done)cv_text(110,12,&FONT_XS,"DONE",Y_DIM);
+  else {fmt_int(b,(int32_t)ysong.local);str_cpy(b+str_len(b),"/",sizeof b-str_len(b));fmt_int(b+str_len(b),(int32_t)ysong.length);cv_text(110,12,&FONT_XS,b,Y_DIM);}
  }else {cv_text(111,6,&FONT_XS,"BAR",Y_DIM);fmt_int(b,(int32_t)(bar%100000u));cv_text(136,4,&FONT_S,b,Y_WHITE);}
  cv_blit(54,48);
 }
@@ -170,7 +184,7 @@ static void ydisplay(void){
  }
  {uint32_t midi=ymidi_out?(1u|(ymidi_clock_fault<<1)):0u;
  if(yui_old.midi!=midi){if(yui_old.midi!=0xffffffffu)yui_header();yui_old.midi=midi;}}
- if(yui_old.playing!=yplaying||yui_old.bar!=bar||yui_old.overload!=overloaded||yui_old.save!=ys_state){yui_transport(bar);yui_old.playing=yplaying;yui_old.bar=bar;yui_old.overload=overloaded;yui_old.save=ys_state;}
+ if(yui_old.playing!=yplaying||yui_old.bar!=bar||yui_old.overload!=overloaded||yui_old.save!=ys_state||yui_old.song!=ysong.enabled){yui_transport(bar);yui_old.playing=yplaying;yui_old.bar=bar;yui_old.overload=overloaded;yui_old.save=ys_state;yui_old.song=ysong.enabled;}
  {uint32_t position=yui_master_position(ymaster_adc,yui_old.master);
   if(yui_old.master!=position){yui_volume(position);yui_old.master=position;}}
  if(yui_old.usb_only!=yusb_only){yui_output_mode();yui_old.usb_only=yusb_only;}

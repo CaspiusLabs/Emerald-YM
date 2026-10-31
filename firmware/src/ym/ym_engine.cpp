@@ -42,6 +42,7 @@ static volatile uint32_t req_tempo=132,req_density=100,req_mutation=35,req_play=
 static volatile int32_t req_transpose;
 static volatile uint32_t req_clock_mode,req_clock_events,req_unit=(7670454u/144u)*15u/132u;
 static uint32_t clock_applied;
+static volatile uint32_t req_song_section=255;
 #define EMERALD_FX 1
 #include "ym_psg.h"
 static uint32_t random32(){state^=state<<13;state^=state>>17;state^=state<<5;return state;}
@@ -81,7 +82,7 @@ static FX_CODE void restart(uint32_t seed){
  drums[2]={ym_hat,sizeof(ym_hat),sizeof(ym_hat),100,100,sizeof(ym_hat)};drums[3]={ym_open,sizeof(ym_open),sizeof(ym_open),100,100,sizeof(ym_open)};make_motifs();
 }
 static FX_CODE void tick(){
- uint32_t b=steps/16,pos=steps%16,section=b%32;bool intro=section<4,bridge=section>=16&&section<24;
+ uint32_t b=steps/16,pos=steps%16,section=req_song_section==255u?b%32:req_song_section;bool intro=section<4,bridge=section>=16&&section<24;
  static const int8_t roots[] PSG_PITCH_DATA={40,37,45,47,44,37,42,47},ci[] PSG_PITCH_DATA={1,1,2,3,1,4,6,7};
  static const int8_t chords[8][3] PSG_PITCH_DATA={{64,68,71},{64,68,71},{61,64,68},{63,66,69},{63,68,71},{64,68,71},{61,64,69},{63,66,69}};
  static const int8_t scale[] PSG_PITCH_DATA={64,66,68,69,71,73,75};
@@ -153,7 +154,7 @@ extern "C" void ym_init(uint32_t seed){
  for(int k=0;k<5;k++)emerald_fm_gain_q8[k]=256;drum_gain=1.0f;old_keys=live_mask=sequence_mask=key_clock=0;old_psg=1;
  for(int k=0;k<27;k++)key_age[k]=0;sequence_gain=0;
  playing=req_play=1;tempo=req_tempo=132;density=req_density=100;mutation=req_mutation=35;transpose=req_transpose=0;
- req_clock_mode=req_clock_events=0;req_unit=(7670454u/144u)*15u/132u;
+ req_song_section=255;req_clock_mode=req_clock_events=0;req_unit=(7670454u/144u)*15u/132u;
  resample_phase=native_count=0;prev_l=prev_r=next_l=next_r=0;dc_l=dc_r=gain=0;restart(seed);
 }
 extern "C" YM_CONTROL_CODE void ym_control(uint32_t t,uint32_t d,uint32_t m,int32_t tr,uint32_t p){req_tempo=t<80?80:t>180?180:t;if(!req_clock_mode)req_unit=(7670454u/144u)*15u/req_tempo;req_density=d>100?100:d;req_mutation=m>100?100:m;req_transpose=tr< -12?-12:tr>12?12:tr;req_play=p!=0;}
@@ -163,6 +164,7 @@ extern "C" YM_CONTROL_CODE void ym_external_clock(uint32_t enabled,uint32_t even
  req_unit=(7670454u/144u)*15u/req_tempo;
 }
 extern "C" YM_CONTROL_CODE void ym_reseed(uint32_t s){req_seed=s?s:1;}
+extern "C" YM_CONTROL_CODE void ym_song_section(uint32_t s){req_song_section=s<=31u?s:255u;}
 extern "C" YM_CONTROL_CODE void ym_live_keys(uint32_t keys){req_keys=keys&0x07ffffffu;}
 extern "C" YM_CONTROL_CODE void ym_psg_enable(uint32_t enabled){req_psg=enabled!=0;}
 extern "C" YM_CONTROL_CODE void ym_psg_level(uint32_t percent){req_psg_level=percent>400?400:percent;}

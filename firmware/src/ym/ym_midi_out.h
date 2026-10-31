@@ -4,6 +4,9 @@
  * backpressure; new notes wait until all obsolete notes have been released. */
 #pragma once
 #include "ym_engine.h"
+#ifndef YMO_SOURCE_ENABLED
+#define YMO_SOURCE_ENABLED(s) 1u
+#endif
 struct ym_midi_output {
  uint32_t initialized,session,revision,epoch,enabled,used,panic,serial[12];
  int32_t note[12],live_note[27];
@@ -36,11 +39,11 @@ static void ymo_update(struct ym_midi_output*m,const struct ym_midi_state*v,
  if(enabled)m->used=1;
  release_all=!enabled||m->revision!=revision||m->epoch!=v->epoch;
  for(uint32_t s=0;s<12u;s++){
-  wanted[s]=enabled?v->note[s]:-1;
+  wanted[s]=enabled&&YMO_SOURCE_ENABLED(s)?v->note[s]:-1;
   /* A very short drum may finish within the block containing its trigger.
    * Export its pulse once, then release on the next block. Never replay a
    * stale drum on enable/reconnect/reseed. */
-  if(enabled&&v->playing&&m->enabled&&!release_all&&s>=5u&&s<9u&&v->serial[s]!=m->serial[s])wanted[s]=percussion[s-5u];
+  if(enabled&&YMO_SOURCE_ENABLED(s)&&v->playing&&m->enabled&&!release_all&&s>=5u&&s<9u&&v->serial[s]!=m->serial[s])wanted[s]=percussion[s-5u];
   if(m->note[s]>=0&&(release_all||m->note[s]!=wanted[s]||v->serial[s]!=m->serial[s])){
    if(ymo_note(ymo_channel(s),m->note[s],0))m->note[s]=-1;else releases=0;
   }

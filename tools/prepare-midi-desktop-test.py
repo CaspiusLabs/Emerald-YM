@@ -21,3 +21,7 @@ calls=[line.strip() for line in loop.splitlines() if line.strip().startswith('yu
 assert len(calls)==1
 Path('build/host/midi/ym_dispatch_iteration.h').write_text(
     'static void ym_dispatch_iteration(void){'+calls[0]+'}\n',encoding='utf-8')
+control=Path('firmware/src/ym/ym_prelude.c').read_text(encoding='utf-8')
+start=control.index('static void ys_song_apply(void){')
+end=control.index('#include "ym_ui.c"',start)
+Path('build/host/midi/ym_song_control.h').write_text(control[start:end],encoding='utf-8')

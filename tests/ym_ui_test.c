@@ -16,6 +16,7 @@ static void lcd_blit(uint32_t x,uint32_t y,uint32_t w,uint32_t h,const uint16_t*
 }
 #include "../firmware/src/gfx.c"
 #include "../firmware/src/ym/ym_clock.h"
+#include "../firmware/src/ym/ym_song.h"
 static struct ym_clock yclock={0,0,0,0,0,132,0,0,0,0};
 static void fmt_int(char*b,int32_t v){sprintf(b,"%d",v);}
 static unsigned str_len(const char*s){return (unsigned)strlen(s);}
@@ -36,9 +37,14 @@ static uint32_t ys_state;
 static void check(int v,const char*s){printf("%s: %s\n",s,v?"PASS":"FAIL");if(!v)exit(2);}
 static void image(const char*path){FILE*f=fopen(path,"wb");if(!f)exit(5);fprintf(f,"P6\n240 240\n255\n");for(int i=0;i<240*240;i++){uint16_t c=screen[i];uint8_t p[3]={(uint8_t)(((c>>11)&31)*255/31),(uint8_t)(((c>>5)&63)*255/63),(uint8_t)((c&31)*255/31)};fwrite(p,1,3,f);}fclose(f);}
 int main(void){
+ ysong.enabled=0;
  FILE*vf=fopen("VERSION","r");if(!vf||fscanf(vf,"%15s",test_version)!=1)exit(6);fclose(vf);
  check(40+text_w(&FONT_M,"EMERALD YM")<185,"large uppercase header fits before the smaller badge");
- palette_set(0);yui_boot();lcd_sync();image("build/host/ui-boot.ppm");ydisplay();lcd_sync();image("build/host/ui-paused.ppm");unsigned initial=blits,clears=fills;
+ palette_set(0);yui_boot();lcd_sync();image("build/host/ui-boot.ppm");
+ {unsigned before=blits,clear=fills;yui_boot_tick(0);check(blits==before,"boot animation skips an unchanged frame");
+  for(uint32_t i=0;i<13u;i++){char path[80];yui_boot_tick(i*90u);sprintf(path,"build/host/ui-boot-%02u.ppm",i);image(path);}
+  check(fills==clear,"boot animation uses bounded tiles without whole-screen clears");}
+ ydisplay();lcd_sync();image("build/host/ui-paused.ppm");unsigned initial=blits,clears=fills;
  for(int i=0;i<100;i++)ydisplay();check(blits==initial&&fills==clears,"idle: zero repeated LCD writes");
  ymidi_out=1;ydisplay();check(blits==initial+1&&last_w==240&&last_h==44,"EDIT updates only the complete header tile");image("build/host/ui-midi-out.ppm");
  initial=blits;ydisplay();check(blits==initial,"stable MIDI OUT has no repeated LCD writes");
@@ -97,5 +103,8 @@ int main(void){
  ym_overload=8;yplaying=0;ydisplay();image("build/host/ui-overload.ppm");
  check(fills==clears,"no visible clears while playing or updating");
  ydisplay_invalidate();ydisplay();check(fills==clears+1,"full redraw only on explicit invalidation");
+ ym_overload=0;ysong.enabled=1;ys_song_profile(&ysong,25,0);ydisplay();image("build/host/ui-song.ppm");
+ initial=blits;ydisplay();check(blits==initial,"stable song section does not repaint");
+ ysong.enabled=0;ydisplay();check(blits==initial+1,"HOME mode change redraws only transport");
  printf("Renderer bounds and redraw checks passed.\n");return 0;
 }
