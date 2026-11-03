@@ -119,7 +119,9 @@ static FX_CODE void tick(){
  static const uint8_t ra[] PSG_PITCH_DATA={0,2,5,6,8,11,12,14},rb[] PSG_PITCH_DATA={0,3,4,6,9,10,12,14};
  const uint8_t*rh=song?ym_var_lead_rhythm(song_style,b):(b%2?rb:ra);
  if(!intro)for(int k=0;k<8;k++)if(pos==rh[k]&&!(bridge&&(k==1||k==5))&&(!song||ym_var_lead_event(b,k))&&(k==0||pick(100)<density)){
-  int degree=song?(int)ym_var_motif(song_style,b,k):motifs[b%4][k];if(section>=24&&k==5&&degree<6)degree++;
+  int degree=motifs[b%4][k];
+  if(song)degree=(degree+(int)ym_var_motif(song_style,b,k))/2; /* K3 mutation still evolves motifs. */
+  if(section>=24&&k==5&&degree<6)degree++;
   int n=(k==0||k==4?chords[idx][(b/4+k)%3]:scale[degree])+(bridge?0:12);
   int next=k<7?rh[k+1]:16;note(1,n,(next-rh[k])*unit*4/5);
  }
