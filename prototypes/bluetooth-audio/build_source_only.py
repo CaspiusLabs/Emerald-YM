@@ -29,7 +29,10 @@ def main():
                         help="Split explicit RAM function sections in private bitcode, without moving code to XIP")
     parser.add_argument("--ram-bt-vm", action="store_true", help="Use the audited RAM Bluetooth file backend")
     parser.add_argument("--deny-sdk-file-delete", action="store_true", help="Disable SDK file deletion in the offline RAM VM profile")
+    parser.add_argument("--deny-sdk-vm-update", action="store_true", help="Reject SDK VM update preparation in the offline profile")
     args = parser.parse_args()
+    if args.deny_sdk_vm_update and not args.deny_sdk_file_delete:
+        parser.error("--deny-sdk-vm-update requires --deny-sdk-file-delete")
     if args.deny_sdk_file_delete and not args.ram_bt_vm:
         parser.error("--deny-sdk-file-delete requires --ram-bt-vm")
     if args.ram_bt_vm and not args.session_config:
@@ -53,6 +56,8 @@ def main():
         out /= "ram-bt-vm"
     if args.deny_sdk_file_delete:
         out /= "deny-file-delete"
+    if args.deny_sdk_vm_update:
+        out /= "deny-vm-update"
     if args.reference_rf:
         out /= "reference-rf"
     out.mkdir(parents=True, exist_ok=True)
@@ -252,6 +257,35 @@ def main():
         shutil.copyfile(archive, private_fs)
         run('replace-sdfile', [tc/'bin/llvm-ar.exe', 'r', private_fs, member])
         libs = [private_fs if lib == archive else lib for lib in libs]
+    if args.deny_sdk_vm_update:
+        archive = sdk / 'cpu/wl82/liba/update.a'
+        member = out / 'flash_fs_api.c.o'
+        member.write_bytes(run('extract-flash-fs-api', [tc/'bin/llvm-ar.exe', 'p', archive, member.name]).stdout)
+        ir = out / 'flash-fs-api-original.ll'
+        run('inspect-flash-fs-api', [tc/'bin/clang.exe', '-target', 'pi32v2', '-mcpu=r3',
+            '-S', '-emit-llvm', '-x', 'ir', member, '-o', ir])
+        module = ir.read_text(encoding='utf-8')
+        pattern = r'(^define signext i8 @vm_update_defrag\([^\n]* \{\n)(.*?)(^\})'
+        match = re.search(pattern, module, re.M | re.S)
+        if not match or match[2].count('@vm_defrag_for_update(') != 2 or 'i8 -5, i8 -1' not in match[2]:
+            raise RuntimeError('Pinned SDK VM update contract changed')
+        # Abort the entire preparation step before it reads, erases or writes flash.
+        module = module[:match.start(2)] + 'entry:\n  ret i8 -1\n' + module[match.end(2):]
+        module, declarations = re.subn(
+            r'^declare [^\n]*@vm_defrag_for_update\([^\n]*\n', '', module, flags=re.M)
+        if declarations != 1 or '@vm_defrag_for_update' in module:
+            raise RuntimeError('Unexpected remaining VM defrag references')
+        patched = out / 'flash-fs-api-deny-update.ll'
+        patched.write_text(module, encoding='utf-8')
+        run('compile-deny-vm-update', [tc/'bin/clang.exe', '-target', 'pi32v2', '-mcpu=r3',
+            '-mfprev1', '-c', '-emit-llvm', '-x', 'ir', patched, '-o', member])
+        symbols = run('verify-flash-fs-dependency', [tc/'bin/llvm-nm.exe', '-u', member]).stdout.decode()
+        if re.search(r'\bvm_defrag_for_update\s*$', symbols, re.M):
+            raise RuntimeError('Rebuilt flash filesystem still imports vm_defrag_for_update')
+        private_update = out / 'deny-vm-update.a'
+        shutil.copyfile(archive, private_update)
+        run('replace-flash-fs-api', [tc/'bin/llvm-ar.exe', 'r', private_update, member])
+        libs = [private_update if lib == archive else lib for lib in libs]
     roots = ["audio_server_info", "subdev_sbc_enc", "sbc_package_ops", "vir_dev_sub",
              "btstack_init", "a2dp_src_sdp_record_item", "a2dp_source_sbc_codec",
              "eym_bt_encoder_open", "eym_bt_encoder_push", "eym_bt_encoder_close",
@@ -293,6 +327,7 @@ def main():
               "pcm_frames": 1024 if args.lean_virtual else 2048,
               "sbc_slots": 4 if args.lean_virtual else 8,
               "queue_pool_storage": args.lean_virtual,
+              "sdk_vm_update_denied": args.deny_sdk_vm_update,
               "sdk_file_delete_denied": args.deny_sdk_file_delete,
               "ram_bt_vm": args.ram_bt_vm,
               "session_only_syscfg": args.session_config,

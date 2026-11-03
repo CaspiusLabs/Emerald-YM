@@ -1,6 +1,6 @@
-# Bluetooth headphone audio prototype — development 1.0.11
+# Bluetooth headphone audio prototype — development 1.0.12
 
-The [SDK filesystem dependency audit](sdk-fs-1.0.11/README.md) measures the effect of rejecting SDK file deletion. The [RAM Bluetooth VM experiment](bt-vm-ram-1.0.10/README.md) follows the [1.0.9 platform audit](platform-integration-1.0.9/README.md). The [1.0.8 lean profile](lean-integration-1.0.8/README.md) remains available. The [1.0.7 baseline audit](current-audit/README.md) remains preserved. The prototype is now based on main d16ce4a; stable installed/released firmware is 1.0.4. The 0.8.x results below are historical, measured against 0.7.0. No Bluetooth package exists.
+The [SDK VM update audit](sdk-vm-update-1.0.12/README.md) measures the effect of rejecting VM update preparation. The [SDK filesystem dependency audit](sdk-fs-1.0.11/README.md) measures the effect of rejecting SDK file deletion. The [RAM Bluetooth VM experiment](bt-vm-ram-1.0.10/README.md) follows the [1.0.9 platform audit](platform-integration-1.0.9/README.md). The [1.0.8 lean profile](lean-integration-1.0.8/README.md) remains available. The [1.0.7 baseline audit](current-audit/README.md) remains preserved. The prototype is now based on main d16ce4a; stable installed/released firmware is 1.0.4. The 0.8.x results below are historical, measured against 0.7.0. No Bluetooth package exists.
 
 ## Historical 0.8.1 stage
 
