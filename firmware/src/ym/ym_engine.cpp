@@ -8,8 +8,10 @@
  * Keep the small audio RAM region for synthesis, without changing its map. */
 #if defined(__clang__)
 #define YM_CONTROL_CODE __attribute__((section(".ym_control")))
+#define YM_SMALL_CONTROL __attribute__((minsize,noinline))
 #else
 #define YM_CONTROL_CODE
+#define YM_SMALL_CONTROL
 #endif
 uint32_t emerald_fm_gain_q8[5]={256,256,256,256,256};
 static volatile uint32_t req_voice_gain[12]={256,256,256,256,256,256,256,256,256,256,256,256};
@@ -45,35 +47,40 @@ static uint32_t clock_applied;
 static volatile uint32_t req_song_section=255;
 #define EMERALD_FX 1
 #include "ym_psg.h"
+#define YM_VARIATION_TABLE PSG_PITCH_DATA
+#include "ym_variation.h"
+#undef YM_VARIATION_TABLE
+static uint32_t song_style;
 static uint32_t random32(){state^=state<<13;state^=state>>17;state^=state<<5;return state;}
 static uint32_t pick(uint32_t n){return random32()%n;}
 static void wr(int r,int v){chip->write(r>=256?2:0,uint8_t(r));chip->write(r>=256?3:1,uint8_t(v));}
-static void cw(int c,int r,int v){wr((c>=3?256:0)+r+c%3,v);}
+static YM_SMALL_CONTROL void cw(int c,int r,int v){wr((c>=3?256:0)+r+c%3,v);}
 static int key(int c){return c%3+(c>=3?4:0);}
-static void off(int c){wr(0x28,key(c));hold[c]=0;fm_note[c]=-1;}
+static YM_SMALL_CONTROL void off(int c){wr(0x28,key(c));hold[c]=0;fm_note[c]=-1;}
 struct Patch {uint8_t fb,mul[4],tl[4],ar[4],dr[4],sr[4],sl[4],rr[4];};
 static const Patch bass PSG_PITCH_DATA={5,{1,1,1,1},{29,7,37,12},{31,31,31,31},{17,13,19,14},{5,6,5,6},{5,5,5,5},{10,10,10,10}};
 static const Patch lead PSG_PITCH_DATA={3,{2,1,1,1},{34,9,42,15},{31,30,31,30},{13,9,16,10},{3,2,4,2},{5,3,6,3},{10,10,10,10}};
 static const Patch keys PSG_PITCH_DATA={4,{1,1,3,1},{32,19,43,25},{31,31,31,31},{19,15,22,17},{7,6,8,7},{8,7,8,7},{11,11,11,11}};
-static FX_CODE void patch(int c,const Patch&p,int pan){
+static FX_CODE YM_SMALL_CONTROL void patch(int c,const Patch&p,int pan){
  static const uint8_t slots[] PSG_PITCH_DATA={0,8,4,12};
  for(int i=0;i<4;i++){int s=slots[i];cw(c,0x30+s,p.mul[i]);cw(c,0x40+s,p.tl[i]);cw(c,0x50+s,p.ar[i]);cw(c,0x60+s,p.dr[i]);cw(c,0x70+s,p.sr[i]);cw(c,0x80+s,(p.sl[i]<<4)|p.rr[i]);cw(c,0x90+s,0);}
  cw(c,0xb0,(p.fb<<3)|4);cw(c,0xb4,pan);
 }
-static FX_CODE void note(int c,int n,uint32_t gate){
+static FX_CODE YM_SMALL_CONTROL void note(int c,int n,uint32_t gate){
  n+=transpose;if(n<12)n=12;if(n>115)n=115;int f=ym_pitch[n];off(c);
  cw(c,0xa4,f>>8);cw(c,0xa0,f&255);wr(0x28,0xf0|key(c));hold[c]=(gate*fx_gate[c])>>8;fm_note[c]=(int16_t)n;notes++;midi_serial[c]++;
 }
 struct Drum {const int8_t*p;uint32_t len,pos,level,velocity,end;};
 static Drum drums[4];
-static FX_CODE void hit(int d,uint32_t level){drums[d].pos=0;drums[d].velocity=level;drums[d].level=(level*req_voice_gain[d+5]+128u)>>8;midi_serial[d+5]++;}
-static FX_CODE void make_motifs(){
+static FX_CODE YM_SMALL_CONTROL void hit(int d,uint32_t level){drums[d].pos=0;drums[d].velocity=level;drums[d].level=(level*req_voice_gain[d+5]+128u)>>8;midi_serial[d+5]++;}
+static FX_CODE YM_SMALL_CONTROL void make_motifs(){
  static const int8_t base[4][8] PSG_PITCH_DATA={{2,4,5,4,2,1,0,1},{1,2,4,3,2,1,2,4},{4,5,6,5,4,2,1,0},{3,2,1,0,1,2,4,3}};
  uint32_t rot=pick(4);for(int m=0;m<4;m++)for(int k=0;k<8;k++)motifs[m][k]=base[(m+rot)%4][k];
  for(int m=0;m<4;m++){int k=1+pick(6),n=motifs[m][k]+(pick(2)?1:-1);motifs[m][k]=n<0?0:n>6?6:n;}
 }
-static FX_CODE void restart(uint32_t seed){
+static FX_CODE YM_SMALL_CONTROL void restart(uint32_t seed){
  midi_epoch++;state=initial_seed=seed?seed:1;steps=step_phase=notes=clock_applied=0;psg_reset();fx_reset_audio();
+ song_style=ym_var_style(initial_seed);
  for(int c=0;c<5;c++)if(fx_values[c][0]||fx_values[c][1])fx_dirty|=1u<<c;
  chip->reset();wr(0x22,0);wr(0x27,0);wr(0x2a,128);wr(0x2b,128);last_dac=128;
  for(int c=0;c<5;c++)off(c);
@@ -81,41 +88,82 @@ static FX_CODE void restart(uint32_t seed){
  drums[0]={ym_kick,sizeof(ym_kick),sizeof(ym_kick),100,100,sizeof(ym_kick)};drums[1]={ym_snare,sizeof(ym_snare),sizeof(ym_snare),100,100,sizeof(ym_snare)};
  drums[2]={ym_hat,sizeof(ym_hat),sizeof(ym_hat),100,100,sizeof(ym_hat)};drums[3]={ym_open,sizeof(ym_open),sizeof(ym_open),100,100,sizeof(ym_open)};make_motifs();
 }
-static FX_CODE void tick(){
+static FX_CODE YM_SMALL_CONTROL void tick(){
  uint32_t b=steps/16,pos=steps%16,section=req_song_section==255u?b%32:req_song_section;bool intro=section<4,bridge=section>=16&&section<24;
+ bool song=req_song_section!=255u;
  static const int8_t roots[] PSG_PITCH_DATA={40,37,45,47,44,37,42,47},ci[] PSG_PITCH_DATA={1,1,2,3,1,4,6,7};
  static const int8_t chords[8][3] PSG_PITCH_DATA={{64,68,71},{64,68,71},{61,64,68},{63,66,69},{63,68,71},{64,68,71},{61,64,69},{63,66,69}};
  static const int8_t scale[] PSG_PITCH_DATA={64,66,68,69,71,73,75};
- uint32_t idx=bridge?ci[b%8]:b%8,unit=req_unit;
+ uint32_t idx=song?ym_var_chord(song_style,b,section):(bridge?ci[b%8]:b%8),unit=req_unit;
  if(pos==0&&b&&b%8==0&&pick(100)<mutation){int m=pick(4),k=1+pick(6),n=motifs[m][k]+(pick(2)?1:-1);motifs[m][k]=n<0?0:n>6?6:n;}
  static const uint8_t bp[] PSG_PITCH_DATA={0,3,4,7,10,12,14,15};
- for(int k=0;k<8;k++)if(pos==bp[k]&&!(intro&&k==7)&&!(bridge&&k==3)){
+ static const uint8_t bass_masks[4][4] PSG_PITCH_DATA={
+  {255,255,255,255},{255,127,255,127},{255,255,247,255},{255,223,255,255}
+ };
+ uint32_t bass_mask=song?bass_masks[(song_style>>7)&3u][b&3u]:255u;
+ for(int k=0;k<8;k++)if(pos==bp[k]&&!(intro&&k==7)&&!(bridge&&k==3)&&((bass_mask>>k)&1u)){
   int n=roots[idx]+(k==1||k==5?12:k==3||k==6?7:0);
   if(k==7)n=roots[(idx+1)%8]+(pick(2)?-1:1);
+  static const int8_t offsets[4][8] PSG_PITCH_DATA={
+   {0,0,0,0,0,0,0,0},{0,0,0,0,12,0,0,0},
+   {0,0,0,-12,0,0,0,0},{0,0,0,0,7,0,0,0}
+  };
+  if(song)n+=offsets[(song_style>>7)&3u][k];
   note(0,n,unit*(k==0?7:4)/5);
  }
- if(!intro||section>=2)if(pos==0||pos==3||(!bridge&&(pos==6||pos==11)))for(int v=0;v<3;v++)note(v+2,chords[idx][v],unit*4/5);
- static const uint8_t ra[] PSG_PITCH_DATA={0,2,5,6,8,11,12,14},rb[] PSG_PITCH_DATA={0,3,4,6,9,10,12,14};const uint8_t*rh=b%2?rb:ra;
- if(!intro)for(int k=0;k<8;k++)if(pos==rh[k]&&!(bridge&&(k==1||k==5))&&(k==0||pick(100)<density)){
-  int degree=motifs[b%4][k];if(section>=24&&k==5&&degree<6)degree++;
+ if(!intro||section>=2)if(pos==0||pos==3||(!bridge&&(pos==6||pos==11)))for(int v=0;v<3;v++){
+  int n=chords[idx][v];
+  static const int8_t inversions[4][3] PSG_PITCH_DATA={{0,0,0},{12,0,0},{0,0,-12},{0,12,0}};
+  if(song)n+=inversions[(song_style>>7)&3u][v];
+  note(v+2,n,unit*4/5);
+ }
+ static const uint8_t ra[] PSG_PITCH_DATA={0,2,5,6,8,11,12,14},rb[] PSG_PITCH_DATA={0,3,4,6,9,10,12,14};
+ const uint8_t*rh=song?ym_var_lead_rhythm(song_style,b):(b%2?rb:ra);
+ uint32_t lead_mask=song&&(b&4u)?0x77u:0xffu;
+ if(!intro)for(int k=0;k<8;k++)if(pos==rh[k]&&!(bridge&&(k==1||k==5))&&((lead_mask>>k)&1u)&&(k==0||pick(100)<density)){
+  int degree=motifs[b%4][k];
+  if(song)degree=(degree+(int)ym_var_motif(song_style,b,k))/2; /* K3 mutation still evolves motifs. */
+  if(section>=24&&k==5&&degree<6)degree++;
   int n=(k==0||k==4?chords[idx][(b/4+k)%3]:scale[degree])+(bridge?0:12);
   int next=k<7?rh[k+1]:16;note(1,n,(next-rh[k])*unit*4/5);
  }
  if(section==3&&pos>=8&&!(pos&1))note(1,scale[3+(pos-8)/2]+12,unit*4/5);
- if(pos==0||pos==10||( !bridge&&(pos==6||pos==8||pos==14)))hit(0,intro?85:100);
- if(bridge?pos==8:(pos==4||pos==12))hit(1,100);
- if(!(pos&1))hit(pos==14?3:2,pos%4?65:90);
- if(b%8==7&&pos>=12)hit(1,35+(pos-12)*15);
+ if(song){
+  const ym_var_drums *g=ym_var_drum_pattern(song_style,b,section);
+  uint32_t bit=1u<<pos,vel=intro?80u:bridge?72u:section>=24u?98u:90u;
+  if((b&3u)==3u&&vel<95u)vel+=5u;
+  if((g->kick&bit)&&(!bridge||pos==0u||pos==8u))hit(0,vel);
+  if((g->snare&bit)&&(!bridge||pos==12u))hit(1,vel);
+  if((g->hat&bit)&&(!bridge||pos==0u||pos==8u||pos==12u))hit(2,pos%4u?55u:75u);
+  if((g->open&bit)&&!intro&&!bridge)hit(3,65u);
+  /* Quarter-phrase pickup. The final event is never duplicated. */
+  if((b&3u)==3u&&pos==15u&&!intro&&!bridge&&!(g->snare&bit))hit(1,38u);
+ }else{
+  if(pos==0||pos==10||( !bridge&&(pos==6||pos==8||pos==14)))hit(0,intro?85:100);
+  if(bridge?pos==8:(pos==4||pos==12))hit(1,100);
+  if(!(pos&1))hit(pos==14?3:2,pos%4?65:90);
+  if(b%8==7&&pos>=12)hit(1,35+(pos-12)*15);
+ }
  if(req_psg){
   /* Stable up/down chord arp, one octave below the original short bleeps. */
   static const uint8_t arp[] PSG_PITCH_DATA={0,1,2,1,0,1,2,1};
-  if((pos&1u)==0u){psg_note=(uint8_t)(chords[idx][arp[pos/2]]+transpose);psg_gate=((unit*7/4)*fx_gate[9])>>8;midi_serial[9]++;}
+  if((pos&1u)==0u){
+   uint32_t voice=arp[pos/2];
+   static const uint8_t orders[4][2][8] PSG_PITCH_DATA={
+    {{0,1,2,1,0,1,2,1},{0,1,2,1,0,1,2,1}},
+    {{2,1,0,1,2,1,0,1},{2,1,0,1,2,1,0,1}},
+    {{0,1,2,0,1,2,0,1},{1,2,0,1,2,0,1,2}},
+    {{0,2,1,0,2,1,0,2},{0,2,1,0,2,1,0,2}}
+   };
+   if(song)voice=orders[(song_style>>2)&3u][b&1u][pos/2];
+   psg_note=(uint8_t)(chords[idx][voice]+transpose);psg_gate=((unit*7/4)*fx_gate[9])>>8;midi_serial[9]++;
+  }
   if((pos&3u)==2u){psg_lfsr=0x8000;psg_noise_hold=(2205u*fx_gate[11])>>8;midi_serial[11]++;}
  }
  psg_targets();
  steps++;
 }
-static FX_CODE void fx_apply_fm(uint32_t mask){
+static FX_CODE YM_SMALL_CONTROL void fx_apply_fm(uint32_t mask){
  static const uint8_t fb[5] PSG_PITCH_DATA={5,3,4,4,4},tl1[5] PSG_PITCH_DATA={29,34,32,32,32},tl3[5] PSG_PITCH_DATA={37,42,43,43,43};
  static const uint8_t sl[3][4] PSG_PITCH_DATA={{5,5,5,5},{5,3,6,3},{8,7,8,7}},slots[] PSG_PITCH_DATA={0,8,4,12};
  for(int c=0;c<5;c++)if(mask&(1u<<c)){

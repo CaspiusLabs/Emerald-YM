@@ -1,4 +1,8 @@
-/* Actual engine + production control-rate form + USB publishers, no hardware. */
+/* Actual engine + production control-rate form + USB publishers, no hardware.
+ * Keep assertions active even when the engine is built with /DNDEBUG. */
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -56,8 +60,26 @@ static void profile_tests(){
  s.enabled=0;ys_song_profile(&s,0xffffffffu,15);assert(!s.done&&s.section==255&&s.density==100&&ys_song_level(&s,0,73)==73);
  puts("PASS: 88-bar form boundaries, fill, outro attenuation, live exemption and endless bypass");
 }
+/* Actual rendered PCM must repeat for the same seed and change for a
+ * different seed in song mode. The engine-only endless golden stays intact. */
+static uint32_t song_audio_signature(uint32_t seed){
+ ym_init(seed);ysong.enabled=1;yplaying=1;ys_song_reset();
+ int32_t pcm[512];uint32_t frames=0,next_control=0,hash=2166136261u;
+ while(frames<44100u*4u){
+  if(frames>=next_control){ys_song_service();next_control+=882u;}
+  ym_render(pcm,256,256);
+  for(unsigned i=0;i<512u;i++){hash^=(uint32_t)pcm[i];hash*=16777619u;}
+  frames+=256u;
+ }
+ return hash;
+}
 int main(){
- profile_tests();ym_init(20261026);ysong.enabled=1;yplaying=1;ys_song_reset();
+ profile_tests();
+ uint32_t first=song_audio_signature(20261026u);
+ assert(first==song_audio_signature(20261026u));
+ assert(first!=song_audio_signature(20261027u));
+ puts("PASS: FM/PSG/DAC song audio is same-seed deterministic and changes across seeds");
+ ym_init(20261026);ysong.enabled=1;yplaying=1;ys_song_reset();
  ym_midi_output output={};ym_midi_sync sync={};int32_t pcm[512];uint32_t seen=0,next_control=0,frames=0;
  while(frames<44100u*180u){
   if(frames>=next_control){ys_song_service();next_control+=882u;seen|=1u<<ysong.phase;}

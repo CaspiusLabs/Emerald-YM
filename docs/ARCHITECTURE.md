@@ -38,6 +38,34 @@ Inherited app/dsp, host and web code belongs to DUB-1. EN_YM2612 selects the cur
 
 EN_UAC=1 selects the existing UAC1 implementation in usb.c. Each rendered master block feeds uac_tap; the existing adaptive cubic resampler bridges device/host clock drift into a 2048-frame stereo ring. EP4 IN sends 44/45 frames per millisecond at nominal 44.1 kHz; MIDI keeps EP1 IN/OUT. UAC servicing may nest in audio rendering; MIDI polling remains outside it. Tap cost and nested ISR time contribute to measured render duration; hardware timing still needs verification. No linker layout, startup copy, flash-off code, allocation policy or 85% guard changes. Status v1 is unchanged and does not export UAC-specific counters.
 
+## Seed-driven song composer — development 1.0.9 (unverified on target)
+
+`ym_variation.h` holds compact static progressions, 8 short motif families, 16-step
+drum bitmasks and lead-note grids. `ym_engine.cpp` derives a bounded style from
+the song seed at engine restart; the audio-owner sixteenth-note `tick()` chooses
+harmonic order, register inversions, lead rhythm/response, bass direction, PSG
+arpeggio order, groove and phrase-ending pickup. Variation tables use existing
+`.ym_pitch` XIP placement, and add no sample-by-sample DSP, full-song buffer,
+dynamic allocation, new USB messages, persistence fields or flash sectors.
+The 88-bar song arrangement in `ym_song.h` still publishes gain, density and
+source masks from the main-loop control interval. This combines musical
+development with existing phrase-aware layer changes.
+
+**Compatibility:** variations are enabled only while the song profile has
+`req_song_section != 255`; HOME Endless uses the original fixed tables and
+RNG order. Same seed + controls should yield bit-identical Song Mode PCM;
+different seeds should choose different harmonic/motif/rhythm/groove families.
+The new PCM is deliberately not the historical Endless-mode golden hash.
+
+**Timing caveat:** `tick()` executes within the audio renderer even though it
+runs only at 16th-note boundaries. Any new target code in guarded RAM still
+consumes RAMTEXT. The historical stable size left 68 bytes spare; therefore
+source-level boundedness is not proof of target fit or CPU compliance.
+`build-ym-windows.ps1` and the full desktop tests must pass before hardware
+installation; inspect the ELF link map, section placements, peak block
+duration and xrun counters. Do not move audio-tick work to XIP or weaken
+the 85% guard to make a build fit. **No new target validation yet.**
+
 ## Development 0.6.0 MASTER UI
 
 The main loop copies the existing smoothed MASTER ADC value to ymaster_adc before applying the unchanged squared master_q12 gain calculation. UI position is computed from that linear 0..1023 reading in 90 steps, with visual-only hysteresis. This does not add ADC reads or render-IRQ work and does not enter the persistent settings snapshot.

@@ -1,5 +1,21 @@
 # Emerald YM changelog
 
+## 1.0.11 — 2026-11-04 — PR #22 physical verification
+
+- Archive the exact tested 1.0.10 package and FM-1 audio, MIDI, CPU and XRUN results. This version identifies documentation only.
+
+
+## 1.0.10 — 2026-11-04 — fit PR #22 in RAMTEXT
+
+- Share note and step-control routines and use equivalent pitch-data tables for phrase decisions. Preserve the existing audio RAM layout.
+
+## 1.0.9 — 2026-11-04 — seed-driven composition variety (development candidate)
+
+- Add song-only, seed-selected harmonic progressions (4), motif families (8), lead rhythms (4), bass contours/phrase rests, chord inversions, arpeggio orders (4), and distinct drum grooves (4) with phrase-ending fills and section dynamics. Composer tables live in `.ym_pitch` rather than a song-long RAM buffer.
+- Preserve the 88-bar HOME Song Mode form, section mixer/FX automation, live-key exemption, USB MIDI note masks/Clock/Stop, saved K1–K4/levels, and original endless music generator. REC/reseed chooses a deterministic composition; identical seeds and controls must reproduce audio.
+- Add seed/pattern invariant tests and song PCM repeat/different-seed integration assertions, including explicit assertion activation in release-optimized song tests. Run them from the existing desktop MIDI test script.
+- Initial submission was source-only. The subsequent 1.0.10 build and physical test are recorded above.
+
 ## 1.0.8 — 2026-11-04 — PR #21 physical verification
 
 - Archive the exact tested 1.0.7 candidate package and the full FM-1 song, USB audio, MIDI transport and CPU/XRUN evidence. This version identifies documentation only.
