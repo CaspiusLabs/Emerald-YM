@@ -22,7 +22,10 @@ def main():
     parser.add_argument('--session-config', action='store_true', help='Compare the experimental session syscfg profile')
     parser.add_argument('--split-ram-sections', action='store_true', help='Compare per-function RAM section GC')
     parser.add_argument('--ram-bt-vm', action='store_true', help='Compare the RAM Bluetooth VM profile')
+    parser.add_argument("--deny-sdk-file-delete", action="store_true", help="Disable SDK file deletion in the offline RAM VM profile")
     args = parser.parse_args()
+    if args.deny_sdk_file_delete and not args.ram_bt_vm:
+        parser.error("--deny-sdk-file-delete requires --ram-bt-vm")
     if args.ram_bt_vm and not args.session_config:
         parser.error('--ram-bt-vm requires --session-config')
     if (args.session_config or args.split_ram_sections) and not args.lean:
@@ -60,6 +63,8 @@ def main():
         sdk_path /= 'split-ram'
     if args.ram_bt_vm:
         sdk_path /= 'ram-bt-vm'
+    if args.deny_sdk_file_delete:
+        sdk_path /= 'deny-file-delete'
     sdk_path /= 'reference-rf/report.json'
     sdk = json.loads(sdk_path.read_text(encoding='utf-8'))
     assert sdk['strict_link_passed'] and not sdk['final_undefined'].strip()

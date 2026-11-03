@@ -1,5 +1,11 @@
 # Emerald YM changelog
 
+## 1.0.11 — unreleased — SDK filesystem dependency audit (PR #9)
+
+- Add an opt-in policy that rejects the two SDK file deletion operations before accessing flash. Verify the rebuilt private filesystem object has no import of sfc_erase_zone.
+- Record the resulting isolated and combined link measurements.
+
+
 ## 1.0.10 — unreleased — Bluetooth RAM VM experiment (PR #9)
 
 - Add an opt-in RAM-backed Bluetooth VM file interface using the pinned SDK callback layout and the existing bounded session store.
