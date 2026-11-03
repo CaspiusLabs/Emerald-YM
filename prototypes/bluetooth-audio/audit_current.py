@@ -21,7 +21,10 @@ def main():
     parser.add_argument('--lean', action='store_true', help='Compare the opt-in lean virtual SDK profile')
     parser.add_argument('--session-config', action='store_true', help='Compare the experimental session syscfg profile')
     parser.add_argument('--split-ram-sections', action='store_true', help='Compare per-function RAM section GC')
+    parser.add_argument('--ram-bt-vm', action='store_true', help='Compare the RAM Bluetooth VM profile')
     args = parser.parse_args()
+    if args.ram_bt_vm and not args.session_config:
+        parser.error('--ram-bt-vm requires --session-config')
     if (args.session_config or args.split_ram_sections) and not args.lean:
         parser.error('Experimental profiles require --lean')
     os.chdir(ROOT)
@@ -55,6 +58,8 @@ def main():
         sdk_path /= 'session-config'
     if args.split_ram_sections:
         sdk_path /= 'split-ram'
+    if args.ram_bt_vm:
+        sdk_path /= 'ram-bt-vm'
     sdk_path /= 'reference-rf/report.json'
     sdk = json.loads(sdk_path.read_text(encoding='utf-8'))
     assert sdk['strict_link_passed'] and not sdk['final_undefined'].strip()

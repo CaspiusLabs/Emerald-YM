@@ -1,5 +1,11 @@
 # Emerald YM changelog
 
+## 1.0.10 — unreleased — Bluetooth RAM VM experiment (PR #9)
+
+- Add an opt-in RAM-backed Bluetooth VM file interface using the pinned SDK callback layout and the existing bounded session store.
+- Measure the combined RAMTEXT result and retain the linker diagnostics. Additional section splits that increased memory use were dropped.
+
+
 ## 1.0.9 — unreleased — session configuration / flash and RTOS port attempt (PR #9)
 
 - Add an opt-in real RAM-backed SDK syscfg implementation with task mutex serialization, bounded records and explicit errors. These functions have no flash backend; the SDK direct VM pairing path remains unresolved. MAC must be supplied by a future approved startup path, never invented or read from unknown flash sectors.

@@ -27,7 +27,10 @@ def main():
                         help="Experimental real RAM-only syscfg backend; no persistent pairing or guessed MAC")
     parser.add_argument("--split-ram-sections", action="store_true",
                         help="Split explicit RAM function sections in private bitcode, without moving code to XIP")
+    parser.add_argument("--ram-bt-vm", action="store_true", help="Use the audited RAM Bluetooth file backend")
     args = parser.parse_args()
+    if args.ram_bt_vm and not args.session_config:
+        parser.error("--ram-bt-vm requires --session-config")
     if args.combined_preflight and not (args.lean_virtual and args.reference_rf):
         parser.error("Combined preflight requires --lean-virtual --reference-rf")
     if args.session_config and not args.lean_virtual:
@@ -43,6 +46,8 @@ def main():
         out /= "session-config"
     if args.split_ram_sections:
         out /= "split-ram"
+    if args.ram_bt_vm:
+        out /= "ram-bt-vm"
     if args.reference_rf:
         out /= "reference-rf"
     out.mkdir(parents=True, exist_ok=True)
@@ -150,6 +155,8 @@ def main():
     project_units = ["pcm_queue", "sbc_queue", "sdk_encoder"]
     if args.session_config:
         project_units += ["session_store", "session_config"]
+    if args.ram_bt_vm:
+        project_units += ["bt_vm_ram"]
     for name in project_units:
         obj = out / (name + ".o")
         run(name, [tc / "bin/clang.exe", *flags, "-Wall", "-Werror", "-DEYM_BT_PI32=1", "-c",
@@ -180,12 +187,43 @@ def main():
             split_object(member)
             run('replace-vm-sfc', [tc/'bin/llvm-ar.exe', 'r', private_cpu, member])
         libs = [private_cpu if p == source_cpu else p for p in libs]
+    if args.ram_bt_vm:
+        member = out / 'vm-contract.bc'
+        archive = sdk / 'cpu/wl82/liba/cfg_tool.a'
+        member.write_bytes(run('extract-vm-contract', [tc/'bin/llvm-ar.exe', 'p', archive, 'vm.c.o']).stdout)
+        ir = out / 'vm-contract.ll'
+        run('inspect-vm-contract', [tc/'bin/clang.exe', '-target', 'pi32v2', '-mcpu=r3',
+            '-S', '-emit-llvm', '-x', 'ir', member, '-o', ir])
+        abi = ir.read_text(encoding='utf-8')
+        signatures = (
+            'define i8* @bt_vm_interface()',
+            '%struct.syscfg_file = type { i32 (i32, i32)*, i32 (i8*, i32)*, i32 (i8*, i32)*, i32 (i32, i32)*, i32 ()* }',
+            '@rw_cfg_file_open, i32 (i8*, i32)* @rw_cfg_file_read, i32 (i8*, i32)* @rw_cfg_file_write, i32 (i32, i32)* @rw_cfg_file_seek, i32 ()* @rw_cfg_file_close',
+        )
+        if not all(signature in abi for signature in signatures):
+            raise RuntimeError("Pinned Bluetooth VM callback ABI changed")
+        # SDK OTA still references other functions in this member. Preserve
+        # those definitions and let GC discard the old Bluetooth factory.
+        old_factory = '@bt_vm_interface('
+        if abi.count(old_factory) != 1:
+            raise RuntimeError("Unexpected SDK Bluetooth VM factory references")
+        renamed = out / 'vm-private.ll'
+        renamed.write_text(abi.replace(old_factory, '@eym_sdk_legacy_bt_vm_interface('), encoding='utf-8')
+        replacement = out / 'vm.c.o'
+        run('namespace-vm-factory', [tc/'bin/clang.exe', '-target', 'pi32v2', '-mcpu=r3',
+            '-mfprev1', '-c', '-emit-llvm', '-x', 'ir', renamed, '-o', replacement])
+        private_cfg = out / 'ram-bt-cfg-tool.a'
+        shutil.copyfile(archive, private_cfg)
+        run('replace-vm-factory', [tc/'bin/llvm-ar.exe', 'r', private_cfg, replacement])
+        libs = [private_cfg if lib == archive else lib for lib in libs]
     roots = ["audio_server_info", "subdev_sbc_enc", "sbc_package_ops", "vir_dev_sub",
              "btstack_init", "a2dp_src_sdp_record_item", "a2dp_source_sbc_codec",
              "eym_bt_encoder_open", "eym_bt_encoder_push", "eym_bt_encoder_close",
              "a2dp_sbc_encoder_get_data"]
     if args.session_config:
         roots += ["eym_session_config_init", "syscfg_read", "syscfg_write"]
+    if args.ram_bt_vm:
+        roots += ["bt_vm_interface"]
     link = [tc / "bin/pi32v2-ld.exe", "-plugin", tc / "bin/LLVMgold.dll",
             "--plugin-opt=mcpu=r3", "--plugin-opt=-mattr=+fprev1",
             "--plugin-opt=-function-sections", "--plugin-opt=-data-sections",
@@ -219,6 +257,7 @@ def main():
               "pcm_frames": 1024 if args.lean_virtual else 2048,
               "sbc_slots": 4 if args.lean_virtual else 8,
               "queue_pool_storage": args.lean_virtual,
+              "ram_bt_vm": args.ram_bt_vm,
               "session_only_syscfg": args.session_config,
               "ram_section_metadata_changes": section_changes,
               "hardware_accessed": False, "installable_package_created": False,
@@ -257,6 +296,12 @@ def main():
         # NOT evidence of connected negotiation; the adapter is still unwired.
         table_symbols = run("final-symbol-sizes", [tc / "bin/llvm-nm.exe", "-S", elf]).stdout.decode()
         values = {m[3]: int(m[1], 16) for m in re.finditer(r"^([0-9a-fA-F]+)\s+(?:[0-9a-fA-F]+\s+)?(\w)\s+(\S+)$", table_symbols, re.M)}
+        if args.ram_bt_vm:
+            if 'eym_sdk_legacy_bt_vm_interface' in values or not all(
+                name in values for name in ('bt_vm_interface', 'vm_read_ram', 'vm_write_ram')
+            ):
+                raise RuntimeError("Bluetooth VM factory replacement failed")
+            report['ram_bt_vm_symbols_verified'] = True
         if args.split_ram_sections:
             changed = {c['function'] for unit in section_changes.values() for c in unit['changes']}
             retained = {name: value for name, value in values.items()

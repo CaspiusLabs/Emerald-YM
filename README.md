@@ -6,7 +6,7 @@ Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A
 
 **Download:** [Emerald YM 1.0.4 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v1.0.4/emerald-ym-1.0.4.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v1.0.4/SHA256SUMS) · [Stable release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v1.0.4)
 
-Exact newly built and physically retested package, 609,677 bytes, SHA-256 `f16da6faa7607541c94ac4bfbb0bb626e95eac0956e990a75317caf5b73a411f`. Tag `v1.0.4` points to source `7bb4efdd02499664296e96f134371c68403b22de`. Development VERSION **1.0.9** audits the isolated Bluetooth prototype; the K1–K4 test report remains available; it is not replacement firmware. The older unpublished 1.0.4 desktop candidate and 1.0.8 physical reports describe different bytes.
+Exact newly built and physically retested package, 609,677 bytes, SHA-256 `f16da6faa7607541c94ac4bfbb0bb626e95eac0956e990a75317caf5b73a411f`. Tag `v1.0.4` points to source `7bb4efdd02499664296e96f134371c68403b22de`. Development VERSION **1.0.10** audits the isolated Bluetooth prototype; the K1–K4 test report remains available; it is not replacement firmware. The older unpublished 1.0.4 desktop candidate and 1.0.8 physical reports describe different bytes.
 
 ![Current 1.0.4 song-mode screen from the native renderer](releases/v1.0.4/ui-preview.png)
 
@@ -213,4 +213,4 @@ The combined firmware is **GPL-3.0-only**. It uses the DUB-1/AMB-1/Felucca platf
 
 ## Experimental Bluetooth audio
 
-The isolated A2DP/SBC prototype remains non-installable in draft PR #9. See the [current integration audit](prototypes/bluetooth-audio/platform-integration-1.0.9/README.md). Stable 1.0.4 is unchanged.
+The isolated A2DP/SBC prototype remains non-installable in draft PR #9. See the [current integration audit](prototypes/bluetooth-audio/bt-vm-ram-1.0.10/README.md). Stable 1.0.4 is unchanged.
