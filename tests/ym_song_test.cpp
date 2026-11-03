@@ -35,6 +35,24 @@ static void profile_tests(){
  for(uint32_t i=0;i<8;i++){ys_song_profile(&s,bars[i],0);assert(s.phase==phases[i]&&s.done==(i==7));}
  ys_song_profile(&s,8,11);assert(!s.fill);ys_song_profile(&s,8,12);assert(s.fill&&(s.mask&(1u<<6)));
  ys_song_profile(&s,88,0);assert(s.gain==12&&ys_song_level(&s,0,100)==12&&ys_song_level(&s,10,45)==45);
+ /* Two verses and two choruses must evolve, not replay one static mask.
+  * Keep the original phase boundaries, outro, and saved mixer semantics. */
+ ys_song_profile(&s,9,0);assert(s.density==55&&!(s.mask&(1u<<1))&&!(s.mask&(1u<<9))&&(s.mask&(1u<<10)));
+ ys_song_profile(&s,13,0);assert(s.density==65&&(s.mask&(1u<<1))&&!(s.mask&(1u<<9)));
+ ys_song_profile(&s,17,0);assert(s.density==70&&(s.mask&(1u<<9)));
+ ys_song_profile(&s,24,0);assert(s.density==80&&(s.mask&(1u<<8)));
+ ys_song_profile(&s,25,0);assert(s.density==90&&(s.mask&(1u<<1)));
+ ys_song_profile(&s,33,0);assert(s.density==100);
+ ys_song_profile(&s,41,0);assert(s.density==45&&!(s.mask&(1u<<1)));
+ ys_song_profile(&s,45,0);assert(s.density==65&&(s.mask&(1u<<1)));
+ ys_song_profile(&s,49,0);assert(s.density==70&&(s.mask&(1u<<1))&&!(s.mask&(1u<<9)));
+ ys_song_profile(&s,51,0);assert(!(s.mask&(1u<<1)));
+ ys_song_profile(&s,57,0);assert(s.density==86&&(s.mask&(1u<<9)));
+ ys_song_profile(&s,61,0);assert(s.density==94);
+ ys_song_profile(&s,65,0);assert(s.density==100&&(s.mask&(1u<<9)));
+ ys_song_profile(&s,69,0);assert(!(s.mask&(1u<<9)));
+ ys_song_profile(&s,71,0);assert(!(s.mask&(1u<<1)));
+ ys_song_profile(&s,72,0);assert(s.mask&(1u<<1));
  s.enabled=0;ys_song_profile(&s,0xffffffffu,15);assert(!s.done&&s.section==255&&s.density==100&&ys_song_level(&s,0,73)==73);
  puts("PASS: 88-bar form boundaries, fill, outro attenuation, live exemption and endless bypass");
 }

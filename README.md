@@ -210,3 +210,5 @@ These commands do not open MIDI ports or flash hardware. `VERSION` determines th
 ## License and credits
 
 The combined firmware is **GPL-3.0-only**. It uses the DUB-1/AMB-1/Felucca platform lineage, Aaron Giles's **ymfm** (**BSD-3-Clause**) and original Emerald engine/PSG/FX code (**MIT**). JieLi package inputs and fonts retain their licenses. Full provenance and redistribution terms: [LICENSING.md](LICENSING.md), [LICENSE](LICENSE), [LICENSE-emerald.txt](LICENSE-emerald.txt).
+
+The PR #21 song-variation candidate 1.0.7 completed the 88-bar FM-1 test. Documentation VERSION 1.0.8 archives the exact tested package and the [physical results](docs/verification/song-phrases-1.0.7/README.md).

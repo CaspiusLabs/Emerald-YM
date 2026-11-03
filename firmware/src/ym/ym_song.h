@@ -20,9 +20,31 @@ static void ys_song_profile(struct ym_song_form*s,uint32_t bar,uint32_t step){
  case 0:s->section=b<4u?0u:b<7u?2u:3u;s->density=55;
   s->mask=(1u<<0)|(1u<<10);if(b>=2)s->mask|=(1u<<5)|(1u<<7);
   if(b>=4)s->mask|=(7u<<2)|(1u<<9);break;
- case 1:s->section=4;s->density=65;s->mask=0xfffu&~(1u<<8);break;
- case 2:s->section=24;s->density=100;break;
- case 3:s->section=16;s->density=45;s->mask=(1u<<0)|(7u<<2)|(1u<<9)|(1u<<10)|(1u<<11);break;
+ case 1: /* Same harmonic world, different phrasing in the two verses. */
+  s->section=4;s->mask=0xfffu&~(1u<<8);
+  if(part==1u){
+   s->density=b<4u?55u:b<8u?65u:b<12u?70u:80u;
+   if(b<4u)s->mask&=~((1u<<1)|(1u<<9)); /* Let the lead and PSG arp enter later. */
+   else if(b<8u)s->mask&=~(1u<<9);
+  }else{
+   s->density=b<4u?70u:b<8u?78u:b<12u?86u:94u;
+   if(b<4u)s->mask&=~(1u<<9);
+   if((b&3u)==2u)s->mask&=~(1u<<1); /* One-bar lead answer/rest. */
+  }
+  if((b&3u)==3u)s->mask|=1u<<8; /* Open-hat lift at phrase boundaries. */
+  break;
+ case 2:
+  s->section=24;s->density=part==2u?(b<8u?90u:100u):100u;
+  if(part==5u){
+   if((b&7u)==4u)s->mask&=~(1u<<9); /* Second chorus breathes. */
+   if((b&7u)==6u)s->mask&=~(1u<<1);
+  }
+  break;
+ case 3:
+  s->section=16;s->density=b<4u?45u:65u;
+  s->mask=(1u<<0)|(7u<<2)|(1u<<9)|(1u<<10)|(1u<<11);
+  if(b>=4u)s->mask|=(1u<<1)|(1u<<7); /* Build back into verse two. */
+  break;
  default:s->section=b<4u?4u:2u;s->density=50;
   s->gain=(8u-b)*100u/8u;break;
  }
