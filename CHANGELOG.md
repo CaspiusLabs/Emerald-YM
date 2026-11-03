@@ -1,5 +1,9 @@
 # Emerald YM changelog
 
+## 1.0.10 — 2026-11-04 — fit PR #22 in RAMTEXT
+
+- Share note and step-control routines and use equivalent pitch-data tables for phrase decisions. Preserve the existing audio RAM layout.
+
 ## 1.0.9 — 2026-11-04 — seed-driven composition variety (development candidate)
 
 - Add song-only, seed-selected harmonic progressions (4), motif families (8), lead rhythms (4), bass contours/phrase rests, chord inversions, arpeggio orders (4), and distinct drum grooves (4) with phrase-ending fills and section dynamics. Composer tables live in `.ym_pitch` rather than a song-long RAM buffer.
