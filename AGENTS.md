@@ -5,8 +5,8 @@
 - Creator: **Caspius Labs**. Canonical repository: https://github.com/CaspiusLabs/Emerald-YM (public). Speak Polish with the owner; write code comments, commits, PR descriptions and repository documentation in English.
 - Target hardware: **M-VAVE FM-1**, JieLi AC79. This is original YM2612/PSG generative firmware built on the DUB-1/Felucca platform; not a general Mega Drive or VGM emulator.
 - **Stable, released and documented as physically tested: v1.0.4**. Source/tag `7bb4efdd02499664296e96f134371c68403b22de`, exact `.fwsc` SHA-256 `f16da6faa7607541c94ac4bfbb0bb626e95eac0956e990a75317caf5b73a411f`, hardware identity `FM-1_68010004`. Do not replace or modify published releases or tags.
-- **main at the start of this task: VERSION 1.0.6**, which contains K1–K4 *documentation only*, not a different installed firmware. **Documentation VERSION 1.0.8 records the physically tested song-variation firmware 1.0.7**. VERSION may be ahead of the last installed and released binary. Verify all current refs instead of copying status statements from archived history.
-- At the start of this task, PRs #1–#8 and #10–#20 were merged; **PR #9 Bluetooth Audio was closed without merge on 2026-11-03**. The unmerged 1.0.12 Bluetooth experiments are **not** stable firmware. Never infer current branch/PR status from a stale note.
+- **Current main before this work: VERSION 1.0.8, documentation only**, archiving the physically tested (but not publicly tagged) song-variation firmware 1.0.7 merged via PR #21. **Development candidate: VERSION 1.0.9, source-only/unbuilt**. VERSION may be ahead of the last installed and released binary; always inspect refs and verification records.
+- PR #21 (1.0.7 arrangement + AGENTS refresh) was merged 2026-11-04 after a recorded 88-bar physical FM-1 test; see `docs/verification/song-phrases-1.0.7/`. **PR #9 Bluetooth Audio was closed without merge on 2026-11-03**. Never infer today's PR status from a static handoff file.
 - Source-of-truth reading order: `VERSION`, `README.md`, `CHANGELOG.md`, `docs/VERIFICATION.md`, `docs/ARCHITECTURE.md`, `BUILDING.md`, `docs/INSTALLING.md`, `docs/FIRMWARE-HUB.md`, then current GitHub releases/PRs. Historical reports under `docs/history/`, `docs/verification/` and `releases/` are version-specific.
 
 ## Required workflow
@@ -33,9 +33,9 @@
 
 - Stable song: **88 bars**: INTRO 8 → VERSE 16 → CHORUS 16 → BREAK 8 → VERSE 16 → CHORUS 16 → OUTRO 8 → END. HOME bright is song mode; HOME dim uses deterministic endless generation. REC chooses a new seed. Preserve restart/END behavior and automatic USB MIDI Stop/note cleanup.
 - `firmware/src/ym/ym_song.h` calculates a control-rate arrangement profile, and `firmware/src/ym/ym_prelude.c` publishes its stem mask/relative density/levels. The engine remains in `ym_engine.cpp`. Reuse this mechanism for phrasing; do not add per-sample conditional DSP or a song-long pattern buffer.
-- Candidate **1.0.7** makes verse 1 gradually add lead/arp, verse 2 denser with one-bar lead responses, chorus 2 breathe through short dropouts, and the break build up. Keep source 10 (live keys) exempt from the form's mask/gain automation; save no transient variation values.
+- Hardware-tested and merged **1.0.7** changes verse/chorus layer phrasing. Source-only **1.0.9** adds song-seed harmony, motif families, lead rhythms, bass contours, chord inversions, PSG arpeggio orders and compact drums. Keep source 10 (live keys) exempt from form masks/gain, and save no transient variation values.
 - Song decisions must be deterministic for the same seed and inputs, have bounded state/work, preserve 88-bar boundaries and the original endless path, and avoid unexpected external MIDI note leaks on masked stems. Add regression assertions in `tests/ym_song_test.cpp`, plus a full actual-engine MIDI/audio transport run before claiming completion.
-- Tests must distinguish deterministic changes from true additional audio variety: layer masks/density are one modest first step, not a new harmony, patch library, or genre engine.
+- `ym_variation.h` contains song-only tables with `.ym_pitch` placement; `ym_engine.cpp` uses them at sixteenth-note boundaries, not per sample. Keep the original Endless PCM golden bit-exact. Run `tests/ym_variation_test.cpp`, same/different-seed full-engine assertions, all existing desktop tests, linker memory guards and later scoped hardware measurements before approving 1.0.9. Never move critical tick code to XIP, disable guards, or claim that the code fits RAMTEXT before a real JieLi link.
 
 ## Known gaps and publication
 
