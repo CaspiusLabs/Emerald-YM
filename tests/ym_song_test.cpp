@@ -1,4 +1,8 @@
-/* Actual engine + production control-rate form + USB publishers, no hardware. */
+/* Actual engine + production control-rate form + USB publishers, no hardware.
+ * Keep assertions active even when the engine is built with /DNDEBUG. */
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
