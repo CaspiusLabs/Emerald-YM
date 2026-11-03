@@ -1,5 +1,11 @@
 # Emerald YM changelog
 
+## 1.0.12 — 2026-11-04 — preserve the song playhead on pause
+
+- PLAY toggles pause and resume at the current position. REC resets the arrangement and chooses a new seed. After END, REC prepares a new song. HOME and EDIT preserve the playhead.
+- USB MIDI OUT sends Stop on pause, Continue when resuming, and Start on a fresh arrangement. USB MIDI IN retains its standard Start reset and Continue behavior.
+
+
 ## 1.0.11 — 2026-11-04 — PR #22 physical verification
 
 - Archive the exact tested 1.0.10 package and FM-1 audio, MIDI, CPU and XRUN results. This version identifies documentation only.

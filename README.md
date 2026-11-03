@@ -207,6 +207,14 @@ Documentation VERSION 1.0.11 archives the [exact tested candidate](releases/v1.0
 and the [FM-1 results](docs/verification/song-diversity-1.0.10/README.md).
 The public GitHub Release remains [v1.0.4](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v1.0.4).
 
+## Development 1.0.12 transport
+
+PLAY pauses and resumes the backing at the current position. REC resets the
+arrangement and chooses a new seed. After END/DONE, use REC before PLAY.
+HOME and EDIT preserve the playhead. USB MIDI OUT sends Start for a fresh
+arrangement, Stop on pause, and Continue on resume. Continue uses the
+receiver's retained position.
+
 ## Development
 
 The canonical repository is [CaspiusLabs/Emerald-YM](https://github.com/CaspiusLabs/Emerald-YM). Work in a local clone. Every change increments VERSION, uses a separate branch and opens a pull request to main for review; do not push directly to main or auto-merge. The original DUB-1 remote is reference-only.

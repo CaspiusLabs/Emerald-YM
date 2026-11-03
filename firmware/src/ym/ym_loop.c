@@ -40,8 +40,13 @@ static void fm1_main(void){
    for(uint32_t i=0;i<NB;i++)if(raw_pressed&(1u<<panel.btn[i]))pressed|=1u<<i;
    youtput_controls(pressed);
    ymidi_controls(pressed);
-   if(pressed&(1u<<B_PLAY)){if(ysong.enabled&&ysong.done&&!yplaying)ym_reseed(ym_seed());ymidi_play();}
-   if(pressed&(1u<<B_HOME)){ysong.enabled^=1u;if(ysong.enabled)ym_reseed(ym_seed());else {ys_song_profile(&ysong,ym_bar(),ym_step());ys_song_apply();}}
+   if(pressed&(1u<<B_PLAY))ymidi_play();
+   if(pressed&(1u<<B_HOME)){
+    ysong.enabled^=1u;
+    ys_song_profile(&ysong,ysong_reset_pending?1u:ym_bar(),ysong_reset_pending?0u:ym_step());
+    if(ysong.done)yplaying=0;
+    ys_song_apply();
+   }
    if(pressed&(1u<<B_REC)){uint32_t f=irq_save();seed^=fm1_ms+0x9e3779b9u;ym_reseed(seed?seed:1);yclock.events=yclock.phase=0;irq_restore(f);ypost();yrec_until=fm1_ms+180u;}
    if(pressed&(1u<<B_SEQ)){ymutation=ymutation?0:35;ypost();}
    if(pressed&(1u<<B_SAVE)){if(ys_dirty){yplaying=0;ypost();ys_quiet_at=fm1_ms;}ys_retry(fm1_ms);}
