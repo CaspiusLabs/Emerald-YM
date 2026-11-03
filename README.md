@@ -193,6 +193,23 @@ Levels/FX and K1–K4 retention after full power-off were user-confirmed in the 
 
 **Firmware Hub:** the repository and the exact tested 0.10.0 release are public. The older 0.4.3 transition evidence remains version-specific. Normal V15/Dinghy round trips and the limited USB data-interruption test are documented. The Hub browser route, interrupted changed-sector programming and power-loss recovery remain unverified; no further hardware tests are planned in this task. [Submission checklist](docs/FIRMWARE-HUB.md). No submission has been sent.
 
+## In development: song variation 1.0.9
+
+The proposed, not-yet-built 1.0.9 source adds four harmonic cycles, eight
+melodic motif families, four lead grids, seed-dependent bass contours and
+voicings, four drum grooves (including fills), alternative PSG arpeggios, and
+phrase-based tension/rests. It keeps the existing 88-bar HOME song structure.
+REC changes the seed, and a repeat of the same seed/controls is intended to
+reproduce the same music. HOME Endless intentionally retains the original
+generator, including its historical PCM reference test.
+
+**Not a firmware release:** the source is awaiting Windows JieLi compilation,
+size guards, desktop DSP/MIDI/UI tests and owner-authorized FM-1 validation.
+The physically tested 1.0.7 file remains archived under
+[releases/v1.0.7](releases/v1.0.7/README.md); the latest *public GitHub Release*
+remains [v1.0.4](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v1.0.4).
+Do not flash an unverified source build. See [architecture](docs/ARCHITECTURE.md).
+
 ## Development
 
 The canonical repository is [CaspiusLabs/Emerald-YM](https://github.com/CaspiusLabs/Emerald-YM). Work in a local clone. Every change increments VERSION, uses a separate branch and opens a pull request to main for review; do not push directly to main or auto-merge. The original DUB-1 remote is reference-only.
