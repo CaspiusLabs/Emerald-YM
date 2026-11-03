@@ -1,11 +1,16 @@
 # Emerald YM changelog
 
+## 1.0.8 — 2026-11-04 — PR #21 physical verification
+
+- Archive the exact tested 1.0.7 candidate package and the full FM-1 song, USB audio, MIDI transport and CPU/XRUN evidence. This version identifies documentation only.
+
+
 ## 1.0.7 — 2026-11-03 — song phrase dynamics and maintainer handoff (development candidate)
 
 - Vary control-rate arrangement within the existing 88-bar song: first verse gradually adds lead/PSG arpeggio, second verse uses a denser build and call-and-response rests, second chorus introduces short PSG/lead dropouts, and the break ramps up into the return. Four-bar open-hat lifts retain the existing end-of-section fill.
 - Preserve all seven section lengths, saved levels/FX/K1–K4, live keyboard exemption, MIDI output mask synchronization, deterministic profiles, and the original endless mode. No new audio-loop state, buffers, source patches, or external MIDI features.
 - Expand desktop song-profile assertions; refresh AGENTS.md to reflect stable firmware v1.0.4, documentation v1.0.6 on main, resource constraints and the closed/unmerged Bluetooth experiment.
-- This is a source-only PR candidate. **Build, tests, linker size, target timing and physical FM-1 verification are not yet performed.** Do not flash, tag, release or merge it automatically. Stable public v1.0.4 remains unchanged.
+- Initial PR submission was source-only. The subsequent build, desktop checks and physical test are recorded in the 1.0.8 entry.
 
 ## 1.0.6 — 2026-10-31 — K1–K4 hardware-test documentation
 
