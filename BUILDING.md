@@ -23,6 +23,34 @@ Copy these SDK files to the paths expected under `.runtime/sdk/`. The build veri
 
 The compiler and Python are not redistributed here. No WSL or Docker is required for the tested Windows route. This project does not yet claim a verified GitHub-hosted firmware build or artifact attestation.
 
+## RAMTEXT size diagnostics (tooling 1.0.18)
+
+The standard Windows build saves the linker `objdump -t` output in ignored
+`build/amb.syms`. After a successful build it runs
+`tools/ramtext_report.py` and writes `build/ramtext-report.json`.
+This tool reads symbols; it does **not** change the firmware, loader,
+linker script, USB connection or device.
+
+The physically tested v1.0.12 baseline uses 24,544 of 24,576 bytes of
+guarded RAMTEXT (32 free). Reclaiming 1,024 bytes means at most **23,520
+bytes used** (at least 1,056 bytes free). This is a target, not a result.
+
+From an already linked build:
+
+```powershell
+.\.runtime\python\python.exe tools\ramtext_report.py --symbols build\amb.syms --json build\ramtext-report.json
+.\.runtime\python\python.exe tools\ramtext_report.py --symbols build\amb.syms --require-goal
+```
+
+The first command records the actual size; the second intentionally fails
+until the 1 KiB reclamation target is reached. Symbol sizes are diagnostic,
+not additive: boundary symbols provide the real total. The parser's
+host-only tests are in `tests/ramtext_report_test.py`.
+
+Do not move audio-tick work into unsafe XIP, enlarge RAMTEXT, or relax the
+85% safety guard. Audio-engine changes still require exact PCM/MIDI
+regressions, full target link checks, and separately authorized FM-1 tests.
+
 ## Build and test
 
 From the repository root:
