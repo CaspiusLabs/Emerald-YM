@@ -16,4 +16,6 @@ New-Item -ItemType Directory -Path build\temp -Force | Out-Null
 $env:TEMP=(Resolve-Path -LiteralPath build\temp).Path
 $env:TMP=$env:TEMP
 & $Python tools\build.py --release $Version 2>&1 | Tee-Object -FilePath (Join-Path $PSScriptRoot 'build\build-ym.log')
+if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
+& $Python tools\ramtext_report.py --symbols build\amb.syms --json build\ramtext-report.json
 exit $LASTEXITCODE
