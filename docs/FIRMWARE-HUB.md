@@ -67,6 +67,16 @@ Suggested short description (also represented by the root `fmhub.json`):
   [round trips](verification/install-roundtrips-2026-10-27/README.md) and
   [USB interruption](verification/usb-data-interruption-2026-10-27/README.md).
 
+## Additional owner-reported check (2026-11-04)
+
+- [x] **Owner-reported test on a second computer.** The owner confirms having
+  tested Emerald YM on another PC. This is an owner statement, not a
+  captured installation transcript. The exact image hash, previous firmware,
+  USB identity/Hub Connect response, installation method, reverse transition
+  and any interrupted-update procedure were **not specified**. Accordingly,
+  this confirms only that an additional computer was used for testing; it does
+  not close the separate Hub requirements below.
+
 ## Firmware Hub checklist for stable 1.0.12
 
 - [x] Public, browsable open-source repository and complete license notices.
@@ -85,18 +95,26 @@ Suggested short description (also represented by the root `fmhub.json`):
 - [ ] Check that the Hub's browser **Connect** detects the exact Emerald USB
   identity/port, and validate the browser installation route for 1.0.12
   before claiming that path tested.
+- [ ] **Required Hub recovery check:** with the exact 1.0.12 package on an
+  FM-1, interrupt a real update once during the **Writing** stage, reconnect
+  and verify the updater can continue/restart successfully. The Hub
+  [knowledge base](https://thefirmwarehub.com/kb/) lists an interrupted
+  update among author tests. Earlier v0.4.3 same-image USB unplugging does
+  not establish this check for v1.0.12.
 - [ ] Confirm final author/links/image presentation and **explicitly
   authorize** sending the listing submission to the Hub maintainer.
 
 ### Optional, higher-risk recovery qualification (not yet completed)
 
-- [ ] Test recovery from an interrupted **changed-sector** write on a
-  controlled device/recovery setup only when specifically authorized.
-- [ ] Test actual power-loss recovery separately. The historical
-  same-image USB data interruption did not exercise those cases.
+- [ ] If required by the loader behavior, separately characterize changed-
+  sector interruption and recovery with a documented controlled method;
+  do not assume a same-image retry covers changed-sector programming.
+- [ ] Test actual battery/power-loss recovery separately, only if needed and
+  explicitly authorized. This is not implied by a host USB disconnect.
 
-Never run risky flash interruption automatically as a documentation or
-publication side-effect. Do not invent results, credentials, or signatures.
+Do not perform deliberate flash interruption or power cycling automatically.
+Plan a recovery path before authorizing the required interruption test.
+Do not invent test results, credentials or signatures.
 
 ## Submission handoff
 
