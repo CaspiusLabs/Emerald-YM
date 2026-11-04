@@ -1,5 +1,10 @@
 # Emerald YM changelog
 
+## 1.0.14 — 2026-11-04 — stable 1.0.12 documentation
+
+- Point the README and installation guide to the stable 1.0.12 download, checksum and FM-1 evidence. Label the existing native previews with their capture version and document current transport controls.
+
+
 ## 1.0.13 — 2026-11-04 — PR #23 physical verification
 
 - Archive the exact tested 1.0.12 package and FM-1 pause, resume, REC and USB MIDI evidence. This version identifies documentation only.

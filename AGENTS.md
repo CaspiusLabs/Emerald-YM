@@ -4,8 +4,8 @@
 
 - Creator: **Caspius Labs**. Canonical repository: https://github.com/CaspiusLabs/Emerald-YM (public). Speak Polish with the owner; write code comments, commits, PR descriptions and repository documentation in English.
 - Target hardware: **M-VAVE FM-1**, JieLi AC79. This is original YM2612/PSG generative firmware built on the DUB-1/Felucca platform; not a general Mega Drive or VGM emulator.
-- **Stable, released and documented as physically tested: v1.0.4**. Source/tag `7bb4efdd02499664296e96f134371c68403b22de`, exact `.fwsc` SHA-256 `f16da6faa7607541c94ac4bfbb0bb626e95eac0956e990a75317caf5b73a411f`, hardware identity `FM-1_68010004`. Do not replace or modify published releases or tags.
-- **Current main before this work: VERSION 1.0.8, documentation only**, archiving the physically tested (but not publicly tagged) song-variation firmware 1.0.7 merged via PR #21. **Documentation VERSION 1.0.11 archives the physically tested PR #22 firmware 1.0.10**. VERSION may be ahead of the last installed and released binary; always inspect refs and verification records.
+- **Stable, released and documented as physically tested: v1.0.12**. Source/tag `2e4bf3b5a9b8418a5ba4c18616b19c2fd0e40da6`, exact package SHA-256 `0ebf70db09e5cf5536bd9ea2924eb1ddbe244732de22ac8c469efb5439440e86`, hardware identity `FM-1_68010012`. Preserve published releases and tags.
+- **Documentation VERSION 1.0.14** updates the stable 1.0.12 release guide. VERSION may be ahead of the last installed and released binary. Verify current refs and evidence.
 - PR #21 (1.0.7 arrangement + AGENTS refresh) was merged 2026-11-04 after a recorded 88-bar physical FM-1 test; see `docs/verification/song-phrases-1.0.7/`. **PR #9 Bluetooth Audio was closed without merge on 2026-11-03**. Never infer today's PR status from a static handoff file.
 - Source-of-truth reading order: `VERSION`, `README.md`, `CHANGELOG.md`, `docs/VERIFICATION.md`, `docs/ARCHITECTURE.md`, `BUILDING.md`, `docs/INSTALLING.md`, `docs/FIRMWARE-HUB.md`, then current GitHub releases/PRs. Historical reports under `docs/history/`, `docs/verification/` and `releases/` are version-specific.
 
@@ -13,7 +13,7 @@
 
 1. Use a separate topic branch for **every change**, including docs; update `VERSION` and append `CHANGELOG.md` (patch by default). Never silently re-label earlier firmware/package evidence.
 2. Commit/push to `origin`, open a PR targeting `main`; **do not push straight to main, auto-merge, merge, publish a release, or delete branches without explicit owner instruction**. `upstream` is read-only reference material.
-3. Preserve stable v1.0.4 and all previous firmware binaries, release assets, checksums and tags. A documentation VERSION bump does not change firmware; a source change is **not** a tested or installable release until it is built, checked, physically validated as appropriate, and explicitly approved.
+3. Preserve stable v1.0.12 and all previous firmware binaries, release assets, checksums and tags. A documentation VERSION bump does not change firmware; a source change is **not** a tested or installable release until it is built, checked, physically validated as appropriate, and explicitly approved.
 4. No automatic USB/MIDI device access, firmware installation, hardware probing, power-cycling or Firmware Hub submission during ordinary code/build/test tasks. Physical tests and flash require explicit scoped owner authorization. Identify only the intended FM-1 USB pair; **do not select Roland UM-ONE** by substring. Never invent SysEx commands.
 5. Report build/test/flash status honestly, including unavailable dependencies or unexecuted tests. Do not claim successful hardware testing based on desktop simulations.
 
@@ -21,7 +21,7 @@
 
 - Supported local build: Windows / JieLi AC79 toolchain, provisioned under ignored `.runtime/`, with scripts `build-ym-windows.ps1` and `test-ym-windows.ps1`. Read `BUILDING.md` for SDK/tool hashes. An ordinary clone does not include compiler/SDK inputs, and GitHub-hosted attested builds are not verified.
 - Real-time audio: **44,100 Hz, 256-frame blocks (~5804 us)**; preserve the **85% overload guard**. Do not remove it, alter the firmware memory map, invoke XIP from flash-off `.ram_text`, or change startup copy/PC guards to make a feature fit.
-- Stable v1.0.4 RAMTEXT utilization: **24,508 / 24,576 bytes (only 68 bytes spare)**. Check complete link map and section sizes before attempting synthesis, Bluetooth, new ISR, or memory-heavy features. The closed/unmerged Bluetooth SDK prototype exceeded RAMTEXT by 9,455 bytes in its last combined link; never advertise it as working.
+- Stable v1.0.12 RAMTEXT utilization: **24,544 / 24,576 bytes (32 bytes spare)**. Check complete link map and section sizes before attempting synthesis, Bluetooth, new ISR, or memory-heavy features. The closed/unmerged Bluetooth SDK prototype exceeded RAMTEXT by 9,455 bytes in its last combined link; never advertise it as working.
 - Active app: `firmware/src/ym/`, selected by `EN_YM2612`. Do not confuse inherited DUB-1 `app/`, `dsp/`, `web/` or `host/` with a supported Emerald application, browser installer or player.
 - Audio rendering: no heap allocation, full-song buffers, unbounded loops, blocking I/O, or new float/libm/double calls in sample loops. Control helpers in XIP `.ym_control` are reached through `FL_FAR` outside the renderer. Keep audio-critical code in guarded RAM.
 - YM2612 profile uses **five FM voices and DAC on channel 6**, restricted `EMERALD_FIXED_DAC`/`EMERALD_STATIC_OPN`; PSG has three tone voices and white noise. Keep optimized/generic comparison and PCM determinism when changing DSP.
