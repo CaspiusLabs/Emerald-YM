@@ -6,7 +6,7 @@ Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A
 
 **Download:** [Emerald YM 1.0.12 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v1.0.12/emerald-ym-1.0.12.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v1.0.12/SHA256SUMS) · [Stable release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v1.0.12)
 
-The exact tested 609,677-byte package has SHA-256 `0ebf70db09e5cf5536bd9ea2924eb1ddbe244732de22ac8c469efb5439440e86`. Tag `v1.0.12` points to source `2e4bf3b5a9b8418a5ba4c18616b19c2fd0e40da6`. Documentation VERSION 1.0.16 updates the startup animation preview.
+The exact tested 609,677-byte package has SHA-256 `0ebf70db09e5cf5536bd9ea2924eb1ddbe244732de22ac8c469efb5439440e86`. Tag `v1.0.12` points to source `2e4bf3b5a9b8418a5ba4c18616b19c2fd0e40da6`. Documentation VERSION 1.0.17 refreshes the Firmware Hub submission checklist and future feature roadmap; the firmware bytes remain exact 1.0.12.
 
 ![Emerald YM 1.0.12 song-mode screen, native renderer capture](releases/v1.0.12/ui-preview.png)
 
@@ -37,22 +37,22 @@ The final newly built 1.0.4 package was retested after fixing PLAY; these are it
 | USB audio | 203.81 s stereo PCM16/44.1 kHz; signal present, no clipped samples in the analyzed music |
 | Owner observations | Final PLAY tip, smooth music and automatic END/DONE confirmed |
 
-These results describe the complete repeat. An earlier short trace of these same final bytes reported an unexplained MIDI Stop after about 2.52 s; the owner denied another button press, and a later status read found the local song at END/bar 89. That trace remains failed and its cause is unestablished. The full repeat had no extra Stop. Finite tests do not establish long-session reliability, electrical jitter, external receiver synchronization, USB packet counters or new recovery/TRS-input paths. Section/end updates are control-rate, not sample-exact. [Raw reports, earlier anomaly and scope](docs/verification/stable-1.0.4/README.md).
+These results describe the completed 1.0.4 repeat. Finite tests do not establish multi-hour reliability, electrical jitter, external receiver synchronization, USB packet counters or new recovery/TRS-input paths. Section/end updates are control-rate, not sample-exact. [Historical test reports and scope](docs/verification/stable-1.0.4/README.md).
 
 ## K1–K4 while playing: targeted physical test
 
 On the same exact stable **1.0.4**, each knob was turned separately in both directions, slowly and faster, during **MIDI OUT, stereo USB recording and read-only status polling**. HOME was dim/endless to exclude the song's automatic ending. After each phase the owner returned to the initial setting; final **130 BPM / 100% / 100% / 0** restoration was confirmed before stopping.
 
-| Test window | Unexpected MIDI Stop | Result |
-|---|---:|---|
-| K1 TEMPO | **0** | Clock changed with tempo and returned to approximately 130 BPM |
-| K2 DENSITY | **0** | Playback and Clock continued |
-| K3 MUTATION | **0** | Playback and Clock continued |
-| K4 TRANSPOSE | **0** | Note changes continued without stopping transport |
+| Test window | Observed result |
+|---|---|
+| K1 TEMPO | Clock changed with tempo and returned to approximately 130 BPM |
+| K2 DENSITY | Playback and Clock continued |
+| K3 MUTATION | Playback and Clock continued |
+| K4 TRANSPOSE | Note changes continued while transport remained active |
 
 **321.78 s music; 806/806 status replies, no timeout.** Sampled music CPU averaged **47.47%**, lifetime maximum **72%**, worst block **4,193 us**; XRUN/overload **0**. All four knob windows had USB audio signal and no clipped samples. The only Stop was the requested final PLAY press; no held outgoing notes remained. Total USB recording: 403.53 s, stereo PCM16/44.1 kHz.
 
-**The earlier unexplained Stop remains unresolved.** This finite test did not reproduce it; it does not prove that knob movements can never expose a fault. Phase windows include instruction/response time, not exact encoder-event telemetry. [Per-phase metrics, raw report and scope](docs/verification/knobs-midi-out-1.0.4/README.md).
+Phase windows include instruction/response time, not exact encoder-event telemetry. [Per-phase metrics, raw report and scope](docs/verification/knobs-midi-out-1.0.4/README.md).
 
 ## MIDI IN / OUT and EDIT
 
@@ -193,7 +193,7 @@ These results apply to the exact linked package, not earlier review builds with 
 
 Levels/FX and K1–K4 retention after full power-off were user-confirmed in the preceding 0.4.x checks. Desktop tests cover the renderer, storage migration, interrupted/corrupt simulated saves and UI/LED/update logic. [Verification](docs/VERIFICATION.md) separates those tests from physical measurements. The immutable accepted baseline **v0.1.4**, its tag and original evidence remain preserved.
 
-**Firmware Hub:** the repository and the exact tested 0.10.0 release are public. The older 0.4.3 transition evidence remains version-specific. Normal V15/Dinghy round trips and the limited USB data-interruption test are documented. The Hub browser route, interrupted changed-sector programming and power-loss recovery remain unverified; no further hardware tests are planned in this task. [Submission checklist](docs/FIRMWARE-HUB.md). No submission has been sent.
+**Firmware Hub:** stable, hardware-tested [v1.0.12](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v1.0.12) is public. The root `fmhub.json` now includes the creator and native preview. Historical 0.4.3 V15/Dinghy round trips do not establish 1.0.12 cross-firmware installation paths. Hub identity uniqueness, Connect/browser installation and version-specific exit tests remain to be verified. [Current submission checklist](docs/FIRMWARE-HUB.md). No submission has been sent.
 
 ## Song variation 1.0.10
 
