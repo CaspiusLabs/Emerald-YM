@@ -2,7 +2,8 @@
 
 Updated 2026-11-04. Baseline: **public stable firmware v1.0.12**,
 `FM-1_68010012`, with 24,544 / 24,576 bytes used in guarded RAMTEXT
-(**32 bytes free**). Documentation VERSION 1.0.17 is not a new firmware image.
+(**32 bytes free**). Development VERSION 1.0.18 adds host-only memory
+diagnostics, not a new tested or installable firmware image.
 
 The FM-1 already runs five YM2612 FM voices, DAC drums, a three-voice PSG
 with noise, 12-source level/FX control, seed-driven 88-bar arrangements,
@@ -76,6 +77,20 @@ resonant filter, convolution/long reverbs, sample upload, or Bluetooth audio.
 **Exit criterion:** target build/tests pass, output deterministic,
 0 XRUN/overload in controlled target validation when authorized, and preferably
 at least 1,024 verified bytes of reclaimed RAMTEXT.
+
+### Milestone A progress — profiling tooling (1.0.18)
+
+- Windows builds now preserve the linker symbol table as `build/amb.syms`
+  and generate `build/ramtext-report.json` with guarded RAMTEXT totals,
+  largest named functions and flash-driver/FX sizes.
+- Parser regressions exercise section accounting, memory limits and the
+  1 KiB goal without accessing USB or modifying the firmware.
+- **Not yet achieved:** compile with the JieLi Windows toolchain, inspect
+  the real linked symbol report, implement targeted reductions and confirm
+  original MIDI/PCM/CPU behavior. No bytes have yet been measured reclaimed.
+- Acceptance target: **used ≤ 23,520 B**, yielding **≥ 1,056 B free** in the
+  existing 24,576 B region. Enable `--require-goal` only for a candidate
+  optimization; the initial profiling stage must still report baseline builds.
 
 ### Milestone B — Performance controls
 

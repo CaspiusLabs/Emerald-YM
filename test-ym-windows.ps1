@@ -6,6 +6,8 @@ New-Item -ItemType Directory -Path build\temp -Force | Out-Null
 $env:TEMP=(Resolve-Path -LiteralPath build\temp).Path
 $env:TMP=$env:TEMP
 if(-not $env:AC79_SDK){$env:AC79_SDK=Join-Path $PSScriptRoot '.runtime\sdk'}
+& $Python tests\ramtext_report_test.py
+if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
 & tools\test-ym-windows.cmd 2>&1 | Tee-Object -FilePath build\host-tests.log
 if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
 & tools\test-ui-windows.cmd 2>&1 | Tee-Object -FilePath build\ui-tests.log

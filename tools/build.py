@@ -241,6 +241,8 @@ def build_app():
                                ("common/bin/objdump", "-d", elf),
                                ("common/bin/objdump", "-d", "-j", ".ram_text", elf))
     (OUT / "amb.dis").write_text(dis)
+    # Host-only build artifact for RAMTEXT size breakdown; does not alter ELF.
+    (OUT / "amb.syms").write_text(syms, encoding="utf-8")
 
     def symv(name):
         return int(re.search(r"^([0-9a-f]+) .*\s" + name + r"$", syms, re.M).group(1), 16)

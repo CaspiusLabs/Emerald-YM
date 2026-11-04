@@ -1,5 +1,12 @@
 # Emerald YM changelog
 
+## 1.0.18 — 2026-11-04 — RAMTEXT profiling baseline (tooling only)
+
+- Export the JieLi linker `objdump -t` symbol table to ignored `build/amb.syms`; produce `build/ramtext-report.json` after successful Windows firmware builds. No ELF/image, loader or linker-map changes.
+- Host-only `tools/ramtext_report.py` reports guarded RAMTEXT use from section-boundary symbols, flash-driver/audio/FX extents and the largest named symbols. Compare with stable v1.0.12 (24,544/24,576 bytes) and the roadmap goal of reclaiming at least 1,024 bytes.
+- Include synthetic symbol-parser regression tests in the desktop wrapper and document the optional `--require-goal` acceptance gate.
+- **No RAMTEXT bytes have been measured reclaimed yet.** This is instrumentation, not an audio optimization. No JieLi target build, hardware test, flash, firmware release or merge has been performed in this session.
+
 ## 1.0.17 — 2026-11-04 — Firmware Hub 1.0.12 and RAMTEXT roadmap (documentation only)
 
 - Refresh `docs/FIRMWARE-HUB.md` to the actual released/tested v1.0.12, exact SHA-256/USB identity/source tag, physical report and latest published Hub submission checklist. Keep unverified cross-firmware update, Hub Connect/browser installation, catalogue identity uniqueness and optional destructive recovery checks open.
