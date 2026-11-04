@@ -5,7 +5,7 @@
 - Creator: **Caspius Labs**. Canonical repository: https://github.com/CaspiusLabs/Emerald-YM (public). Speak Polish with the owner; write code comments, commits, PR descriptions and repository documentation in English.
 - Target hardware: **M-VAVE FM-1**, JieLi AC79. This is original YM2612/PSG generative firmware built on the DUB-1/Felucca platform; not a general Mega Drive or VGM emulator.
 - **Stable, released and documented as physically tested: v1.0.12**. Source/tag `2e4bf3b5a9b8418a5ba4c18616b19c2fd0e40da6`, exact package SHA-256 `0ebf70db09e5cf5536bd9ea2924eb1ddbe244732de22ac8c469efb5439440e86`, hardware identity `FM-1_68010012`. Preserve published releases and tags.
-- **Documentation VERSION 1.0.14** updates the stable 1.0.12 release guide. VERSION may be ahead of the last installed and released binary. Verify current refs and evidence.
+- **Documentation VERSION 1.0.15** updates the stable 1.0.12 screen preview. VERSION may be ahead of the last installed and released binary. Verify current refs and evidence.
 - PR #21 (1.0.7 arrangement + AGENTS refresh) was merged 2026-11-04 after a recorded 88-bar physical FM-1 test; see `docs/verification/song-phrases-1.0.7/`. **PR #9 Bluetooth Audio was closed without merge on 2026-11-03**. Never infer today's PR status from a static handoff file.
 - Source-of-truth reading order: `VERSION`, `README.md`, `CHANGELOG.md`, `docs/VERIFICATION.md`, `docs/ARCHITECTURE.md`, `BUILDING.md`, `docs/INSTALLING.md`, `docs/FIRMWARE-HUB.md`, then current GitHub releases/PRs. Historical reports under `docs/history/`, `docs/verification/` and `releases/` are version-specific.
 
