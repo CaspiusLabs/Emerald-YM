@@ -2,25 +2,27 @@
 
 Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A real YM2612 emulator, lightweight Sega-style PSG and generative sequencer turn the FM-1 into a small chiptune instrument. Play along on its keyboard and shape each instrument independently.
 
-**Current stable firmware: 1.0.4, hardware-tested.** Includes complete song form, HOME song/endless switching, animated console startup, red volume fader and enlarged cyan/pink spectrum bars. The PLAY triangle has its complete tip. [Manual](docs/MANUAL.md) · [Installation](docs/INSTALLING.md) · [Build](BUILDING.md) · [Test evidence](docs/verification/stable-1.0.4/README.md)
+**Current stable firmware: 1.0.12, hardware-tested on FM-1.** PLAY resumes from pause, REC resets the song, and USB MIDI OUT sends Stop and Continue. [Installation](docs/INSTALLING.md) · [Manual](docs/MANUAL.md) · [Build](BUILDING.md) · [FM-1 test evidence](docs/verification/song-pause-1.0.12/README.md)
 
-**Download:** [Emerald YM 1.0.4 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v1.0.4/emerald-ym-1.0.4.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v1.0.4/SHA256SUMS) · [Stable release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v1.0.4)
+**Download:** [Emerald YM 1.0.12 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v1.0.12/emerald-ym-1.0.12.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v1.0.12/SHA256SUMS) · [Stable release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v1.0.12)
 
-Exact newly built and physically retested package, 609,677 bytes, SHA-256 `f16da6faa7607541c94ac4bfbb0bb626e95eac0956e990a75317caf5b73a411f`. Tag `v1.0.4` points to source `7bb4efdd02499664296e96f134371c68403b22de`. Documentation VERSION **1.0.6** adds the K1–K4 test report; it is not replacement firmware. The older unpublished 1.0.4 desktop candidate and 1.0.8 physical reports describe different bytes.
+The exact tested 609,677-byte package has SHA-256 `0ebf70db09e5cf5536bd9ea2924eb1ddbe244732de22ac8c469efb5439440e86`. Tag `v1.0.12` points to source `2e4bf3b5a9b8418a5ba4c18616b19c2fd0e40da6`. Documentation VERSION 1.0.14 updates the release guide.
 
-![Current 1.0.4 song-mode screen from the native renderer](releases/v1.0.4/ui-preview.png)
+![Emerald YM song-mode layout, native renderer capture from v1.0.4](releases/v1.0.4/ui-preview.png)
 
-*Native 240 × 240 renderer capture, not a photograph. Equal panel gaps, matching bottom cards, bars below text and the current section/local bar count.*
+*Layout reference for stable 1.0.12. This 240 × 240 native renderer capture comes from v1.0.4 and shows its version label.*
 
 ## Song mode and animated startup
 
-**HOME bright** enables an 88-bar song: **INTRO 8 → VERSE 16 → CHORUS 16 → BREAK 8 → VERSE 16 → CHORUS 16 → OUTRO 8 → END**. At 134 BPM it lasts about 2 min 38 s. The outro reduces backing level, then pauses automatically; in MIDI OUT it sends Stop and releases notes. **HOME dim** returns to endless generation. Enabling song restarts the current seed; PLAY after END starts it again. REC chooses a new seed. Mode/progress are not saved; instrument levels, FX and K1–K4 retain their normal persistence. Section changes temporarily scale stems/density without replacing saved settings. Live keys remain available. The audio fade does not send MIDI volume CC automation.
+**HOME bright** enables an 88-bar song: **INTRO 8 → VERSE 16 → CHORUS 16 → BREAK 8 → VERSE 16 → CHORUS 16 → OUTRO 8 → END**. At 134 BPM it lasts about 2 min 38 s. The outro reduces backing level, then pauses automatically; in MIDI OUT it sends Stop and releases notes. **HOME dim** returns to endless generation. HOME preserves the playhead. After END/DONE, press REC to reset the song and choose a new seed, then press PLAY. Mode/progress are not saved; instrument levels, FX and K1–K4 retain their normal persistence. Section changes temporarily scale stems/density without replacing saved settings. Live keys remain available. The audio fade does not send MIDI volume CC automation.
 
 The silent startup animation uses an original console silhouette, moving red fader and segmented spectrum bars. The larger right panel reaches POWER; its cyan matches **16-BIT SOUND SYSTEM**. It is decorative, not audio analysis. Tiny changed-only tiles keep the existing dismissible boot period without a new framebuffer or blocking delay.
 
-![Native animated startup preview; loops here for display only](releases/v1.0.4/boot-preview.gif)
+![Emerald YM startup layout for stable 1.0.12, native animation captured on v1.0.4](releases/v1.0.4/boot-preview.gif)
 
-## Physical 1.0.4 results
+*Startup reference for stable 1.0.12. The v1.0.4 renderer capture loops here for display.*
+
+## Historical physical 1.0.4 results
 
 The final newly built 1.0.4 package was retested after fixing PLAY; these are its own results, not copied from 1.0.8:
 
@@ -52,14 +54,14 @@ On the same exact stable **1.0.4**, each knob was turned separately in both dire
 
 **The earlier unexplained Stop remains unresolved.** This finite test did not reproduce it; it does not prove that knob movements can never expose a fault. Phase windows include instruction/response time, not exact encoder-event telemetry. [Per-phase metrics, raw report and scope](docs/verification/knobs-midi-out-1.0.4/README.md).
 
-## MIDI IN / OUT and EDIT (1.0.4)
+## MIDI IN / OUT and EDIT
 
 Press **EDIT** to switch note direction:
 
 - **EDIT dim — MIDI IN:** receive live notes and effect CCs over USB or the minijack. Notes 53–79 on any channel play the live PSG; USB and TRS have separate held-note masks. The minijack requires a compatible TRS MIDI adapter (the original Launchpad Pro MK3 Type A adapter was used in the earlier 0.9.0 input test).
 - **EDIT bright — USB MIDI OUT:** send the physical keyboard and generative sequencer to a computer. The header shows **USB MIDI OUT**. Local synthesis continues; incoming USB/TRS notes and effect CCs are ignored to avoid MIDI feedback. In your DAW, select **Emerald YM FM-1** as the MIDI input.
 
-In **IN**, USB Start/Continue selects external clock following at 24 PPQ; K1 returns to internal tempo. In **OUT**, FM-1 owns internal tempo: PLAY restarts the current-seed arrangement and sends Start plus 24 PPQ Clock before notes; the next PLAY sends Stop. Incoming USB Clock/transport is ignored in OUT to prevent feedback. No idle Clock, outgoing Continue or MIDI Thru. EDIT resets to IN after reboot and is not saved. Read-only diagnostics and stereo USB audio remain available in both modes. Clock emission is block-quantized (~5.8 ms). [Master clock details](docs/MANUAL.md#usb-midi-master-clock--development-0110).
+In **IN**, USB Start/Continue selects external clock following at 24 PPQ. K1 returns to internal tempo. In **OUT**, FM-1 sends Start on fresh playback, Stop on pause and Continue at the retained position. Clock runs at 24 PPQ while playing. The receiver must retain its position for Continue. EDIT resets to IN after reboot. Read-only diagnostics and stereo USB audio remain available in both modes. [USB MIDI protocol](YM-USB-PROTOCOL.md).
 
 | MIDI output channel | Part |
 |---|---|
@@ -134,10 +136,10 @@ This is original generative music inspired by the Mega Drive/Genesis sound palet
 
 Start with MASTER low, then press PLAY. The sequencer is paused after boot.
 
-| Control | Function in 1.0.4 |
+| Control | Function in 1.0.12 |
 |---|---|
-| PLAY | Start/pause; restart after END. OUT sends MIDI Start/Clock or Stop. Live keys remain available |
-| HOME | Bright: 88-bar song; dim: endless generation. Enabling song restarts the current seed |
+| PLAY | Start, pause or resume at the retained position. After END, press REC first. Live keys remain available |
+| HOME | Bright: 88-bar song. Dim: endless generation. Preserves the playhead |
 | REC | Generate a new seed and sequence |
 | SAVE | Pause the backing and save instrument levels/effects and K1–K4 after notes have settled |
 | SEQ | Toggle mutation between 0 and 35 |
@@ -156,7 +158,7 @@ Effect amounts and levels remain independent when changing selections. All twelv
 
 ## Compatibility and data
 
-Target: M-VAVE **FM-1**, not SMK-37 or other models. USB MIDI name: `Emerald YM FM-1`. Stable 1.0.4 identity: `FM-1_68010004`; older release 0.4.3 identity: `FM-1_68000403`. The `.fwsc` includes the inherited Felucca update loader.
+Target: M-VAVE **FM-1**, not SMK-37 or other models. USB MIDI name: `Emerald YM FM-1`. Stable 1.0.12 identity: `FM-1_68010012`; older release 0.4.3 identity: `FM-1_68000403`. The `.fwsc` includes the inherited Felucca update loader.
 
 Emerald YM does **not** import stock, DUB-1 or other firmware's presets, projects or samples. It does not provide a way to back them up or restore them. Back up with your existing firmware's tools before switching. Firmware installation writes flash; do not assume another firmware's data will survive switching or recovery. From 0.4.0, instrument levels/FX are stored in the existing project-sector pair at `0xFC000` / `0xFD000`. Saving may replace another firmware's data there; panel calibration and the update-loader area are separate.
 
@@ -205,9 +207,9 @@ generator, including its historical PCM reference test.
 
 Documentation VERSION 1.0.11 archives the [exact tested candidate](releases/v1.0.10/README.md)
 and the [FM-1 results](docs/verification/song-diversity-1.0.10/README.md).
-The public GitHub Release remains [v1.0.4](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v1.0.4).
+The current public release is [v1.0.12](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v1.0.12).
 
-## Development 1.0.12 transport
+## Stable 1.0.12 transport
 
 PLAY pauses and resumes the backing at the current position. REC resets the
 arrangement and chooses a new seed. After END/DONE, use REC before PLAY.
