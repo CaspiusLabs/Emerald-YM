@@ -19,7 +19,7 @@ static uint32_t midi_out_q[MQ],mo_r,mo_w;
 static struct ym_midi_sync sync_state;
 static struct ym_midi_output notes;
 static struct ym_midi_state v;
-static uint32_t start_count,stop_count,clock_count,note_count,running;
+static uint32_t start_count,continue_count,stop_count,clock_count,note_count,running;
 static uint32_t held[16][128];
 static int32_t pcm[512];
 static void receive(){
@@ -29,6 +29,7 @@ static void receive(){
   if(status>=0xf8){
    assert((p&255)==15&&(p>>16)==0);
    if(status==0xfa){start_count++;running=1;}
+   else if(status==0xfb){continue_count++;running=1;}
    else if(status==0xfc){stop_count++;running=0;}
    else {assert(status==0xf8&&running);clock_count++;}
   }else if((status&0xf0)==0x90){assert(!held[c][n]);held[c][n]=1;note_count++;if(c!=0)assert(running);}
@@ -40,7 +41,7 @@ static int update(uint32_t enable=1,uint32_t ready=1,uint32_t session=0,uint32_t
 static void reset(){
  memset(&sync_state,0,sizeof sync_state);memset(&notes,0,sizeof notes);memset(&v,0,sizeof v);memset(held,0,sizeof held);
  for(int s=0;s<12;s++)v.note[s]=-1;
- mo_r=mo_w=start_count=stop_count=clock_count=note_count=running=0;
+ mo_r=mo_w=start_count=continue_count=stop_count=clock_count=note_count=running=0;
 }
 static void block(uint32_t enabled=1,uint32_t keys=0){
  ym_render(pcm,256,4096);ym_midi_snapshot(&v);
@@ -57,8 +58,11 @@ int main(){
  for(uint32_t k=2;k<=97;k++){v.clocks=k;assert(update());receive();}
  assert(clock_count==97&&start_count==1);v.playing=0;update();receive();assert(stop_count==1&&!running);
  for(int i=0;i<100;i++)update();receive();assert(stop_count==1&&clock_count==97);
- v.epoch++;v.playing=1;v.clocks=1;update();receive();assert(start_count==2&&clock_count==98);
- update(0,1,0,1);receive();assert(stop_count==2); /* EDIT OFF sends Stop once. */
+ v.playing=1;v.clocks=98;assert(update());receive();
+ assert(start_count==1&&continue_count==1&&clock_count==98&&running);
+ v.playing=0;update();receive();assert(stop_count==2);
+ v.epoch++;v.playing=1;v.clocks=1;update();receive();assert(start_count==2&&clock_count==99);
+ update(0,1,0,1);receive();assert(stop_count==3); /* EDIT OFF sends Stop once. */
  puts("PASS: single-byte USB CIN, Start before Clock, 24 PPQ/six per step, no idle Clock, Stop once, restart and EDIT off");
 
  reset();v.playing=1;v.epoch=1;v.clocks=1;assert(update()); /* leave first F8 queued */
@@ -99,6 +103,20 @@ int main(){
   ym_control(bpm,100,35,0,0);block(1,7u);assert(stop_count==1&&!running);
   block(0);for(int c=0;c<16;c++)for(int n=0;n<128;n++)assert(!held[c][n]);
  }
+ reset();ym_init(42);ym_song_section(4);ym_control(132,100,35,0,1);
+ for(uint32_t i=0;i<1000;i++)block();
+ const uint32_t pause_bar=ym_bar(),pause_step=ym_step(),pause_clock=v.clocks,pause_epoch=v.epoch;
+ ym_control(132,100,35,0,0);
+ for(uint32_t i=0;i<200;i++)block();
+ assert(ym_bar()==pause_bar&&ym_step()==pause_step&&v.clocks==pause_clock&&v.epoch==pause_epoch);
+ assert(start_count==1&&stop_count==1&&clock_count==pause_clock);
+ ym_control(132,100,35,0,1);
+ for(uint32_t i=0;i<200;i++)block();
+ assert(v.clocks>pause_clock&&v.epoch==pause_epoch&&!sync_state.blocked);
+ assert(start_count==1&&continue_count==1&&stop_count==1&&clock_count==v.clocks);
+ ym_reseed(43);block();
+ assert(v.epoch!=pause_epoch&&v.clocks==1&&start_count==2&&stop_count==2);
+ puts("PASS: song playhead holds through pause; Continue preserves clock phase; reseed sends a fresh Start");
  puts("PASS: actual engine 60s each at 80/132/180 BPM; MIDI note ordering, chord output, Stop cleanup, phase-derived Clock without drift");
 
  reset();ym_init(42);ym_control(80,100,35,0,1);
