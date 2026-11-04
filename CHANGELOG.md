@@ -1,5 +1,10 @@
 # Emerald YM changelog
 
+## 1.0.16 — 2026-11-04 — stable 1.0.12 startup animation preview
+
+- Replace the README startup animation with a loop of the 13 native v1.0.12 desktop test frames at their original 90 ms interval.
+
+
 ## 1.0.15 — 2026-11-04 — stable 1.0.12 screen preview
 
 - Replace the README screen preview with the native v1.0.12 desktop test capture.
