@@ -6,11 +6,11 @@ Generative 16-bit music firmware for the **M-VAVE FM-1**, by **Caspius Labs**. A
 
 **Download:** [Emerald YM 1.0.12 (.fwsc)](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v1.0.12/emerald-ym-1.0.12.fwsc) · [SHA-256](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v1.0.12/SHA256SUMS) · [Stable release notes](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v1.0.12)
 
-The exact tested 609,677-byte package has SHA-256 `0ebf70db09e5cf5536bd9ea2924eb1ddbe244732de22ac8c469efb5439440e86`. Tag `v1.0.12` points to source `2e4bf3b5a9b8418a5ba4c18616b19c2fd0e40da6`. Documentation VERSION 1.0.14 updates the release guide.
+The exact tested 609,677-byte package has SHA-256 `0ebf70db09e5cf5536bd9ea2924eb1ddbe244732de22ac8c469efb5439440e86`. Tag `v1.0.12` points to source `2e4bf3b5a9b8418a5ba4c18616b19c2fd0e40da6`. Documentation VERSION 1.0.15 updates the screen preview.
 
-![Emerald YM song-mode layout, native renderer capture from v1.0.4](releases/v1.0.4/ui-preview.png)
+![Emerald YM 1.0.12 song-mode screen, native renderer capture](releases/v1.0.12/ui-preview.png)
 
-*Layout reference for stable 1.0.12. This 240 × 240 native renderer capture comes from v1.0.4 and shows its version label.*
+*240 × 240 capture from the desktop test of the v1.0.12 native UI renderer.*
 
 ## Song mode and animated startup
 
