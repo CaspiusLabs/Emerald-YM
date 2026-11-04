@@ -215,6 +215,9 @@ HOME and EDIT preserve the playhead. USB MIDI OUT sends Start for a fresh
 arrangement, Stop on pause, and Continue on resume. Continue uses the
 receiver's retained position.
 
+Documentation VERSION 1.0.13 archives the [tested 1.0.12 package](releases/v1.0.12/README.md)
+and [FM-1 pause, resume and REC results](docs/verification/song-pause-1.0.12/README.md).
+
 ## Development
 
 The canonical repository is [CaspiusLabs/Emerald-YM](https://github.com/CaspiusLabs/Emerald-YM). Work in a local clone. Every change increments VERSION, uses a separate branch and opens a pull request to main for review; do not push directly to main or auto-merge. The original DUB-1 remote is reference-only.
