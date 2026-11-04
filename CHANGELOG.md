@@ -1,5 +1,15 @@
 # Emerald YM changelog
 
+## 1.0.17 — 2026-11-04 — Firmware Hub 1.0.12 and RAMTEXT roadmap (documentation only)
+
+- Refresh `docs/FIRMWARE-HUB.md` to the actual released/tested v1.0.12, exact SHA-256/USB identity/source tag, physical report and latest published Hub submission checklist. Keep unverified cross-firmware update, Hub Connect/browser installation, catalogue identity uniqueness and optional destructive recovery checks open.
+- Add `author`, `image` and `synth` classification to `fmhub.json`, reusing the exact native 240×240 v1.0.12 PNG (4,377 bytes); no browser player/editor links are claimed.
+- Bring README, AGENTS and the top-level verification overview into sync with v1.0.12. Remove historical troubleshooting discussion from the active overview while leaving the underlying original version-specific reports and measurements intact.
+- Add `docs/ROADMAP.md`: prioritize reclaiming at least 1 KiB RAMTEXT before audio-engine changes, and evaluate performance scenes, live fills, seed favorites, style macros and MIDI/UI improvements that reuse main-loop/XIP controls.
+- Record the owner's statement that Emerald was tested on a second computer (2026-11-04), without inventing version-specific installation routes, USB Hub Connect output or interrupted-update evidence. Keep such checks open until their exact procedures and results are documented.
+- Align the checklist with the Firmware Hub knowledge base: one interrupted real update is among the required author tests; controlled changed-sector qualification and actual power-loss recovery remain separate higher-risk cases.
+- Documentation/metadata only: **no binary rebuild, device access, flashing, tag, release, Hub submission or merge**. The stable v1.0.12 asset, checksum and exact package remain unchanged.
+
 ## 1.0.16 — 2026-11-04 — stable 1.0.12 startup animation preview
 
 - Replace the README startup animation with a loop of the 13 native v1.0.12 desktop test frames at their original 90 ms interval.

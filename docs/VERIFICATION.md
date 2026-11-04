@@ -2,11 +2,17 @@
 
 Desktop tests, flash/update simulations, user feedback and physical FM-1 measurements are separate evidence. The reports in releases/ retain their original values; an offline report intentionally says flashed=false even when a separate hardware report records installation.
 
-**Current stable/installed firmware is exact 1.0.4**, source `7bb4efdd02499664296e96f134371c68403b22de`, package SHA-256 `f16da6faa7607541c94ac4bfbb0bb626e95eac0956e990a75317caf5b73a411f`. It was newly rebuilt with the final PLAY tip and physically retested before publication: 162.40 s full song, 407/407 diagnostic replies, CPU avg 47.59%, max 72%, longest block 4233 us, XRUN/overload/failed boots zero. [Separate stable 1.0.4 evidence](verification/stable-1.0.4/README.md). Documentation 1.0.6 is not replacement firmware. Earlier same-number desktop-candidate evidence, the aborted pre-fix run, exact 1.0.8 test and older release results remain distinct. No new external receiver/TRS/recovery/long-session claim.
+**Current public stable, hardware-tested firmware is exact 1.0.12**, source `2e4bf3b5a9b8418a5ba4c18616b19c2fd0e40da6`, package SHA-256 `0ebf70db09e5cf5536bd9ea2924eb1ddbe244732de22ac8c469efb5439440e86`. Physical 1.0.12 pause/resume/REC and USB transport tests recorded 469/469 diagnostics, maximum CPU 72%, worst block 4,184 µs, XRUN/overload/failed boots zero. [1.0.12 exact package and device evidence](verification/song-pause-1.0.12/README.md). Its 1.0.10 composer predecessor also completed 88 bars on FM-1 with 413/413 diagnostics and zero XRUNs; [composer evidence](verification/song-diversity-1.0.10/README.md). Documentation VERSION 1.0.17 is not a new firmware package. Historical version-specific logs are not transferred to newer builds.
 
 ## Targeted K1–K4 test on stable 1.0.4
 
-The later [targeted K1–K4 test on unchanged exact stable 1.0.4](verification/knobs-midi-out-1.0.4/README.md) captured 321.78 s music with MIDI OUT/USB audio/status: no unexpected Stop in any knob/restoration window, 806/806 replies/no timeout, CPU average 47.47%, lifetime max72%, worst block4193us, XRUN/overload0. Owner confirmed original 130/100/100/0 values restored. This is documentation VERSION 1.0.6, not a firmware change or explanation of the earlier short Stop; its failed record is retained.
+The historical [targeted K1–K4 test on exact 1.0.4](verification/knobs-midi-out-1.0.4/README.md) captured 321.78 s of MIDI OUT/USB audio/status while the owner adjusted and restored each knob: 806/806 replies/no timeout, CPU average 47.47%, lifetime maximum 72%, worst block 4,193 µs, XRUN/overload zero. The owner confirmed the original 130/100/100/0 settings were restored. This is historical evidence for 1.0.4, not a separate firmware image or a v1.0.12 test.
+
+## Current 1.0.12 / 1.0.10 device verification
+
+The full-song 1.0.10 physical test covered 88 bars with one Start and one automatic Stop, 8,450 MIDI Clock pulses, zero notes remaining, 413/413 status replies, peak CPU 71%, maximum block 4,174 µs, XRUN/overload/failed boots zero. Same-seed PCM and different-seed audio fingerprints were checked in desktop tests; the device run covered one seed.
+
+The stable 1.0.12 physical test checked pause/resume, REC and USB MIDI Start/Stop/Continue on the same hardware with 469/469 replies and zero XRUN/overload. The historical V15/Dinghy cross-firmware round trips are only verified for exact 0.4.3 packages; no v1.0.12 Hub browser installation or interrupted changed-sector recovery is established. [Publication checklist](FIRMWARE-HUB.md).
 
 ## Hardware-tested development 0.6.0 UI
 

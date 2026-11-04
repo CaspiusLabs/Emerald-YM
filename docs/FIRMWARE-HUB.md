@@ -1,57 +1,133 @@
-# Firmware Hub submission preparation
+# Firmware Hub listing preparation — Emerald YM 1.0.12
 
-Prepared against the [submission requirements](https://thefirmwarehub.com/submit/) and [knowledge base](https://thefirmwarehub.com/kb/) checked on 2026-10-27. No submission email has been sent. The owner authorized public visibility after checking the release download and README on 2026-10-27. The repository is public; no further hardware tests are planned in this task. Unverified paths remain explicitly listed below.
+Updated 2026-11-04 for the latest **public, hardware-tested stable firmware
+[v1.0.12](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v1.0.12)**.
+Project documentation `VERSION` was 1.0.16 before this documentation task;
+it is **not** a replacement firmware. This page is the publication checklist,
+not confirmation that Emerald YM is already listed. **No Hub submission was
+made as part of this update.**
 
-The current public stable release is [1.0.4](https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v1.0.4); see its [fresh exact-package full-song/USB/UI results](verification/stable-1.0.4/README.md). The older 0.4.3 submission checklist and V15/Dinghy/interruption results below do not transfer to 1.0.4. No new submission is authorized by this publication task.
+The [Firmware Hub submission page](https://thefirmwarehub.com/submit/) and
+[knowledge base](https://thefirmwarehub.com/kb/) were reviewed again on
+2026-11-04. The Hub requests a public open-source repository, a release with an
+`.fwsc` asset, a firmware-specific `FM-1_` identity, the update loader,
+physical installation/exit tests and a root `fmhub.json`. Its latest-release
+card follows published GitHub releases automatically after the initial listing.
+Do not treat this checklist as authorization to submit.
 
-## Submission details — historical 0.4.3 preparation
+## Current submission information
 
-- Firmware: **Emerald YM**
-- Creator display name: **Caspius Labs** (owner-confirmed display name; GitHub account: `CaspiusLabs`)
-- Repository: https://github.com/CaspiusLabs/Emerald-YM
-- Tested package: releases/v0.4.3/emerald-ym-0.4.3.fwsc on merged main (exact hash in the test report).
-- Current validated beta release: https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v0.4.3 (exact tested package, matching source tag).
-- Direct firmware download: https://github.com/CaspiusLabs/Emerald-YM/releases/download/v0.4.3/emerald-ym-0.4.3.fwsc
-- License of combined firmware: **GPL-3.0-only**; component notices in LICENSING.md
-- Device: **M-VAVE FM-1**
-- USB identity: **FM-1_68000403**; port name: **Emerald YM FM-1**
-- Package: **emerald-ym-0.4.3.fwsc**, includes Felucca update loader
-- Screenshot: https://github.com/CaspiusLabs/Emerald-YM/blob/main/releases/v0.4.3/ui-preview.png
-- Screenshot provenance: 240 × 240 render from the actual desktop UI test, not a device photograph
-- Browser player/editor: none; do not link the inherited DUB-1 web tools as Emerald
+| Field | Exact value or link |
+|---|---|
+| Firmware | **Emerald YM** |
+| Author / creator | **Caspius Labs** |
+| Device | **M-VAVE FM-1** only |
+| License | **GPL-3.0-only** combined firmware; component notices in [LICENSING.md](../LICENSING.md) |
+| Source repository | https://github.com/CaspiusLabs/Emerald-YM |
+| Stable GitHub release | https://github.com/CaspiusLabs/Emerald-YM/releases/tag/v1.0.12 |
+| Firmware package | [emerald-ym-1.0.12.fwsc](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v1.0.12/emerald-ym-1.0.12.fwsc) |
+| Checksums | [SHA256SUMS](https://github.com/CaspiusLabs/Emerald-YM/releases/download/v1.0.12/SHA256SUMS) |
+| Firmware source/tag commit | `2e4bf3b5a9b8418a5ba4c18616b19c2fd0e40da6` |
+| Tested package SHA-256 | `0ebf70db09e5cf5536bd9ea2924eb1ddbe244732de22ac8c469efb5439440e86` |
+| Package size | 609,677 bytes |
+| Firmware / USB identity | `FM-1_68010012` |
+| USB MIDI/audio name | `Emerald YM FM-1` |
+| Hub card metadata | [fmhub.json](../fmhub.json) |
+| Hub card image | [Native 240×240 preview](../releases/v1.0.12/ui-preview.png) (4,377-byte PNG; desktop renderer capture, not a physical device photo) |
+| Install instructions | [INSTALLING.md](INSTALLING.md) |
+| Hardware tests | [1.0.12 transport/USB test](verification/song-pause-1.0.12/README.md); [1.0.10 full-song test](verification/song-diversity-1.0.10/README.md) |
+| Browser player/editor | **Not available**; do not link inherited DUB-1 applications |
 
-Description:
+Suggested short description (also represented by the root `fmhub.json`):
 
-> Emerald YM turns the M-VAVE FM-1 into a generative 16-bit music instrument with YM2612 FM, DAC drums and a Sega-style PSG. Play live keys over an evolving backing and shape twelve sources with independent levels, decay, color and echo.
+> Emerald YM turns the M-VAVE FM-1 into a generative 16-bit music instrument,
+> with YM2612-style FM, DAC percussion and Sega-style PSG. Create evolving
+> 88-bar songs, play live keys and shape twelve independent sound sources.
 
-The root `fmhub.json` provides the shorter card text and `groove` category. It intentionally omits unimplemented browser/player links. The Hub reviews changed card metadata before displaying it.
+## Current physical and build evidence
 
-## Ready in this repository
+- Firmware **1.0.12** was built with the Windows/JieLi toolchain, passed the
+  desktop suite and was installed and tested on a real FM-1. The accepted
+  package and logs are kept under `releases/v1.0.12/` and
+  `docs/verification/song-pause-1.0.12/`.
+- The 1.0.12 test verified PLAY pause/resume, REC reseeding, USB MIDI
+  Start/Stop/Continue, 469/469 status responses, no remaining notes or
+  MIDI Clock during pauses, and 0 XRUN/overload/failed boots. Maximum observed
+  CPU was 72% and the worst audio block was 4,184 µs.
+- The included **1.0.10** composer was independently exercised on the
+  device: the whole 88-bar arrangement ended at bar 89, 413/413 diagnostic
+  replies, no held notes, peak CPU 71%, no XRUN or overload. Distinct seeds
+  and the original Endless PCM golden were checked by desktop tests.
+- The `.fwsc` uses the inherited Felucca update loader. The package/tag is
+  a locally built exact image with no independently verified GitHub build
+  attestation. Do not claim a GitHub build or signer.
+- Earlier complete official V15 ↔ Emerald and Dinghy ↔ Emerald installation
+  round trips and a limited same-image USB interruption test apply **only
+  to the exact 0.4.3 bytes**, not automatically to v1.0.12. See
+  [round trips](verification/install-roundtrips-2026-10-27/README.md) and
+  [USB interruption](verification/usb-data-interruption-2026-10-27/README.md).
 
-- [x] Browsable source and preserved upstream attribution/history (public).
-- [x] English README, user/build/install instructions and license notices.
-- [x] Tested committed 0.4.3 package, SHA-256 and matching merged source commit.
-- [x] Package verification and update-loader simulations, kept separate from hardware evidence.
-- [x] Physical boot, matching USB identity, music and representative real-time tests.
-- [x] Data incompatibility and settings persistence disclosed in README.
-- [x] 240 × 240 UI image and card metadata.
+## Additional owner-reported check (2026-11-04)
 
-## Before asking the Hub to list it
+- [x] **Owner-reported test on a second computer.** The owner confirms having
+  tested Emerald YM on another PC. This is an owner statement, not a
+  captured installation transcript. The exact image hash, previous firmware,
+  USB identity/Hub Connect response, installation method, reverse transition
+  and any interrupted-update procedure were **not specified**. Accordingly,
+  this confirms only that an additional computer was used for testing; it does
+  not close the separate Hub requirements below.
 
-Physical evidence: [2026-10-27 round trips](verification/install-roundtrips-2026-10-27/README.md). These results apply to the exact committed 0.4.3 bytes, not the older published 0.4.0 asset.
+## Firmware Hub checklist for stable 1.0.12
 
-- [x] Attach the exact tested 0.4.3 bytes to release v0.4.3, tagged at matching source commit b5848cd40b4d8dda4612cb9b8c3dc9687e29abc6; no rebuild or substitution.
+- [x] Public, browsable open-source repository and complete license notices.
+- [x] GitHub stable release with the exact, hardware-tested `.fwsc` package,
+  source tag, SHA-256 and preserved update loader.
+- [x] Physical FM-1 boot, working USB identity, audio, MIDI and
+  transport/status checks on exact firmware 1.0.12.
+- [x] Root `fmhub.json` with `what`, `author`, `kinds` and `image`.
+  Optional `play`, `editor` and `cheat` links are omitted until implemented.
+- [ ] Verify identity **`FM-1_68010012`** is unique in the live Hub catalogue.
+  Do not infer uniqueness from the string format or an incomplete text search.
+- [ ] Physically check installing **exact 1.0.12 from official V15** and
+  from another custom FM-1 firmware, using the normal update process.
+- [ ] Physically check leaving **exact 1.0.12** for official V15 and another
+  custom firmware, recording identities/versions and package hashes.
+- [ ] Check that the Hub's browser **Connect** detects the exact Emerald USB
+  identity/port, and validate the browser installation route for 1.0.12
+  before claiming that path tested.
+- [ ] **Required Hub recovery check:** with the exact 1.0.12 package on an
+  FM-1, interrupt a real update once during the **Writing** stage, reconnect
+  and verify the updater can continue/restart successfully. The Hub
+  [knowledge base](https://thefirmwarehub.com/kb/) lists an interrupted
+  update among author tests. Earlier v0.4.3 same-image USB unplugging does
+  not establish this check for v1.0.12.
+- [ ] Confirm final author/links/image presentation and **explicitly
+  authorize** sending the listing submission to the Hub maintainer.
 
-- [x] Owner authorizes public visibility; repository and release downloads are public, with anonymous access and the downloaded firmware hash checked.
-- [ ] Check identity uniqueness against the Hub's live catalogue. The static identity page does not populate its catalogue in the text fetch; uniqueness has **not** been confirmed.
-- [x] Install exact Emerald 0.4.3 package on physical FM-1 from official **V15**.
-- [x] Install exact Emerald 0.4.3 package from **Dinghy 0.3**, not merely an earlier Emerald build.
-- [x] From running Emerald 0.4.3, install official V15 and Dinghy 0.3 through the ordinary updater; both booted with user-confirmed screen/key audio. Restore Emerald at the end.
-- [ ] Confirm the Hub recognizes the reported MIDI port and identity after Connect.
-- [x] Limited first step: physical USB data interruption on battery at 25% of the loader transfer; reconnection and restart of the same-image installation passed. [Evidence and limitations](verification/usb-data-interruption-2026-10-27/README.md).
-- [ ] Complete the broader interrupted-write recovery check separately. The same-image test may skip equal sectors and does not establish recovery from interrupted changed-sector writing or power loss; the Hub browser route remains untested.
-- [ ] Confirm the creator display name and image, then send the repository/release links and test results to the Hub maintainer.
+### Optional, higher-risk recovery qualification (not yet completed)
 
-Keep raw reports for each physical transition, including both identities and package hashes. Do not label missing tests as passed. Earlier audio tests alone did not establish these paths; the linked physical transitions now do for the pinned 0.4.3 package. From 0.4.0, settings writes reuse the FC000/FD000 project-sector pair; this is disclosed in README and the install guide.
+- [ ] If required by the loader behavior, separately characterize changed-
+  sector interruption and recovery with a documented controlled method;
+  do not assume a same-image retry covers changed-sector programming.
+- [ ] Test actual battery/power-loss recovery separately, only if needed and
+  explicitly authorized. This is not implied by a host USB disconnect.
 
-A GitHub-built, attested firmware release is optional. The current binary was built locally with the documented Windows toolchain; it has **no GitHub build attestation**. Do not add a workflow that merely signs a committed binary and call it built from source.
+Do not perform deliberate flash interruption or power cycling automatically.
+Plan a recovery path before authorizing the required interruption test.
+Do not invent test results, credentials or signatures.
+
+## Submission handoff
+
+When the outstanding Hub listing checks are complete and the owner explicitly
+approves submission, send the maintainer links (not package attachments):
+creator **Caspius Labs**, firmware **Emerald YM**, repository and current
+stable release, identity **`FM-1_68010012`**, **GPL-3.0-only** license,
+root `fmhub.json` (which includes the card image), install instructions,
+and exact physical test results. The submission form on
+[thefirmwarehub.com/submit](https://thefirmwarehub.com/submit/) currently
+describes the maintainer contact route. Do **not** claim that an email or a
+listing already exists.
+
+After acceptance, the Hub says it follows updated GitHub releases and the
+root card metadata periodically; confirm the actual resulting card before
+claiming that automatic updates are working.

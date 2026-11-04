@@ -1,6 +1,9 @@
 {
   "what": "Generative 16-bit music for FM-1: five YM2612 FM voices, DAC drums and Sega-style PSG. Play live keys over an evolving backing, with saved levels, decay, color and echo for twelve instruments.",
   "kinds": [
+    "synth",
     "groove"
-  ]
+  ],
+  "author": "Caspius Labs",
+  "image": "releases/v1.0.12/ui-preview.png"
 }
